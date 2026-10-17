@@ -1,8 +1,69 @@
-<div class="chapter-page active" id="cover">
-    <div style="text-align: center; padding: 20px 0;">
-        <img src="/images/cover.png" alt="Inside Cover - Finding, Keeping, and Nurturing Clients" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding, Keeping, and Nurturing Clients - Interactive Book</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>Finding, Keeping, and Nurturing Clients</h1>
+            <p>A Practical Guide for New Agents</p>
+            <p style="color: #38bdf8; margin-top: 6px; font-weight: 600;">Prepared for Galina Pitts</p>
+        </div>
+        <ul class="nav-list" id="navList">
+            <li class="nav-item active" data-page="cover">Title Page</li>
+            <li class="nav-item" data-page="pref">Handbook Overview & Plan</li>
+            
+            <div class="nav-section-title">PART I: Foundations</div>
+            <li class="nav-item" data-page="ch1">1. Mindset & Foundations</li>
+            
+            <div class="nav-section-title">PART II: Find</div>
+            <li class="nav-item" data-page="ch2">2. Finding Clients</li>
+            <li class="nav-item" data-page="ch3">3. Marketing & Brand Presence</li>
+            
+            <div class="nav-section-title">PART III: Operating System</div>
+            <li class="nav-item" data-page="ch4">4. Technology and Systems</li>
+            
+            <div class="nav-section-title">PART IV: Nurture</div>
+            <li class="nav-item" data-page="ch5">5. Nurturing Leads</li>
+            <li class="nav-item" data-page="ch6">6. Scripts & Conversations</li>
+            
+            <div class="nav-section-title">PART V: Stay on Track</div>
+            <li class="nav-item" data-page="ch7">7. Common Errors & Pitfalls</li>
+            <li class="nav-item" data-page="ch8">8. Staying Organized & Motivated</li>
+            
+            <div class="nav-section-title">PART VI: Serve and Keep</div>
+            <li class="nav-item" data-page="ch9">9. Client Consultations & Objections</li>
+            <li class="nav-item" data-page="ch10">10. Keeping Clients</li>
+            <li class="nav-item" data-page="ch11">11. Legal Protection & Standards</li>
+            
+            <div class="nav-section-title">PART VII: Execute</div>
+            <li class="nav-item" data-page="ch12">12. Execution Plans (90 Days)</li>
+            <li class="nav-item" data-page="ch13">13. Resources & Next Steps</li>
+            
+            <div class="nav-section-title">APPENDICES</div>
+            <li class="nav-item" data-page="app-a">App A: Weekly Activity Scorecard</li>
+            <li class="nav-item" data-page="app-b">App B: SmartPlan Starter Kit</li>
+            <li class="nav-item" data-page="app-c">App C: Command Setup Checklist</li>
+            <li class="nav-item" data-page="app-d">App D: Glossary</li>
+        </ul>
     </div>
-    <div style="text-align: center; margin-top: 24px;">
-        <button class="btn-nav" onclick="navigateTo('pref')">Start Handbook →</button>
+
+    <!-- Main Content Viewport -->
+    <div id="main-content">
+        <div class="content-container" id="content-container">
+            <!-- Chapter content loaded here -->
+        </div>
+        <div class="page-navigation">
+            <button class="btn-nav" id="prevBtn">Previous</button>
+            <button class="btn-nav" id="nextBtn">Next</button>
+        </div>
     </div>
-</div>
+
+    <script src="js/app-with-cover.js"></script>
+</body>
+</html>
