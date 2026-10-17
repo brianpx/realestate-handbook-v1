@@ -2,10 +2,11 @@
 
 Interactive handbook for new real estate agents.
 
-Prepared for Galina Pitts.
+**Prepared for Galina Pitts**
 
-## Usage
+Open `book.html` in a browser for the full interactive experience (sidebar navigation, chapters, scripts, checklists).
 
-Open `book.html` in a browser to view the interactive book.
+## Contents
+- Foundations, Finding Clients, Marketing, Technology & Systems (KW Command), Nurturing, Scripts, Pitfalls, Organization, Client Work, Keeping Clients, Legal, 90-Day Plans, Resources, Appendices.
 
-This is a self-contained HTML file with sidebar navigation, chapters, scripts, checklists, and appendices focused on finding, nurturing, and keeping real estate clients using KW Command and related systems.
+This is a self-contained HTML file. No build step required.
