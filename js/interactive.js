@@ -177,23 +177,21 @@ function setupScorecard(section) {
     rows.forEach(row => {
         const cells = [...row.querySelectorAll('td')].slice(2);
         cells.forEach((cell, w) => {
-            const input = el('input', 'score-input');
-            input.type = 'number';
-            input.min = '0';
-            input.inputMode = 'decimal';
-            input.dataset.label = `${row.firstElementChild.textContent}, week ${w + 1}`;
-            input.setAttribute('aria-label', input.dataset.label);
+            const label = `${row.firstElementChild.textContent}, week ${w + 1}`;
             const key = `${row.dataset.row}:${w}`;
-            if (data[key] !== undefined) input.value = data[key];
-            input.addEventListener('input', () => {
-                if (input.value === '') delete data[key];
-                else data[key] = Number(input.value);
-                saveState();
-                refresh(true);
+            const { input, error } = amountInput({
+                label, value: data[key], hint: 'Numbers only.',
+                onValue: n => {
+                    if (n === undefined) delete data[key]; else data[key] = n;
+                    saveState();
+                    refresh(true);
+                }
             });
+            input.className = 'score-input';
+            input.dataset.label = label;
             const badge = el('span', 'score-status');
             badge.setAttribute('aria-hidden', 'true');
-            cell.append(input, badge);
+            cell.append(input, badge, error);
         });
     });
 
@@ -231,7 +229,8 @@ function setupScorecard(section) {
     confirmYes.addEventListener('click', () => {
         Object.keys(data).forEach(k => delete data[k]);
         saveState();
-        table.querySelectorAll('.score-input').forEach(i => { i.value = ''; });
+        table.querySelectorAll('.score-input').forEach(i => { i.value = ''; i.setAttribute('aria-invalid', 'false'); i.removeAttribute('aria-describedby'); });
+        table.querySelectorAll('.calc-error').forEach(e => { e.textContent = ''; });
         refresh(true);
         closeConfirm();
     });

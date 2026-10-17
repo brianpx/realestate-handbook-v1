@@ -110,7 +110,7 @@ const fmtMoney = n => `$${fmtNum(n)}`;
 // browsers, so the tool sat on its empty state with no explanation. onValue gets a number, or
 // undefined when the field is empty or invalid; an inline message explains invalid input.
 let amountInputCount = 0;
-function amountInput({ label, value, min = 0, max, format, onValue }) {
+function amountInput({ label, value, min = 0, max, format, hint = 'Numbers only, for example 1500.', onValue }) {
     const input = el('input', 'calc-input');
     input.type = 'text';
     input.inputMode = 'decimal';
@@ -124,7 +124,7 @@ function amountInput({ label, value, min = 0, max, format, onValue }) {
         const raw = input.value.trim();
         const n = parseAmount(raw);
         let message = '';
-        if (raw !== '' && n === undefined) message = 'Numbers only, for example 1500.';
+        if (raw !== '' && n === undefined) message = hint;
         else if (n !== undefined && n < min) message = `Enter ${min} or more.`;
         else if (n !== undefined && max !== undefined && n > max) message = `Enter ${max} or fewer.`;
         current = message || raw === '' ? undefined : n;
