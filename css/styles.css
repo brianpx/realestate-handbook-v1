@@ -843,13 +843,15 @@
             .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: rgba(15, 23, 42, 0.45); touch-action: none; }
             html.dark .menu-backdrop { background: rgba(240, 244, 248, 0.55); } /* inverted by the dark filter into a dark veil */
             .nav-list, .search-results { overscroll-behavior: contain; } /* scrolling the list never chains to the page */
+            /* the desktop "searching" rule lifts the height limit; on phones the dropdown must stay within the screen and scroll */
+            #sidebar.searching .search-results { max-height: 70vh; max-height: 70dvh; }
             /* phones are already full width, so the option does nothing there */
             .settings-row.settings-wide { display: none; }
             .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: #f8fafc; border-top: 1px solid #cbd5e1; list-style: none; }
             .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: #0f172a; background: #ffffff; border: 1px solid #94a3b8; border-radius: 6px; cursor: pointer; }
             .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
             .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto; }
-            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; background: #ffffff; border-bottom: 1px solid #cbd5e1; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100; }
+            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; padding-bottom: 12px; background: #ffffff; border-bottom: 1px solid #cbd5e1; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100; }
             #main-content { padding: 8px; }
             .content-container { padding: 16px; border-radius: 8px; }
             .lifecycle-container { flex-direction: column; }
