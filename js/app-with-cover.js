@@ -166,13 +166,24 @@ function setupHeaderCollapse() {
     }, { passive: true });
 }
 
+// The menu button is a hamburger, or a cross while it has something to close: the open menu or the open
+// search results.
+function syncMenuIcon() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('menuToggle');
+    const searching = sidebar.classList.contains('searching');
+    const open = searching || sidebar.classList.contains('menu-open');
+    toggle.textContent = open ? '\u2715' : '\u2630';
+    toggle.setAttribute('aria-label', searching ? 'Close search results' : 'Table of contents');
+}
+
 function setupMenuToggle() {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.getElementById('menuToggle');
     const setOpen = open => {
         sidebar.classList.toggle('menu-open', open);
         toggle.setAttribute('aria-expanded', String(open));
-        toggle.textContent = open ? '\u2715' : '\u2630'; // a cross while the menu is open, hamburger otherwise
+        syncMenuIcon();
     };
     toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('menu-open')));
 

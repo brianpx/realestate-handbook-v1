@@ -63,11 +63,22 @@ function setupSearch() {
     const list = box.querySelector('#searchResults');
     const status = box.querySelector('#searchStatus');
 
+    const toggle = document.getElementById('menuToggle');
     const closeResults = () => {
         list.hidden = true;
         list.textContent = '';
         sidebar.classList.remove('searching');
+        syncMenuIcon();
     };
+    // While results are open the menu button is a cross that closes them (and only them); it runs before the
+    // menu's own click handler and stops it, then goes back to being a hamburger.
+    toggle.addEventListener('click', e => {
+        if (!sidebar.classList.contains('searching')) return;
+        e.stopImmediatePropagation();
+        input.value = '';
+        closeResults();
+        status.textContent = '';
+    });
 
     async function render() {
         const query = input.value.trim();
@@ -77,6 +88,7 @@ function setupSearch() {
             return;
         }
         sidebar.classList.add('searching');
+        syncMenuIcon();
         list.hidden = false;
         if (!searchIndex) {
             list.innerHTML = '<li class="search-empty">Loading…</li>';
