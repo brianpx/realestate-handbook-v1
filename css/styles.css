@@ -779,6 +779,7 @@
 
         .menu-toggle { display: none; }
         .menu-close { display: none; }
+        .menu-backdrop { display: none; }
 
         @media (max-width: 900px) {
             /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
@@ -836,6 +837,12 @@
                 box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
             }
             #sidebar.menu-open .nav-list { display: block; }
+            /* While a dropdown is open the page behind it neither scrolls nor receives taps */
+            html.scroll-locked, html.scroll-locked body { overflow: hidden; }
+            html.scroll-locked .menu-backdrop { display: block; }
+            .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: rgba(15, 23, 42, 0.45); touch-action: none; }
+            html.dark .menu-backdrop { background: rgba(240, 244, 248, 0.55); } /* inverted by the dark filter into a dark veil */
+            .nav-list, .search-results { overscroll-behavior: contain; } /* scrolling the list never chains to the page */
             /* phones are already full width, so the option does nothing there */
             .settings-row.settings-wide { display: none; }
             .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: #f8fafc; border-top: 1px solid #cbd5e1; list-style: none; }

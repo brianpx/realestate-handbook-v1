@@ -175,6 +175,8 @@ function syncMenuIcon() {
     const open = searching || sidebar.classList.contains('menu-open');
     toggle.textContent = open ? '\u2715' : '\u2630';
     toggle.setAttribute('aria-label', searching ? 'Close search results' : 'Table of contents');
+    // on phones an open menu or search dropdown freezes the page behind it (and a backdrop catches taps)
+    document.documentElement.classList.toggle('scroll-locked', open && phoneLayout.matches);
 }
 
 function setupMenuToggle() {
@@ -186,6 +188,18 @@ function setupMenuToggle() {
         syncMenuIcon();
     };
     toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('menu-open')));
+    phoneLayout.addEventListener('change', syncMenuIcon);
+
+    // Covers the page while a dropdown is open: taps land here instead of on the content underneath, and
+    // tapping it dismisses whatever is open.
+    const backdrop = document.createElement('div');
+    backdrop.className = 'menu-backdrop';
+    backdrop.addEventListener('click', e => {
+        e.preventDefault();
+        if (sidebar.classList.contains('searching')) toggle.click(); // the cross: closes the search results
+        if (sidebar.classList.contains('menu-open')) setOpen(false);
+    });
+    document.body.append(backdrop);
 
     // A Close bar pinned to the bottom of the phone dropdown, so the menu can be dismissed without choosing
     // anything. Hidden on desktop, where the list is always visible.
