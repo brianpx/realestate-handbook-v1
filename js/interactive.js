@@ -15,7 +15,7 @@ function loadState() {
     } catch (err) {
         // storage blocked or corrupt: start fresh
     }
-    memoryState = Object.assign({ read: {}, checks: {}, scorecard: {}, scripts: {}, objections: {} }, parsed);
+    memoryState = Object.assign({ read: {}, checks: {}, scorecard: {}, scripts: {}, objections: {}, calc: {} }, parsed);
     return memoryState;
 }
 
@@ -84,6 +84,7 @@ function renderProgress() {
         navItem.classList.toggle('read', Boolean(read[navItem.dataset.page]));
     });
     renderResume();
+    renderCheckpointRollup();
 }
 
 function nextUnreadPage() {
@@ -154,6 +155,10 @@ function setupChecklists(section) {
     if (lists.length > 1) {
         lists[0].parentElement.insertBefore(el('p', 'checklist-total'), lists[0].previousElementSibling);
     }
+    if (section.dataset.page !== 'ch12') {
+        const lead = section.querySelector('.checklist-total') || lists[0].previousElementSibling || lists[0];
+        lead.parentElement.insertBefore(interactiveHeader('Tap items to check them off. Your progress saves on this device.', 'crm-checklists', 'CRM setup checklists'), lead);
+    }
     updateAll();
 }
 
@@ -205,6 +210,7 @@ function setupScorecard(section) {
     print.addEventListener('click', () => window.print());
     toolbar.append(reset, print);
     table.closest('.table-wrapper').after(chartHost, toolbar);
+    table.closest('.table-wrapper').before(interactiveHeader('Type your weekly numbers. Cells change colour against each target and the chart updates as you type. Saved on this device.', 'scorecard', 'Weekly activity scorecard'));
 
     function statusFor(row, w) {
         const value = data[`${row.dataset.row}:${w}`];
@@ -282,9 +288,15 @@ function setupScriptPractice(section) {
         box.appendChild(body);
 
         const actions = el('div', 'script-actions');
+        const pill = el('span', 'interactive-pill');
+        pill.innerHTML = '<span aria-hidden="true">◉ </span>INTERACTIVE';
+        if (!section.querySelector('[data-widget="script-practice"]')) {
+            box.dataset.widget = 'script-practice';
+            box.tabIndex = -1;
+        }
         const copy = el('button', 'btn-mini', 'Copy script');
         const practice = el('button', 'btn-mini', 'Practice');
-        actions.append(copy, practice);
+        actions.append(pill, copy, practice);
 
         const area = el('div', 'practice-area');
         area.hidden = true;
@@ -344,6 +356,8 @@ function setupObjectionTrainer(section) {
         '<div class="script-actions"></div>' +
         '<p class="trainer-score"></p>';
     table.closest('.table-wrapper').after(card);
+    card.classList.add('iw');
+    card.querySelector('.box-title').after(interactiveHeader('Read the objection, answer in your own words, reveal the framework, then rate yourself.', 'objection-trainer', 'Objection trainer'));
 
     const promptEl = card.querySelector('.trainer-prompt');
     const area = card.querySelector('.practice-text');
@@ -399,6 +413,21 @@ function enhanceSection(section) {
     setupScorecard(section);
     setupScriptPractice(section);
     setupObjectionTrainer(section);
+    setupGoalCalculator(section);
+    setupSpeedToLead(section);
+    setupNurtureTimeline(section);
+    setupCheckpoints(section);
+    setupQualifyingDrill(section);
+    setupPitfallCycle(section);
+    setupErrorSelfScore(section);
+    setupConsultationLab(section);
+    setupFairHousingDrill(section);
+    setupLeadSources(section);
+    setupPipelineCalculator(section);
+    setupRoadmap(section);
+    setupTimeBlockPlanner(section);
+    setupPostCloseScheduler(section);
+    setupGlossary(section);
     if (section.dataset.page === 'cover') renderResume();
 }
 
