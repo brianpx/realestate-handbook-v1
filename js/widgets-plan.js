@@ -283,8 +283,11 @@ function setupPostCloseScheduler(section) {
     const nameInput = el('input', 'calc-input'); nameInput.type = 'text'; nameInput.maxLength = 40;
     nameLabel.appendChild(nameInput);
     const countLabel = el('label', 'cost-field', 'Closings you expect this year');
-    const countInput = el('input', 'calc-input'); countInput.type = 'number'; countInput.min = '1'; countInput.step = '1'; countInput.value = saved.closings ?? '';
-    countLabel.appendChild(countInput);
+    const countField = amountInput({
+        value: saved.closings, min: 1,
+        onValue: n => { if (n === undefined) delete saved.closings; else saved.closings = n; saveState(); render(); }
+    });
+    countLabel.append(countField.input, countField.error);
     const controls = el('div', 'planner-controls');
     controls.append(closeLabel, nameLabel, countLabel);
 
@@ -323,7 +326,6 @@ function setupPostCloseScheduler(section) {
             : '';
     }
     closeInput.addEventListener('input', () => { if (closeInput.value) saved.date = closeInput.value; else delete saved.date; saveState(); render(); });
-    countInput.addEventListener('input', () => { const n = toNumber(countInput.value); if (n === undefined) delete saved.closings; else saved.closings = n; saveState(); render(); });
     exportBtn.addEventListener('click', () => {
         const who = nameInput.value.trim();
         downloadIcs('handbook-post-close-plan.ics', schedule().map(p => ({

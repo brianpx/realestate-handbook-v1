@@ -98,8 +98,44 @@ const CALC_SCENARIOS = [
     { label: '50% more conversations', factor: 1.5 }
 ];
 
+// Accepts "80000", "80,000", "$80,000" and "1 500.50"; anything else is undefined.
+const parseAmount = text => {
+    const cleaned = String(text).replace(/[$,\s]/g, '');
+    return /^(\d+\.?\d*|\.\d+)$/.test(cleaned) ? Number(cleaned) : undefined;
+};
 const fmtNum = n => Math.round(n).toLocaleString('en-US');
 const fmtMoney = n => `$${fmtNum(n)}`;
+
+// A text input that tolerates "$1,500". number inputs drop or blank those characters in some
+// browsers, so the tool sat on its empty state with no explanation. onValue gets a number, or
+// undefined when the field is empty or invalid; an inline message explains invalid input.
+let amountInputCount = 0;
+function amountInput({ label, value, min = 0, max, format, onValue }) {
+    const input = el('input', 'calc-input');
+    input.type = 'text';
+    input.inputMode = 'decimal';
+    input.autocomplete = 'off';
+    if (label) input.setAttribute('aria-label', label);
+    const error = el('div', 'calc-error');
+    error.id = `amount-error-${++amountInputCount}`;
+    let current = value;
+    input.value = value === undefined ? '' : (format ? format(value) : String(value));
+    input.addEventListener('input', () => {
+        const raw = input.value.trim();
+        const n = parseAmount(raw);
+        let message = '';
+        if (raw !== '' && n === undefined) message = 'Numbers only, for example 1500.';
+        else if (n !== undefined && n < min) message = `Enter ${min} or more.`;
+        else if (n !== undefined && max !== undefined && n > max) message = `Enter ${max} or fewer.`;
+        current = message || raw === '' ? undefined : n;
+        error.textContent = message;
+        input.setAttribute('aria-invalid', String(Boolean(message)));
+        if (message) input.setAttribute('aria-describedby', error.id); else input.removeAttribute('aria-describedby');
+        onValue(current);
+    });
+    if (format) input.addEventListener('blur', () => { if (current !== undefined) input.value = format(current); });
+    return { input, error };
+}
 const fmtPerDay = n => {
     if (n < 1) return n.toFixed(1);
     const lo = Math.floor(n);
@@ -118,29 +154,23 @@ function setupGoalCalculator(section) {
     const cells = rows.map(r => r.cells[2]);
     let factor = 1;
 
-    const addInput = (rowIdx, key, { prefix, placeholder, min, max, step }) => {
-        const cell = cells[rowIdx];
-        const input = el('input', 'calc-input');
-        input.type = 'number';
-        input.inputMode = 'decimal';
-        input.min = String(min);
-        if (max) input.max = String(max);
-        input.step = String(step);
-        input.placeholder = placeholder;
-        input.setAttribute('aria-label', rows[rowIdx].cells[0].textContent.trim());
+    const addInput = (rowIdx, key, { prefix, placeholder, min, max }) => {
         const fallback = CALC_DEFAULTS[key];
-        input.value = saved[key] ?? (fallback !== undefined ? fallback : '');
         if (saved[key] === undefined && fallback !== undefined) saved[key] = fallback;
-        input.addEventListener('input', () => {
-            if (input.value === '') delete saved[key];
-            else saved[key] = Number(input.value);
-            saveState();
-            refresh();
+        const { input, error } = amountInput({
+            label: rows[rowIdx].cells[0].textContent.trim(), value: saved[key], min, max,
+            format: prefix ? fmtNum : undefined,
+            onValue: n => {
+                if (n === undefined) delete saved[key]; else saved[key] = n;
+                saveState();
+                refresh();
+            }
         });
+        input.placeholder = placeholder;
         const wrap = el('span', 'calc-field');
         if (prefix) wrap.appendChild(el('span', 'calc-prefix', prefix));
         wrap.appendChild(input);
-        cell.appendChild(wrap);
+        cells[rowIdx].append(wrap, error);
     };
     const addSub = rowIdx => {
         const sub = el('div', 'calc-sub');
@@ -148,11 +178,11 @@ function setupGoalCalculator(section) {
         return sub;
     };
 
-    addInput(0, 'goal', { prefix: '$', placeholder: '80000', min: 1, step: 1000 });
-    addInput(1, 'commission', { prefix: '$', placeholder: '6500', min: 1, step: 100 });
-    addInput(3, 'apc', { placeholder: '3', min: 0.1, step: 0.5 });
-    addInput(4, 'cpa', { placeholder: '20', min: 0.1, step: 1 });
-    addInput(5, 'weeks', { placeholder: '48', min: 1, max: 52, step: 1 });
+    addInput(0, 'goal', { prefix: '$', placeholder: '80,000', min: 1 });
+    addInput(1, 'commission', { prefix: '$', placeholder: '6,500', min: 1 });
+    addInput(3, 'apc', { placeholder: '3', min: 0.1 });
+    addInput(4, 'cpa', { placeholder: '20', min: 0.1 });
+    addInput(5, 'weeks', { placeholder: '48', min: 1, max: 52 });
     const apptSub = addSub(3);
     const convSub = addSub(4);
 

@@ -2,8 +2,6 @@
 // consultation lab, Fair Housing drill, lead-source tools and the pipeline calculator.
 // Each one rehearses something the chapter teaches; answers come from the chapter text.
 
-const toNumber = value => (value === '' || value === undefined ? undefined : Number(value));
-
 /* ---------- Reusable one-at-a-time drill ---------- */
 
 // items: { tag?, prompt, options[], answer (index), explain }. Picking an option checks it at once.
@@ -691,13 +689,12 @@ function setupLeadSources(section) {
     calc.appendChild(el('h4', 'lab-title', 'Your cost per closed deal'));
     calc.appendChild(el('p', '', 'Pick a period (a month or a quarter) and use the same one for every source. Time counts: it is priced at a rate you choose.'));
     const rateLabel = el('label', 'cost-rate', 'Value of your time, $ per hour ');
-    const rate = el('input', 'calc-input');
-    rate.type = 'number';
-    rate.min = '0';
-    rate.inputMode = 'decimal';
-    rate.value = saved.rate ?? '';
-    rate.placeholder = '25';
-    rateLabel.appendChild(rate);
+    const rateField = amountInput({
+        value: saved.rate, format: fmtNum,
+        onValue: n => { if (n === undefined) delete saved.rate; else saved.rate = n; saveState(); refresh(); }
+    });
+    rateField.input.placeholder = '25';
+    rateLabel.append(rateField.input, rateField.error);
     calc.appendChild(rateLabel);
     const rowsHost = el('div', 'cost-rows');
     calc.appendChild(rowsHost);
@@ -707,21 +704,13 @@ function setupLeadSources(section) {
         const rowData = saved.rows[s.key] ??= {};
         const row = el('fieldset', 'cost-row');
         row.appendChild(el('legend', '', s.name));
-        [['spend', 'Money spent ($)', '1'], ['hours', 'Hours spent', '0.5'], ['closings', 'Closings', '1']].forEach(([field, text, step]) => {
+        [['spend', 'Money spent ($)', fmtNum], ['hours', 'Hours spent'], ['closings', 'Closings']].forEach(([field, text, format]) => {
             const label = el('label', 'cost-field', text);
-            const input = el('input', 'calc-input');
-            input.type = 'number';
-            input.min = '0';
-            input.step = step;
-            input.inputMode = 'decimal';
-            input.value = rowData[field] ?? '';
-            input.addEventListener('input', () => {
-                const n = toNumber(input.value);
-                if (n === undefined) delete rowData[field]; else rowData[field] = n;
-                saveState();
-                refresh();
+            const { input, error } = amountInput({
+                value: rowData[field], format,
+                onValue: n => { if (n === undefined) delete rowData[field]; else rowData[field] = n; saveState(); refresh(); }
             });
-            label.appendChild(input);
+            label.append(input, error);
             row.appendChild(label);
         });
         const out = el('div', 'cost-out');
@@ -729,12 +718,6 @@ function setupLeadSources(section) {
         outputs[s.key] = out;
         row.appendChild(out);
         rowsHost.appendChild(row);
-    });
-    rate.addEventListener('input', () => {
-        const n = toNumber(rate.value);
-        if (n === undefined) delete saved.rate; else saved.rate = n;
-        saveState();
-        refresh();
     });
     const summary = el('p', 'cost-summary');
     summary.setAttribute('aria-live', 'polite');
@@ -812,18 +795,16 @@ function setupPipelineCalculator(section) {
             const type = el('select', 'calc-input');
             PIPELINE_TYPES.forEach(t => { const o = el('option', '', t); o.value = t; type.appendChild(o); });
             type.value = row.type ?? PIPELINE_TYPES[0];
-            const commission = el('input', 'calc-input');
-            commission.type = 'number'; commission.min = '0'; commission.step = '100'; commission.inputMode = 'decimal';
-            commission.value = row.commission ?? '';
-            const days = el('input', 'calc-input');
-            days.type = 'number'; days.min = '0'; days.step = '1'; days.inputMode = 'numeric';
-            days.value = row.days ?? '';
+            let commissionValue = row.commission;
+            let daysValue = row.days;
+            const commission = amountInput({ value: row.commission, format: fmtNum, onValue: n => { commissionValue = n; update(); } });
+            const days = amountInput({ value: row.days, onValue: n => { daysValue = n; update(); } });
             const next = el('input');
             next.type = 'checkbox';
             next.checked = Boolean(row.next);
             const flag = el('div', 'pipe-flag');
             flags.set(row, flag);
-            const field = (text, control) => { const l = el('label', 'cost-field', text); l.appendChild(control); return l; };
+            const field = (text, ...controls) => { const l = el('label', 'cost-field', text); l.append(...controls); return l; };
             const nextLabel = el('label', 'opt-item');
             nextLabel.append(next, el('span', '', 'Next step scheduled'));
             const remove = el('button', 'btn-mini', 'Remove');
@@ -837,17 +818,15 @@ function setupPipelineCalculator(section) {
             });
             const update = () => {
                 row.type = type.value;
-                const c = toNumber(commission.value);
-                const d = toNumber(days.value);
-                if (c === undefined) delete row.commission; else row.commission = c;
-                if (d === undefined) delete row.days; else row.days = d;
+                if (commissionValue === undefined) delete row.commission; else row.commission = commissionValue;
+                if (daysValue === undefined) delete row.days; else row.days = daysValue;
                 row.next = next.checked;
                 saveState();
                 refresh();
             };
-            [type, commission, days, next].forEach(c => c.addEventListener(c === type || c === next ? 'change' : 'input', update));
-            fs.append(field('Contact (initials ok)', name), field('Type', type), field('Likely commission ($)', commission),
-                field('Days since a real conversation', days), nextLabel, flag, remove);
+            [type, next].forEach(c => c.addEventListener('change', update));
+            fs.append(field('Contact (initials ok)', name), field('Type', type), field('Likely commission ($)', commission.input, commission.error),
+                field('Days since a real conversation', days.input, days.error), nextLabel, flag, remove);
             rowsHost.appendChild(fs);
         });
         refresh();

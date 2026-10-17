@@ -487,6 +487,9 @@
         .calc-field { display: inline-flex; align-items: center; gap: 4px; }
         .calc-prefix { color: #475569; font-weight: 600; }
         .calc-input { width: 110px; max-width: 100%; padding: 6px 8px; font-size: 16px; border: 1px solid #94a3b8; border-radius: 4px; background: #fff; }
+        .calc-error { margin-top: 4px; font-size: 0.85rem; font-weight: 600; color: #b91c1c; }
+        .calc-error:empty { display: none; }
+        .calc-input[aria-invalid="true"] { border-color: #b91c1c; }
         .calc-sub { margin-top: 4px; font-size: 0.85rem; color: #475569; }
         .calc-stats { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px; }
         .calc-stat { flex: 1 1 120px; padding: 12px; background: #fff; border: 1px solid #a7f3d0; border-radius: 8px; text-align: center; }
