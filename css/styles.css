@@ -170,6 +170,8 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
             border: 1px solid var(--border-color);
         }
+        /* Settings > Full width: let the page use the window, but stop at a line length that stays readable */
+        html.wide .content-container { max-width: 1400px; }
 
         /* Desktop: every chapter is its own page card, with space between pages */
         @media (min-width: 901px) {

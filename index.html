@@ -9,9 +9,10 @@
         try {
             var s = JSON.parse(localStorage.getItem('handbookSettings') || '{}') || {};
             if (s.dark !== undefined ? s.dark : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
+            if (s.fullWidth === true) document.documentElement.classList.add('wide');
         } catch (err) { /* storage blocked: stay light */ }
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20261075">
+    <link rel="stylesheet" href="css/styles.css?v=20261078">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -88,11 +89,11 @@
         </form>
     </div>
 
-    <script src="js/app-with-cover.js?v=20261075"></script>
-    <script src="js/widgets.js?v=20261075"></script>
-    <script src="js/widgets-practice.js?v=20261075"></script>
-    <script src="js/widgets-plan.js?v=20261075"></script>
-    <script src="js/interactive.js?v=20261075"></script>
-    <script src="js/search.js?v=20261075"></script>
+    <script src="js/app-with-cover.js?v=20261078"></script>
+    <script src="js/widgets.js?v=20261078"></script>
+    <script src="js/widgets-practice.js?v=20261078"></script>
+    <script src="js/widgets-plan.js?v=20261078"></script>
+    <script src="js/interactive.js?v=20261078"></script>
+    <script src="js/search.js?v=20261078"></script>
 </body>
 </html>

@@ -178,6 +178,42 @@ function setupMenuToggle() {
 // Formspree endpoint, e.g. 'https://formspree.io/f/xxxxxxxx'. While empty the gate stays off.
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xoejragy';
 const GATE_KEY = 'handbookAccess';
+const GATE_ATTEMPTS_KEY = 'handbookGateAttempts';
+const GATE_MIN_GAP_MS = 30 * 1000;       // at least this long between submissions
+const GATE_MAX_PER_HOUR = 5;             // and no more than this many in any hour
+const HOUR_MS = 60 * 60 * 1000;
+
+// Client-side throttle for the email form. It stops accidental double sends and casual hammering from one
+// browser; it cannot stop a determined bot, which is what Formspree's own spam filtering and the honeypot are for.
+let gateAttemptsInMemory = [];
+
+function recentGateAttempts(now) {
+    let stored = [];
+    try {
+        stored = JSON.parse(localStorage.getItem(GATE_ATTEMPTS_KEY) || '[]');
+    } catch (err) {
+        // storage blocked or corrupt: fall back to what this page load has seen
+    }
+    // an attempt lives in both places when storage works, so merge as a set rather than counting it twice
+    return [...new Set([...stored, ...gateAttemptsInMemory])].filter(t => Number.isFinite(t) && now - t < HOUR_MS);
+}
+
+function recordGateAttempt(now) {
+    const attempts = [...recentGateAttempts(now), now];
+    gateAttemptsInMemory = attempts;
+    try { localStorage.setItem(GATE_ATTEMPTS_KEY, JSON.stringify(attempts)); } catch (err) { /* memory copy still applies */ }
+}
+
+// Returns a message if the reader must wait before submitting again, otherwise null.
+function gateThrottleMessage(now) {
+    const attempts = recentGateAttempts(now);
+    if (attempts.length >= GATE_MAX_PER_HOUR) {
+        const minutes = Math.ceil((Math.min(...attempts) + HOUR_MS - now) / 60000);
+        return `Too many attempts. Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
+    }
+    const gap = attempts.length ? GATE_MIN_GAP_MS - (now - Math.max(...attempts)) : 0;
+    return gap > 0 ? `Please wait ${Math.ceil(gap / 1000)} seconds before trying again.` : null;
+}
 
 // This is lead capture, not security: chapter files remain publicly fetchable.
 function setupGate() {
@@ -206,13 +242,22 @@ function setupGate() {
     setBehindInert(true);
     input.focus();
 
+    let sending = false;
     form.addEventListener('submit', async e => {
         e.preventDefault();
+        if (sending) return; // Enter key can submit even while the button is disabled
         error.hidden = true;
         if (!input.checkValidity() || !input.value.trim()) {
             showError('Please enter a valid email address.');
             return;
         }
+        const wait = gateThrottleMessage(Date.now());
+        if (wait) {
+            showError(wait);
+            return;
+        }
+        recordGateAttempt(Date.now()); // counts failures too, so retrying a broken request cannot spam either
+        sending = true;
         submit.disabled = true;
         submit.textContent = 'Submitting…';
         try {
@@ -222,13 +267,14 @@ function setupGate() {
                 body: JSON.stringify({ email: input.value.trim(), _gotcha: form.elements._gotcha.value })
             });
             if (!response.ok) throw new Error(`Formspree responded ${response.status}`);
-            try { localStorage.setItem(GATE_KEY, '1'); } catch (err) { /* unlocks for this visit only */ }
+            try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch (err) { /* unlocks for this visit only */ }
             gate.hidden = true;
             setBehindInert(false);
             document.getElementById('main-content').focus({ preventScroll: true });
         } catch (err) {
             console.error(err);
-            showError('Something went wrong. Please try again.');
+            showError('Something went wrong. Please try again in a moment.');
+            sending = false;
             submit.disabled = false;
             submit.textContent = 'Get Access';
         }

@@ -111,6 +111,7 @@ function setupSettingsUi() {
     const item = el('li', 'settings-item');
     item.innerHTML = '<details class="settings"><summary>Settings</summary>' +
         '<label class="settings-row"><input type="checkbox" id="settingDark"><span>Dark mode</span></label>' +
+        '<label class="settings-row"><input type="checkbox" id="settingWide"><span>Full width</span></label>' +
         '<div class="settings-row"><input type="checkbox" id="settingTrack">' +
         '<div class="settings-col"><label for="settingTrack">Keep track of progress</label>' +
         '<div class="settings-sub" id="settingResetGroup"><button type="button" class="btn-mini settings-reset" id="settingReset">Reset progress</button>' +
@@ -142,6 +143,19 @@ function setupSettingsUi() {
         if (draggingScrollbar && main.scrollTop < lastTop) collapse();
         lastTop = main.scrollTop;
     }, { passive: true });
+
+    const wide = item.querySelector('#settingWide');
+    wide.checked = document.documentElement.classList.contains('wide');
+    wide.addEventListener('change', () => {
+        if (!writeSettings({ fullWidth: wide.checked })) {
+            wide.checked = !wide.checked; // storage blocked: the choice cannot persist
+            return;
+        }
+        // text reflows when the column widens, so keep the heading being read where it was
+        const anchor = captureScrollAnchor();
+        document.documentElement.classList.toggle('wide', wide.checked);
+        applyScrollAnchor(anchor);
+    });
 
     const dark = item.querySelector('#settingDark');
     dark.checked = document.documentElement.classList.contains('dark');
