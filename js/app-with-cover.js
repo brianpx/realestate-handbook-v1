@@ -150,7 +150,61 @@ function setupMenuToggle() {
     });
 }
 
+// Formspree endpoint, e.g. 'https://formspree.io/f/xxxxxxxx'. While empty the gate stays off.
+const FORMSPREE_ENDPOINT = '';
+const GATE_KEY = 'handbookAccess';
+
+// This is lead capture, not security: chapter files remain publicly fetchable.
+function setupGate() {
+    const gate = document.getElementById('gate');
+    if (!FORMSPREE_ENDPOINT) {
+        console.warn('Email gate disabled: set FORMSPREE_ENDPOINT in js/app-with-cover.js');
+        return;
+    }
+    try {
+        if (localStorage.getItem(GATE_KEY)) return;
+    } catch (err) {
+        // storage blocked: fall through and show the gate
+    }
+
+    const form = document.getElementById('gateForm');
+    const input = document.getElementById('gateEmail');
+    const error = document.getElementById('gateError');
+    const submit = document.getElementById('gateSubmit');
+    const showError = msg => { error.textContent = msg; error.hidden = false; };
+
+    gate.hidden = false;
+    input.focus();
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        error.hidden = true;
+        if (!input.checkValidity() || !input.value.trim()) {
+            showError('Please enter a valid email address.');
+            return;
+        }
+        submit.disabled = true;
+        submit.textContent = 'Submitting…';
+        try {
+            const response = await fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ email: input.value.trim(), _gotcha: form.elements._gotcha.value })
+            });
+            if (!response.ok) throw new Error(`Formspree responded ${response.status}`);
+            try { localStorage.setItem(GATE_KEY, '1'); } catch (err) { /* unlocks for this visit only */ }
+            gate.hidden = true;
+        } catch (err) {
+            console.error(err);
+            showError('Something went wrong. Please try again.');
+            submit.disabled = false;
+            submit.textContent = 'Get Access';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    setupGate();
     setupMenuToggle();
     setupContinuousScroll();
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {

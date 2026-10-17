@@ -65,6 +65,19 @@
         </div>
     </div>
 
+    <!-- Email gate -->
+    <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" hidden>
+        <form id="gateForm" class="gate-card" novalidate>
+            <h2 id="gateTitle">Finding, Keeping, and Nurturing Clients</h2>
+            <p>Enter your email to read the handbook.</p>
+            <label for="gateEmail" class="gate-label">Email address</label>
+            <input type="email" id="gateEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="gate-trap" aria-hidden="true">
+            <p id="gateError" class="gate-error" role="alert" hidden></p>
+            <button type="submit" class="btn-nav" id="gateSubmit">Get Access</button>
+        </form>
+    </div>
+
     <script src="js/app-with-cover.js"></script>
 </body>
 </html>
