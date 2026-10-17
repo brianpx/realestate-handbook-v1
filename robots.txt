@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brianpx.github.io/realestate-handbook-v1/sitemap.xml
