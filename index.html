@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding, Keeping, and Nurturing Clients - Interactive Book</title>
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --secondary-color: #1e3a8a;
+            --accent-color: #2563eb;
+            --bg-body: #f8fafc;
+            --bg-sidebar: #020617;
+            --sidebar-text: #94a3b8;
+            --sidebar-hover: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1e293b;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #1e293b;
+            background-color: #020617;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.1rem;
+            color: #f8fafc;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .nav-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 12px 0;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            padding: 12px 20px 4px;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 10px 20px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: #0f172a;
+            color: var(--sidebar-hover);
+        }
+
+        .nav-item.active {
+            background-color: #0f172a;
+            color: #38bdf8;
+            border-left-color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Main Content Styling */
+        #main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+            scroll-behavior: smooth;
+        }
+
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 48px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .chapter-page {
+            display: none;
+        }
+
+        .chapter-page.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography */
+        .part-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            line-height: 1.25;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        h3 {
+            font-size: 1.35rem;
+            color: var(--primary-color);
+            margin: 32px 0 16px;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            font-size: 0.98rem;
+            color: #334155;
+        }
+
+        ul, ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Callout Boxes */
+        .box {
+            padding: 18px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background-color: #f8fafc;
+        }
+
+        .box-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .box.field-note { border-color: #0ea5e9; background-color: #f0f9ff; }
+        .box.field-note .box-title { color: #0284c7; }
+
+        .box.pitfall { border-color: #ef4444; background-color: #fef2f2; }
+        .box.pitfall .box-title { color: #dc2626; }
+
+        .box.script { border-color: #8b5cf6; background-color: #f5f3ff; }
+        .box.script .box-title { color: #7c3aed; }
+
+        .box.try-it { border-color: #10b981; background-color: #ecfdf5; }
+        .box.try-it .box-title { color: #059669; }
+
+        .box.checkpoint { border-color: #f59e0b; background-color: #fffbeb; }
+        .box.checkpoint .box-title { color: #d97706; }
+
+        .learning-objectives {
+            background-color: #f1f5f9;
+            padding: 20px 24px;
+            border-radius: 8px;
+            margin-bottom: 28px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .learning-objectives h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .key-takeaways {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 36px;
+        }
+
+        .key-takeaways h4 {
+            color: #38bdf8;
+            margin-top: 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .key-takeaways ul { margin-bottom: 0; }
+        .key-takeaways li { color: #cbd5e1; }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 24px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* Diagrams */
+        .diagram-box {
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 28px 0;
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+
+        .lifecycle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .lifecycle-step {
+            flex: 1;
+            min-width: 180px;
+            background-color: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .lifecycle-step h5 {
+            color: #1d4ed8;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .lifecycle-arrow {
+            font-size: 1.5rem;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        /* Navigation Buttons */
+        .page-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-nav:hover { background-color: var(--primary-color); }
+        .btn-nav:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            #sidebar { width: 100%; height: 220px; }
+            #main-content { padding: 20px; }
+            .content-container { padding: 20px; }
+            .lifecycle-container { flex-direction: column; }
+            .lifecycle-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>Finding, Keeping, and Nurturing Clients</h1>
+            <p>A Practical Guide for New Agents</p>
+            <p style="color: #38bdf8; margin-top: 6px; font-weight: 600;">Prepared for Galina Pitts</p>
+        </div>
+        <ul class="nav-list" id="navList">
+            <li class="nav-item active" onclick="navigateTo('pref')">Handbook Overview & Plan</li>
+            
+            <div class="nav-section-title">PART I: Foundations</div>
+            <li class="nav-item" onclick="navigateTo('ch1')">1. Mindset & Foundations</li>
+            
+            <div class="nav-section-title">PART II: Find</div>
+            <li class="nav-item" onclick="navigateTo('ch2')">2. Finding Clients</li>
+            <li class="nav-item" onclick="navigateTo('ch3')">3. Marketing & Brand Presence</li>
+            
+            <div class="nav-section-title">PART III: Operating System</div>
+            <li class="nav-item" onclick="navigateTo('ch4')">4. Technology and Systems</li>
+            
+            <div class="nav-section-title">PART IV: Nurture</div>
+            <li class="nav-item" onclick="navigateTo('ch5')">5. Nurturing Leads</li>
+            <li class="nav-item" onclick="navigateTo('ch6')">6. Scripts & Conversations</li>
+            
+            <div class="nav-section-title">PART V: Stay on Track</div>
+            <li class="nav-item" onclick="navigateTo('ch7')">7. Common Errors & Pitfalls</li>
+            <li class="nav-item" onclick="navigateTo('ch8')">8. Staying Organized & Motivated</li>
+            
+            <div class="nav-section-title">PART VI: Serve and Keep</div>
+            <li class="nav-item" onclick="navigateTo('ch9')">9. Client Consultations & Objections</li>
+            <li class="nav-item" onclick="navigateTo('ch10')">10. Keeping Clients</li>
+            <li class="nav-item" onclick="navigateTo('ch11')">11. Legal Protection & Standards</li>
+            
+            <div class="nav-section-title">PART VII: Execute</div>
+            <li class="nav-item" onclick="navigateTo('ch12')">12. Execution Plans (90 Days)</li>
+            <li class="nav-item" onclick="navigateTo('ch13')">13. Resources & Next Steps</li>
+            
+            <div class="nav-section-title">APPENDICES</div>
+            <li class="nav-item" onclick="navigateTo('app-a')">App A: Weekly Activity Scorecard</li>
+            <li class="nav-item" onclick="navigateTo('app-b')">App B: SmartPlan Starter Kit</li>
+            <li class="nav-item" onclick="navigateTo('app-c')">App C: Command Setup Checklist</li>
+            <li class="nav-item" onclick="navigateTo('app-d')">App D: Glossary</li>
+        </ul>
+    </div>
+
+    <!-- Main Content Viewport -->
+    <div id="main-content">
+        <div class="content-container">
+
+            <!-- PREFACE -->
+            <div id="pref" class="chapter-page active">
+                <div class="part-label">Training Manual</div>
+                <h2>Finding, Keeping, and Nurturing Clients</h2>
+                <p><em>A practical guide for new agents — Prepared for <strong>Galina Pitts</strong></em>.</p>
+                <p style="letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; color: #64748b; margin-top: -10px; margin-bottom: 24px;">REAL ESTATE · RELATIONSHIPS · RESULTS</p>
+
+                <h3>How to use this handbook</h3>
+                <p>Most new agents do not fail for lack of effort. They fail because effort is scattered across activities that do not compound. This handbook gives you one system with three outcomes, and every chapter serves one of them:</p>
+                <ul>
+                    <li><strong>Find.</strong> Generate a steady flow of conversations with people who may buy or sell.</li>
+                    <li><strong>Nurture.</strong> Follow up often enough, and helpfully enough, that you are the agent they call when they are ready.</li>
+                    <li><strong>Keep.</strong> Stay useful after closing so past clients send you the next ones.</li>
+                </ul>
+
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 1. The Core Client Lifecycle</div>
+                    <div class="lifecycle-container">
+                        <div class="lifecycle-step">
+                            <h5>1. Find</h5>
+                            <p style="font-size: 0.85rem; margin:0;">Sphere · Open House<br>Online Leads · Farming</p>
+                        </div>
+                        <div class="lifecycle-arrow">➔</div>
+                        <div class="lifecycle-step">
+                            <h5>2. Nurture</h5>
+                            <p style="font-size: 0.85rem; margin:0;">Phone / Text / Email<br>Timeline of 8–12 Touches</p>
+                        </div>
+                        <div class="lifecycle-arrow">➔</div>
+                        <div class="lifecycle-step">
+                            <h5>3. Keep</h5>
+                            <p style="font-size: 0.85rem; margin:0;">Post-Close · Home Anniversary<br><strong>Referral Loop (Back to Find)</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <p>The book is written to be worked, not just read. Each chapter opens with what you will be able to do by the end, teaches the idea, shows the words to say, and closes with an exercise and a checkpoint. Read a chapter, do the exercise the same day, and move on. Do not try to install everything in one weekend.</p>
+
+                <h3>Reading plan</h3>
+                <ul>
+                    <li><strong>Week 1:</strong> Chapters 1, 4 and 12. Set up Command, protect your calendar, and learn what you will measure.</li>
+                    <li><strong>Week 2:</strong> Chapters 2, 5 and 6. Start conversations and put every lead on a plan.</li>
+                    <li><strong>Week 3:</strong> Chapters 7, 8 and 9. Audit your habits and practice consultations.</li>
+                    <li><strong>Week 4:</strong> Chapters 3, 10, 11 and 13. Add marketing, post-close plans and professional safeguards.</li>
+                </ul>
+
+                <h3>What the boxes mean</h3>
+                <div class="box field-note"><div class="box-title">● FIELD NOTE</div>A practical tip from agents who do this every day.</div>
+                <div class="box pitfall"><div class="box-title">● PITFALL</div>A trap new agents fall into, and how to avoid it.</div>
+                <div class="box script"><div class="box-title">● SCRIPT</div>Words to say. Personalize them, then practice out loud.</div>
+                <div class="box try-it"><div class="box-title">● TRY IT TODAY</div>An exercise you can finish in under an hour.</div>
+                <div class="box checkpoint"><div class="box-title">● CHECKPOINT</div>Questions to confirm you can apply the chapter.</div>
+            </div>
+
+            <!-- CHAPTER 1 -->
+            <div id="ch1" class="chapter-page">
+                <div class="part-label">PART I: Foundations</div>
+                <h2>1. Mindset and business foundations</h2>
+                <p>Real estate is a business, not a job. Your results come from the habits and systems you build, not from waiting for the phone to ring.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Tell leading indicators from lagging indicators, and set goals on the right one.</li>
+                        <li>Work backward from an income goal to a daily number of conversations.</li>
+                        <li>Treat KW Command as your daily headquarters rather than an occasional tool.</li>
+                    </ul>
+                </div>
+
+                <h3>You own a business now</h3>
+                <p>When you were an employee, somebody else found the customers, set the schedule and decided what mattered. All three jobs are now yours. Nobody will assign you a task list on Monday morning, and no one will notice if you spend a week on busywork. That freedom is the reason most people enter the business and the reason most leave it.</p>
+                <p>The agents who last think of themselves as owners of a small company with one product: trusted guidance through a large financial decision. A company needs a way to find customers, a way to stay in touch with them, and a way to keep them. That is the whole structure of this book.</p>
+
+                <h3>Leading and lagging indicators</h3>
+                <p>A lagging indicator tells you what already happened. Closings, commission income and the number of listings you hold are all lagging. By the time they move, the work that moved them is weeks or months old.</p>
+                <p>A leading indicator is an activity you control today that predicts the lagging number later. Conversations held, appointments set, follow-up tasks completed and contacts added to your database are leading. You can do all of them tomorrow morning regardless of the market.</p>
+                <p>New agents who set goals only on closings get discouraged, because closings do not respond for 60 to 120 days. Set your goals on activity, review them weekly, and let the closings arrive on their own schedule.</p>
+
+                <h3>Working backward from an income goal</h3>
+                <p>Here is the arithmetic every agent should do once a year. Use your own local numbers; the ones below are an example.</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>STEP</th><th>EXAMPLE</th><th>YOUR NUMBER</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Income goal for the year</td><td>$80,000</td><td></td></tr>
+                            <tr><td>Average commission per closed side after splits</td><td>$6,500</td><td></td></tr>
+                            <tr><td>Closings needed (goal ÷ average)</td><td>13</td><td></td></tr>
+                            <tr><td>Appointments needed per closing (new agents: about 3)</td><td>39 appointments</td><td></td></tr>
+                            <tr><td>Conversations needed per appointment (new agents: about 20)</td><td>≈ 780 conversations</td><td></td></tr>
+                            <tr><td>Working weeks</td><td>48</td><td></td></tr>
+                            <tr><td>Conversations per week</td><td>≈ 16</td><td></td></tr>
+                            <tr><td>Conversations per working day</td><td>3 to 4</td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 1.1. The goal ladder. A conversation means a real two-way exchange about real estate with a person who could buy, sell or refer, not a voicemail.</em></p>
+                <p>Three or four real conversations a day feels small. That is the point. A daily target you can hit on a bad day is worth more than a heroic target you hit twice and abandon.</p>
+
+                <div class="box field-note">
+                    <div class="box-title">● FIELD NOTE</div>
+                    Your ratios will be worse than the example in your first six months and better after a year. Track your own. Once you know that you need eight conversations to book one appointment, your daily plan writes itself. Table 8.2 gives the full set of weekly targets for a new agent.
+                </div>
+
+                <h3>Command is your headquarters</h3>
+                <p>KW Command is where your contacts, tasks, SmartPlans, Opportunities and marketing live. The habit that matters most in your first 90 days is simple: open Command first thing every morning and update it before you stop working. Contacts that live in your phone, sticky notes and inbox are contacts you will forget. Agents who treat Command as non-negotiable stay organized. Those who do not fall behind within a quarter and rarely recover the lost leads.</p>
+
+                <div class="box try-it">
+                    <div class="box-title">● TRY IT TODAY</div>
+                    • Fill in the "Your number" column of Table 1.1 with your own income goal and your Market Center's average commission.<br>
+                    • Write your daily conversation target on a card and put it where you work.<br>
+                    • Block 9:00 to 11:00 tomorrow morning in your calendar and label it "Lead generation". Do not move it.
+                </div>
+
+                <div class="box checkpoint">
+                    <div class="box-title">● CHECKPOINT</div>
+                    • Which three numbers will you track every week, and why are none of them closings?<br>
+                    • How many conversations do you need per week to reach your income goal?<br>
+                    • What is the first thing you will do in Command each morning?
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Closings lag by two to four months. Measure the activity that produces them.</li>
+                        <li>Work backward from income to a daily conversation target you can hit on your worst day.</li>
+                        <li>Command is the single source of truth. Open it first, update it last.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 2 -->
+            <div id="ch2" class="chapter-page">
+                <div class="part-label">PART II: Find</div>
+                <h2>2. Finding clients</h2>
+                <p>Every lead source trades time for money or money for time. Know the trade you are making, track every source, and double down on what converts.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Build and work a sphere of influence list without feeling like a salesperson.</li>
+                        <li>Compare lead sources by conversion rate, cost and exclusivity.</li>
+                        <li>Run an open house as a lead-generation event rather than a waiting room.</li>
+                        <li>Track cost per closed deal by source.</li>
+                    </ul>
+                </div>
+
+                <h3>Sphere of influence and referrals</h3>
+                <p>Your sphere of influence is everyone who already knows you and would take your call: family, friends, former colleagues, neighbors, your dentist, the parents at your kid's school, the people in your gym class. For most agents this is the highest-return source they will ever have, because trust is already built and the cost is only time.</p>
+                <p>Build the list first. Go through your phone contacts, social media connections, email history and holiday card list. Most people find 150 to 300 names. Import every one into Command and tag them by relationship so you can sort later.</p>
+                <p>Then work the list with value first. The order matters:</p>
+                <ol>
+                    <li><strong>Announce.</strong> Tell everyone you are in real estate and with whom. One message, personal, not a mass blast.</li>
+                    <li><strong>Give.</strong> Send something useful: a neighborhood market update, a home maintenance checklist, an introduction to a good contractor.</li>
+                    <li><strong>Ask.</strong> After two or three helpful touches, ask for introductions. Chapter 6 has the words.</li>
+                    <li><strong>Repeat.</strong> Put the whole sphere on a touch plan so no one hears from you only when you want something.</li>
+                </ol>
+
+                <div class="box pitfall">
+                    <div class="box-title">● PITFALL</div>
+                    New agents often skip the sphere because calling friends feels awkward, then spend money on portal leads to avoid the discomfort. Your sphere converts at five to ten times the rate of a portal lead. The awkwardness fades after the tenth call. The ad bill does not.
+                </div>
+
+                <h3>Online leads</h3>
+                <p>Portal leads (Zillow Premier Agent and similar), your own ads, and inquiries through your KW Agent Site or IDX website provide volume. They also convert at a far lower rate, because the person has no relationship with you and has often inquired with several agents at once. Two things decide whether online leads pay off:</p>
+                <ul>
+                    <li><strong>Speed.</strong> The first agent to make real contact usually wins the conversation. Chapter 4 covers the five-minute response window.</li>
+                    <li><strong>Persistence.</strong> Most online leads are 6 to 18 months from a transaction. Without a long nurture plan you are paying to warm up a lead for someone else.</li>
+                </ul>
+                <p>Do not rely on online leads exclusively, and do not buy them until your follow-up system is built and tested on your sphere. Chapter 3 says more about when paid lead generation makes sense.</p>
+
+                <h3>Open houses</h3>
+                <p>An open house is a lead-generation event with a listing as the excuse. Treat it that way and it will produce buyers who are active now and neighbors who may sell next year. Treat it as sitting in a house for three hours and it will produce nothing.</p>
+                <p><strong>Before:</strong> Preview the home and 5 nearest comps. Invite 20 nearest neighbors door-to-door or in person. Set up digital sign-in on a tablet.<br>
+                <strong>During:</strong> Greet every visitor, ask open search questions, capture contact details, and qualify timeline, area, financing, and agent status. Offer a concrete next step.<br>
+                <strong>After:</strong> Follow up with every visitor within 24 hours (text evening, call next morning). Put every visitor on a SmartPlan and log the source.</p>
+
+                <h3>Geographic farming</h3>
+                <p>Farming means choosing one neighborhood of 300 to 500 homes and becoming the agent everyone there recognizes. It works through consistency: monthly mailers, door-knocking, market reports, and sponsoring block parties. Expect 6 to 12 months before listings appear. Pick a farm with a turnover rate of at least 6% a year.</p>
+
+                <h3>Expired listings and for-sale-by-owners</h3>
+                <p>Owners whose listing expired, or who are trying to sell alone, have already raised their hand. Lead with curiosity about what they want to do next, not with criticism of their last agent or price. This source rewards skilled, consistent prospectors.</p>
+
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 2. Lead Source Comparison Table</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Lead Source</th><th>Typical Conversion Rate</th><th>Cost Profile</th><th>Exclusivity</th><th>Best For</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Sphere of Influence & Referrals</td><td>15–30%+</td><td>Low (Time & relationship)</td><td>High (Usually exclusive)</td><td>Experienced & new agents building long-term business</td></tr>
+                                <tr><td>Zillow Premier Agent</td><td>1–5%</td><td>High (Significant monthly spend)</td><td>Moderate (Shared leads possible)</td><td>Agents with strong follow-up systems & budget</td></tr>
+                                <tr><td>Own IDX Website & Ads (PPC, Social)</td><td>2–6%</td><td>Moderate (Ad spend & maintenance)</td><td>High (Directly generated)</td><td>Agents willing to manage marketing & long nurture</td></tr>
+                                <tr><td>Open Houses</td><td>5–15%</td><td>Low (Time-intensive)</td><td>High (Direct personal interaction)</td><td>Identifying active local buyers</td></tr>
+                                <tr><td>Expired Listings & FSBOs</td><td>3–8%</td><td>Low (Time & prospecting tools)</td><td>Low (Competitive)</td><td>Persistent, skilled prospectors seeking quick inventory</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h3>Track every source</h3>
+                <p>In Command, every contact carries a lead source. Fill it in every time. At the end of each month, count by source: contacts added, appointments held, closings, and dollars spent. The number you want is <strong>cost per closed deal</strong>.</p>
+
+                <div class="box try-it">
+                    <div class="box-title">● TRY IT TODAY</div>
+                    • Build your sphere list (Aim for 150 names). Import into Command with a "Sphere" tag.<br>
+                    • Send the announcement message to the first 20 people. Personal, two sentences, no sales pitch.<br>
+                    • Ask a colleague whether you can host their next open house. Schedule it.
+                </div>
+
+                <div class="box checkpoint">
+                    <div class="box-title">● CHECKPOINT</div>
+                    • Why do sphere contacts convert so much better than portal leads?<br>
+                    • What three things must be in place before you pay for online leads?<br>
+                    • What is your 24-hour follow-up standard after an open house?
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Your sphere is the best-converting, cheapest source you will ever have. Work it first.</li>
+                        <li>Online leads need speed and a long nurture. Without both, you pay to warm leads for others.</li>
+                        <li>Open houses are events: invite neighbors, capture digitally, follow up within 24 hours.</li>
+                        <li>Tag every contact with a source and measure cost per closed deal.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 3 -->
+            <div id="ch3" class="chapter-page">
+                <div class="part-label">PART II: Find</div>
+                <h2>3. Marketing and brand presence</h2>
+                <p>Marketing should make people feel two things: you are the local expert, and you are the person who will take care of them. Consistency beats perfection.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Set up a home base with the KW Agent Site and the KW App.</li>
+                        <li>Keep a simple content calendar you can sustain for a year.</li>
+                        <li>Market a listing so it produces buyer and seller leads, not just a sale.</li>
+                        <li>Decide when paid advertising is worth it.</li>
+                    </ul>
+                </div>
+
+                <h3>Your home base</h3>
+                <p>Your KW Agent Site and the KW App are the places you send everyone. The site holds your profile, listings, and search. The app gives clients a branded search experience attached to you. Set both up in your first week with photo, bio, and contact details.</p>
+
+                <h3>A content calendar you can keep</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>CADENCE</th><th>CONTENT</th><th>WHERE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Weekly</td><td>One neighborhood or market observation: what sold, what is new, what surprised you.</td><td>Social post, email to sphere segment</td></tr>
+                            <tr><td>Weekly</td><td>One educational tip: inspection, financing, timing, preparing a home.</td><td>Short video or image post</td></tr>
+                            <tr><td>Monthly</td><td>Market update with three numbers: median price, days on market, months of inventory.</td><td>Email newsletter via Command, mailer to farm</td></tr>
+                            <tr><td>Quarterly</td><td>A local guide: schools, parks, restaurants, events.</td><td>Blog post on Agent Site, shareable PDF</td></tr>
+                            <tr><td>Per listing</td><td>Coming soon, just listed, open house, under contract, just sold.</td><td>Social, email, mailers to the neighborhood</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 3.1. A minimum sustainable content calendar. Batch-create a month of posts in one sitting.</em></p>
+
+                <div class="box field-note">
+                    <div class="box-title">● FIELD NOTE</div>
+                    You do not need to be a video personality. A 45-second phone video of you standing in front of a sold home, explaining one thing the buyer learned, outperforms a polished stock graphic. People hire people.
+                </div>
+
+                <h3>Market every listing thoroughly</h3>
+                <p>A listing is the most powerful marketing asset you will hold. Good listing marketing sells the house and generates buyers and sellers. Minimum requirements: professional photography/floor plan, "coming soon" and "just listed" posts with calls to action, mailer/door-knocks to 50 nearest homes, and a "just sold" update.</p>
+
+                <h3>Paid advertising</h3>
+                <p>Ads are worth it only when your follow-up system is already catching and nurturing leads reliably. If a lead arrived at 9 p.m., would they get an automated reply, a call before 9 a.m., and a 90-day plan without you remembering? If not, buying leads is buying a leak.</p>
+
+                <div class="box pitfall">
+                    <div class="box-title">● PITFALL</div>
+                    Spending on branding before spending time on conversations. Logos, car magnets and custom websites produce nothing on their own. Your first marketing budget is your calendar.
+                </div>
+
+                <div class="box try-it">
+                    <div class="box-title">● TRY IT TODAY</div>
+                    • Complete your Agent Site profile and send yourself the KW App invitation.<br>
+                    • Record one 45-second video answering the question you were asked most often this week.<br>
+                    • Write next month's four weekly posts in one sitting and schedule them.
+                </div>
+
+                <div class="box checkpoint">
+                    <div class="box-title">● CHECKPOINT</div>
+                    • What two feelings should your marketing create, and which of your current posts create them?<br>
+                    • Name the five posts every listing should generate.<br>
+                    • What must be true before you buy leads?
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Agent Site and KW App are the home base. Send everyone there.</li>
+                        <li>A modest, consistent content schedule beats bursts of brilliance.</li>
+                        <li>Every listing should produce buyers and future sellers, not only a closing.</li>
+                        <li>Paid ads amplify a system. They cannot replace one.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 4 -->
+            <div id="ch4" class="chapter-page">
+                <div class="part-label">PART III: Your Operating System</div>
+                <h2>4. Technology and systems</h2>
+                <p>KW Command is your core tool. Set it up properly once so it works for you every day, then let it enforce the habits you have not built yet.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Complete the six-part Command setup in your first week.</li>
+                        <li>Run a Command-centered daily rhythm.</li>
+                        <li>Configure speed-to-lead so a new inquiry gets a reply in minutes, even when you are busy.</li>
+                        <li>Decide when optional tools are worth adding.</li>
+                    </ul>
+                </div>
+
+                <h3>The one-time setup</h3>
+                <p>Do these six things in order during your first week (Appendix C is the checklist):</p>
+                <ol>
+                    <li>Complete profile and Marketing Profile.</li>
+                    <li>Import contacts, deduplicate, and tag by relationship and source.</li>
+                    <li>Download/Create SmartPlans (8x8, Quarterly call plan, New lead plan, Post-close).</li>
+                    <li>Set lead routing rules (if on a team).</li>
+                    <li>Customize Opportunities pipeline stages.</li>
+                    <li>Install Command mobile app and turn on notifications.</li>
+                </ol>
+
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 3. Command-Centered Daily Operating Rhythm</div>
+                    <p style="font-weight: 600;">Start of Day ➔ Review Dashboard & Tasks ➔ Work SmartPlan Follow-ups ➔ Prospecting Block ➔ Client Appointments ➔ End-of-Day Update in Command</p>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>BLOCK</th><th>WHAT HAPPENS</th><th>TIME</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Start of day</td><td>Review dashboard: overnight leads, due tasks, pipeline moves.</td><td>15 min</td></tr>
+                            <tr><td>SmartPlan follow-ups</td><td>Clear every due task: calls, texts, emails. Log outcomes.</td><td>45 to 60 min</td></tr>
+                            <tr><td>Prospecting block</td><td>New conversations: sphere, open house follow-ups, farm, expireds. Hit daily target.</td><td>60 to 90 min</td></tr>
+                            <tr><td>Client appointments</td><td>Consultations, showings, listing presentations, inspections.</td><td>As scheduled</td></tr>
+                            <tr><td>End of day</td><td>Log conversations, move Opportunities, set tomorrow's top 3.</td><td>15 min</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 4.1. Time budget for the daily rhythm. Protect the first three blocks before you accept any appointment.</em></p>
+
+                <h3>Speed-to-lead</h3>
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 4. Speed-to-Lead Response Window</div>
+                    <p>• <strong>Under 5 Minutes:</strong> Highest conversion window.<br>
+                       • <strong>5 to 30 Minutes:</strong> Strong conversion.<br>
+                       • <strong>After 30 Minutes:</strong> Sharp drop-off. Most agents respond in hours; top producers respond in minutes.</p>
+                </div>
+
+                <p>The standard has two layers:</p>
+                <ol>
+                    <li><strong>Automated first touch (within 1 minute):</strong> SmartPlan sends immediate text and email.</li>
+                    <li><strong>Live call (within 5 minutes):</strong> Turn on app notifications and call immediately. If unavailable, send a personal voice note or specific text.</li>
+                </ol>
+
+                <div class="box field-note">
+                    <div class="box-title">● FIELD NOTE</div>
+                    Test your own speed-to-lead. Have a friend submit an inquiry on your Agent Site at 8 p.m. on a weekday. Time how long until they get a text, email, and call. Fix delays before spending money on ads.
+                </div>
+
+                <h3>Optional tools</h3>
+                <p>Add tools like Follow Up Boss or AI texting assistants only when basic Command systems are running cleanly and lead volume justifies the cost.</p>
+
+                <div class="box try-it">
+                    <div class="box-title">● TRY IT TODAY</div>
+                    • Work through Appendix C and finish the Command setup checklist.<br>
+                    • Build the new-lead SmartPlan with automated text/email on day 0, then run the speed-to-lead test.<br>
+                    • Put the daily rhythm from Table 4.1 into your calendar as recurring blocks.
+                </div>
+
+                <div class="box checkpoint">
+                    <div class="box-title">● CHECKPOINT</div>
+                    • What are the six parts of the Command setup?<br>
+                    • Why do SmartPlan follow-ups come before prospecting in the daily rhythm?<br>
+                    • What two layers make up a speed-to-lead response, and how fast is each?
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Set Command up completely in week one: profile, contacts, SmartPlans, routing, pipeline, mobile app.</li>
+                        <li>Open and close every day in Command. Follow-ups before prospecting.</li>
+                        <li>Speed-to-lead means an automated reply in a minute and a live call in minutes, not hours.</li>
+                        <li>Add optional tools only when the basics are working and volume justifies cost.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 5 -->
+            <div id="ch5" class="chapter-page">
+                <div class="part-label">PART IV: Nurture</div>
+                <h2>5. Nurturing leads</h2>
+                <p>Most leads convert between the fifth and twelfth touch. Most agents quit after the second. The gap between those two facts is where your business is.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Explain why multi-touch follow-up works and plan 8 to 12 touches over 90 days.</li>
+                        <li>Build SmartPlans that mix calls, texts, emails and value pieces.</li>
+                        <li>Qualify a lead early with four questions.</li>
+                        <li>Run a weekly pipeline review so nobody falls through the cracks.</li>
+                    </ul>
+                </div>
+
+                <h3>Why one call is never enough</h3>
+                <p>Online leads are usually months from a decision. 80% of conversions occur between touches 5 and 12.</p>
+
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 5. Multi-Touch Nurture Timeline</div>
+                    <p>Day 1 (Touch 1 Welcome Email, Touch 2 Text) ➔ Day 3 (Touch 3 Email) ➔ Day 7 (Touch 4 Call) ➔ Day 10 (Touch 5 Value Guide) ➔ Day 14 (Touch 6 Email) ➔ Day 21 (Touch 7 Text) ➔ Day 30 (Touch 8 Email) ➔ Day 60 (Touch 12 Call) ➔ Day 90 (Final Nurture check-in)</p>
+                </div>
+
+                <h3>Designing a nurture plan</h3>
+                <p>Properties of a good plan: <strong>Front-loaded</strong> (4-5 touches in first 2 weeks), <strong>Mixed channel</strong> (calls, texts, emails), <strong>Value every third touch</strong> (give before asking), and <strong>Long</strong> (at least 90 days before moving to quarterly plan).</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>SMARTPLAN</th><th>PURPOSE</th><th>TOUCHES</th><th>BEST USE CASE</th><th>TIMING</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>8x8 New Contact</td><td>Rapid early engagement</td><td>8</td><td>New leads and fresh sphere contacts</td><td>First 8 days / weeks</td></tr>
+                            <tr><td>Quarterly Call Plan (QCP)</td><td>Stay top of mind</td><td>4 / year</td><td>Sphere, past clients, long-term nurture</td><td>Every 90 days</td></tr>
+                            <tr><td>Monthly Neighborhood Nurture</td><td>Local market value</td><td>12 / year</td><td>Geographic farm and local database</td><td>Monthly</td></tr>
+                            <tr><td>New Lead Instant Response</td><td>Speed-to-lead automation</td><td>3 to 5</td><td>Portal, website, and ad inquiries</td><td>Immediate, first 7 days</td></tr>
+                            <tr><td>Buyer Long-Term Nurture</td><td>Educate and stay in touch</td><td>10 to 14</td><td>Buyers not ready immediately</td><td>Over 90 to 180 days</td></tr>
+                            <tr><td>Seller Long-Term Nurture</td><td>Build listing pipeline</td><td>8 to 12</td><td>Potential sellers & valuation leads</td><td>Over 6 to 12 months</td></tr>
+                            <tr><td>Home Anniversary</td><td>Post-close maintenance</td><td>1 to 2 / year</td><td>Past clients</td><td>Purchase anniversary</td></tr>
+                            <tr><td>Post-Close Thank You</td><td>Reinforce relationship</td><td>4 to 6</td><td>Recently closed clients</td><td>First 60 to 90 days</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 5.1. SmartPlan starter library.</em></p>
+
+                <h3>Qualify early</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>QUESTION</th><th>WHAT YOU ARE LEARNING</th><th>NATURAL PHRASING</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Timeline</td><td>When they want to move and what drives the date.</td><td>"When are you hoping to be settled in?"</td></tr>
+                            <tr><td>Motivation</td><td>Why now, and how committed they are.</td><td>"What's prompting the move?"</td></tr>
+                            <tr><td>Financing</td><td>Pre-approval status or lender introduction need.</td><td>"Have you had a chance to talk with a lender yet?"</td></tr>
+                            <tr><td>Representation</td><td>Whether another agent is helping them.</td><td>"Are you working with anyone on this yet?"</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 5.2. The four qualifying questions. Record answers in Command the same day.</em></p>
+
+                <h3>The weekly pipeline review</h3>
+                <p>Every Friday, review your active contacts and ask:<br>
+                1. When did I last have a real two-way conversation with this person?<br>
+                2. What is the next step, and is it scheduled?<br>
+                3. Is this person in the right stage?</p>
+                <p>Anyone with no conversation in 14 days and no scheduled step gets a call Monday.</p>
+
+                <div class="box try-it">
+                    <div class="box-title">● TRY IT TODAY</div>
+                    • Build the new-lead SmartPlan from Appendix B in Command and apply it to leads from the last 30 days.<br>
+                    • Call the 5 oldest leads in your database that never got a plan. Ask the 4 qualifying questions.<br>
+                    • Put a recurring 30-minute "Pipeline review" block on Friday afternoons.
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Most conversions happen between touch 5 and touch 12. Plan for at least 90 days.</li>
+                        <li>Front-load touches, mix channels, give value every third touch.</li>
+                        <li>Qualify early on timeline, motivation, financing and representation.</li>
+                        <li>Review pipeline every Friday. Fourteen quiet days triggers a call.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 6 -->
+            <div id="ch6" class="chapter-page">
+                <div class="part-label">PART IV: Nurture</div>
+                <h2>6. Scripts: conversations that convert</h2>
+                <p>Scripts are starting points, not lines to recite. The goal is a natural conversation that moves the relationship one step forward.</p>
+
+                <div class="learning-objectives">
+                    <h4>In this chapter you will learn to</h4>
+                    <ul>
+                        <li>Open a conversation with a new lead by phone and text.</li>
+                        <li>Ask your sphere for introductions without sounding like a salesperson.</li>
+                        <li>Open buyer and seller consultations.</li>
+                        <li>Respond to "I'm just looking" and ask for post-close referrals.</li>
+                    </ul>
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · NEW LEAD BY PHONE (SPEED-TO-LEAD)</div>
+                    "Hi [Name], this is [Your Name] with Keller Williams. I just saw your inquiry about [address or area]. Do you have a couple of minutes so I can answer your questions and see how I can help?"<br>
+                    <em>Purpose: human contact fast. Next step: 10-minute conversation or scheduled call.</em>
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · NEW LEAD BY TEXT</div>
+                    "Hi [Name], it's [Your Name] with Keller Williams. Thanks for your interest in [property or area]. Happy to help. What's the best time for a quick call today?"<br>
+                    <em>Purpose: get a reply. Next step: scheduled call time.</em>
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · SPHERE REFERRAL ASK</div>
+                    "I've been working with several families in the area, and I realized I haven't asked you yet. Do you know anyone who might be thinking about buying or selling in the next year? I'd love the chance to help them the way I help my clients."
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · BUYER CONSULTATION OPENING</div>
+                    "My goal today is to understand exactly what you're looking for, walk you through how the process works, and make sure you feel confident about the steps ahead. Sound good?"
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · SELLER CONSULTATION OPENING</div>
+                    "I'd like to learn about your goals and timeline first. Then I'll show you what similar homes have done and how I'd market yours. By the end you should have a clear picture of whether I'm the right fit."
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · OBJECTION: "I'M JUST LOOKING."</div>
+                    "That's completely fine. Most people start that way. Would it help if I sent you a few homes that match what you described, so you can see what's out there? No pressure either way."
+                </div>
+
+                <div class="box script">
+                    <div class="box-title">● SCRIPT · POST-CLOSE REFERRAL REQUEST</div>
+                    "It's been a pleasure working with you. If you know anyone else who might be thinking about a move, I'd be grateful for the introduction. I'll take great care of them."
+                </div>
+
+                <h3>Three rules for any script</h3>
+                <ol>
+                    <li>Say their name and the specific item they inquired about.</li>
+                    <li>Ask one question at the end.</li>
+                    <li>Stop talking (silence allows them to engage).</li>
+                </ol>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>A script succeeds when it reaches its next step, not when said word-for-word.</li>
+                        <li>Be specific, ask one question, then be quiet.</li>
+                        <li>Practice out loud and record yourself.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 7 -->
+            <div id="ch7" class="chapter-page">
+                <div class="part-label">PART V: Stay on Track</div>
+                <h2>7. Common errors and pitfalls of new agents</h2>
+                <p>New agents fall into a small number of predictable traps that reinforce each other.</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>ERROR</th><th>WHAT IT LOOKS LIKE</th><th>WHAT IT COSTS</th><th>FIX</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Slow/inconsistent follow-up</td><td>Leads answered next day; plans never launched.</td><td>Leads convert with faster agents.</td><td>Speed-to-lead automation & daily follow-up block (Ch. 4)</td></tr>
+                            <tr><td>Relying only on portal leads</td><td>All money on Zillow; sphere never called.</td><td>Low conversion, high cost, no referral engine.</td><td>Work sphere first; buy leads only with system in place (Ch. 2)</td></tr>
+                            <tr><td>No database hygiene</td><td>Contacts in phone, notes in email, tasks in memory.</td><td>Lost leads, missed anniversaries.</td><td>Everything in Command daily (Ch. 4)</td></tr>
+                            <tr><td>Unstructured days</td><td>Busy with errands/email; zero conversations.</td><td>Activity without leading indicators.</td><td>Time-blocked daily rhythm (Ch. 8)</td></tr>
+                            <tr><td>Under-documenting</td><td>Verbal agreements, no notes on offers.</td><td>Risk, disputes, lost trust.</td><td>Notes in Command after every talk (Ch. 11)</td></tr>
+                            <tr><td>Expecting fast results</td><td>Discouraged after 30 days without closing.</td><td>Quitting right before pipeline pays.</td><td>Track leading indicators; 90-day horizon (Ch. 12)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 7.1. The six new-agent errors, cost, and fixes.</em></p>
+
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 6. The New-Agent Pitfall Cycle</div>
+                    <p>Slow follow-up ➔ Lost leads ➔ Empty pipeline ➔ Discouragement ➔ Unstructured days ➔ Slow follow-up</p>
+                    <p style="color: #059669; font-weight: bold; margin-top: 10px;">BREAK THE CYCLE: Command + SmartPlans, Protected Daily Block, Activity Tracking, Friday Reviews</p>
+                </div>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>The six errors are predictable and linked. Installing a system breaks the cycle.</li>
+                        <li>Command, a protected block, activity tracking, and Friday reviews break the loop.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 8 -->
+            <div id="ch8" class="chapter-page">
+                <div class="part-label">PART V: Stay on Track</div>
+                <h2>8. Staying organized and motivated</h2>
+                <p>One source of truth: Every contact, note, task, and opportunity lives in Command.</p>
+
+                <h3>Time-blocking the week</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>TIME</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>8:00</td><td colspan="5" style="text-align: center;">Command dashboard, plan the day</td></tr>
+                            <tr><td>8:30</td><td colspan="5" style="text-align: center;">SmartPlan follow-ups</td></tr>
+                            <tr><td>9:30</td><td colspan="4" style="text-align: center;">Prospecting (sphere, open house follow-ups, farm)</td><td>Prospecting, then pipeline review</td></tr>
+                            <tr><td>11:30</td><td colspan="5" style="text-align: center;">Lunch, errands, email</td></tr>
+                            <tr><td>13:00</td><td>Appointments</td><td>Appointments</td><td>Content batch, marketing</td><td>Appointments</td><td>Appointments</td></tr>
+                            <tr><td>16:00</td><td colspan="5" style="text-align: center;">Client work, transaction tasks</td></tr>
+                            <tr><td>17:30</td><td colspan="5" style="text-align: center;">End-of-day Command update, top three for tomorrow</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 8.1. A sample weekly time block.</em></p>
+
+                <h3>Weekly activity targets</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>ACTIVITY</th><th>WEEKLY TARGET</th><th>NOTES AND PURPOSE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Outbound calls</td><td>40 to 60</td><td>Sphere, database, new leads. Focus on conversations.</td></tr>
+                            <tr><td>Conversations</td><td>15 to 25</td><td>Actual two-way real estate talks. Leading indicator.</td></tr>
+                            <tr><td>Follow-ups completed</td><td>30 to 50</td><td>SmartPlan tasks & nurture touches cleared.</td></tr>
+                            <tr><td>Appointments set</td><td>3 to 6</td><td>Consultations, listing appointments, showings.</td></tr>
+                            <tr><td>Open houses / events</td><td>1</td><td>Builds local presence and leads.</td></tr>
+                            <tr><td>Database updates</td><td>Daily</td><td>Log notes, clear tasks before ending day.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 8.2. Weekly activity targets for a new agent.</em></p>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Command is the only list. A conversation not logged did not happen.</li>
+                        <li>Lead generation goes first in the day, in the same block every day.</li>
+                        <li>Measure leading indicators, celebrate small wins, review on Fridays.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 9 -->
+            <div id="ch9" class="chapter-page">
+                <div class="part-label">PART VI: Serve and Keep</div>
+                <h2>9. Working with clients and dealing with objections</h2>
+                <p>The Consultation Sequence: 1. Frame ➔ 2. Ask ➔ 3. Listen ➔ 4. Present ➔ 5. Agree.</p>
+
+                <h3>The 4-Step Objection Pattern</h3>
+                <ol>
+                    <li><strong>Acknowledge.</strong> "That makes sense."</li>
+                    <li><strong>Clarify.</strong> "Can I ask what's behind that?"</li>
+                    <li><strong>Respond.</strong> Answer with facts or data.</li>
+                    <li><strong>Check.</strong> "Does that address it?" (Then stop talking).</li>
+                </ol>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>OBJECTION</th><th>RESPONSE FRAMEWORK</th><th>GOAL</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>"I'm just looking."</td><td>Acknowledge & offer value: "Would it help if I sent a few options matching your description?"</td><td>Keep conversation open.</td></tr>
+                            <tr><td>"We're not ready yet."</td><td>Explore timeline: "When do you think you might be ready? I can send occasional updates."</td><td>Qualify timing & earn nurture right.</td></tr>
+                            <tr><td>"I already have an agent."</td><td>Respect & stay open: "Great. If anything changes or you'd like a second opinion, reach out."</td><td>Stay professional & memorable.</td></tr>
+                            <tr><td>"Your commission is too high."</td><td>Focus on net proceeds: "Let's look at what you actually net after marketing and negotiation."</td><td>Shift fee to outcome.</td></tr>
+                            <tr><td>"I want to wait for the market to improve."</td><td>Provide data: "Here is what similar homes have done recently... let's compare costs."</td><td>Educate without pressure.</td></tr>
+                            <tr><td>"I need to think about it."</td><td>Clarify: "Of course. What specifically would you like to think through?"</td><td>Uncover real objection.</td></tr>
+                            <tr><td>"Can you just send me listings?"</td><td>Agree + next step: "I'll send a few. What's the best way to follow up after you look?"</td><td>Move passive to engaged.</td></tr>
+                            <tr><td>"You're new, aren't you?"</td><td>Honest & specific: "I am, and that means you get my full attention backed by my Market Center."</td><td>Replace worry with evidence.</td></tr>
+                            <tr><td>"We want to interview other agents."</td><td>Support & set follow-up: "That's smart. What will you compare? I'll follow up Thursday."</td><td>Stay in running with next step.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 9.2. Objection handling quick reference.</em></p>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Frame, ask, listen, present, agree. Asking/listening take half the meeting.</li>
+                        <li>Objections are requests for information. Acknowledge, clarify, respond, check.</li>
+                        <li>Document every conversation in Command the same day.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 10 -->
+            <div id="ch10" class="chapter-page">
+                <div class="part-label">PART VI: Serve and Keep</div>
+                <h2>10. Keeping clients: long-term relationships</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>WHEN</th><th>TOUCH</th><th>PURPOSE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Closing day</td><td>Handwritten note & small closing gift.</td><td>End on high note; ask for introduction.</td></tr>
+                            <tr><td>1 week</td><td>Call: "How's the move going? Anything you need?"</td><td>Catch problems early; offer vendor contacts.</td></tr>
+                            <tr><td>30 days</td><td>Call or visit. Ask for review on Agent Site.</td><td>Reviews drive leads; second referral ask.</td></tr>
+                            <tr><td>Quarterly</td><td>Call with a reason (market update, tax season, maintenance).</td><td>Stay useful; hear life changes early.</td></tr>
+                            <tr><td>Home anniversary</td><td>Card or call with updated home value report.</td><td>Most natural seller conversation.</td></tr>
+                            <tr><td>Annually</td><td>Client appreciation event or personal gift.</td><td>Make relationship social, not transactional.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Table 10.1. The post-close plan.</em></p>
+
+                <div class="key-takeaways">
+                    <h4>KEY TAKEAWAYS</h4>
+                    <ul>
+                        <li>Every closed client goes on a post-close plan the day of closing.</li>
+                        <li>Give value they would want even if they never moved again.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CHAPTER 11 -->
+            <div id="ch11" class="chapter-page">
+                <div class="part-label">PART VI: Serve and Keep</div>
+                <h2>11. Legal protection and professional standards</h2>
+                <p><strong>Agency Disclosure:</strong> Disclose at first substantive contact and keep signed copies.<br>
+                <strong>Fair Housing:</strong> Describe property features, never demographics ("4 bedrooms, fenced yard" vs "great for families"). Treat every inquiry identically.<br>
+                <strong>What to Document:</strong> Agency disclosures, offers/counters, pricing discussions, delivered disclosures, inspection choices, and professional referrals.</p>
+            </div>
+
+            <!-- CHAPTER 12 -->
+            <div id="ch12" class="chapter-page">
+                <div class="part-label">PART VII: Execute</div>
+                <h2>12. Daily, weekly and monthly execution plans</h2>
+                <div class="diagram-box">
+                    <div class="diagram-title">Figure 7. First 90 Days Milestone Roadmap</div>
+                    <p>• <strong>Days 1 to 30 (Install System):</strong> Command setup, contacts tagged, SmartPlans live, 50 sphere conversations, 1 open house, speed-to-lead tested.<br>
+                       • <strong>Days 31 to 60 (Build Rhythm):</strong> Morning blocks held 4/5 days, 15-25 conversations/wk, first consultations & buyer agreement signed.<br>
+                       • <strong>Days 61 to 90 (Grow Pipeline):</strong> 5+ active opportunities, 1st contract written, post-close plan built, lead sources evaluated.</p>
+                </div>
+
+                <h3>Weekly & Monthly Measures</h3>
+                <p>Track four numbers every Friday: Conversations held, Appointments set, Follow-ups completed, and Pipeline value. Spend one hour on the first working day of each month reviewing source conversion and pipeline flow.</p>
+            </div>
+
+            <!-- CHAPTER 13 -->
+            <div id="ch13" class="chapter-page">
+                <div class="part-label">PART VII: Execute</div>
+                <h2>13. Resources and next steps</h2>
+                <div class="box try-it">
+                    <div class="box-title">THE WHOLE HANDBOOK ON ONE CARD</div>
+                    1. Measure activity, not closings. Three or four real conversations a day.<br>
+                    2. Work your sphere first. Buy leads only when system can catch them.<br>
+                    3. Command is the only list. Open it first, update it last.<br>
+                    4. Respond to new leads in minutes. Follow up 8 to 12 times over 90 days.<br>
+                    5. Ask, listen, present, agree. Objections are questions.<br>
+                    6. Every closed client goes on a post-close plan the day of closing.<br>
+                    7. Review every Friday. Fix one thing a month. Ask your broker before anything unusual.
+                </div>
+            </div>
+
+            <!-- APPENDIX A -->
+            <div id="app-a" class="chapter-page">
+                <div class="part-label">APPENDICES</div>
+                <h2>Appendix A: Weekly activity scorecard</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>LEADING INDICATOR</th><th>WEEKLY TARGET</th><th>WK 1</th><th>WK 2</th><th>WK 3</th><th>WK 4</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Outbound calls (sphere, database, leads)</td><td>40 to 60</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Conversations (two-way, phone/person)</td><td>15 to 25</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Follow-ups completed (SmartPlan tasks)</td><td>30 to 50</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Appointments set</td><td>3 to 6</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Appointments held</td><td>2+</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Open houses or events</td><td>1</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Database updated daily (days/5)</td><td>5</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>New contacts added to Command</td><td>15</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Content posted</td><td>2</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Morning blocks held (out of 5)</td><td>4+</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Active opportunities in pipeline</td><td>Growing</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Pipeline value (likely commission)</td><td>Growing</td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td>Referrals received</td><td>Track</td><td></td><td></td><td></td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- APPENDIX B -->
+            <div id="app-b" class="chapter-page">
+                <div class="part-label">APPENDICES</div>
+                <h2>Appendix B: SmartPlan starter kit</h2>
+                <h3>B.1 New online lead (90 days)</h3>
+                <p>Day 0 (Touch 1: Text + email auto; Touch 2: Call) ➔ Day 1 (Touch 3: Email 3 homes) ➔ Day 3 (Touch 4: Text) ➔ Day 7 (Touch 5: Qualify call) ➔ Day 10 (Touch 6: Value email) ➔ Day 14 (Touch 7: Text) ➔ Day 21 (Touch 8: Consultation call) ➔ Day 30 (Touch 9: Market email) ➔ Day 45 (Touch 10: Listing text) ➔ Day 60 (Touch 11: Call) ➔ Day 75 (Touch 12: Case study email) ➔ Day 90 (Touch 13: Final check call ➔ Move to quarterly plan).</p>
+
+                <h3>B.2 New sphere contact: 8x8 (8 weeks)</h3>
+                <p>Wk 1: Call/visit ➔ Wk 2: Note & card ➔ Wk 3: Market snapshot email ➔ Wk 4: Personal text ➔ Wk 5: Maintenance checklist mail ➔ Wk 6: Referral ask call ➔ Wk 7: Vendor intro email ➔ Wk 8: Check-in call/coffee ➔ Quarterly plan.</p>
+
+                <h3>B.3 Quarterly database plan (ongoing)</h3>
+                <p>Month 1: Call (market/season) ➔ Month 2: Email (market stats) ➔ Month 3: Mail/text (useful value piece, no ask). Repeat quarterly.</p>
+            </div>
+
+            <!-- APPENDIX C -->
+            <div id="app-c" class="chapter-page">
+                <div class="part-label">APPENDICES</div>
+                <h2>Appendix C: Command setup checklist</h2>
+                <ul>
+                    <li>[ ] <strong>Profile:</strong> Headshot, plain-language bio, contact details, Marketing Profile complete, Agent Site reviewed.</li>
+                    <li>[ ] <strong>Contacts:</strong> Phone, email, social imported; deduplicated; tagged by relationship & lead source.</li>
+                    <li>[ ] <strong>SmartPlans:</strong> New online lead, 8x8 sphere, Quarterly plan, Post-close plan built and customized.</li>
+                    <li>[ ] <strong>Pipeline:</strong> Opportunities stages renamed; existing leads placed in stages.</li>
+                    <li>[ ] <strong>Mobile & Testing:</strong> Command app installed, notifications enabled, speed-to-lead test run.</li>
+                </ul>
+            </div>
+
+            <!-- APPENDIX D -->
+            <div id="app-d" class="chapter-page">
+                <div class="part-label">APPENDICES</div>
+                <h2>Appendix D: Glossary</h2>
+                <p><strong>8x8:</strong> Eight touches over eight weeks to establish a new relationship.<br>
+                <strong>Agency disclosure:</strong> Required form explaining representation duties.<br>
+                <strong>Command:</strong> KW platform for contacts, tasks, SmartPlans, Opportunities, marketing, and transactions.<br>
+                <strong>Conversation:</strong> Two-way exchange about real estate with someone who could buy, sell or refer.<br>
+                <strong>Lagging indicator:</strong> Result reporting past work (closings, income).<br>
+                <strong>Leading indicator:</strong> Controllable daily activity predicting future results (calls, appointments).<br>
+                <strong>Opportunities:</strong> Command pipeline tracking transactions across stages.<br>
+                <strong>SmartPlan:</strong> Automated sequence of touches in Command (texts, emails, call reminders).<br>
+                <strong>Speed-to-lead:</strong> Elapsed time between lead inquiry and first response.<br>
+                <strong>Sphere of influence:</strong> Everyone who knows you and would take your call.</p>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="page-navigation">
+                <button class="btn-nav" id="prevBtn" onclick="prevPage()">Previous</button>
+                <button class="btn-nav" id="nextBtn" onclick="nextPage()">Next</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const pages = ['pref', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'app-a', 'app-b', 'app-c', 'app-d'];
+        let currentPageIndex = 0;
+
+        function navigateTo(pageId) {
+            currentPageIndex = pages.indexOf(pageId);
+            updatePage();
+        }
+
+        function nextPage() {
+            if (currentPageIndex < pages.length - 1) {
+                currentPageIndex++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                updatePage();
+            }
+        }
+
+        function updatePage() {
+            document.querySelectorAll('.chapter-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            const activePageId = pages[currentPageIndex];
+            document.getElementById(activePageId).classList.add('active');
+
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems[currentPageIndex]) {
+                navItems[currentPageIndex].classList.add('active');
+            }
+
+            document.getElementById('main-content').scrollTop = 0;
+
+            document.getElementById('prevBtn').disabled = (currentPageIndex === 0);
+            document.getElementById('nextBtn').disabled = (currentPageIndex === pages.length - 1);
+        }
+    </script>
+</body>
+</html>
