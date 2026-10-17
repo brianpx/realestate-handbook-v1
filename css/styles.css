@@ -114,10 +114,22 @@
             border: 1px solid var(--border-color);
         }
 
-        .chapter-section + .chapter-section {
-            margin-top: 40px;
-            padding-top: 40px;
-            border-top: 2px solid var(--border-color);
+        /* Desktop: every chapter is its own page card, with space between pages */
+        @media (min-width: 901px) {
+            .content-container {
+                background: none;
+                padding: 0;
+                border: none;
+                box-shadow: none;
+            }
+            .chapter-section {
+                background: var(--card-bg);
+                padding: 48px;
+                border-radius: 12px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            }
+            .chapter-section + .chapter-section { margin-top: 48px; }
         }
 
         .chapter-page {
@@ -380,7 +392,10 @@
 
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px; }
-        .progress-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; }
+        .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+        .progress-label { font-size: 0.75rem; color: #94a3b8; }
+        .progress-reset { font-size: 0.65rem; padding: 2px 8px; background: transparent; color: #94a3b8; border: 1px solid #475569; border-radius: 4px; cursor: pointer; }
+        .progress-reset:hover { color: #e2e8f0; border-color: #94a3b8; }
         .progress-bar { height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; }
         .progress-bar span { display: block; height: 100%; width: 0; background: #38bdf8; transition: width 0.3s; }
         .nav-item.read::after { content: "\2713"; float: right; color: #34d399; font-weight: 700; }
@@ -436,6 +451,11 @@
             body { flex-direction: column; }
             #sidebar { width: 100%; height: auto; flex-shrink: 0; position: relative; z-index: 100; }
             #main-content { min-height: 0; }
+            .chapter-section + .chapter-section {
+                margin-top: 40px;
+                padding-top: 40px;
+                border-top: 2px solid var(--border-color);
+            }
             .sidebar-header { position: relative; padding: 14px 64px 14px 20px; }
             .sidebar-header p { display: none; }
             .menu-toggle {
@@ -472,6 +492,8 @@
             .nav-item.active { background-color: #e0f2fe; color: #0369a1; border-left-color: #0284c7; }
             .nav-section-title { color: #64748b; }
             .progress-label { color: #475569; }
+            .progress-reset { color: #475569; border-color: #94a3b8; }
+            .progress-reset:hover { color: #0f172a; border-color: #475569; }
             .progress-bar { background: #e2e8f0; }
             #main-content { padding: 8px; }
             .content-container { padding: 16px; border-radius: 8px; }

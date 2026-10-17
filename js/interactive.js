@@ -55,10 +55,22 @@ function markRead(pageId) {
 function setupProgressUi() {
     const navList = document.getElementById('navList');
     const item = el('li', 'progress-item');
-    item.innerHTML = '<div class="progress-label" id="progressLabel"></div>' +
+    item.innerHTML = '<div class="progress-head"><div class="progress-label" id="progressLabel"></div>' +
+        '<button type="button" class="progress-reset" id="progressReset" title="Mark every section unread" aria-label="Reset sections read">Reset</button></div>' +
         '<div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progressBar"><span id="progressFill"></span></div>';
     navList.insertBefore(item, navList.firstChild);
+    item.querySelector('#progressReset').addEventListener('click', resetProgress);
     renderProgress();
+}
+
+function resetProgress() {
+    const state = loadState();
+    if (!Object.keys(state.read).length) return;
+    state.read = {};
+    saveState();
+    renderProgress();
+    // sentinels were unobserved once read; re-arm them so scrolling marks sections read again
+    document.querySelectorAll('.read-sentinel').forEach(s => readObserver.observe(s));
 }
 
 function renderProgress() {
