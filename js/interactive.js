@@ -57,7 +57,7 @@ function setupProgressUi() {
     const item = el('li', 'progress-item');
     item.innerHTML = '<div class="progress-head"><div class="progress-label" id="progressLabel"></div>' +
         '<button type="button" class="progress-reset" id="progressReset" title="Mark every section unread" aria-label="Reset sections read">Reset</button></div>' +
-        '<div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progressBar"><span id="progressFill"></span></div>';
+        '<div class="progress-bar" role="progressbar" aria-labelledby="progressLabel" aria-valuemin="0" aria-valuemax="100" id="progressBar"><span id="progressFill"></span></div>';
     navList.insertBefore(item, navList.firstChild);
     item.querySelector('#progressReset').addEventListener('click', resetProgress);
     renderProgress();
@@ -207,16 +207,37 @@ function setupScorecard(section) {
     summary.setAttribute('aria-live', 'polite');
     let summaryTimer;
     const reset = el('button', 'btn-nav btn-secondary', 'Clear scorecard');
+    // inline confirmation instead of window.confirm(): styled, keyboard-friendly, and doesn't block the page
+    const confirmBar = el('div', 'scorecard-confirm');
+    confirmBar.hidden = true;
+    confirmBar.setAttribute('role', 'group');
+    confirmBar.setAttribute('aria-label', 'Confirm clearing the scorecard');
+    const confirmMsg = el('span', '', 'Clear every number on the scorecard?');
+    const confirmYes = el('button', 'btn-nav', 'Yes, clear it');
+    const confirmNo = el('button', 'btn-nav btn-secondary', 'Cancel');
+    confirmBar.append(confirmMsg, confirmYes, confirmNo);
+    const closeConfirm = () => {
+        confirmBar.hidden = true;
+        reset.hidden = false;
+        reset.focus();
+    };
     reset.addEventListener('click', () => {
-        if (!confirm('Clear every number on the scorecard?')) return;
+        reset.hidden = true;
+        confirmBar.hidden = false;
+        confirmNo.focus();
+    });
+    confirmNo.addEventListener('click', closeConfirm);
+    confirmBar.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
+    confirmYes.addEventListener('click', () => {
         Object.keys(data).forEach(k => delete data[k]);
         saveState();
         table.querySelectorAll('.score-input').forEach(i => { i.value = ''; });
         refresh(true);
+        closeConfirm();
     });
     const print = el('button', 'btn-nav btn-secondary', 'Print');
     print.addEventListener('click', () => window.print());
-    toolbar.append(reset, print);
+    toolbar.append(reset, confirmBar, print);
     table.closest('.table-wrapper').after(chartHost, summary, toolbar);
     table.closest('.table-wrapper').before(interactiveHeader('Type your weekly numbers. Cells change colour against each target and the chart updates as you type. Saved on this device.', 'scorecard', 'Weekly activity scorecard'));
 

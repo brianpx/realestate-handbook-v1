@@ -148,6 +148,11 @@ function setupMenuToggle() {
     document.addEventListener('click', e => {
         if (!sidebar.contains(e.target)) setOpen(false);
     });
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape' || !sidebar.classList.contains('menu-open')) return;
+        setOpen(false);
+        toggle.focus();
+    });
 }
 
 // Formspree endpoint, e.g. 'https://formspree.io/f/xxxxxxxx'. While empty the gate stays off.

@@ -164,6 +164,15 @@
             animation: fadeIn 0.25s ease-in-out;
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -444,7 +453,9 @@
         table.scorecard td[data-status="close"] .score-status { color: #713f12; }
         table.scorecard td[data-status="miss"] .score-status { color: #7f1d1d; }
         table.scorecard .score-total td { font-weight: 700; background: #f1f5f9; text-align: center; }
-        .scorecard-tools { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+        .scorecard-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+        .scorecard-confirm { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-weight: 600; }
+        .scorecard-confirm[hidden], .scorecard-tools [hidden] { display: none; }
         .btn-secondary { background-color: #64748b; }
         .score-chart { margin: 16px 0; color: #475569; font-size: 0.9rem; }
         .score-chart-title { font-weight: 600; margin-bottom: 4px; }
