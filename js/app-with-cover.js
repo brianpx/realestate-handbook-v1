@@ -134,6 +134,26 @@ function setupContinuousScroll() {
     }, { passive: true });
 }
 
+// Scrolling the main page slides the logo header out of the sidebar; back at the top it returns.
+// Two thresholds so it does not flicker around a single scroll position.
+function setupHeaderCollapse() {
+    const sidebar = document.getElementById('sidebar');
+    const header = sidebar.querySelector('.sidebar-header');
+    const main = document.getElementById('main-content');
+    // how far the header must slide up to be fully out of view; remeasured whenever its size can change
+    const measure = () => sidebar.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    header.querySelector('img')?.addEventListener('load', measure);
+    document.fonts?.ready.then(measure);
+    main.addEventListener('scroll', () => {
+        const top = main.scrollTop;
+        if (top > 60) sidebar.classList.add('header-collapsed');
+        else if (top < 8) sidebar.classList.remove('header-collapsed');
+    }, { passive: true });
+}
+
 function setupMenuToggle() {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.getElementById('menuToggle');
@@ -215,10 +235,39 @@ function setupGate() {
     });
 }
 
+// Keeps the reader's place while content is rebuilt. The anchor is the first heading on screen plus how
+// far below the top edge it sits, which survives anything above it changing height.
+const ANCHOR_HEADINGS = 'h2, h3, h4';
+const headingText = node => node.textContent.replace(/\s+/g, ' ').trim();
+
+function captureScrollAnchor() {
+    const mainTop = document.getElementById('main-content').getBoundingClientRect().top;
+    for (const section of document.querySelectorAll('.chapter-section')) {
+        const seen = {};
+        for (const node of section.querySelectorAll(ANCHOR_HEADINGS)) {
+            const text = headingText(node);
+            const occurrence = seen[text] = (seen[text] ?? -1) + 1;
+            const top = node.getBoundingClientRect().top;
+            if (node.closest('dialog') || top + node.offsetHeight <= mainTop) continue;
+            return { page: section.dataset.page, text, occurrence, offset: top - mainTop };
+        }
+    }
+    return null;
+}
+
+function applyScrollAnchor(anchor) {
+    const section = anchor && document.querySelector(`.chapter-section[data-page="${anchor.page}"]`);
+    const target = section && [...section.querySelectorAll(ANCHOR_HEADINGS)].filter(n => headingText(n) === anchor.text)[anchor.occurrence];
+    if (!target) return;
+    const main = document.getElementById('main-content');
+    main.scrollTop += target.getBoundingClientRect().top - main.getBoundingClientRect().top - anchor.offset;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     setupGate();
     setupMenuToggle();
     setupContinuousScroll();
+    setupHeaderCollapse();
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {
         item.addEventListener('click', e => {
             e.preventDefault();

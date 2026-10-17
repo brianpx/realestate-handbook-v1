@@ -45,6 +45,7 @@ const readObserver = new IntersectionObserver(entries => {
 }, { root: document.getElementById('main-content') });
 
 function markRead(pageId) {
+    if (!trackingProgress()) return;
     const state = loadState();
     if (state.read[pageId]) return;
     state.read[pageId] = true;
@@ -77,34 +78,109 @@ const SETTINGS_KEY = 'handbookSettings';
 // The tools kept when "Essential tools only" is on. Keys match each tool's data-widget.
 const ESSENTIAL_WIDGETS = ['goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'scorecard'];
 
-function essentialOnly() {
+function readSettings() {
     try {
-        return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').essentialOnly === true;
+        return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {};
+    } catch (err) {
+        return {};
+    }
+}
+
+// returns false when storage is blocked, so the caller can leave the control as it was
+function writeSettings(patch) {
+    try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...readSettings(), ...patch }));
+        return true;
     } catch (err) {
         return false;
     }
 }
 
+const essentialOnly = () => readSettings().essentialOnly === true;
+// on unless the reader switched it off
+const trackingProgress = () => readSettings().trackProgress !== false;
+
+function applyTrackingSetting() {
+    const on = trackingProgress();
+    document.getElementById('sidebar').classList.toggle('progress-off', !on);
+    const reset = document.getElementById('settingResetGroup');
+    if (reset) reset.hidden = !on;
+}
+
 function setupSettingsUi() {
     const item = el('li', 'settings-item');
     item.innerHTML = '<details class="settings"><summary>Settings</summary>' +
-        '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only. Keep just the 5 best interactive tools (income calculator, speed-to-lead, script practice, objection trainer, scorecard).</span></label>' +
-        '<div class="settings-row"><button type="button" class="btn-mini" id="settingReset">Reset progress</button>' +
-        '<span class="settings-note" id="settingResetNote" role="status"></span></div></details>';
+        '<label class="settings-row"><input type="checkbox" id="settingDark"><span>Dark mode</span></label>' +
+        '<div class="settings-row"><input type="checkbox" id="settingTrack">' +
+        '<div class="settings-col"><label for="settingTrack">Keep track of progress</label>' +
+        '<div class="settings-sub" id="settingResetGroup"><button type="button" class="btn-mini settings-reset" id="settingReset">Reset progress</button>' +
+        '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div>' +
+        '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only. Keep just the 5 best interactive tools (income calculator, speed-to-lead, script practice, objection trainer, scorecard).</span></label></details>' +
+        '<p class="settings-legal"><strong>Finding, Keeping, and Nurturing Clients</strong><br>A Practical Guide for New Agents<br>v1.0 · October 2026 · All rights reserved.</p>';
     document.getElementById('navList').appendChild(item);
+
+    // Scrolling the page up folds Settings away. Only real user scrolling counts (wheel, swipe, keys, dragging
+    // the scrollbar), so programmatic jumps such as keeping your place after a tool rebuild never collapse it.
+    const details = item.querySelector('details');
+    const main = document.getElementById('main-content');
+    const collapse = () => { details.open = false; };
+    main.addEventListener('wheel', e => { if (e.deltaY < 0) collapse(); }, { passive: true });
+    let touchY = null;
+    main.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+    main.addEventListener('touchmove', e => {
+        // a finger moving down drags the content down, which is scrolling up
+        if (touchY !== null && e.touches[0].clientY - touchY > 10) { collapse(); touchY = e.touches[0].clientY; }
+    }, { passive: true });
+    main.addEventListener('keydown', e => {
+        if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) && !e.target.closest('input, textarea, select')) collapse();
+    });
+    let draggingScrollbar = false;
+    let lastTop = main.scrollTop;
+    main.addEventListener('pointerdown', e => { draggingScrollbar = e.target === main; });
+    window.addEventListener('pointerup', () => { draggingScrollbar = false; });
+    main.addEventListener('scroll', () => {
+        if (draggingScrollbar && main.scrollTop < lastTop) collapse();
+        lastTop = main.scrollTop;
+    }, { passive: true });
+
+    const dark = item.querySelector('#settingDark');
+    dark.checked = document.documentElement.classList.contains('dark');
+    dark.addEventListener('change', () => {
+        if (!writeSettings({ dark: dark.checked })) {
+            dark.checked = !dark.checked; // storage blocked: the choice cannot persist
+            return;
+        }
+        document.documentElement.classList.toggle('dark', dark.checked);
+    });
+
+    const track = item.querySelector('#settingTrack');
+    track.checked = trackingProgress();
+    applyTrackingSetting();
+    track.addEventListener('change', () => {
+        if (!writeSettings({ trackProgress: track.checked })) {
+            track.checked = !track.checked; // storage blocked: the choice cannot persist
+            return;
+        }
+        applyTrackingSetting();
+        item.querySelector('#settingResetNote').textContent = '';
+        // sentinels were unobserved once read; re-arm them so sections on screen count again
+        if (track.checked) document.querySelectorAll('.read-sentinel').forEach(s => readObserver.observe(s));
+    });
 
     const toggle = item.querySelector('#settingEssential');
     toggle.checked = essentialOnly();
-    toggle.addEventListener('change', () => {
-        try {
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify({ essentialOnly: toggle.checked }));
-        } catch (err) {
-            // storage blocked: the setting cannot persist, so do not reload into the old state
+    toggle.addEventListener('change', async () => {
+        if (!writeSettings({ essentialOnly: toggle.checked })) {
             toggle.checked = !toggle.checked;
             return;
         }
-        // tools are built once per section, so a reload is the simplest way to rebuild them
-        location.reload();
+        toggle.disabled = true; // one rebuild at a time
+        try {
+            await rebuildTools();
+        } finally {
+            toggle.disabled = false;
+            toggle.focus({ preventScroll: true });
+        }
     });
 
     item.querySelector('#settingReset').addEventListener('click', () => {
@@ -124,28 +200,7 @@ function renderProgress() {
     document.querySelectorAll('.nav-item[data-page]').forEach(navItem => {
         navItem.classList.toggle('read', Boolean(read[navItem.dataset.page]));
     });
-    renderResume();
     renderCheckpointRollup();
-}
-
-function nextUnreadPage() {
-    const read = loadState().read;
-    if (!TRACKED_PAGES.some(id => read[id])) return null;
-    return TRACKED_PAGES.find(id => !read[id]) || null;
-}
-
-function renderResume() {
-    const cover = document.querySelector('.chapter-section[data-page="cover"]');
-    if (!cover) return;
-    cover.querySelector('.resume-btn')?.remove();
-    const target = nextUnreadPage();
-    if (!target) return;
-    const label = document.querySelector(`.nav-item[data-page="${target}"]`)?.textContent.trim() || target;
-    const button = el('button', 'btn-nav resume-btn', `Continue: ${label} →`);
-    button.addEventListener('click', () => navigateTo(target));
-    const start = cover.querySelector('.btn-nav');
-    start.parentElement.insertBefore(button, start);
-    start.classList.add('btn-secondary');
 }
 
 function trackReading(section) {
@@ -507,6 +562,28 @@ document.addEventListener('click', e => {
     if (dialog && (e.target.closest('[data-close-doc]') || e.target === dialog)) dialog.close();
 });
 
+/* ---------- Rebuilding tools in place ---------- */
+
+// Tools are built once per section, so changing which tools exist means rebuilding the sections that are
+// on screen. Every chapter is fetched first and swapped in one synchronous step, then the scroll anchor is
+// reapplied before the browser paints, so the reader sees no jump.
+async function rebuildTools() {
+    const main = document.getElementById('main-content');
+    const sections = [...document.querySelectorAll('.chapter-section')];
+    const fresh = await Promise.all(sections.map(section => fetchChapter(section.dataset.page)));
+    const anchor = captureScrollAnchor();
+    main.style.overflowAnchor = 'none'; // the browser's own scroll anchoring would fight ours
+    sections.forEach((section, i) => {
+        section.querySelectorAll('.read-sentinel').forEach(s => readObserver.unobserve(s));
+        section.innerHTML = fresh[i];
+        delete section.dataset.enhanced;
+        enhanceSection(section);
+    });
+    applyScrollAnchor(anchor);
+    main.style.overflowAnchor = '';
+    renderProgress();
+}
+
 /* ---------- Wiring ---------- */
 
 // Appendix E lists every tool; in essential mode drop the rows for tools that are not built.
@@ -544,7 +621,6 @@ function enhanceSection(section) {
         trimToolIndex(section);
     }
     setupGlossary(section);
-    if (section.dataset.page === 'cover') renderResume();
 }
 
 const contentObserver = new MutationObserver(mutations => {

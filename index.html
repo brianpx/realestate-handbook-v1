@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finding, Keeping, and Nurturing Clients - Interactive Book</title>
-    <link rel="stylesheet" href="css/styles.css?v=20261031">
+    <script>
+        // set before first paint so dark mode does not flash light
+        try {
+            var s = JSON.parse(localStorage.getItem('handbookSettings') || '{}') || {};
+            if (s.dark !== undefined ? s.dark : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
+        } catch (err) { /* storage blocked: stay light */ }
+    </script>
+    <link rel="stylesheet" href="css/styles.css?v=20261075">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -15,8 +22,10 @@
     <nav id="sidebar" aria-label="Table of contents">
         <div class="sidebar-header">
             <button class="menu-toggle" id="menuToggle" aria-label="Table of contents" aria-expanded="false" aria-controls="navList">&#9776;</button>
+            <img class="sidebar-logo logo-light" src="images/logo3-sidebar-transparent.png" width="320" height="320" alt="" onerror="this.remove()">
+            <img class="sidebar-logo logo-dark" src="images/logo3-sidebar-dark.png" width="320" height="320" alt="" onerror="this.remove()">
             <h1>Finding, Keeping, and Nurturing Clients</h1>
-            <p>A Practical Guide for New Agents</p>
+            <p>A practical guide for new agents</p>
         </div>
         <ul class="nav-list" id="navList">
             <li><a href="#cover" class="nav-item active" data-page="cover" aria-current="page">Title Page</a></li>
@@ -79,10 +88,11 @@
         </form>
     </div>
 
-    <script src="js/app-with-cover.js?v=20261031"></script>
-    <script src="js/widgets.js?v=20261031"></script>
-    <script src="js/widgets-practice.js?v=20261031"></script>
-    <script src="js/widgets-plan.js?v=20261031"></script>
-    <script src="js/interactive.js?v=20261031"></script>
+    <script src="js/app-with-cover.js?v=20261075"></script>
+    <script src="js/widgets.js?v=20261075"></script>
+    <script src="js/widgets-practice.js?v=20261075"></script>
+    <script src="js/widgets-plan.js?v=20261075"></script>
+    <script src="js/interactive.js?v=20261075"></script>
+    <script src="js/search.js?v=20261075"></script>
 </body>
 </html>
