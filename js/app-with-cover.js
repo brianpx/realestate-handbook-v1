@@ -24,10 +24,16 @@ async function loadChapter(pageId) {
 }
 
 function updateActiveNav() {
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        item.removeAttribute('aria-current');
+    });
     const activeId = pages[currentPageIndex];
     const activeItem = document.querySelector(`.nav-item[data-page="${activeId}"]`);
-    if (activeItem) activeItem.classList.add('active');
+    if (activeItem) {
+        activeItem.classList.add('active');
+        activeItem.setAttribute('aria-current', 'page');
+    }
 }
 
 async function navigateTo(pageId) {
@@ -146,7 +152,12 @@ function setupGate() {
     const submit = document.getElementById('gateSubmit');
     const showError = msg => { error.textContent = msg; error.hidden = false; };
 
+    // aria-modal alone doesn't stop Tab reaching the page behind the dialog
+    const behind = document.querySelectorAll('.skip-link, #sidebar, #main-content');
+    const setBehindInert = inert => behind.forEach(node => { node.inert = inert; });
+
     gate.hidden = false;
+    setBehindInert(true);
     input.focus();
 
     form.addEventListener('submit', async e => {
@@ -167,6 +178,8 @@ function setupGate() {
             if (!response.ok) throw new Error(`Formspree responded ${response.status}`);
             try { localStorage.setItem(GATE_KEY, '1'); } catch (err) { /* unlocks for this visit only */ }
             gate.hidden = true;
+            setBehindInert(false);
+            document.getElementById('main-content').focus({ preventScroll: true });
         } catch (err) {
             console.error(err);
             showError('Something went wrong. Please try again.');
@@ -181,7 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupMenuToggle();
     setupContinuousScroll();
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-        item.addEventListener('click', () => navigateTo(item.dataset.page));
+        item.addEventListener('click', e => {
+            e.preventDefault();
+            navigateTo(item.dataset.page);
+        });
     });
 
     await loadChapter('cover');

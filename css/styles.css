@@ -54,7 +54,7 @@
 
         .sidebar-header p {
             font-size: 0.8rem;
-            color: #64748b;
+            color: #94a3b8;
             margin-top: 4px;
         }
 
@@ -69,9 +69,10 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #475569;
+            color: #94a3b8;
             padding: 12px 20px 4px;
             font-weight: 700;
+            margin-bottom: 0;
         }
 
         .nav-item {
@@ -89,6 +90,23 @@
             background-color: #0f172a;
             color: var(--sidebar-hover);
         }
+
+        .nav-item:focus-visible { outline: 3px solid #38bdf8; outline-offset: -3px; }
+
+        .skip-link {
+            position: absolute;
+            left: 8px;
+            top: -100px;
+            z-index: 2000;
+            padding: 10px 16px;
+            background: #fff;
+            color: #0f172a;
+            font-weight: 700;
+            border: 2px solid #4338ca;
+            border-radius: 6px;
+        }
+        .skip-link:focus { top: 8px; }
+        #main-content:focus { outline: none; }
 
         .nav-item.active {
             background-color: #0f172a;
@@ -213,19 +231,19 @@
         }
 
         .box.field-note { border-color: #0ea5e9; background-color: #f0f9ff; }
-        .box.field-note .box-title { color: #0284c7; }
+        .box.field-note .box-title { color: #0369a1; }
 
         .box.pitfall { border-color: #ef4444; background-color: #fef2f2; }
-        .box.pitfall .box-title { color: #dc2626; }
+        .box.pitfall .box-title { color: #b91c1c; }
 
         .box.script { border-color: #8b5cf6; background-color: #f5f3ff; }
         .box.script .box-title { color: #7c3aed; }
 
         .box.try-it { border-color: #10b981; background-color: #ecfdf5; }
-        .box.try-it .box-title { color: #059669; }
+        .box.try-it .box-title { color: #047857; }
 
         .box.checkpoint { border-color: #f59e0b; background-color: #fffbeb; }
-        .box.checkpoint .box-title { color: #d97706; }
+        .box.checkpoint .box-title { color: #92400e; }
 
         .learning-objectives {
             background-color: #f1f5f9;
@@ -701,7 +719,8 @@
             .nav-item:hover { background-color: #f1f5f9; color: #0f172a; }
             .nav-item.active { background-color: #e0f2fe; color: #0369a1; border-left-color: #0284c7; }
             .nav-section-title { color: #64748b; }
-            .progress-label { color: #475569; }
+            .progress-label, .progress-sub { color: #475569; }
+            .nav-item:focus-visible { outline-color: #4338ca; }
             .progress-reset { color: #475569; border-color: #94a3b8; }
             .progress-reset:hover { color: #0f172a; border-color: #475569; }
             .progress-bar { background: #e2e8f0; }
