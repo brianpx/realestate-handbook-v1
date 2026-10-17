@@ -151,7 +151,7 @@ function setupMenuToggle() {
 }
 
 // Formspree endpoint, e.g. 'https://formspree.io/f/xxxxxxxx'. While empty the gate stays off.
-const FORMSPREE_ENDPOINT = '';
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xoejragy';
 const GATE_KEY = 'handbookAccess';
 
 // This is lead capture, not security: chapter files remain publicly fetchable.
