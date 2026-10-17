@@ -787,15 +787,23 @@
                 padding-top: 40px;
                 border-top: 2px solid var(--border-color);
             }
-            .sidebar-header, #sidebar.header-collapsed .sidebar-header { position: relative; padding: 14px 64px 14px 20px; display: flex; align-items: center; gap: 12px; margin-top: 0; visibility: visible; transition: none; }
-            .sidebar-header p { display: none; }
-            .sidebar-logo { width: 40px; height: 40px; max-width: none; margin: 0; flex-shrink: 0; }
+            /* Compact header: logo | title over subtitle. Scrolling the page slides it away (the shared rule
+               above), leaving the search row, which always holds the menu button on its right. */
+            .sidebar-header { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 10px 14px; }
+            .sidebar-header h1 {
+                grid-column: 2; grid-row: 1; align-self: end; margin: 0;
+                /* sized from the window width so the whole title always fits on one line */
+                font-size: clamp(9px, calc((100vw - 84px) / 20.8), 22px);
+                line-height: 1.2; white-space: nowrap;
+            }
+            .sidebar-header p {
+                display: block; grid-column: 2; grid-row: 2; align-self: start; margin: 2px 0 0;
+                font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            }
+            .sidebar-logo { grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; max-width: none; margin: 0; }
             .menu-toggle {
                 display: block;
-                position: absolute;
-                top: 50%;
-                right: 12px;
-                transform: translateY(-50%);
+                flex-shrink: 0;
                 width: 44px;
                 height: 44px;
                 background: transparent;
@@ -819,7 +827,8 @@
                 box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
             }
             #sidebar.menu-open .nav-list { display: block; }
-            .nav-search { padding: 8px 16px; }
+            .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+            .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto; }
             .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; background: #ffffff; border-bottom: 1px solid #cbd5e1; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100; }
             #main-content { padding: 8px; }
             .content-container { padding: 16px; border-radius: 8px; }

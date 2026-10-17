@@ -56,6 +56,8 @@ function setupSearch() {
         '<ul class="search-results" id="searchResults" aria-label="Search results" hidden></ul>' +
         '<div class="visually-hidden" id="searchStatus" role="status" aria-live="polite"></div>';
     document.querySelector('.sidebar-header').after(box);
+    // on phones the menu button always sits to the right of the search field (it is hidden on desktop)
+    box.append(document.getElementById('menuToggle'));
 
     const input = box.querySelector('input');
     const list = box.querySelector('#searchResults');
