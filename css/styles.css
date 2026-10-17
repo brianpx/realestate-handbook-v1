@@ -376,6 +376,11 @@
         .gate-trap { position: absolute; left: -9999px; }
         .gate-card p.gate-error { color: #dc2626; font-size: 0.85rem; margin: 0 0 12px; }
 
+        .part-intro { color: #475569; margin-bottom: 8px; }
+        .glossary dt { font-weight: 700; margin-top: 14px; }
+        .glossary dd { margin-left: 0; color: #334155; }
+        .colophon { margin-top: 32px; font-size: 0.85rem; color: #64748b; }
+
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px; }
         .progress-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; }

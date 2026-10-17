@@ -314,8 +314,10 @@ function setupScriptPractice(section) {
 }
 
 function setupObjectionTrainer(section) {
-    const table = section.querySelector('.table-wrapper table');
-    if (!table || section.dataset.page !== 'ch9') return;
+    if (section.dataset.page !== 'ch9') return;
+    const table = [...section.querySelectorAll('.table-wrapper table')]
+        .find(t => t.querySelector('th')?.textContent.trim() === 'OBJECTION');
+    if (!table) return;
     const items = [...table.querySelectorAll('tbody tr')].map(tr => {
         const cells = tr.querySelectorAll('td');
         return { objection: cells[0].textContent.trim(), response: cells[1].textContent.trim(), goal: cells[2].textContent.trim() };
