@@ -389,6 +389,7 @@ function openTermPop(button, name, definition) {
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && termOwner) { const owner = termOwner; closeTermPop(); owner.focus(); } });
         document.addEventListener('click', e => { if (termOwner && !e.target.closest('.term') && !e.target.closest('.term-pop')) closeTermPop(); });
         document.getElementById('main-content').addEventListener('scroll', closeTermPop, { passive: true });
+        window.addEventListener('scroll', closeTermPop, { passive: true });
         window.addEventListener('resize', closeTermPop);
     }
     clearTimeout(termCloseTimer);

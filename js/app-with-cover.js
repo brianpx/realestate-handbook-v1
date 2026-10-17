@@ -1,3 +1,12 @@
+// On phones the whole page scrolls (so Safari can tuck its toolbars away) and the header sticks to the top;
+// on desktop the #main-content panel scrolls. scrollRoot() is whichever one is scrolling right now, and
+// viewTop() is where the reading area begins (below the sticky header on phones).
+const phoneLayout = window.matchMedia('(max-width: 900px)');
+const scrollRoot = () => (phoneLayout.matches ? document.scrollingElement : document.getElementById('main-content'));
+const viewTop = () => (phoneLayout.matches
+    ? document.getElementById('sidebar').getBoundingClientRect().bottom
+    : document.getElementById('main-content').getBoundingClientRect().top);
+
 const pages = ['cover', 'pref', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'app-a', 'app-b', 'app-c', 'app-d', 'app-e', 'app-f'];
 let currentPageIndex = 0;
 const BASE_TITLE = document.title;
@@ -27,7 +36,7 @@ async function loadChapter(pageId) {
         const html = await fetchChapter(pageId);
         container.innerHTML = sectionHtml(pageId, html);
         container.scrollTop = 0;
-        document.getElementById('main-content').scrollTop = 0;
+        scrollRoot().scrollTop = 0;
         await fillContinuous();
     } catch (err) {
         container.innerHTML = `<p role="alert" style="color:#dc2626;">Could not load chapter: ${pageId}</p>`;
@@ -72,7 +81,7 @@ async function extendContinuous() {
     if (extending) return false;
     extending = true;
     try {
-        const main = document.getElementById('main-content');
+        const main = scrollRoot();
         const container = document.getElementById('content-container');
         const sections = container.querySelectorAll('.chapter-section');
         if (!sections.length) return false;
@@ -108,7 +117,7 @@ async function fillContinuous() {
 }
 
 function updateCurrentFromScroll() {
-    const mainTop = document.getElementById('main-content').getBoundingClientRect().top;
+    const mainTop = viewTop();
     let current = null;
     document.querySelectorAll('.chapter-section').forEach(sec => {
         if (sec.getBoundingClientRect().top <= mainTop + 80) current = sec.dataset.page;
@@ -121,9 +130,8 @@ function updateCurrentFromScroll() {
 }
 
 function setupContinuousScroll() {
-    const main = document.getElementById('main-content');
     let queued = false;
-    main.addEventListener('scroll', () => {
+    const onScroll = () => {
         if (queued) return;
         queued = true;
         requestAnimationFrame(async () => {
@@ -131,7 +139,10 @@ function setupContinuousScroll() {
             updateCurrentFromScroll();
             await fillContinuous();
         });
-    }, { passive: true });
+    };
+    // only one of the two actually scrolls at a given width
+    document.getElementById('main-content').addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
 }
 
 // Scrolling the main page slides the logo header out of the sidebar; back at the top it returns.
@@ -148,6 +159,7 @@ function setupHeaderCollapse() {
     header.querySelector('img')?.addEventListener('load', measure);
     document.fonts?.ready.then(measure);
     main.addEventListener('scroll', () => {
+        if (phoneLayout.matches) return; // on phones the header scrolls away with the page by itself (sticky)
         const top = main.scrollTop;
         if (top > 60) sidebar.classList.add('header-collapsed');
         else if (top < 8) sidebar.classList.remove('header-collapsed');
@@ -160,8 +172,17 @@ function setupMenuToggle() {
     const setOpen = open => {
         sidebar.classList.toggle('menu-open', open);
         toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '\u2715' : '\u2630'; // a cross while the menu is open, hamburger otherwise
     };
     toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('menu-open')));
+
+    // A Close bar pinned to the bottom of the phone dropdown, so the menu can be dismissed without choosing
+    // anything. Hidden on desktop, where the list is always visible.
+    const closeItem = document.createElement('li');
+    closeItem.className = 'menu-close';
+    closeItem.innerHTML = '<button type="button">Close menu</button>';
+    closeItem.querySelector('button').addEventListener('click', () => { setOpen(false); toggle.focus(); });
+    document.getElementById('navList').appendChild(closeItem);
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {
         item.addEventListener('click', () => setOpen(false));
     });
@@ -288,7 +309,7 @@ const ANCHOR_HEADINGS = 'h2, h3, h4';
 const headingText = node => node.textContent.replace(/\s+/g, ' ').trim();
 
 function captureScrollAnchor() {
-    const mainTop = document.getElementById('main-content').getBoundingClientRect().top;
+    const mainTop = viewTop();
     for (const section of document.querySelectorAll('.chapter-section')) {
         const seen = {};
         for (const node of section.querySelectorAll(ANCHOR_HEADINGS)) {
@@ -306,8 +327,7 @@ function applyScrollAnchor(anchor) {
     const section = anchor && document.querySelector(`.chapter-section[data-page="${anchor.page}"]`);
     const target = section && [...section.querySelectorAll(ANCHOR_HEADINGS)].filter(n => headingText(n) === anchor.text)[anchor.occurrence];
     if (!target) return;
-    const main = document.getElementById('main-content');
-    main.scrollTop += target.getBoundingClientRect().top - main.getBoundingClientRect().top - anchor.offset;
+    scrollRoot().scrollTop += target.getBoundingClientRect().top - viewTop() - anchor.offset;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

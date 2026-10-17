@@ -42,7 +42,7 @@ const readObserver = new IntersectionObserver(entries => {
         markRead(entry.target.dataset.page);
         readObserver.unobserve(entry.target);
     });
-}, { root: document.getElementById('main-content') });
+});
 
 function markRead(pageId) {
     if (!trackingProgress()) return;
@@ -111,29 +111,32 @@ function setupSettingsUi() {
     const item = el('li', 'settings-item');
     item.innerHTML = '<details class="settings"><summary>Settings</summary>' +
         '<label class="settings-row"><input type="checkbox" id="settingDark"><span>Dark mode</span></label>' +
-        '<label class="settings-row"><input type="checkbox" id="settingWide"><span>Full width</span></label>' +
+        '<label class="settings-row settings-wide"><input type="checkbox" id="settingWide"><span>Full width</span></label>' +
         '<div class="settings-row"><input type="checkbox" id="settingTrack">' +
         '<div class="settings-col"><label for="settingTrack">Keep track of progress</label>' +
         '<div class="settings-sub" id="settingResetGroup"><button type="button" class="btn-mini settings-reset" id="settingReset">Reset progress</button>' +
         '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div>' +
         '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only. Keep just the 5 best interactive tools (income calculator, speed-to-lead, script practice, objection trainer, scorecard).</span></label></details>' +
         '<p class="settings-legal"><strong>Finding, Keeping, and Nurturing Clients</strong><br>A Practical Guide for New Agents<br>v1.0 · October 2026 · All rights reserved.</p>';
-    document.getElementById('navList').appendChild(item);
+    const navList = document.getElementById('navList');
+    navList.insertBefore(item, navList.querySelector('.menu-close')); // the Close bar stays last
 
     // Scrolling the page up folds Settings away. Only real user scrolling counts (wheel, swipe, keys, dragging
     // the scrollbar), so programmatic jumps such as keeping your place after a tool rebuild never collapse it.
     const details = item.querySelector('details');
     const main = document.getElementById('main-content');
     const collapse = () => { details.open = false; };
-    main.addEventListener('wheel', e => { if (e.deltaY < 0) collapse(); }, { passive: true });
+    // listeners sit on the document because phones scroll the whole page; scrolling the sidebar itself is ignored
+    const inSidebar = e => e.target.closest('#sidebar');
+    document.addEventListener('wheel', e => { if (e.deltaY < 0 && !inSidebar(e)) collapse(); }, { passive: true });
     let touchY = null;
-    main.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
-    main.addEventListener('touchmove', e => {
+    document.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchmove', e => {
         // a finger moving down drags the content down, which is scrolling up
-        if (touchY !== null && e.touches[0].clientY - touchY > 10) { collapse(); touchY = e.touches[0].clientY; }
+        if (touchY !== null && !inSidebar(e) && e.touches[0].clientY - touchY > 10) { collapse(); touchY = e.touches[0].clientY; }
     }, { passive: true });
-    main.addEventListener('keydown', e => {
-        if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) && !e.target.closest('input, textarea, select')) collapse();
+    document.addEventListener('keydown', e => {
+        if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) && !e.target.closest('input, textarea, select, #sidebar')) collapse();
     });
     let draggingScrollbar = false;
     let lastTop = main.scrollTop;
@@ -586,7 +589,8 @@ async function rebuildTools() {
     const sections = [...document.querySelectorAll('.chapter-section')];
     const fresh = await Promise.all(sections.map(section => fetchChapter(section.dataset.page)));
     const anchor = captureScrollAnchor();
-    main.style.overflowAnchor = 'none'; // the browser's own scroll anchoring would fight ours
+    const root = phoneLayout.matches ? document.documentElement : main;
+    root.style.overflowAnchor = 'none'; // the browser's own scroll anchoring would fight ours
     sections.forEach((section, i) => {
         section.querySelectorAll('.read-sentinel').forEach(s => readObserver.unobserve(s));
         section.innerHTML = fresh[i];
@@ -594,7 +598,7 @@ async function rebuildTools() {
         enhanceSection(section);
     });
     applyScrollAnchor(anchor);
-    main.style.overflowAnchor = '';
+    root.style.overflowAnchor = '';
     renderProgress();
 }
 

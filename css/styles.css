@@ -23,6 +23,7 @@
             color: var(--text-main);
             display: flex;
             height: 100vh;
+            height: 100dvh; /* the visible height, not the height with Safari's toolbars hidden */
             overflow: hidden;
             line-height: 1.6;
         }
@@ -777,11 +778,18 @@
         }
 
         .menu-toggle { display: none; }
+        .menu-close { display: none; }
 
         @media (max-width: 900px) {
-            body { flex-direction: column; }
-            #sidebar { width: 100%; height: auto; flex-shrink: 0; position: relative; z-index: 100; }
-            #main-content { min-height: 0; }
+            /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
+               toolbar. The sidebar sticks to the top with its header just off-screen, so scrolling slides the
+               header away and leaves the search row pinned. */
+            body { display: block; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
+            #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100; }
+            #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible; }
+            #main-content { min-height: 0; overflow: visible; }
+            /* anchored jumps (search, tool links) must land below the sticky search row */
+            h2, h3, h4, [data-widget] { scroll-margin-top: 72px; }
             .chapter-section + .chapter-section {
                 margin-top: 40px;
                 padding-top: 40px;
@@ -793,12 +801,12 @@
             .sidebar-header h1 {
                 grid-column: 2; grid-row: 1; align-self: end; margin: 0;
                 /* sized from the window width so the whole title always fits on one line */
-                font-size: clamp(9px, calc((100vw - 84px) / 20.8), 22px);
+                font-size: clamp(11px, calc((100vw - 75px) / 19), 22px);
                 line-height: 1.2; white-space: nowrap;
             }
             .sidebar-header p {
                 display: block; grid-column: 2; grid-row: 2; align-self: start; margin: 2px 0 0;
-                font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                font-size: 13.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
             .sidebar-logo { grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; max-width: none; margin: 0; }
             .menu-toggle {
@@ -822,11 +830,16 @@
                 right: 0;
                 max-height: 70vh;
                 overflow-y: auto;
+                padding-bottom: 0; /* the Close bar sits flush with the bottom edge */
                 background: #ffffff;
                 border-bottom: 1px solid #cbd5e1;
                 box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
             }
             #sidebar.menu-open .nav-list { display: block; }
+            /* phones are already full width, so the option does nothing there */
+            .settings-row.settings-wide { display: none; }
+            .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: #f8fafc; border-top: 1px solid #cbd5e1; list-style: none; }
+            .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: #0f172a; background: #ffffff; border: 1px solid #94a3b8; border-radius: 6px; cursor: pointer; }
             .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
             .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto; }
             .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; background: #ffffff; border-bottom: 1px solid #cbd5e1; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100; }
