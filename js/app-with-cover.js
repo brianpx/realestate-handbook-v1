@@ -1,5 +1,17 @@
 const pages = ['cover', 'pref', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'app-a', 'app-b', 'app-c', 'app-d', 'app-e'];
 let currentPageIndex = 0;
+const BASE_TITLE = document.title;
+
+// Polite screen-reader message via the #pageStatus live region. Clearing first lets a
+// repeated message be announced again.
+function announce(message) {
+    const region = document.getElementById('pageStatus');
+    if (!region) return;
+    region.textContent = '';
+    setTimeout(() => { region.textContent = message; }, 50);
+}
+
+const navLabel = pageId => document.querySelector(`.nav-item[data-page="${pageId}"]`)?.textContent.trim() || pageId;
 
 async function fetchChapter(pageId) {
     const response = await fetch(`chapters/${pageId}.html`);
@@ -18,7 +30,7 @@ async function loadChapter(pageId) {
         document.getElementById('main-content').scrollTop = 0;
         await fillContinuous();
     } catch (err) {
-        container.innerHTML = `<p style="color:#dc2626;">Could not load chapter: ${pageId}</p>`;
+        container.innerHTML = `<p role="alert" style="color:#dc2626;">Could not load chapter: ${pageId}</p>`;
         console.error(err);
     }
 }
@@ -33,6 +45,7 @@ function updateActiveNav() {
     if (activeItem) {
         activeItem.classList.add('active');
         activeItem.setAttribute('aria-current', 'page');
+        document.title = `${activeItem.textContent.trim()} - ${BASE_TITLE}`;
     }
 }
 
@@ -42,6 +55,14 @@ async function navigateTo(pageId) {
     currentPageIndex = idx;
     await loadChapter(pageId);
     updateActiveNav();
+    announce(`Showing ${navLabel(pageId)}`);
+    // move keyboard / screen-reader position to the new chapter instead of leaving it on the nav link
+    const section = document.querySelector(`.chapter-section[data-page="${pageId}"]`);
+    const target = section?.querySelector('h1, h2') || section;
+    if (target) {
+        target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+    }
 }
 
 let extending = false;

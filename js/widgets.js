@@ -514,7 +514,7 @@ function setupNurtureTimeline(section) {
     const stacked = {};
     const dots = NURTURE_TOUCHES.map(t => {
         const slot = stacked[t.day] = (stacked[t.day] ?? -1) + 1;
-        return `<circle class="nurture-dot${t.value ? ' value' : ''}" data-n="${t.n}" cx="${xDay(t.day)}" cy="${34 + slot * 14}" r="5"/>`;
+        return `<circle class="nurture-dot${t.value ? ' value' : ''}" data-n="${t.n}" cx="${xDay(t.day)}" cy="${34 + slot * 14}" r="${t.value ? 6.5 : 5}"/>`;
     }).join('');
     const marks = [0, 14, 30, 60, 90].map(d =>
         `<text x="${xDay(d)}" y="82" text-anchor="middle" class="nurture-tick">Day ${d}</text>`).join('');
@@ -527,8 +527,8 @@ function setupNurtureTimeline(section) {
     widget.innerHTML = '<div class="nurture-filters" role="group" aria-label="Highlight touches"></div>' +
         ruler +
         '<div class="nurture-touches" role="group" aria-label="Touches in the 90-day plan"></div>' +
-        '<p class="nurture-legend">Shaded touches (5 to 12) are where the handbook says most conversions happen. ' +
-        'Touch 2 is where most new agents stop. Touches marked <strong>Value</strong> give before they ask.</p>' +
+        '<p class="nurture-legend">Shaded, heavy-bordered touches (5 to 12) are where the handbook says most conversions happen. ' +
+        'Touch 2 is where most new agents stop. Touches marked <strong>Value</strong> (amber underline, larger dot) give before they ask.</p>' +
         '<div class="nurture-detail" aria-live="polite"></div>';
     box.appendChild(widget);
 
@@ -552,7 +552,7 @@ function setupNurtureTimeline(section) {
         b.dataset.n = String(t.n);
         if (t.n >= ZONE.first && t.n <= ZONE.last) b.classList.add('in-zone');
         if (t.value) b.classList.add('value');
-        b.setAttribute('aria-label', `Touch ${t.n}, day ${t.day}, ${t.label}${t.value ? ', value touch' : ''}`);
+        b.setAttribute('aria-label', `Touch ${t.n}, day ${t.day}, ${t.label}${t.value ? ', value touch' : ''}${b.classList.contains('in-zone') ? ', in the conversion zone' : ''}`);
         b.append(
             el('span', 'touch-num', String(t.n)),
             el('span', 'touch-ch', t.label),

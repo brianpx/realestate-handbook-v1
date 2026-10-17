@@ -148,12 +148,14 @@ function setupChecklists(section) {
             });
         });
         const meter = el('div', 'checklist-meter');
-        meter.innerHTML = '<div class="meter-bar"><span class="checklist-fill"></span></div><span class="checklist-count"></span>';
+        meter.innerHTML = '<div class="meter-bar"><span class="checklist-fill"></span></div><span class="checklist-count" role="status"></span>';
         list.appendChild(meter);
     });
 
     if (lists.length > 1) {
-        lists[0].parentElement.insertBefore(el('p', 'checklist-total'), lists[0].previousElementSibling);
+        const totalLine = el('p', 'checklist-total');
+        totalLine.setAttribute('role', 'status');
+        lists[0].parentElement.insertBefore(totalLine, lists[0].previousElementSibling);
     }
     if (section.dataset.page !== 'ch12') {
         const lead = section.querySelector('.checklist-total') || lists[0].previousElementSibling || lists[0];
@@ -179,16 +181,19 @@ function setupScorecard(section) {
             input.type = 'number';
             input.min = '0';
             input.inputMode = 'decimal';
-            input.setAttribute('aria-label', `${row.firstElementChild.textContent}, week ${w + 1}`);
+            input.dataset.label = `${row.firstElementChild.textContent}, week ${w + 1}`;
+            input.setAttribute('aria-label', input.dataset.label);
             const key = `${row.dataset.row}:${w}`;
             if (data[key] !== undefined) input.value = data[key];
             input.addEventListener('input', () => {
                 if (input.value === '') delete data[key];
                 else data[key] = Number(input.value);
                 saveState();
-                refresh();
+                refresh(true);
             });
-            cell.appendChild(input);
+            const badge = el('span', 'score-status');
+            badge.setAttribute('aria-hidden', 'true');
+            cell.append(input, badge);
         });
     });
 
@@ -198,18 +203,21 @@ function setupScorecard(section) {
 
     const toolbar = el('div', 'scorecard-tools');
     const chartHost = el('div', 'score-chart');
+    const summary = el('div', 'visually-hidden');
+    summary.setAttribute('aria-live', 'polite');
+    let summaryTimer;
     const reset = el('button', 'btn-nav btn-secondary', 'Clear scorecard');
     reset.addEventListener('click', () => {
         if (!confirm('Clear every number on the scorecard?')) return;
         Object.keys(data).forEach(k => delete data[k]);
         saveState();
         table.querySelectorAll('.score-input').forEach(i => { i.value = ''; });
-        refresh();
+        refresh(true);
     });
     const print = el('button', 'btn-nav btn-secondary', 'Print');
     print.addEventListener('click', () => window.print());
     toolbar.append(reset, print);
-    table.closest('.table-wrapper').after(chartHost, toolbar);
+    table.closest('.table-wrapper').after(chartHost, summary, toolbar);
     table.closest('.table-wrapper').before(interactiveHeader('Type your weekly numbers. Cells change colour against each target and the chart updates as you type. Saved on this device.', 'scorecard', 'Weekly activity scorecard'));
 
     function statusFor(row, w) {
@@ -229,7 +237,9 @@ function setupScorecard(section) {
         return '';
     }
 
-    function refresh() {
+    const STATUS_TEXT = { hit: '✓ Hit', close: '~ Close', miss: '✗ Miss' };
+
+    function refresh(announceChange = false) {
         const measurable = rows.filter(r => r.dataset.mode === 'min').length;
         const hitsPerWeek = [];
         for (let w = 0; w < WEEKS; w++) {
@@ -239,6 +249,9 @@ function setupScorecard(section) {
                 const cell = row.querySelectorAll('td')[2 + w];
                 const status = statusFor(row, w);
                 cell.dataset.status = status;
+                cell.querySelector('.score-status').textContent = STATUS_TEXT[status] ?? '';
+                const input = cell.querySelector('.score-input');
+                input.setAttribute('aria-label', status ? `${input.dataset.label}, ${STATUS_TEXT[status].slice(2).toLowerCase()}` : input.dataset.label);
                 if (row.dataset.mode === 'min' && data[`${row.dataset.row}:${w}`] !== undefined) {
                     entered++;
                     if (status === 'hit') hits++;
@@ -249,6 +262,14 @@ function setupScorecard(section) {
             hitsPerWeek.push(entered ? hits : null);
         }
         renderChart(hitsPerWeek, measurable);
+        if (announceChange) {
+            // debounced so typing "12" doesn't announce for "1" and then "12"
+            clearTimeout(summaryTimer);
+            summaryTimer = setTimeout(() => {
+                const parts = hitsPerWeek.map((h, w) => (h === null ? null : `week ${w + 1}: ${h} of ${measurable} targets hit`)).filter(Boolean);
+                summary.textContent = parts.length ? parts.join('. ') : 'Scorecard cleared';
+            }, 700);
+        }
     }
 
     function renderChart(hitsPerWeek, measurable) {
@@ -315,8 +336,10 @@ function setupScriptPractice(section) {
             try {
                 await navigator.clipboard.writeText(scriptText);
                 copy.textContent = 'Copied';
+                announce('Script copied to clipboard');
             } catch (err) {
                 copy.textContent = 'Copy failed';
+                announce('Copy failed');
             }
             setTimeout(() => { copy.textContent = 'Copy script'; }, 1500);
         });
@@ -350,11 +373,11 @@ function setupObjectionTrainer(section) {
 
     const card = el('div', 'box try-it objection-trainer');
     card.innerHTML = '<div class="box-title">● PRACTICE · OBJECTION TRAINER</div>' +
-        '<p class="trainer-prompt"></p>' +
+        '<p class="trainer-prompt" aria-live="polite"></p>' +
         '<label class="practice-label">Your response (acknowledge, clarify, respond, check):<textarea class="practice-text" rows="3"></textarea></label>' +
-        '<div class="trainer-answer" hidden></div>' +
+        '<div class="trainer-answer" tabindex="-1" hidden></div>' +
         '<div class="script-actions"></div>' +
-        '<p class="trainer-score"></p>';
+        '<p class="trainer-score" role="status"></p>';
     table.closest('.table-wrapper').after(card);
     card.classList.add('iw');
     card.querySelector('.box-title').after(interactiveHeader('Read the objection, answer in your own words, reveal the framework, then rate yourself.', 'objection-trainer', 'Objection trainer'));
@@ -373,7 +396,7 @@ function setupObjectionTrainer(section) {
 
     let current = null;
 
-    function pick() {
+    function pick(moveFocus = false) {
         const pool = items.filter(i => !mastered[i.objection]);
         const source = pool.length ? pool : items;
         const choices = source.filter(i => i !== current);
@@ -384,6 +407,8 @@ function setupObjectionTrainer(section) {
         gotIt.hidden = again.hidden = true;
         showBtn.hidden = false;
         score.textContent = `${items.filter(i => mastered[i.objection]).length} of ${items.length} objections mastered`;
+        // the button that was clicked is now hidden, so keep focus on a visible control
+        if (moveFocus) showBtn.focus();
     }
 
     showBtn.addEventListener('click', () => {
@@ -396,10 +421,11 @@ function setupObjectionTrainer(section) {
         answer.hidden = false;
         showBtn.hidden = true;
         gotIt.hidden = again.hidden = false;
+        answer.focus();
     });
-    gotIt.addEventListener('click', () => { mastered[current.objection] = true; saveState(); pick(); });
-    again.addEventListener('click', () => { delete mastered[current.objection]; saveState(); pick(); });
-    skip.addEventListener('click', pick);
+    gotIt.addEventListener('click', () => { mastered[current.objection] = true; saveState(); pick(true); });
+    again.addEventListener('click', () => { delete mastered[current.objection]; saveState(); pick(true); });
+    skip.addEventListener('click', () => pick(true));
     pick();
 }
 
