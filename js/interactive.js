@@ -55,11 +55,9 @@ function markRead(pageId) {
 function setupProgressUi() {
     const navList = document.getElementById('navList');
     const item = el('li', 'progress-item');
-    item.innerHTML = '<div class="progress-head"><div class="progress-label" id="progressLabel"></div>' +
-        '<button type="button" class="progress-reset" id="progressReset" title="Mark every section unread" aria-label="Reset sections read">Reset</button></div>' +
+    item.innerHTML = '<div class="progress-head"><div class="progress-label" id="progressLabel"></div></div>' +
         '<div class="progress-bar" role="progressbar" aria-labelledby="progressLabel" aria-valuemin="0" aria-valuemax="100" id="progressBar"><span id="progressFill"></span></div>';
     navList.insertBefore(item, navList.firstChild);
-    item.querySelector('#progressReset').addEventListener('click', resetProgress);
     renderProgress();
 }
 
@@ -71,6 +69,49 @@ function resetProgress() {
     renderProgress();
     // sentinels were unobserved once read; re-arm them so scrolling marks sections read again
     document.querySelectorAll('.read-sentinel').forEach(s => readObserver.observe(s));
+}
+
+/* ---------- Settings ---------- */
+
+const SETTINGS_KEY = 'handbookSettings';
+// The tools kept when "Essential tools only" is on. Keys match each tool's data-widget.
+const ESSENTIAL_WIDGETS = ['goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'scorecard'];
+
+function essentialOnly() {
+    try {
+        return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').essentialOnly === true;
+    } catch (err) {
+        return false;
+    }
+}
+
+function setupSettingsUi() {
+    const item = el('li', 'settings-item');
+    item.innerHTML = '<details class="settings"><summary>Settings</summary>' +
+        '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only. Keep just the 5 best interactive tools (income calculator, speed-to-lead, script practice, objection trainer, scorecard).</span></label>' +
+        '<div class="settings-row"><button type="button" class="btn-mini" id="settingReset">Reset progress</button>' +
+        '<span class="settings-note" id="settingResetNote" role="status"></span></div></details>';
+    document.getElementById('navList').appendChild(item);
+
+    const toggle = item.querySelector('#settingEssential');
+    toggle.checked = essentialOnly();
+    toggle.addEventListener('change', () => {
+        try {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify({ essentialOnly: toggle.checked }));
+        } catch (err) {
+            // storage blocked: the setting cannot persist, so do not reload into the old state
+            toggle.checked = !toggle.checked;
+            return;
+        }
+        // tools are built once per section, so a reload is the simplest way to rebuild them
+        location.reload();
+    });
+
+    item.querySelector('#settingReset').addEventListener('click', () => {
+        const had = Object.keys(loadState().read).length > 0;
+        resetProgress();
+        item.querySelector('#settingResetNote').textContent = had ? 'Progress reset.' : 'Nothing to reset.';
+    });
 }
 
 function renderProgress() {
@@ -449,30 +490,59 @@ function setupObjectionTrainer(section) {
     pick();
 }
 
+/* ---------- Document dialogs ---------- */
+
+document.addEventListener('click', e => {
+    const open = e.target.closest('[data-open-doc]');
+    if (open) {
+        const dialog = document.getElementById(open.dataset.openDoc);
+        const frame = dialog.querySelector('iframe[data-src]');
+        // load the PDF on first open, not with the chapter
+        if (frame && !frame.src) frame.src = frame.dataset.src;
+        dialog.showModal();
+        return;
+    }
+    const dialog = e.target.closest('dialog.doc-dialog');
+    // close from the Close button or a click on the backdrop (which targets the dialog itself)
+    if (dialog && (e.target.closest('[data-close-doc]') || e.target === dialog)) dialog.close();
+});
+
 /* ---------- Wiring ---------- */
+
+// Appendix E lists every tool; in essential mode drop the rows for tools that are not built.
+function trimToolIndex(section) {
+    section.querySelectorAll('tr:has([data-widget])').forEach(row => {
+        if (!ESSENTIAL_WIDGETS.includes(row.querySelector('[data-widget]').dataset.widget)) row.remove();
+    });
+}
 
 function enhanceSection(section) {
     if (section.dataset.enhanced) return;
     section.dataset.enhanced = '1';
     trackReading(section);
-    setupChecklists(section);
+    const essential = essentialOnly();
     setupScorecard(section);
     setupScriptPractice(section);
     setupObjectionTrainer(section);
     setupGoalCalculator(section);
     setupSpeedToLead(section);
-    setupNurtureTimeline(section);
-    setupCheckpoints(section);
-    setupQualifyingDrill(section);
-    setupPitfallCycle(section);
-    setupErrorSelfScore(section);
-    setupConsultationLab(section);
-    setupFairHousingDrill(section);
-    setupLeadSources(section);
-    setupPipelineCalculator(section);
-    setupRoadmap(section);
-    setupTimeBlockPlanner(section);
-    setupPostCloseScheduler(section);
+    if (!essential) {
+        setupChecklists(section);
+        setupNurtureTimeline(section);
+        setupCheckpoints(section);
+        setupQualifyingDrill(section);
+        setupPitfallCycle(section);
+        setupErrorSelfScore(section);
+        setupConsultationLab(section);
+        setupFairHousingDrill(section);
+        setupLeadSources(section);
+        setupPipelineCalculator(section);
+        setupRoadmap(section);
+        setupTimeBlockPlanner(section);
+        setupPostCloseScheduler(section);
+    } else if (section.dataset.page === 'app-e') {
+        trimToolIndex(section);
+    }
     setupGlossary(section);
     if (section.dataset.page === 'cover') renderResume();
 }
@@ -485,3 +555,4 @@ const contentObserver = new MutationObserver(mutations => {
 contentObserver.observe(document.getElementById('content-container'), { childList: true });
 
 setupProgressUi();
+setupSettingsUi();

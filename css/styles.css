@@ -422,12 +422,26 @@
         .glossary dd { margin-left: 0; color: #334155; }
         .colophon { margin-top: 32px; font-size: 0.85rem; color: #64748b; }
 
+        /* Document dialog */
+        .link-btn { font: inherit; padding: 0; background: none; border: 0; border-bottom: 1px solid currentColor; color: #1d4ed8; cursor: pointer; }
+        .link-btn:hover { color: #1e3a8a; }
+        .doc-dialog { width: min(900px, 94vw); height: 90vh; padding: 16px; border: 0; border-radius: 8px; flex-direction: column; gap: 8px; }
+        .doc-dialog[open] { display: flex; }
+        .doc-dialog::backdrop { background: rgba(15, 23, 42, 0.6); }
+        .doc-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .doc-dialog-head h4 { margin: 0; }
+        .doc-frame { flex: 1; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .doc-dialog-foot { margin: 0; font-size: 0.85rem; color: #475569; }
+
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px; }
         .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
         .progress-label { font-size: 0.75rem; color: #94a3b8; }
-        .progress-reset { font-size: 0.75rem; padding: 4px 10px; min-height: 24px; background: transparent; color: #94a3b8; border: 1px solid #475569; border-radius: 4px; cursor: pointer; }
-        .progress-reset:hover { color: #e2e8f0; border-color: #94a3b8; }
+        .settings-item { list-style: none; padding: 12px 20px 16px; margin-top: 8px; border-top: 1px solid #1e293b; }
+        .settings summary { cursor: pointer; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8; }
+        .settings-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 0.85rem; color: #cbd5e1; }
+        .settings-row input { margin-top: 3px; flex-shrink: 0; }
+        .settings-note { font-size: 0.8rem; color: #94a3b8; align-self: center; }
         .progress-bar { height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; }
         .progress-bar span { display: block; height: 100%; width: 0; background: #38bdf8; transition: width 0.3s; }
         .nav-item.read::after { content: "\2713"; content: "\2713" / " (read)"; float: right; color: #34d399; font-weight: 700; }
@@ -467,6 +481,7 @@
             #sidebar, .scorecard-tools, .menu-toggle, .gate { display: none !important; }
             body { display: block; height: auto; overflow: visible; }
             #main-content { overflow: visible; padding: 0; }
+            .print-page-break { break-before: page; page-break-before: always; }
         }
 
         /* Practice */
@@ -747,8 +762,9 @@
             .progress-label, .progress-sub { color: #475569; }
             .nav-item.read::after { color: #047857; }
             #sidebar .nav-list :focus-visible { outline-color: #4338ca; }
-            .progress-reset { color: #475569; border-color: #94a3b8; }
-            .progress-reset:hover { color: #0f172a; border-color: #475569; }
+            .settings summary, .settings-note { color: #475569; }
+            .settings-row { color: #334155; }
+            .settings-item { border-top-color: #e2e8f0; }
             .progress-bar { background: #e2e8f0; }
             #main-content { padding: 8px; }
             .content-container { padding: 16px; border-radius: 8px; }

@@ -387,7 +387,7 @@ function setupSpeedToLead(section) {
     slider.addEventListener('input', render);
     render();
 
-    setupResponseTimer(section);
+    if (!essentialOnly()) setupResponseTimer(section);
 }
 
 // Backs the Field Note: a friend submits an inquiry, and the reader times each reply.
