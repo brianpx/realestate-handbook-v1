@@ -839,9 +839,10 @@
             #sidebar.menu-open .nav-list { display: block; }
             /* While a dropdown is open the page behind it neither scrolls nor receives taps */
             html.scroll-locked, html.scroll-locked body { overflow: hidden; }
+            html.scroll-locked body { position: fixed; width: 100%; } /* top is set in JS to the saved scroll offset */
+            html.scroll-locked #sidebar { position: fixed; left: 0; right: 0; } /* top is set in JS too */
             html.scroll-locked .menu-backdrop { display: block; }
-            .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: rgba(15, 23, 42, 0.45); touch-action: none; }
-            html.dark .menu-backdrop { background: rgba(240, 244, 248, 0.55); } /* inverted by the dark filter into a dark veil */
+            .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: #f1f5f9; touch-action: none; } /* fully opaque: nothing of the page shows or can be reached */
             .nav-list, .search-results { overscroll-behavior: contain; } /* scrolling the list never chains to the page */
             /* the desktop "searching" rule lifts the height limit; on phones the dropdown must stay within the screen and scroll */
             #sidebar.searching .search-results { max-height: 70vh; max-height: 70dvh; }

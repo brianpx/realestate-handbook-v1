@@ -3,6 +3,18 @@
 // viewTop() is where the reading area begins (below the sticky header on phones).
 const phoneLayout = window.matchMedia('(max-width: 900px)');
 const scrollRoot = () => (phoneLayout.matches ? document.scrollingElement : document.getElementById('main-content'));
+// While a phone dropdown is open the page is pinned in place (body fixed at its current offset). Scrolling
+// then means moving that saved offset instead of the real scroll position.
+let lockedScrollY = 0;
+const isScrollLocked = () => document.documentElement.classList.contains('scroll-locked');
+function scrollContentBy(delta) {
+    if (isScrollLocked()) {
+        lockedScrollY += delta;
+        document.body.style.top = `-${lockedScrollY}px`;
+    } else {
+        scrollRoot().scrollTop += delta;
+    }
+}
 const viewTop = () => (phoneLayout.matches
     ? document.getElementById('sidebar').getBoundingClientRect().bottom
     : document.getElementById('main-content').getBoundingClientRect().top);
@@ -78,7 +90,7 @@ let extending = false;
 
 // Adds one neighbouring chapter when the reader is near an edge. Returns true if it added one.
 async function extendContinuous() {
-    if (extending) return false;
+    if (extending || isScrollLocked()) return false; // never reshuffle content under a pinned page
     extending = true;
     try {
         const main = scrollRoot();
@@ -175,8 +187,24 @@ function syncMenuIcon() {
     const open = searching || sidebar.classList.contains('menu-open');
     toggle.textContent = open ? '\u2715' : '\u2630';
     toggle.setAttribute('aria-label', searching ? 'Close search results' : 'Table of contents');
-    // on phones an open menu or search dropdown freezes the page behind it (and a backdrop catches taps)
-    document.documentElement.classList.toggle('scroll-locked', open && phoneLayout.matches);
+    // On phones an open menu or search dropdown pins the page behind it: the body is fixed at the current
+    // scroll offset (the one method iOS Safari honours), and the offset is restored when the dropdown closes.
+    const lock = open && phoneLayout.matches;
+    if (lock && !isScrollLocked()) {
+        // a fixed body would drag the sticky header with it, so the header is fixed at the spot it occupies
+        // now and the body gets padding for the room it took, leaving every pixel where it was
+        lockedScrollY = window.scrollY;
+        sidebar.style.top = `${sidebar.getBoundingClientRect().top}px`;
+        document.body.style.paddingTop = `${sidebar.getBoundingClientRect().height}px`; // fractional on purpose: rounding shifts the page 1px
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.documentElement.classList.add('scroll-locked');
+    } else if (!lock && isScrollLocked()) {
+        document.documentElement.classList.remove('scroll-locked');
+        sidebar.style.top = '';
+        document.body.style.paddingTop = '';
+        document.body.style.top = '';
+        window.scrollTo(0, lockedScrollY);
+    }
 }
 
 function setupMenuToggle() {
@@ -200,6 +228,22 @@ function setupMenuToggle() {
         if (sidebar.classList.contains('menu-open')) setOpen(false);
     });
     document.body.append(backdrop);
+
+    // Touch-scrolling is blocked everywhere except inside the dropdown lists, and there only while the list can
+    // still move in the swipe direction, so a swipe never leaks through to the page (older iOS ignores
+    // overscroll-behavior). These listeners must be non-passive to be allowed to cancel the scroll.
+    let touchStartY = 0;
+    document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchmove', e => {
+        if (!isScrollLocked()) return;
+        const list = e.target.closest('.nav-list, .search-results');
+        if (!list) { e.preventDefault(); return; }
+        const swipingDown = e.touches[0].clientY > touchStartY; // content moves down, so the list scrolls toward its top
+        const atTop = list.scrollTop <= 0;
+        const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+        const scrollable = list.scrollHeight > list.clientHeight;
+        if (!scrollable || (swipingDown && atTop) || (!swipingDown && atBottom)) e.preventDefault();
+    }, { passive: false });
 
     // A Close bar pinned to the bottom of the phone dropdown, so the menu can be dismissed without choosing
     // anything. Hidden on desktop, where the list is always visible.
@@ -352,7 +396,7 @@ function applyScrollAnchor(anchor) {
     const section = anchor && document.querySelector(`.chapter-section[data-page="${anchor.page}"]`);
     const target = section && [...section.querySelectorAll(ANCHOR_HEADINGS)].filter(n => headingText(n) === anchor.text)[anchor.occurrence];
     if (!target) return;
-    scrollRoot().scrollTop += target.getBoundingClientRect().top - viewTop() - anchor.offset;
+    scrollContentBy(target.getBoundingClientRect().top - viewTop() - anchor.offset);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
