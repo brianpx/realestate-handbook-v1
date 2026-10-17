@@ -1,8 +1,6 @@
 const pages = ['cover', 'pref', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'app-a', 'app-b', 'app-c', 'app-d'];
 let currentPageIndex = 0;
 
-const mobileQuery = window.matchMedia('(max-width: 900px)');
-
 async function fetchChapter(pageId) {
     const response = await fetch(`chapters/${pageId}.html`);
     if (!response.ok) throw new Error('Chapter not found');
@@ -32,43 +30,19 @@ function updateActiveNav() {
     if (activeItem) activeItem.classList.add('active');
 }
 
-function updateNavButtons() {
-    document.getElementById('prevBtn').disabled = (currentPageIndex === 0);
-    document.getElementById('nextBtn').disabled = (currentPageIndex === pages.length - 1);
-}
-
 async function navigateTo(pageId) {
     const idx = pages.indexOf(pageId);
     if (idx === -1) return;
     currentPageIndex = idx;
     await loadChapter(pageId);
     updateActiveNav();
-    updateNavButtons();
-}
-
-async function nextPage() {
-    if (currentPageIndex < pages.length - 1) {
-        currentPageIndex++;
-        await loadChapter(pages[currentPageIndex]);
-        updateActiveNav();
-        updateNavButtons();
-    }
-}
-
-async function prevPage() {
-    if (currentPageIndex > 0) {
-        currentPageIndex--;
-        await loadChapter(pages[currentPageIndex]);
-        updateActiveNav();
-        updateNavButtons();
-    }
 }
 
 let extending = false;
 
 // Adds one neighbouring chapter when the reader is near an edge. Returns true if it added one.
 async function extendContinuous() {
-    if (!mobileQuery.matches || extending) return false;
+    if (extending) return false;
     extending = true;
     try {
         const main = document.getElementById('main-content');
@@ -116,7 +90,6 @@ function updateCurrentFromScroll() {
     if (idx !== -1 && idx !== currentPageIndex) {
         currentPageIndex = idx;
         updateActiveNav();
-        updateNavButtons();
     }
 }
 
@@ -124,7 +97,7 @@ function setupContinuousScroll() {
     const main = document.getElementById('main-content');
     let queued = false;
     main.addEventListener('scroll', () => {
-        if (!mobileQuery.matches || queued) return;
+        if (queued) return;
         queued = true;
         requestAnimationFrame(async () => {
             queued = false;
@@ -211,10 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         item.addEventListener('click', () => navigateTo(item.dataset.page));
     });
 
-    document.getElementById('prevBtn').addEventListener('click', prevPage);
-    document.getElementById('nextBtn').addEventListener('click', nextPage);
-
     await loadChapter('cover');
     updateActiveNav();
-    updateNavButtons();
 });

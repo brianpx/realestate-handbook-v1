@@ -102,7 +102,6 @@
             flex-grow: 1;
             overflow-y: auto;
             padding: 40px 60px;
-            scroll-behavior: smooth;
         }
 
         .content-container {
@@ -113,6 +112,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
             border: 1px solid var(--border-color);
+        }
+
+        .chapter-section + .chapter-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid var(--border-color);
         }
 
         .chapter-page {
@@ -318,15 +323,7 @@
             font-weight: bold;
         }
 
-        /* Navigation Buttons */
-        .page-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border-color);
-        }
-
+        /* Buttons */
         .btn-nav {
             padding: 10px 20px;
             background-color: var(--secondary-color);
@@ -414,7 +411,7 @@
         .score-label { font-size: 12px; font-weight: 700; fill: #1e293b; }
         .score-axis { font-size: 11px; fill: #475569; }
         @media print {
-            #sidebar, .page-navigation, .scorecard-tools, .menu-toggle, .gate { display: none !important; }
+            #sidebar, .scorecard-tools, .menu-toggle, .gate { display: none !important; }
             body { display: block; height: auto; overflow: visible; }
             #main-content { overflow: visible; padding: 0; }
         }
@@ -438,12 +435,7 @@
         @media (max-width: 900px) {
             body { flex-direction: column; }
             #sidebar { width: 100%; height: auto; flex-shrink: 0; position: relative; z-index: 100; }
-            #main-content { min-height: 0; scroll-behavior: auto; }
-            .chapter-section + .chapter-section {
-                margin-top: 40px;
-                padding-top: 40px;
-                border-top: 2px solid var(--border-color);
-            }
+            #main-content { min-height: 0; }
             .sidebar-header { position: relative; padding: 14px 64px 14px 20px; }
             .sidebar-header p { display: none; }
             .menu-toggle {
@@ -479,7 +471,6 @@
             .nav-item:hover { background-color: #f1f5f9; color: #0f172a; }
             .nav-item.active { background-color: #e0f2fe; color: #0369a1; border-left-color: #0284c7; }
             .nav-section-title { color: #64748b; }
-            .page-navigation { display: none; }
             .progress-label { color: #475569; }
             .progress-bar { background: #e2e8f0; }
             #main-content { padding: 8px; }
