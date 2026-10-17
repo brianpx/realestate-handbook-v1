@@ -66,7 +66,7 @@
         }
 
         .nav-section-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #94a3b8;
@@ -426,11 +426,11 @@
         .progress-item { list-style: none; padding: 4px 20px 12px; }
         .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
         .progress-label { font-size: 0.75rem; color: #94a3b8; }
-        .progress-reset { font-size: 0.65rem; padding: 2px 8px; background: transparent; color: #94a3b8; border: 1px solid #475569; border-radius: 4px; cursor: pointer; }
+        .progress-reset { font-size: 0.75rem; padding: 4px 10px; min-height: 24px; background: transparent; color: #94a3b8; border: 1px solid #475569; border-radius: 4px; cursor: pointer; }
         .progress-reset:hover { color: #e2e8f0; border-color: #94a3b8; }
         .progress-bar { height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; }
         .progress-bar span { display: block; height: 100%; width: 0; background: #38bdf8; transition: width 0.3s; }
-        .nav-item.read::after { content: "\2713"; float: right; color: #34d399; font-weight: 700; }
+        .nav-item.read::after { content: "\2713"; content: "\2713" / " (read)"; float: right; color: #34d399; font-weight: 700; }
 
         /* Checklists */
         .checklist { margin: 12px 0 20px; }
@@ -462,7 +462,7 @@
         .score-svg { width: 100%; max-width: 420px; height: auto; display: block; }
         .score-bar { fill: #2563eb; }
         .score-label { font-size: 12px; font-weight: 700; fill: #1e293b; }
-        .score-axis { font-size: 11px; fill: #475569; }
+        .score-axis { font-size: 12px; fill: #475569; }
         @media print {
             #sidebar, .scorecard-tools, .menu-toggle, .gate { display: none !important; }
             body { display: block; height: auto; overflow: visible; }
@@ -506,12 +506,12 @@
         .speed-zone.zone-top { fill: #dcfce7; }
         .speed-zone.zone-strong { fill: #fef9c3; }
         .speed-zone.zone-drop { fill: #fee2e2; }
-        .speed-zone-label { font-size: 9px; fill: #334155; font-weight: 600; }
+        .speed-zone-label { font-size: 11px; fill: #334155; font-weight: 600; }
         .speed-axis { stroke: #94a3b8; stroke-width: 1; }
         .speed-curve { fill: none; stroke: #1e3a8a; stroke-width: 2.5; }
         .speed-guide { stroke: #1e3a8a; stroke-width: 1; stroke-dasharray: 3 3; }
         .speed-dot { fill: #2563eb; stroke: #fff; stroke-width: 2; }
-        .speed-tick { font-size: 9px; fill: #475569; }
+        .speed-tick { font-size: 11px; fill: #475569; }
         .speed-tick.active { fill: #0f172a; font-weight: 700; }
         .speed-readout { padding: 12px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; }
         .speed-when { font-size: 0.85rem; color: #475569; }
@@ -530,9 +530,9 @@
         .nurture-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .nurture-ruler { width: 100%; height: auto; display: block; margin-bottom: 8px; }
         .nurture-front { fill: #eff6ff; stroke: #bfdbfe; }
-        .nurture-front-label { font-size: 10px; fill: #1e3a8a; font-weight: 600; }
+        .nurture-front-label { font-size: 12px; fill: #1e3a8a; font-weight: 600; }
         .nurture-axis { stroke: #94a3b8; stroke-width: 1; }
-        .nurture-tick { font-size: 10px; fill: #475569; }
+        .nurture-tick { font-size: 12px; fill: #475569; }
         .nurture-dot { fill: #2563eb; stroke: #fff; stroke-width: 1.5; }
         .nurture-dot.value { fill: #f59e0b; stroke: #92400e; }
         .nurture-dot.selected { stroke: #0f172a; stroke-width: 3; }
@@ -545,8 +545,8 @@
         .touch-btn[aria-pressed="true"] { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
         .touch-btn.dim { opacity: 0.35; }
         .touch-num { font-size: 1.1rem; font-weight: 700; }
-        .touch-ch { font-size: 0.7rem; }
-        .touch-day { font-size: 0.7rem; opacity: 0.8; }
+        .touch-ch { font-size: 0.75rem; }
+        .touch-day { font-size: 0.75rem; opacity: 0.8; }
         .nurture-legend { margin: 10px 0; font-size: 0.85rem; color: #475569; }
         .nurture-detail { padding: 12px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; }
         .nurture-detail p { margin-top: 8px; }
@@ -557,7 +557,7 @@
 
         /* Interactive marker and shared widget chrome */
         .interactive-head { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 12px; background: #eef2ff; border-left: 4px solid #4338ca; border-radius: 6px; font-size: 0.9rem; color: #1e1b4b; text-align: left; scroll-margin-top: 16px; }
-        .interactive-pill { display: inline-block; padding: 2px 10px; background: #4338ca; color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; border-radius: 999px; white-space: nowrap; }
+        .interactive-pill { display: inline-block; padding: 2px 10px; background: #4338ca; color: #fff; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; border-radius: 999px; white-space: nowrap; }
         .interactive-hint { flex: 1 1 220px; }
         .legend-interactive { margin-top: 12px; padding: 12px 16px; background: #eef2ff; border-left: 4px solid #4338ca; border-radius: 6px; }
         .script-actions .interactive-pill { align-self: center; }
@@ -625,7 +625,7 @@
 
         /* Consultation lab and time-block planner */
         .alloc-bar { display: flex; height: 40px; margin: 12px 0; border-radius: 8px; overflow: hidden; border: 1px solid #94a3b8; background: #fff; }
-        .alloc-seg { box-shadow: inset -1px 0 #fff; display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; font-size: 0.72rem; font-weight: 700; color: #0f172a; white-space: nowrap; }
+        .alloc-seg { box-shadow: inset -1px 0 #fff; display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; font-size: 0.78rem; font-weight: 700; color: #0f172a; white-space: nowrap; }
         .seg-0 { background: #e0e7ff; } .seg-1 { background: #bbf7d0; } .seg-2 { background: #fde68a; } .seg-3 { background: #fecaca; } .seg-4 { background: #ddd6fe; }
         .pseg-0 { background: #e0e7ff; } .pseg-1 { background: #bae6fd; } .pseg-2 { background: #bbf7d0; } .pseg-3 { background: #f1f5f9; } .pseg-4 { background: #ddd6fe; }
         .alloc-row { display: grid; grid-template-columns: 70px 1fr 60px; gap: 10px; align-items: center; min-height: 40px; }
@@ -668,6 +668,7 @@
         .term:hover, .term[aria-expanded="true"] { background: #eef2ff; }
         .term-pop { position: fixed; z-index: 300; padding: 10px 12px; background: #1e1b4b; color: #fff; border-radius: 8px; font-size: 0.85rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
         .term-pop[hidden] { display: none; }
+        .term { text-decoration: none; border-bottom: 2px dotted #4338ca; }
         .term-pop strong { display: block; margin-bottom: 2px; }
         .term-more { display: block; margin-top: 6px; font-size: 0.75rem; opacity: 0.75; }
 
@@ -684,7 +685,6 @@
             .alloc-row { grid-template-columns: 62px 1fr 52px; gap: 6px; }
             .drill-option { flex-basis: 100%; }
             .touch-btn { min-width: 58px; }
-            .speed-tick { font-size: 11px; }
             .nurture-tag { margin: 4px 6px 0 0; }
         }
 
@@ -742,6 +742,7 @@
             .nav-item.active { background-color: #e0f2fe; color: #0369a1; border-left-color: #0284c7; }
             .nav-section-title { color: #64748b; }
             .progress-label, .progress-sub { color: #475569; }
+            .nav-item.read::after { color: #047857; }
             #sidebar .nav-list :focus-visible { outline-color: #4338ca; }
             .progress-reset { color: #475569; border-color: #94a3b8; }
             .progress-reset:hover { color: #0f172a; border-color: #475569; }

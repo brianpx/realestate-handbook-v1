@@ -362,11 +362,19 @@ function loadGlossary() {
 
 let termPop = null;
 let termOwner = null;
+let termCloseTimer = null;
 function closeTermPop() {
+    clearTimeout(termCloseTimer);
     if (!termPop) return;
     termPop.hidden = true;
     termOwner?.setAttribute('aria-expanded', 'false');
+    termOwner?.removeAttribute('aria-describedby');
     termOwner = null;
+}
+// WCAG 1.4.13: a hover popover must stay open while the pointer moves onto it
+function scheduleCloseTermPop(owner) {
+    clearTimeout(termCloseTimer);
+    termCloseTimer = setTimeout(() => { if (termOwner === owner) closeTermPop(); }, 250);
 }
 function openTermPop(button, name, definition) {
     if (!termPop) {
@@ -374,12 +382,16 @@ function openTermPop(button, name, definition) {
         termPop.id = 'termPop';
         termPop.setAttribute('role', 'tooltip');
         document.body.appendChild(termPop);
+        termPop.addEventListener('mouseenter', () => clearTimeout(termCloseTimer));
+        termPop.addEventListener('mouseleave', () => { if (termOwner) scheduleCloseTermPop(termOwner); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && termOwner) { const owner = termOwner; closeTermPop(); owner.focus(); } });
         document.addEventListener('click', e => { if (termOwner && !e.target.closest('.term') && !e.target.closest('.term-pop')) closeTermPop(); });
         document.getElementById('main-content').addEventListener('scroll', closeTermPop, { passive: true });
         window.addEventListener('resize', closeTermPop);
     }
+    clearTimeout(termCloseTimer);
     termOwner?.setAttribute('aria-expanded', 'false');
+    termOwner?.removeAttribute('aria-describedby');
     termOwner = button;
     button.setAttribute('aria-expanded', 'true');
     button.setAttribute('aria-describedby', 'termPop');
@@ -431,9 +443,14 @@ async function setupGlossary(section) {
             button.type = 'button';
             button.setAttribute('aria-expanded', 'false');
             const name = best.p.term;
-            button.addEventListener('click', () => (termOwner === button ? closeTermPop() : openTermPop(button, name, definition)));
+            button.addEventListener('click', () => {
+                if (termOwner === button) { closeTermPop(); return; }
+                openTermPop(button, name, definition);
+                // the tooltip is not in the reading flow, so say the definition when it is opened on purpose
+                announce(`${name}: ${definition}`);
+            });
             button.addEventListener('mouseenter', () => { if (window.matchMedia('(hover: hover)').matches) openTermPop(button, name, definition); });
-            button.addEventListener('mouseleave', () => { if (window.matchMedia('(hover: hover)').matches && termOwner === button) closeTermPop(); });
+            button.addEventListener('mouseleave', () => { if (window.matchMedia('(hover: hover)').matches && termOwner === button) scheduleCloseTermPop(button); });
             matched.replaceWith(button);
             used.add(best.p.term);
             node = rest;
