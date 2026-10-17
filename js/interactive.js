@@ -97,6 +97,13 @@ function writeSettings(patch) {
 }
 
 const essentialOnly = () => readSettings().essentialOnly === true;
+// Test your knowledge sections show unless the reader switched them off
+const quizzesShown = () => readSettings().hideQuizzes !== true;
+
+function applyQuizVisibility() {
+    const show = quizzesShown();
+    document.querySelectorAll('.box.quiz').forEach(box => { box.hidden = !show; });
+}
 // on unless the reader switched it off
 const trackingProgress = () => readSettings().trackProgress !== false;
 
@@ -112,11 +119,12 @@ function setupSettingsUi() {
     item.innerHTML = '<details class="settings"><summary>Settings</summary>' +
         '<label class="settings-row"><input type="checkbox" id="settingDark"><span>Dark mode</span></label>' +
         '<label class="settings-row settings-wide"><input type="checkbox" id="settingWide"><span>Full width</span></label>' +
+        '<label class="settings-row"><input type="checkbox" id="settingQuiz"><span>Test your knowledge sections</span></label>' +
+        '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only (the 5 best)</span></label>' +
         '<div class="settings-row"><input type="checkbox" id="settingTrack">' +
         '<div class="settings-col"><label for="settingTrack">Keep track of progress</label>' +
         '<div class="settings-sub" id="settingResetGroup"><button type="button" class="btn-mini settings-reset" id="settingReset">Reset progress</button>' +
-        '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div>' +
-        '<label class="settings-row"><input type="checkbox" id="settingEssential"><span>Essential tools only. Keep just the 5 best interactive tools (income calculator, speed-to-lead, script practice, objection trainer, scorecard).</span></label></details>' +
+        '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div></details>' +
         '<p class="settings-legal"><strong>Finding, Keeping, and Nurturing Clients</strong><br>A Practical Guide for New Agents<br>v1.0 · October 2026 · All rights reserved.</p>';
     const navList = document.getElementById('navList');
     navList.insertBefore(item, navList.querySelector('.menu-close')); // the Close bar stays last
@@ -198,6 +206,16 @@ function setupSettingsUi() {
             toggle.disabled = false;
             toggle.focus({ preventScroll: true });
         }
+    });
+
+    const quiz = item.querySelector('#settingQuiz');
+    quiz.checked = quizzesShown();
+    quiz.addEventListener('change', () => {
+        if (!writeSettings({ hideQuizzes: !quiz.checked })) {
+            quiz.checked = !quiz.checked; // storage blocked: the choice cannot persist
+            return;
+        }
+        applyQuizVisibility();
     });
 
     item.querySelector('#settingReset').addEventListener('click', () => {
@@ -625,6 +643,7 @@ function enhanceSection(section) {
         setupChecklists(section);
         setupNurtureTimeline(section);
         setupCheckpoints(section);
+        setupKnowledgeCheck(section);
         setupQualifyingDrill(section);
         setupPitfallCycle(section);
         setupErrorSelfScore(section);

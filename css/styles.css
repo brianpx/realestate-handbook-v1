@@ -296,6 +296,9 @@
         .box.checkpoint { border-color: #f59e0b; background-color: #fffbeb; }
         .box.checkpoint .box-title { color: #92400e; }
 
+        .box.quiz { border-color: #4338ca; background-color: #eef2ff; }
+        .box.quiz .box-title { color: #3730a3; }
+
         .learning-objectives {
             background-color: #f1f5f9;
             padding: 20px 24px;
@@ -681,6 +684,17 @@
         .opt-item { display: flex; align-items: center; gap: 10px; min-height: 40px; cursor: pointer; }
         .opt-item input { width: 22px; height: 22px; flex-shrink: 0; accent-color: #4338ca; }
         .lab-title { margin: 16px 0 6px; font-size: 1rem; color: #0f172a; }
+
+        /* Test your knowledge */
+        .quiz-item { margin: 16px 0 0; padding: 12px 0 0; border: 0; border-top: 1px solid #c7d2fe; min-width: 0; }
+        .quiz-item legend { padding: 0; }
+        .quiz-opt { padding: 4px 10px; border: 1px solid transparent; border-radius: 6px; }
+        .quiz-opt.is-right { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+        .quiz-opt.is-wrong { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+        .quiz-mark { font-weight: 700; margin-left: auto; white-space: nowrap; }
+        .quiz-sentence { margin: 8px 0; }
+        .quiz-blank { width: 160px; margin: 0 4px; }
+        .quiz-score { margin-top: 14px; font-weight: 700; }
 
         /* Pitfall cycle and self-score */
         .cycle-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
