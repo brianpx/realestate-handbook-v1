@@ -179,7 +179,7 @@ function setupMenuToggle() {
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xoejragy';
 const GATE_KEY = 'handbookAccess';
 const GATE_ATTEMPTS_KEY = 'handbookGateAttempts';
-const GATE_MIN_GAP_MS = 30 * 1000;       // at least this long between submissions
+const GATE_MIN_GAP_MS = 1000;            // at least this long between submissions
 const GATE_MAX_PER_HOUR = 5;             // and no more than this many in any hour
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -212,7 +212,8 @@ function gateThrottleMessage(now) {
         return `Too many attempts. Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
     }
     const gap = attempts.length ? GATE_MIN_GAP_MS - (now - Math.max(...attempts)) : 0;
-    return gap > 0 ? `Please wait ${Math.ceil(gap / 1000)} seconds before trying again.` : null;
+    const seconds = Math.ceil(gap / 1000);
+    return gap > 0 ? `Please wait ${seconds} second${seconds === 1 ? '' : 's'} before trying again.` : null;
 }
 
 // This is lead capture, not security: chapter files remain publicly fetchable.
