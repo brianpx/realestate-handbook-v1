@@ -55,7 +55,48 @@ async function prevPage() {
     }
 }
 
+const mobileQuery = window.matchMedia('(max-width: 900px)');
+const SWIPE_THRESHOLD = 80;
+
+// Swiping past the end (or start) of a page moves to the next (or previous) page.
+// Edge state is captured at touchstart so a scroll that merely reaches the edge doesn't trigger it.
+function setupSwipePaging() {
+    const main = document.getElementById('main-content');
+    let startY = null;
+    let atTop = false;
+    let atBottom = false;
+
+    main.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+        atTop = main.scrollTop <= 0;
+        atBottom = main.scrollTop + main.clientHeight >= main.scrollHeight - 2;
+    }, { passive: true });
+
+    main.addEventListener('touchend', e => {
+        if (startY === null || !mobileQuery.matches) return;
+        const delta = e.changedTouches[0].clientY - startY;
+        startY = null;
+        if (delta <= -SWIPE_THRESHOLD && atBottom) nextPage();
+        else if (delta >= SWIPE_THRESHOLD && atTop) prevPage();
+    }, { passive: true });
+}
+
+function setupMenuToggle() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('menuToggle');
+    const setOpen = open => {
+        sidebar.classList.toggle('menu-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('menu-open')));
+    document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+        item.addEventListener('click', () => setOpen(false));
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    setupMenuToggle();
+    setupSwipePaging();
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {
         item.addEventListener('click', () => navigateTo(item.dataset.page));
     });

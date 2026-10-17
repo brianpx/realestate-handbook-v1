@@ -341,9 +341,32 @@
         .btn-nav:hover { background-color: var(--primary-color); }
         .btn-nav:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
+        .menu-toggle { display: none; }
+
         @media (max-width: 900px) {
             body { flex-direction: column; }
-            #sidebar { width: 100%; height: 220px; }
+            #sidebar { width: 100%; height: auto; flex-shrink: 0; }
+            #main-content { min-height: 0; }
+            .sidebar-header { position: relative; padding: 14px 64px 14px 20px; }
+            .sidebar-header p { display: none; }
+            .menu-toggle {
+                display: block;
+                position: absolute;
+                top: 50%;
+                right: 12px;
+                transform: translateY(-50%);
+                width: 44px;
+                height: 44px;
+                background: transparent;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                color: #f8fafc;
+                font-size: 1.4rem;
+                cursor: pointer;
+            }
+            .nav-list { display: none; max-height: 60vh; overflow-y: auto; }
+            #sidebar.menu-open .nav-list { display: block; }
+            .page-navigation { display: none; }
             #main-content { padding: 20px; }
             .content-container { padding: 20px; }
             .lifecycle-container { flex-direction: column; }
