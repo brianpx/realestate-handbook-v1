@@ -2,10 +2,16 @@
 // as the reader types. Loaded after interactive.js; uses pages / fetchChapter / navigateTo /
 // navLabel / announce / el from the other (classic) scripts.
 
-const SEARCH_SELECTOR = 'h2, h3, h4, dt, .diagram-title';
+const SEARCH_SELECTOR = 'h2, h3, h4, dt, .diagram-title, p, li';
 const SEARCH_MAX_RESULTS = 12;
-// headings inside a closed dialog (the sample document) are not reachable by scrolling
-const searchable = root => [...root.querySelectorAll(SEARCH_SELECTOR)].filter(node => !node.closest('dialog'));
+const HEADING_TAGS = new Set(['H2', 'H3', 'H4', 'DT']);
+// skip text inside a dialog, and skip the disclaimer and next-link added after load
+const searchable = root => [...root.querySelectorAll(SEARCH_SELECTOR)].filter(node => {
+    if (node.closest('dialog, .chapter-foot, .chapter-next, .nurture-static')) return false;
+    // a paragraph that only wraps other searchable blocks would repeat them
+    if (node.matches('p, li') && node.querySelector('p, li, h2, h3, h4')) return false;
+    return true;
+});
 
 let searchIndex = null;
 let searchIndexLoading = null;
@@ -18,7 +24,7 @@ function buildSearchIndex() {
             const text = node.textContent.replace(/\s+/g, ' ').trim();
             // the nth heading with this exact text on the page, so repeated titles jump to the right one
             const occurrence = seen[text] = (seen[text] ?? -1) + 1;
-            return { pageId, text, occurrence, lower: text.toLowerCase(), isTerm: node.tagName === 'DT' };
+            return { pageId, text, occurrence, lower: text.toLowerCase(), isTerm: node.tagName === 'DT', isHeading: HEADING_TAGS.has(node.tagName) || node.classList.contains('diagram-title') };
         }).filter(entry => entry.text);
     })).then(perPage => { searchIndex = perPage.flat(); });
     return searchIndexLoading;
@@ -28,7 +34,7 @@ function searchEntries(query) {
     const words = query.toLowerCase().split(/\s+/).filter(Boolean);
     return searchIndex
         .filter(entry => words.every(w => entry.lower.includes(w)))
-        .map(entry => ({ entry, rank: entry.lower.startsWith(words[0]) ? 0 : 1 }))
+        .map(entry => ({ entry, rank: (entry.isHeading ? 0 : 2) + (entry.lower.startsWith(words[0]) ? 0 : 1) }))
         .sort((a, b) => a.rank - b.rank)
         .slice(0, SEARCH_MAX_RESULTS)
         .map(r => r.entry);

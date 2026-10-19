@@ -321,9 +321,10 @@ function setupPostCloseScheduler(section) {
             result.append(list, el('p', 'calc-note', `After the first year: ${rows.Annually.touch} ${rows.Annually.purpose}`));
         }
         const n = Number(saved.closings);
+        const shape = 'Months 3, 6 and 9 are the quarterly touches. Month 12 is the home anniversary, which takes the place of a fourth quarter. The annual appreciation event is not a separate dated row.';
         note.textContent = n > 0
-            ? `${POST_CLOSE_STEPS.length} scheduled touches per client in the first year × ${n} closings = ${POST_CLOSE_STEPS.length * n} touches. That is why you build this once as a follow-up plan in your CRM instead of remembering it.`
-            : '';
+            ? `${POST_CLOSE_STEPS.length} dated touches per client in the first year × ${n} closings = ${POST_CLOSE_STEPS.length * n} touches. ${shape}`
+            : shape;
     }
     closeInput.addEventListener('input', () => { if (closeInput.value) saved.date = closeInput.value; else delete saved.date; saveState(); render(); });
     exportBtn.addEventListener('click', () => {

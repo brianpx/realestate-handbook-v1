@@ -26,7 +26,15 @@ async function goToWidget(page, key) {
     await navigateTo(page);
     const section = document.querySelector(`.chapter-section[data-page="${page}"]`);
     const target = key ? section?.querySelector(`[data-widget="${key}"]`) : null;
-    if (!target) return;
+    if (!target) {
+        if (key) {
+            const off = typeof essentialOnly === 'function' && essentialOnly();
+            announce(off
+                ? 'That tool is off while Essential tools only is on. Turn it off in Settings to open this one.'
+                : `Could not find that tool in ${navLabel(page)}.`);
+        }
+        return;
+    }
     target.scrollIntoView({ block: 'start' });
     target.focus({ preventScroll: true });
     target.classList.add('widget-found');
@@ -61,7 +69,7 @@ const parseIso = value => {
 
 const icsDate = d => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
 const icsDateTime = d => `${icsDate(d)}T${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}00`;
-const icsEscape = text => text.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+const icsEscape = text => text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 
 // events: { summary, description?, start: Date, end?: Date, allDay?: boolean, rrule?: string }
 function downloadIcs(filename, events) {
@@ -240,14 +248,13 @@ function setupGoalCalculator(section) {
             stats.appendChild(el('p', 'calc-empty', 'Enter your income goal and average commission to see your daily conversation target.'));
             return;
         }
-        const base = plan(1);
-        cells[2].textContent = fmtNum(base.closings);
-        apptSub.textContent = `= ${fmtNum(base.appts)} appointments`;
-        convSub.textContent = `≈ ${fmtNum(base.convs)} conversations`;
-        cells[6].textContent = `≈ ${fmtNum(base.perWeek)}`;
-        cells[7].textContent = fmtPerDay(base.perDay);
-
         const shown = plan(factor);
+        cells[2].textContent = fmtNum(shown.closings);
+        apptSub.textContent = `= ${fmtNum(shown.appts)} appointments`;
+        convSub.textContent = `≈ ${fmtNum(shown.convs)} conversations`;
+        cells[6].textContent = `≈ ${fmtNum(shown.perWeek)}`;
+        cells[7].textContent = fmtPerDay(shown.perDay);
+
         stats.append(
             stat(fmtNum(shown.closings), shown.closings === 1 ? 'closing needed' : 'closings needed'),
             stat(fmtNum(shown.perWeek), 'conversations a week'),
@@ -263,7 +270,7 @@ function setupGoalCalculator(section) {
         } else {
             text = `That is above the top of Table 8.2's range (${TARGET_CONVERSATIONS.low} to ${TARGET_CONVERSATIONS.high} a week). Check whether the goal, commission and ratios are realistic for year one, or plan to ramp up over several months.`;
         }
-        if (factor !== 1) text = `At ${Math.round((factor - 1) * 100)}% more conversations than planned you would need ${fmtNum(shown.perWeek)} a week, up from ${fmtNum(base.perWeek)}. ${text}`;
+        if (factor !== 1) text = `At ${Math.round((factor - 1) * 100)}% more conversations than planned you would need ${fmtNum(shown.perWeek)} a week, up from ${fmtNum(plan(1).perWeek)}. ${text}`;
         verdict.textContent = text;
     }
 
@@ -533,7 +540,7 @@ function setupNurtureTimeline(section) {
     const box = [...section.querySelectorAll('.diagram-box')]
         .find(b => b.querySelector('.diagram-title')?.textContent.startsWith('Figure 5'));
     if (!box) return;
-    box.querySelector('p')?.remove();
+    box.querySelector('.nurture-static')?.remove();
     box.querySelector('.diagram-title').after(interactiveHeader('Tap any touch to see what to send. Use the filters to highlight a channel.', 'nurture-timeline', 'Nurture timeline explorer'));
 
     const lastDay = NURTURE_TOUCHES[NURTURE_TOUCHES.length - 1].day;

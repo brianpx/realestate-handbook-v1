@@ -94,8 +94,7 @@ const CHECKPOINT_ANSWERS = {
     ch2: [
         ['Trust is already built, and the cost is only your time.', 'Sphere contacts convert at five to ten times the rate of a portal lead.',
             'Portal inquirers have no relationship with you and have often inquired with several agents at once.'],
-        ['Speed: a fast response to every inquiry.', 'Persistence: a long nurture plan, because most online leads are 6 to 18 months from a transaction.',
-            'A follow-up system already built and tested on your sphere.'],
+        ['Do not buy online leads until your follow-up system is built and tested on your sphere. Speed and a long nurture are what make those leads pay off after that, and Chapter 3 has the test for turning ads on.'],
         ['Follow up with every visitor within 24 hours.', 'A text the same evening and a call the next morning is the standard.',
             'Put every visitor on a follow-up plan.']
     ],
@@ -112,8 +111,8 @@ const CHECKPOINT_ANSWERS = {
         ['An automated first touch (text and email) within one minute.', 'A live call within five minutes when possible, and always the same day.']
     ],
     ch5: [
-        ['Front-loaded: four or five touches in the first two weeks.', 'Mixed channel: calls, texts and emails in rotation.',
-            'Value every third touch.', 'Long: at least 90 days, then roll into the quarterly plan.'],
+        ['Front-loaded: seven touches in the first 14 days.', 'Mixed channel: calls, texts and emails in rotation.',
+            'Value every third touch (touches 3, 6, 9 and 12).', 'Long: 13 touches over at least 90 days, then roll into the quarterly plan.'],
         ['Timeline: when do they want to move?', 'Motivation: why now?', 'Financing: pre-approved, cash, or need a lender introduction?',
             'Representation: is another agent already helping them?'],
         ['No real two-way conversation in 14 days and no scheduled next step.']
@@ -135,7 +134,7 @@ const CHECKPOINT_ANSWERS = {
         ['Every contact, note and task lives in your CRM.', 'If a conversation happened and it is not logged, treat it as not having happened and log it now.'],
         ['The morning is the only time of day nobody else wants. Clients, lenders and inspectors will ask for afternoons.',
             'Putting it in the same place every day means it never depends on how you feel.'],
-        ['Per Table 8.2: outbound calls 40 to 60, conversations 15 to 25, follow-ups completed 30 to 50, appointments set 3 to 6, open houses or events 1, database updates daily.']
+        ['The same rows as Appendix A and Table 8.2: calls 40 to 60, conversations 15 to 25, follow-ups 30 to 50, appointments set 3 to 6, appointments held 2 or more, one open house or event, database updated 5 days, 15 new contacts, 2 posts, morning blocks 4 or more days, pipeline count and value growing, referrals tracked.']
     ],
     ch9: [
         ['Frame, ask, listen, present, agree.', 'Asking and listening (steps 2 and 3) should take at least half the meeting.'],
@@ -153,13 +152,13 @@ const CHECKPOINT_ANSWERS = {
     ch11: [
         ['Usually at first substantive contact, but your state sets the form and the timing.', 'Look both up in your first week and confirm with your broker.'],
         ['Race, color, religion, national origin, sex, familial status and disability.'],
-        ['Point them to objective sources on schools, crime statistics and amenities rather than offering your opinion of the people.']
+        ['Give every client the same third-party sources on schools, crime statistics and amenities. Do not editorialize or describe who lives there. Confirm the wording with your broker.']
     ],
     ch12: [
         ['Day 30: CRM set up, contacts tagged, follow-up plans live, 50 sphere conversations, 1 open house, speed-to-lead tested.',
             'Day 60: morning block held 4 of 5 days, 15 to 25 conversations a week, first consultations held, buyer agreement signed.',
             'Day 90: 5 or more active opportunities, first contract written, post-close plan built, lead sources evaluated.'],
-        ['Conversations held.', 'Appointments set.', 'Follow-ups completed.', 'Pipeline value.'],
+        ['Appendix A, and Table 8.2 is the same list: calls, conversations, follow-ups, appointments set and held, one event, database days, new contacts, posts, morning blocks, pipeline count, pipeline value and referrals.'],
         ['Which source produced the most appointments per hour spent?', 'Which follow-up plan got the most replies?', 'Where did leads stall in the pipeline?',
             'What one change will I make this month?']
     ]
@@ -622,9 +621,9 @@ const FAIR_HOUSING_ITEMS = [
     { tag: 'In marketing', prompt: '"A safe, exclusive neighborhood with people just like you"', answer: 0,
         explain: 'It characterizes the neighborhood by who lives there, which the chapter says not to do.' },
     { tag: 'In conversation', prompt: 'A client asks, "Is this a good area?" You answer: "Oh, it\'s mostly young families. Really nice crowd."', answer: 0,
-        explain: 'That is your opinion of the people. Point to objective sources on schools, crime statistics and amenities.' },
-    { tag: 'In conversation', prompt: 'A client asks, "Is this a good area?" You answer: "Here are the school information, crime statistics and a list of nearby amenities from objective sources. Want me to pull them?"', answer: 1,
-        explain: 'This is the chapter\'s approach: objective sources instead of a view of the residents.' },
+        explain: 'That is your opinion of the people. Give every client the same third-party sources, and do not editorialize. Confirm the wording with your broker.' },
+    { tag: 'In conversation', prompt: 'A client asks, "Is this a good area?" You answer: "I give every client the same third-party pages for schools, crime statistics and amenities, and I don\'t add my own take. Want me to pull them?"', answer: 1,
+        explain: 'Same sources for every client, no editorializing. Confirm the wording with your broker.' },
     { tag: 'In service', prompt: 'You call back some inquiries within minutes with a full listing package, but send only an automated text to the ones you assume cannot afford much.', answer: 0,
         explain: 'Every inquiry should get the same response time, the same information and the same options.' }
 ];
@@ -667,7 +666,7 @@ function setupLeadSources(section) {
 
     const scale = 30;
     const chart = el('div', 'range-chart');
-    chart.appendChild(el('h4', 'lab-title', 'Typical conversion rate (Figure 2)'));
+    chart.appendChild(el('h4', 'lab-title', 'Illustrative ranges (Figure 2). Not comparable across sources.'));
     LEAD_SOURCES.forEach(s => {
         const row = el('div', 'range-row');
         const track = el('span', 'range-track');
@@ -680,7 +679,7 @@ function setupLeadSources(section) {
     });
     const axis = el('div', 'range-axis');
     ['0%', '10%', '20%', '30%+'].forEach(t => axis.appendChild(el('span', '', t)));
-    chart.append(axis, el('p', 'calc-note', 'Typical industry figures that vary by market and by how well you follow up. Replace them with your own numbers after a few months.'));
+    chart.append(axis, el('p', 'calc-note', 'Illustrative only. These ranges are not the same unit and are not a measured conversion rate. Use your cost per closed deal, below, for a number you can compare.'));
     card.appendChild(chart);
 
     const saved = widgetState('sourceCost');
@@ -961,7 +960,7 @@ const KNOWLEDGE_CHECKS = {
         blank: {
             before: 'A good nurture plan gives something of value every', after: 'touch instead of always asking for something.',
             answer: 'third', accept: ['third', '3rd', '3'],
-            explain: 'The four properties are front-loaded, mixed channel, value every third touch, and long (at least 90 days).'
+            explain: 'The four properties are front-loaded, mixed channel, value every third touch (3, 6, 9 and 12), and long (13 touches over at least 90 days).'
         }
     },
     ch6: {
@@ -1027,9 +1026,9 @@ const KNOWLEDGE_CHECKS = {
             { q: 'What are the four steps for handling an objection?',
                 options: ['Defend, discount, close, repeat', 'Agree, apologize, offer, close', 'Acknowledge, clarify, respond, check', 'Wait, repeat, persuade, close'], answer: 2,
                 explain: 'Acknowledge that you heard, clarify the real concern, respond with facts, a story or a demonstration, then check that it addressed the concern and stop talking.' },
-            { q: '"Your commission is too high" usually means what?',
+            { q: '"Your fee is too high" usually means what?',
                 options: ['The client will not hire anyone', 'Show me what I get for it', 'Cut your fee right now', 'They want a different agent'], answer: 1,
-                explain: 'Most objections are requests for more information or reassurance. Shift from fee to outcome: what the client actually nets.' }
+                explain: 'Most objections are requests for more information or reassurance. Shift from fee to outcome, and confirm the compensation conversation with your broker.' }
         ],
         blank: {
             before: 'Steps 2 and 3, asking and listening, should take at least', after: 'of the meeting.',
@@ -1064,8 +1063,8 @@ const KNOWLEDGE_CHECKS = {
                 options: ['Four bedrooms, fenced yard, two blocks from the park', 'Corner lot with a new roof', 'Perfect for young professionals', 'Walkable to the park'], answer: 2,
                 explain: 'Describe the property, not the ideal buyer. "Great for families" and "perfect for young professionals" are both problems.' },
             { q: 'A client asks, "Is this a good area?" What do you do?',
-                options: ['Point them to objective sources on schools, crime statistics and amenities', 'Describe who lives there', 'Tell them what you would do', 'Change the subject'], answer: 0,
-                explain: 'Do not characterize neighborhoods by who lives there, and offer no opinion of the people.' }
+                options: ['Give every client the same third-party sources, without editorializing', 'Describe who lives there', 'Tell them what you would do', 'Change the subject'], answer: 0,
+                explain: 'Same sources for every client. Do not describe who lives there, and confirm the wording with your broker.' }
         ],
         blank: {
             before: 'Describe the property, never', after: '. Treat every inquiry identically.',
@@ -1081,9 +1080,9 @@ const KNOWLEDGE_CHECKS = {
             { q: 'By days 61 to 90, how many active opportunities should your pipeline review show?',
                 options: ['1', '3', '5 or more', '20'], answer: 2,
                 explain: 'Also by day 90: your first contract written, the post-close plan built and lead sources evaluated with data.' },
-            { q: 'Which four numbers go on the weekly scorecard?',
-                options: ['Closings, commission, listings, referrals', 'Conversations, appointments, follow-ups, pipeline value', 'Calls, emails, posts, mailers', 'Showings, offers, contracts, closings'], answer: 1,
-                explain: 'Write them down every Friday. Table 8.2 sets the targets and Appendix A is the scorecard.' }
+            { q: 'Which list is the weekly scorecard?',
+                options: ['Closings, commission, listings and referrals', 'Appendix A, the same rows as Table 8.2', 'Calls, emails, posts and mailers', 'Showings, offers, contracts and closings'], answer: 1,
+                explain: 'Fill in Appendix A every Friday. Table 8.2 is that same list, not a shorter one.' }
         ],
         blank: {
             before: 'Closings usually follow in the', after: '90 days.',
@@ -1097,8 +1096,8 @@ const KNOWLEDGE_CHECKS = {
                 options: ['A custom website and branded car magnets', 'Daily social posts and monthly mailers', 'Speed-to-lead and multi-touch follow-up', 'Open houses and farming'], answer: 2,
                 explain: 'Respond in minutes, not hours, and stay in touch for 90 days and then forever. Everything else in the book exists to make them easy.' },
             { q: 'How many times does the one-card summary say to follow up with a new lead over 90 days?',
-                options: ['2 to 3', '8 to 12', '30 to 40', 'Once a week, forever'], answer: 1,
-                explain: 'Respond to new leads in minutes, then follow up 8 to 12 times over 90 days.' },
+                options: ['2 to 3', '13', '30 to 40', 'Once a week, forever'], answer: 1,
+                explain: 'Respond to new leads in minutes, then follow up 13 times over 90 days.' },
             { q: 'Who do you ask about anything legal, contractual or unusual, and when?',
                 options: ['Your lender, after you act', 'A friend in the business, if time allows', 'Nobody; use your judgment', 'Your broker, before you act'], answer: 3,
                 explain: 'The chapter says: "Before, not after."' }

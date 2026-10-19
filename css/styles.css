@@ -299,6 +299,9 @@
         .box.quiz { border-color: #4338ca; background-color: #eef2ff; }
         .box.quiz .box-title { color: #3730a3; }
 
+        .box.legal { border-color: #334155; background-color: #f8fafc; }
+        .box.legal .box-title { color: #0f172a; }
+
         .learning-objectives {
             background-color: #f1f5f9;
             padding: 20px 24px;
@@ -456,6 +459,10 @@
         .gate-card .btn-nav { width: 100%; padding: 12px; }
         .gate-trap { position: absolute; left: -9999px; }
         .gate-card p.gate-error { color: #dc2626; font-size: 0.85rem; margin: 0 0 12px; }
+        .gate-card p.gate-privacy { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: #64748b; text-align: left; }
+        .gate-skip { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 10px; font: inherit; font-weight: 600; color: #1e3a8a; background: transparent; border: 1px solid #94a3b8; border-radius: 6px; cursor: pointer; }
+        .gate-skip:hover { background: #f1f5f9; }
+        .gate-skip:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
 
         .part-intro { color: #475569; margin-bottom: 8px; }
         .glossary dt { font-weight: 700; margin-top: 14px; }
@@ -545,11 +552,20 @@
         .score-bar { fill: #2563eb; }
         .score-label { font-size: 12px; font-weight: 700; fill: #1e293b; }
         .score-axis { font-size: 12px; fill: #475569; }
+        .score-change { display: block; margin: 16px 0; font-weight: 600; color: #1e293b; }
+        .score-change textarea { display: block; width: 100%; max-width: 40rem; margin-top: 6px; padding: 10px; font: inherit; font-weight: 400; font-size: 16px; line-height: 1.45; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .chapter-next { margin: 28px 0 8px; font-weight: 700; }
+        .chapter-next a { color: #1d4ed8; }
+        .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid #cbd5e1; font-size: 0.85rem; line-height: 1.5; color: #475569; }
+        .chapter-foot p { margin: 0 0 8px; }
+        .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d; }
         @media print {
             #sidebar, .scorecard-tools, .menu-toggle, .gate { display: none !important; }
             body { display: block; height: auto; overflow: visible; }
             #main-content { overflow: visible; padding: 0; }
             .print-page-break { break-before: page; page-break-before: always; }
+            .chapter-next { break-after: avoid; }
+            .chapter-foot, .load-error { break-inside: avoid; color: #000; border-color: #000; }
         }
 
         /* Practice */

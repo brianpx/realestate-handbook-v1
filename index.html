@@ -45,7 +45,6 @@
         "@type": "Audience",
         "audienceType": "New real estate agents"
     },
-    "isAccessibleForFree": true,
     "about": [
         "Real estate lead generation",
         "Client follow-up",
@@ -62,7 +61,7 @@
             if (s.fullWidth === true) document.documentElement.classList.add('wide');
         } catch (err) { /* storage blocked: stay light */ }
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20261100">
+    <link rel="stylesheet" href="css/styles.css?v=20261101">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -147,24 +146,34 @@
         </div>
     </main>
 
-    <!-- Email gate -->
-    <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" hidden>
+    <!-- Email gate: a follow-up note, not a lock. Chapter files stay publicly fetchable. -->
+    <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gatePurpose" hidden>
         <form id="gateForm" class="gate-card" novalidate>
             <h2 id="gateTitle">Finding, Keeping, and Nurturing Clients</h2>
-            <p>Enter your email to read the handbook.</p>
+            <p id="gatePurpose">Leave your email for a follow-up note about the handbook. This form is not a key to the book.</p>
             <label for="gateEmail" class="gate-label">Email address</label>
             <input type="email" id="gateEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
             <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="gate-trap" aria-hidden="true">
             <p id="gateError" class="gate-error" role="alert" hidden></p>
-            <button type="submit" class="btn-nav" id="gateSubmit">Get Access</button>
+            <button type="submit" class="btn-nav" id="gateSubmit">Send me a note</button>
+            <p class="gate-privacy">Your address is sent to the form service for that note. It is not an account, and it is not sold.</p>
+            <button type="button" class="gate-skip" id="gateSkip">Continue without email</button>
         </form>
     </div>
 
-    <script src="js/app-with-cover.js?v=20261100"></script>
-    <script src="js/widgets.js?v=20261100"></script>
-    <script src="js/widgets-practice.js?v=20261100"></script>
-    <script src="js/widgets-plan.js?v=20261100"></script>
-    <script src="js/interactive.js?v=20261100"></script>
-    <script src="js/search.js?v=20261100"></script>
+    <template id="chapterFoot">
+        <footer class="chapter-foot">
+            <p>Not legal advice. Confirm forms, compensation, and prospecting rules with your broker.</p>
+            <p>For new agents. Worked examples use Keller Williams Command names. In another CRM, use your website, client search app, pipeline stages, and drip campaigns.</p>
+            <p>v1.0 · October 2026</p>
+        </footer>
+    </template>
+
+    <script src="js/app-with-cover.js?v=20261101"></script>
+    <script src="js/widgets.js?v=20261101"></script>
+    <script src="js/widgets-practice.js?v=20261101"></script>
+    <script src="js/widgets-plan.js?v=20261101"></script>
+    <script src="js/interactive.js?v=20261101"></script>
+    <script src="js/search.js?v=20261101"></script>
 </body>
 </html>

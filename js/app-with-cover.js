@@ -40,19 +40,56 @@ async function fetchChapter(pageId) {
     return response.text();
 }
 
-const sectionHtml = (pageId, html) => `<div class="chapter-section" data-page="${pageId}">${html}</div>`;
+const sectionHtml = (pageId, html) => `<div class="chapter-section" id="${pageId}" data-page="${pageId}">${html}</div>`;
+let navLock = 0;
+const lockNav = () => { navLock++; };
+const unlockNav = () => { navLock = Math.max(0, navLock - 1); };
+function pageFromHash() {
+    const id = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+    return pages.includes(id) ? id : null;
+}
+
+function showLoadError(container, pageId, retry) {
+    let alert = document.getElementById('loadError');
+    if (!alert) {
+        alert = document.createElement('p');
+        alert.id = 'loadError';
+        alert.className = 'load-error';
+        alert.setAttribute('role', 'alert');
+    }
+    alert.replaceChildren(document.createTextNode(`Could not load ${navLabel(pageId)}. `));
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn-mini';
+    button.textContent = 'Try again';
+    button.addEventListener('click', () => { alert.remove(); retry(); });
+    alert.append(button);
+    const first = container.querySelector('.chapter-section');
+    if (first) first.before(alert);
+    else container.prepend(alert);
+}
 
 async function loadChapter(pageId) {
     const container = document.getElementById('content-container');
+    lockNav();
     try {
         const html = await fetchChapter(pageId);
         container.innerHTML = sectionHtml(pageId, html);
         container.scrollTop = 0;
         scrollRoot().scrollTop = 0;
+        document.getElementById('loadError')?.remove();
         await fillContinuous();
+        // Neighbours load above and below. Pin this chapter before the scroll spy may rewrite the hash.
+        const opened = container.querySelector(`.chapter-section[data-page="${pageId}"]`);
+        if (opened) {
+            const delta = opened.getBoundingClientRect().top - viewTop();
+            if (Math.abs(delta) > 1) scrollContentBy(delta);
+        }
     } catch (err) {
-        container.innerHTML = `<p role="alert" style="color:#dc2626;">Could not load chapter: ${pageId}</p>`;
         console.error(err);
+        showLoadError(container, pageId, () => loadChapter(pageId));
+    } finally {
+        unlockNav();
     }
 }
 
@@ -70,11 +107,17 @@ function updateActiveNav() {
     }
 }
 
-async function navigateTo(pageId) {
+async function navigateTo(pageId, options = {}) {
     const idx = pages.indexOf(pageId);
     if (idx === -1) return;
+    lockNav();
     currentPageIndex = idx;
-    await loadChapter(pageId);
+    if (!options.fromHistory && location.hash !== `#${pageId}`) history.pushState({ pageId }, '', `#${pageId}`);
+    try {
+        await loadChapter(pageId);
+    } finally {
+        unlockNav();
+    }
     updateActiveNav();
     announce(`Showing ${navLabel(pageId)}`);
     // move keyboard / screen-reader position to the new chapter instead of leaving it on the nav link
@@ -92,6 +135,7 @@ let extending = false;
 async function extendContinuous() {
     if (extending || isScrollLocked()) return false; // never reshuffle content under a pinned page
     extending = true;
+    let loadingId = '';
     try {
         const main = scrollRoot();
         const container = document.getElementById('content-container');
@@ -101,6 +145,7 @@ async function extendContinuous() {
         const lastIdx = pages.indexOf(sections[sections.length - 1].dataset.page);
         if (main.scrollTop + main.clientHeight >= main.scrollHeight - 600 && lastIdx < pages.length - 1) {
             const id = pages[lastIdx + 1];
+            loadingId = id;
             container.insertAdjacentHTML('beforeend', sectionHtml(id, await fetchChapter(id)));
             return true;
         }
@@ -108,6 +153,7 @@ async function extendContinuous() {
         const firstIdx = pages.indexOf(sections[0].dataset.page);
         if (main.scrollTop < 300 && firstIdx > 0) {
             const id = pages[firstIdx - 1];
+            loadingId = id;
             const html = await fetchChapter(id);
             const heightBefore = main.scrollHeight;
             container.insertAdjacentHTML('afterbegin', sectionHtml(id, html));
@@ -118,6 +164,7 @@ async function extendContinuous() {
         return false;
     } catch (err) {
         console.error(err);
+        showLoadError(document.getElementById('content-container'), loadingId || pages[0], () => fillContinuous());
         return false;
     } finally {
         extending = false;
@@ -135,10 +182,11 @@ function updateCurrentFromScroll() {
         if (sec.getBoundingClientRect().top <= mainTop + 80) current = sec.dataset.page;
     });
     const idx = pages.indexOf(current);
-    if (idx !== -1 && idx !== currentPageIndex) {
-        currentPageIndex = idx;
-        updateActiveNav();
-    }
+    if (navLock || idx === -1 || idx === currentPageIndex) return;
+    currentPageIndex = idx;
+    updateActiveNav();
+    const url = `#${current}`;
+    if (location.hash !== url) history.replaceState({ pageId: current }, '', url);
 }
 
 function setupContinuousScroll() {
@@ -333,6 +381,14 @@ function setupGate() {
     setBehindInert(true);
     input.focus();
 
+    const dismissGate = () => {
+        try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch (err) { /* unlocks for this visit only */ }
+        gate.hidden = true;
+        setBehindInert(false);
+        document.getElementById('main-content').focus({ preventScroll: true });
+    };
+    document.getElementById('gateSkip').addEventListener('click', dismissGate);
+
     let sending = false;
     form.addEventListener('submit', async e => {
         e.preventDefault();
@@ -358,16 +414,15 @@ function setupGate() {
                 body: JSON.stringify({ email: input.value.trim(), _gotcha: form.elements._gotcha.value })
             });
             if (!response.ok) throw new Error(`Formspree responded ${response.status}`);
-            try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch (err) { /* unlocks for this visit only */ }
-            gate.hidden = true;
-            setBehindInert(false);
-            document.getElementById('main-content').focus({ preventScroll: true });
+            dismissGate();
         } catch (err) {
             console.error(err);
-            showError('Something went wrong. Please try again in a moment.');
             sending = false;
             submit.disabled = false;
-            submit.textContent = 'Get Access';
+            submit.textContent = 'Send me a note';
+            if (gate.hidden) return;
+            showError('Something went wrong. Please try again in a moment, or continue without email.');
+            document.getElementById('gateSkip').focus();
         }
     });
 }
@@ -410,7 +465,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             navigateTo(item.dataset.page);
         });
     });
+    window.addEventListener('popstate', () => {
+        const id = pageFromHash() || 'cover';
+        if (pages[currentPageIndex] === id) return;
+        navigateTo(id, { fromHistory: true });
+    });
 
-    await loadChapter('cover');
+    const start = pageFromHash() || 'cover';
+    currentPageIndex = pages.indexOf(start);
+    await loadChapter(start);
     updateActiveNav();
+    if (location.hash !== `#${start}`) history.replaceState({ pageId: start }, '', `#${start}`);
+    // A shared link opens its chapter. The email field keeps focus while the gate is up.
+    if (document.getElementById('gate').hidden) {
+        const section = document.querySelector(`.chapter-section[data-page="${start}"]`);
+        const target = section?.querySelector('h1, h2') || section;
+        if (target) {
+            target.tabIndex = -1;
+            target.focus({ preventScroll: true });
+        }
+    }
 });

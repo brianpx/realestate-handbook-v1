@@ -357,16 +357,42 @@ function setupScorecard(section) {
     });
     confirmNo.addEventListener('click', closeConfirm);
     confirmBar.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
+    const change = section.querySelector('#scoreChange');
+    if (change) {
+        change.value = data.change || '';
+        change.addEventListener('input', () => { data.change = change.value; saveState(); });
+    }
     confirmYes.addEventListener('click', () => {
         Object.keys(data).forEach(k => delete data[k]);
         saveState();
         table.querySelectorAll('.score-input').forEach(i => { i.value = ''; i.setAttribute('aria-invalid', 'false'); i.removeAttribute('aria-describedby'); });
         table.querySelectorAll('.calc-error').forEach(e => { e.textContent = ''; });
+        if (change) change.value = '';
         refresh(true);
         closeConfirm();
     });
     const print = el('button', 'btn-nav btn-secondary', 'Print');
-    print.addEventListener('click', () => window.print());
+    print.addEventListener('click', async () => {
+        print.disabled = true;
+        const previous = print.textContent;
+        print.textContent = 'Preparing…';
+        try {
+            const container = document.getElementById('content-container');
+            const anchor = captureScrollAnchor();
+            const html = await Promise.all(pages.map(id => fetchChapter(id)));
+            container.querySelectorAll('.read-sentinel').forEach(s => readObserver.unobserve(s));
+            container.innerHTML = pages.map((id, i) => sectionHtml(id, html[i])).join('');
+            container.querySelectorAll('.chapter-section').forEach(enhanceSection);
+            applyScrollAnchor(anchor);
+            window.print();
+        } catch (err) {
+            console.error(err);
+            announce('Could not load every chapter for printing.');
+        } finally {
+            print.disabled = false;
+            print.textContent = previous;
+        }
+    });
     toolbar.append(reset, confirmBar, print);
     table.closest('.table-wrapper').after(chartHost, summary, toolbar);
     table.closest('.table-wrapper').before(interactiveHeader('Type your weekly numbers. Cells change colour against each target and the chart updates as you type. Saved on this device.', 'scorecard', 'Weekly activity scorecard'));
@@ -586,6 +612,7 @@ document.addEventListener('click', e => {
     const open = e.target.closest('[data-open-doc]');
     if (open) {
         const dialog = document.getElementById(open.dataset.openDoc);
+        if (!dialog || dialog.open) return;
         const frame = dialog.querySelector('iframe[data-src]');
         // load the PDF on first open, not with the chapter
         if (frame && !frame.src) frame.src = frame.dataset.src;
@@ -658,6 +685,23 @@ function enhanceSection(section) {
         trimToolIndex(section);
     }
     setupGlossary(section);
+    setupChapterEnd(section);
+}
+
+// Next-chapter link and the shell disclaimer, on every section including print.
+function setupChapterEnd(section) {
+    if (section.querySelector('.chapter-next')) return;
+    const idx = pages.indexOf(section.dataset.page);
+    if (idx === -1) return;
+    const nav = el('p', 'chapter-next');
+    const nextId = idx < pages.length - 1 ? pages[idx + 1] : 'cover';
+    const link = el('a', '', idx < pages.length - 1 ? `Next: ${navLabel(nextId)}` : 'Back to the title page');
+    link.href = `#${nextId}`;
+    link.dataset.goto = nextId;
+    nav.appendChild(link);
+    section.appendChild(nav);
+    const foot = document.getElementById('chapterFoot');
+    if (foot) section.appendChild(foot.content.cloneNode(true));
 }
 
 const contentObserver = new MutationObserver(mutations => {
