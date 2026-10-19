@@ -166,3 +166,14 @@ Roughly 11–18 working days for phases 0–4 and 6, plus 3–5 for phase 5. The
 3. Same repo (replacing the static files) or a new repo? A new one is safer, and keeps GitHub Pages live until cutover.
 4. Which email sender replaces Formspree?
 5. Do the content fixes in `docs/handbook-webpage-review.md` land before the move, or after?
+
+## Progress log
+
+### 19 October 2026: phases 0 and 1 done on branch `next`
+
+- Static site snapshotted on `main` (commit 7dde930) and tagged `static-v1`. Roll back with `git checkout main` or `git checkout static-v1`.
+- Static files moved to `legacy/` on `next` as a porting reference (delete at cutover). Images and downloads are in `public/`.
+- **Deviation from the plan: chapters are not MDX.** The 21 fragments are plain, regular HTML (tables, divs, a few inline styles), so converting them risked altering text. They live in `content/pages/*.html`, are rendered on the server, and widgets mount at explicit `<!--widget:name-->` comment markers (`lib/content.ts`, `components/widgets/registry.tsx`). This removes the text-matching problem the same way MDX would, with no extra dependency. Converting to MDX later stays possible.
+- Done: layout and metadata (OG, Twitter, theme-color), sidebar with the menu, header-collapse and phone scroll-lock behavior ported, one route per page (`app/[slug]`), `/#ch5` to `/ch5` redirect, `sitemap.ts`, `robots.ts`, `not-found.tsx`, Playwright smoke tests (23 passing).
+- Not done yet: settings dialog and progress bar (phase 2), all widgets (phase 3), search and lead capture (phase 4). The email gate is intentionally absent until phase 4.
+- Not yet checked: pixel comparison against the static site on a phone, Book JSON-LD, print styles.

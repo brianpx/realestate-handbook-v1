@@ -1,1 +1,11 @@
 .playwright-mcp/
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.env*.local
+.vercel/
+test-results/
+playwright-report/
+.idea/
+*.iml
