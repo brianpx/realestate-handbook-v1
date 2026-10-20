@@ -1,0 +1,146 @@
+{
+  "fig-lifecycle": {
+    "file": "/images/diagrams/fig-lifecycle.svg",
+    "title": "Figure 1. The client lifecycle",
+    "alt": "Three boxes in a loop: Find, Nurture, Keep. An arrow labelled Referrals leads from Keep back to Find. A bar beneath, labelled Your CRM, holds all three.",
+    "caption": "Every chapter serves one of these three jobs."
+  },
+  "fig-book-map": {
+    "file": "/images/diagrams/fig-book-map.svg",
+    "title": "How the handbook is organized",
+    "alt": "Seven columns for Parts I to VII with their chapters and what the reader does. Brackets above show Find spanning Parts II to IV, Nurture spanning IV to VI, and Keep at Part VI. A bar below lists the appendices.",
+    "caption": "Seven parts, three jobs: find, nurture, keep."
+  },
+  "fig-goal-ladder": {
+    "file": "/images/diagrams/fig-goal-ladder.svg",
+    "title": "Figure 1.1. From an income goal to a daily number",
+    "alt": "A funnel of six bars narrowing from an $80,000 income goal to 13 closings, 39 appointments, about 780 conversations, about 16 a week and 3 to 4 a day. The top three are lagging results and the bottom three are leading activity.",
+    "caption": "Work backward until you reach something you can do tomorrow morning."
+  },
+  "fig-lead-tradeoff": {
+    "file": "/images/diagrams/fig-lead-tradeoff.svg",
+    "title": "Figure 2.1. Every lead source trades time for money",
+    "alt": "A plot of your time against your money. Sphere, open houses and expired listings sit at high time and low money. Own website and ads sit in the middle. Portal leads sit at low time and high money. The high-time, low-money corner is shaded as where new agents start.",
+    "caption": "Costs are relative. Replace this picture with your own cost per closed deal."
+  },
+  "fig-sphere-method": {
+    "file": "/images/diagrams/fig-sphere-method.svg",
+    "title": "Figure 2.2. Working your sphere",
+    "alt": "Four boxes in a row: Announce, Give, Ask, Repeat. An arrow returns from Repeat to Give, not to Announce. A bar below says two to three gives before one ask.",
+    "caption": "Announce, give, ask, repeat."
+  },
+  "fig-open-house": {
+    "file": "/images/diagrams/fig-open-house.svg",
+    "title": "Figure 2.3. The open house is a three-day event",
+    "alt": "A three-stage timeline. Before: preview the home, invite neighbors, set up digital sign-in. During: greet, capture contact details, offer a next step. After: text that evening, call next morning, start a follow-up plan, log the lead source. A final box says to measure cost per closed deal.",
+    "caption": "Preparation and follow-up are where the leads are made."
+  },
+  "fig-home-base": {
+    "file": "/images/diagrams/fig-home-base.svg",
+    "title": "Figure 3.1. One home base, many doors",
+    "alt": "A central box, Your home base, with five boxes pointing in: social profiles, email signature, business card, mailers and yard signs, and listing posts. An arrow from the home base leads to your CRM, which catches every inquiry.",
+    "caption": "Send every door to the same room."
+  },
+  "fig-listing-timeline": {
+    "file": "/images/diagrams/fig-listing-timeline.svg",
+    "title": "Figure 3.2. One listing, five posts, two kinds of leads",
+    "alt": "A timeline of five posts for one listing: coming soon, just listed, open house, under contract, just sold. Blue arrows mark where buyer leads arise and deep-blue arrows mark where seller leads arise. A callout says the just sold post is the best seller-lead post.",
+    "caption": "Every stage of a listing is a chance to be seen."
+  },
+  "fig-content-calendar": {
+    "file": "/images/diagrams/fig-content-calendar.svg",
+    "title": "Figure 3.3. Four weeks, eight posts",
+    "alt": "A grid of four weeks by three rows. Every week has a market note and an educational tip. The third row holds a monthly market update in week one, a quarterly local guide in week three and listing posts as needed in week four.",
+    "caption": "A calendar you can keep on your busiest week."
+  },
+  "fig-crm-day": {
+    "file": "/images/diagrams/fig-crm-day.svg",
+    "title": "Figure 3. Your day opens and closes in your CRM",
+    "alt": "A left-to-right sequence: open your CRM, review the dashboard (15 minutes), clear follow-up tasks (45 to 60 minutes), prospect (60 to 90 minutes), appointments, then close your CRM. A return arrow labelled Tomorrow's top three leads back to the start. A bracket marks the first three blocks as protected.",
+    "caption": "Follow-ups come before new prospecting."
+  },
+  "fig-crm-setup": {
+    "file": "/images/diagrams/fig-crm-setup.svg",
+    "title": "Figure 4.3. Six steps, one week",
+    "alt": "A vertical path of six numbered steps: profile, import and tag contacts, follow-up plans, lead routing for teams only, pipeline stages, and mobile app with notifications. A side box says to do them in order in one week.",
+    "caption": "Set it up completely once, then let it run your day."
+  },
+  "fig-stage-lead": {
+    "file": "/images/diagrams/fig-stage-lead.svg",
+    "title": "Figure 5.2. After four questions: active or nurture?",
+    "alt": "A decision flow after the qualifying conversation. If the lead is pre-approved or cash and moving within about 60 days, they are active. Otherwise, if there is a reason and a rough date, they are nurture with a date. If neither, they go on the long-term quarterly plan.",
+    "caption": "Both are valuable. They need different attention this week."
+  },
+  "fig-script-anatomy": {
+    "file": "/images/diagrams/fig-script-anatomy.svg",
+    "title": "Figure 6.1. Every script has four parts",
+    "alt": "The new-lead phone script split into four stacked parts: name them, show you read their inquiry, ask one question, then stop. Beside each part is the reason it works.",
+    "caption": "Take any script apart and you will find these four."
+  },
+  "fig-week-glance": {
+    "file": "/images/diagrams/fig-week-glance.svg",
+    "title": "Figure 8.1. A week with lead generation first",
+    "alt": "A Monday to Friday grid. Each morning starts with the CRM dashboard at 8:00 and follow-up tasks at 8:30, then a protected 90-minute prospecting block at 9:30; on Friday it is followed by the pipeline review. Afternoons hold appointments, with a content batch on Wednesday, then client work and an end-of-day CRM update.",
+    "caption": "Lead generation sits in the same place every day."
+  },
+  "fig-scoreboard": {
+    "file": "/images/diagrams/fig-scoreboard.svg",
+    "title": "Figure 8.2. What your scoreboard shows in the first 90 days",
+    "alt": "Two lines over 120 days. A blue line for activity climbs from the first day. A grey line for closings stays at zero until around day 70 and then rises. The gap between them is shaded and labelled the wait.",
+    "caption": "The blue line moves every day you do the work."
+  },
+  "fig-consultation-time": {
+    "file": "/images/diagrams/fig-consultation-time.svg",
+    "title": "Figure 9.1. Spend half the meeting listening",
+    "alt": "A bar for a one-hour consultation split into Frame, Ask, Listen, Present and Agree, with Ask and Listen bracketed as at least half the meeting. A second grey bar shows a rushed meeting that is mostly presenting.",
+    "caption": "Proportions are illustrative. The rule is at least half for asking and listening."
+  },
+  "fig-objection-pattern": {
+    "file": "/images/diagrams/fig-objection-pattern.svg",
+    "title": "Figure 9.2. An objection is a question in disguise",
+    "alt": "Four boxes: acknowledge, clarify, respond, check, each with an example line beneath for the objection about waiting for the market to improve. A loop on clarify says to ask again until you hear the real concern.",
+    "caption": "Acknowledge, clarify, respond, check. Then be quiet."
+  },
+  "fig-referral-flywheel": {
+    "file": "/images/diagrams/fig-referral-flywheel.svg",
+    "title": "Figure 10.1. How a closing becomes your next lead",
+    "alt": "Six steps in a circle: closing day note and gift, one week call, 30 days review request, quarterly calls, home anniversary, and finally an introduction. A heavy arrow from the introduction leads to a New client box that returns to Find and back to closing day.",
+    "caption": "Every touch earns the right to the next one."
+  },
+  "fig-postclose-timeline": {
+    "file": "/images/diagrams/fig-postclose-timeline.svg",
+    "title": "Figure 10.2. The first year after closing",
+    "alt": "A timeline from closing day to month twelve: handwritten note and gift on closing day, a call at one week, a call and review request at 30 days, quarterly calls at months 3, 6 and 9, and the home anniversary at month 12. Only closing day and day 30 ask for something. After the first year come an annual event and quarterly calls.",
+    "caption": "Notice how few touches ask."
+  },
+  "fig-rule-moments": {
+    "file": "/images/diagrams/fig-rule-moments.svg",
+    "title": "Figure 11.1. Rules that arrive at each stage",
+    "alt": "A timeline of a client relationship with five stops and the rule that applies at each: consent for texts at first inquiry, agency disclosure at the first substantive conversation, a written buyer agreement before touring, documenting offers when making an offer, and confidentiality after closing. A bar says to ask your broker when unsure.",
+    "caption": "Your state and broker set the details. This shows when to look for them."
+  },
+  "fig-ask-broker": {
+    "file": "/images/diagrams/fig-ask-broker.svg",
+    "title": "Figure 11.2. When do I ask my broker?",
+    "alt": "A flow starting at something feels unusual. If it involves money, a contract, a disclosure or a protected class, stop and ask your broker. Otherwise, if the agent would not be comfortable with the broker reading the note, also ask the broker. Otherwise proceed and log it in the CRM today.",
+    "caption": "Two questions, asked in order."
+  },
+  "fig-roadmap-90": {
+    "file": "/images/diagrams/fig-roadmap-90.svg",
+    "title": "Figure 12.1. Install, build rhythm, grow pipeline",
+    "alt": "A three-phase roadmap. Days 1 to 30 install the system, days 31 to 60 build the rhythm, and days 61 to 90 grow the pipeline, each with its milestones and a flag at days 30, 60 and 90. A bar below says to fill in the scorecard every Friday and hold a monthly review.",
+    "caption": "Thirty days each. Date it on your calendar."
+  },
+  "fig-review-loops": {
+    "file": "/images/diagrams/fig-review-loops.svg",
+    "title": "Figure 12.2. Two loops: weekly and monthly",
+    "alt": "Two cycles side by side. Every Friday: fill in the scorecard, compare to last week, choose one change, stop until Monday. Monthly, one hour: which source gave the most appointments per hour, which plan got the most replies, where leads stalled, and what one change to make this month.",
+    "caption": "Small corrections every week, a bigger decision every month."
+  },
+  "fig-handbook-card": {
+    "file": "/images/diagrams/fig-handbook-card.svg",
+    "title": "Figure 13.1. The whole handbook on one card",
+    "alt": "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan for every client, and review every Friday.",
+    "caption": "Print it. Put it where you work."
+  }
+}
