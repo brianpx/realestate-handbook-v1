@@ -613,6 +613,11 @@
         .script-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
         .btn-mini { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; background: #fff; color: #1e3a8a; border: 1px solid #94a3b8; border-radius: 6px; cursor: pointer; }
         .btn-mini:hover { background: #e0e7ff; }
+        .script-transcript { margin-top: 12px; font-size: 0.9rem; }
+        .script-transcript summary { cursor: pointer; font-weight: 600; color: #1e3a8a; }
+        .transcript-note { margin: 8px 0; color: #475569; font-style: italic; }
+        .transcript-line { margin: 6px 0; }
+        .transcript-step { color: #6d28d9; font-size: 0.85em; }
         .box.script.practicing .script-body { display: none; }
         .practice-area { margin-top: 12px; }
         .practice-area[hidden], .trainer-answer[hidden], .btn-mini[hidden], .script-actions[hidden] { display: none; }
