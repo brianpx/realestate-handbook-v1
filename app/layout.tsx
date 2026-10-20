@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { DeepLinks } from '@/components/shell/DeepLinks';
+import { Gate } from '@/components/shell/Gate';
 import { Sidebar } from '@/components/shell/Sidebar';
+import { TermPopover } from '@/components/shell/TermPopover';
 import { BOOK_DESCRIPTION, BOOK_TITLE } from '@/lib/pages';
 import './globals.css';
 
@@ -29,7 +32,7 @@ export const viewport: Viewport = {
 };
 
 // Runs before first paint so dark mode does not flash light. Same keys as the static site.
-const THEME_SCRIPT = `try{var s=JSON.parse(localStorage.getItem('handbookSettings')||'{}')||{};if(s.dark!==undefined?s.dark:matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark');if(s.fullWidth===true)document.documentElement.classList.add('wide')}catch(e){}`;
+const THEME_SCRIPT = `try{var s=JSON.parse(localStorage.getItem('handbookSettings')||'{}')||{};if(s.dark!==undefined?s.dark:matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark');if(s.fullWidth===true)document.documentElement.classList.add('wide');if(s.hideQuizzes===true)document.documentElement.classList.add('hide-quizzes')}catch(e){}`;
 
 // Old shared links look like /#ch5. Hashes never reach the server, so redirect on the client.
 const HASH_SCRIPT = `var h=location.hash.replace(/^#/,'');if(/^(cover|pref|ch\\d+|app-[a-f])$/.test(h)&&location.pathname==='/'){location.replace('/'+(h==='cover'?'':h))}`;
@@ -45,9 +48,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#main-content">Skip to content</a>
         <div id="pageStatus" className="visually-hidden" role="status" aria-live="polite" aria-atomic="true" />
         <Sidebar />
+        <DeepLinks />
+        <TermPopover />
         <main id="main-content" tabIndex={-1}>
           <div className="content-container" id="content-container">{children}</div>
         </main>
+        <Gate enabled={process.env.LEAD_CAPTURE_ENABLED === 'true'} />
       </body>
     </html>
   );

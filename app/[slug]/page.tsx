@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ChapterView } from '@/components/shell/ChapterView';
+import { JsonLd } from '@/components/shell/JsonLd';
+import { chapterJsonLd } from '@/lib/jsonld';
 import { isPageId, pageById, PAGE_IDS } from '@/lib/pages';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -21,5 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   if (!isPageId(slug) || slug === 'cover') notFound();
-  return <ChapterView id={slug} />;
+  return (
+    <>
+      <JsonLd data={chapterJsonLd(slug)} />
+      <ChapterView id={slug} />
+    </>
+  );
 }

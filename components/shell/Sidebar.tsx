@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { BOOK_TITLE, NAV } from '@/lib/pages';
+import { trackingProgress, useHandbookState, useSettings } from '@/lib/state';
+import { ProgressItem } from './ProgressItem';
+import { Settings } from './Settings';
+import { SidebarSearch, type SearchApi } from './SidebarSearch';
 
 // Ported from the static site's app-with-cover.js (header collapse, menu toggle, phone scroll lock).
 // The CSS keys off the same ids and classes, so those names stay.
@@ -19,6 +24,10 @@ export function Sidebar() {
   const lockedScrollY = useRef(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  // true while search results are open; they pin the page like the menu does and the menu button closes them
+  const [searching, setSearching] = useState(false);
+  const searchApi = useRef<SearchApi>(null);
+  const open = menuOpen || searching;
 
   // Header slides out of the sidebar as the main panel scrolls; two thresholds avoid flicker.
   useEffect(() => {
@@ -68,14 +77,14 @@ export function Sidebar() {
     }
   }, []);
 
-  useEffect(() => syncScrollLock(menuOpen), [menuOpen, syncScrollLock]);
+  useEffect(() => syncScrollLock(open), [open, syncScrollLock]);
 
   useEffect(() => {
     const phone = window.matchMedia(PHONE_QUERY);
-    const onChange = () => syncScrollLock(menuOpen);
+    const onChange = () => syncScrollLock(open);
     phone.addEventListener('change', onChange);
     return () => phone.removeEventListener('change', onChange);
-  }, [menuOpen, syncScrollLock]);
+  }, [open, syncScrollLock]);
 
   // Swipes are blocked everywhere except inside the open list, and there only while it can still move.
   useEffect(() => {
@@ -138,24 +147,14 @@ export function Sidebar() {
     }
   }, [pathname]);
 
-  const classes = [menuOpen && 'menu-open', headerCollapsed && 'header-collapsed'].filter(Boolean).join(' ');
+  const settings = useSettings();
+  const { read } = useHandbookState();
+  const classes = [menuOpen && 'menu-open', searching && 'searching', headerCollapsed && 'header-collapsed', !trackingProgress(settings) && 'progress-off'].filter(Boolean).join(' ');
 
   return (
     <>
       <nav id="sidebar" ref={sidebarRef} className={classes} aria-label="Table of contents">
         <div className="sidebar-header" ref={headerRef}>
-          <button
-            ref={toggleRef}
-            type="button"
-            className="menu-toggle"
-            id="menuToggle"
-            aria-label="Table of contents"
-            aria-expanded={menuOpen}
-            aria-controls="navList"
-            onClick={() => setMenuOpen(o => !o)}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -163,10 +162,27 @@ export function Sidebar() {
           <h1>{BOOK_TITLE}</h1>
           <p>A practical guide for new agents</p>
         </div>
+        <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi}>
+          <button
+            ref={toggleRef}
+            type="button"
+            className="menu-toggle"
+            id="menuToggle"
+            aria-label={searching ? 'Close search results' : 'Table of contents'}
+            aria-expanded={menuOpen}
+            aria-controls="navList"
+            onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
+          >
+            {open ? '✕' : '☰'}
+          </button>
+        </SidebarSearch>
         <ul className="nav-list" id="navList">
+          <ProgressItem />
+          {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} />}
           {NAV.map(group => (
-            <SectionGroup key={group.part ?? 'top'} group={group} current={current} />
+            <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} />
           ))}
+          <Settings />
           <li className="menu-close">
             <button type="button" onClick={() => { setMenuOpen(false); toggleRef.current?.focus(); }}>Close menu</button>
           </li>
@@ -180,7 +196,32 @@ export function Sidebar() {
   );
 }
 
-function SectionGroup({ group, current }: { group: (typeof NAV)[number]; current: string }) {
+// The reading plan and spaced-review pages. They save to this device, so they go away with progress tracking, and
+// they stay out of the menu while the coach is off (the pages 404 then).
+const STUDY_LINKS = [
+  { id: 'plan', label: 'My plan' },
+  { id: 'review', label: 'Review' },
+];
+
+function StudyLinks({ current }: { current: string }) {
+  return (
+    <>
+      <li className="nav-section-title" role="presentation">MY STUDY</li>
+      {STUDY_LINKS.map(link => {
+        const active = link.id === current;
+        return (
+          <li key={link.id}>
+            <Link href={`/${link.id}`} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
+              {link.label}
+            </Link>
+          </li>
+        );
+      })}
+    </>
+  );
+}
+
+function SectionGroup({ group, current, read }: { group: (typeof NAV)[number]; current: string; read: Record<string, boolean> }) {
   return (
     <>
       {group.part && <li className="nav-section-title" role="presentation">{group.part}</li>}
@@ -190,7 +231,7 @@ function SectionGroup({ group, current }: { group: (typeof NAV)[number]; current
           <li key={page.id}>
             <Link
               href={page.id === 'cover' ? '/' : `/${page.id}`}
-              className={`nav-item${active ? ' active' : ''}`}
+              className={`nav-item${active ? ' active' : ''}${read[page.id] ? ' read' : ''}`}
               data-page={page.id}
               aria-current={active ? 'page' : undefined}
             >

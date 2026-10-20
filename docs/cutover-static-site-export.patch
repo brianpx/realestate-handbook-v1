@@ -1,0 +1,53 @@
+diff --git a/css/styles.css b/css/styles.css
+index 66412ac..bb1f3e1 100644
+--- a/css/styles.css
++++ b/css/styles.css
+@@ -519,6 +519,7 @@
+         .settings-reset { display: block; width: 100%; text-align: center; }
+         .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid #cbd5e1; font-size: 0.8rem; line-height: 1.6; white-space: nowrap; text-align: center; color: #475569; }
+         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: #475569; }
++        .settings-transfer-title { font-size: 0.9rem; font-weight: 600; }
+         #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-item.read::after { display: none; }
+         .progress-bar { height: 6px; border-radius: 3px; background: #e2e8f0; overflow: hidden; }
+         .progress-bar span { display: block; height: 100%; width: 0; background: #0284c7; transition: width 0.3s; }
+diff --git a/js/interactive.js b/js/interactive.js
+index a633f11..dc7f224 100644
+--- a/js/interactive.js
++++ b/js/interactive.js
+@@ -124,7 +124,10 @@ function setupSettingsUi() {
+         '<div class="settings-row"><input type="checkbox" id="settingTrack">' +
+         '<div class="settings-col"><label for="settingTrack">Keep track of progress</label>' +
+         '<div class="settings-sub" id="settingResetGroup"><button type="button" class="btn-mini settings-reset" id="settingReset">Reset progress</button>' +
+-        '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div></details>' +
++        '<span class="settings-note" id="settingResetNote" role="status"></span></div></div></div>' +
++        '<div class="settings-row settings-transfer"><div class="settings-col"><span class="settings-transfer-title">Move your progress</span>' +
++        '<div class="settings-sub"><button type="button" class="btn-mini" id="settingExport">Download my progress</button></div>' +
++        '<span class="settings-note" id="settingTransferNote" role="status"></span></div></div></details>' +
+         '<p class="settings-legal"><strong>Finding, Keeping, and Nurturing Clients</strong><br>A Practical Guide for New Agents<br>v1.0 · October 2026 · All rights reserved.</p>';
+     const navList = document.getElementById('navList');
+     navList.insertBefore(item, navList.querySelector('.menu-close')); // the Close bar stays last
+@@ -218,6 +221,24 @@ function setupSettingsUi() {
+         applyQuizVisibility();
+     });
+ 
++    // The handbook is moving to a new web address, and browsers do not carry saved progress across addresses. This
++    // saves it to a file that the new handbook can restore (Settings > Restore from a file). The file holds the two
++    // stored objects as they are.
++    item.querySelector('#settingExport').addEventListener('click', () => {
++        const stored = key => {
++            try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (err) { return null; }
++        };
++        const file = { format: 'handbook-progress', version: 1, exportedAt: new Date().toISOString(), handbookState: stored(STATE_KEY), handbookSettings: stored(SETTINGS_KEY) };
++        const link = el('a');
++        link.href = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }));
++        link.download = `handbook-progress-${new Date().toISOString().slice(0, 10)}.json`;
++        document.body.appendChild(link);
++        link.click();
++        link.remove();
++        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
++        item.querySelector('#settingTransferNote').textContent = 'Progress downloaded.';
++    });
++
+     item.querySelector('#settingReset').addEventListener('click', () => {
+         const had = Object.keys(loadState().read).length > 0;
+         resetProgress();

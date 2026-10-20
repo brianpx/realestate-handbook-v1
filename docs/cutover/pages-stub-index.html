@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Finding, Keeping, and Nurturing Clients has moved</title>
+    <meta name="robots" content="noindex">
+    <!-- At cutover, replace __NEW_ORIGIN__ with the new site's address (no trailing slash), for example https://handbook.example -->
+    <link rel="canonical" href="__NEW_ORIGIN__/">
+    <noscript><meta http-equiv="refresh" content="0; url=__NEW_ORIGIN__/"></noscript>
+    <style>
+        body { font: 18px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 12vh auto; padding: 0 20px; color: #0f172a; }
+        a, button { font: inherit; }
+        a.go, button.save { display: inline-block; margin: 6px 10px 6px 0; padding: 10px 16px; border-radius: 6px; border: 1px solid #1d4ed8; background: #1d4ed8; color: #fff; text-decoration: none; cursor: pointer; }
+        button.save { background: #fff; color: #1d4ed8; }
+        [hidden] { display: none; }
+    </style>
+</head>
+<body>
+    <h1>The handbook has moved</h1>
+    <p>Finding, Keeping, and Nurturing Clients now lives at <a id="new" href="__NEW_ORIGIN__/">__NEW_ORIGIN__</a>.</p>
+    <div id="progress" hidden>
+        <p><strong>You have saved progress on this device.</strong> Your browser keeps it per web address, so it does not move by itself. Save it to a file first, then on the new site open Settings in the menu and choose <em>Restore from a file</em>.</p>
+        <p><button type="button" class="save" id="save">Download my progress</button> <a class="go" id="go" href="__NEW_ORIGIN__/">Continue to the new handbook</a></p>
+        <p id="saved" role="status"></p>
+    </div>
+    <script>
+        // Old links look like .../#ch5. A hash never reaches a server, so it is mapped here to the new per-chapter address.
+        // A reader with no saved progress is sent straight there. A reader with progress is offered the file first,
+        // because this page is the last thing on the old address that can read it.
+        (function () {
+            var NEW_ORIGIN = '__NEW_ORIGIN__';
+            var PAGES = /^(pref|ch(?:[1-9]|1[0-3])|app-[a-f])$/;
+            var id = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+            var target = NEW_ORIGIN + '/' + (PAGES.test(id) ? id : '');
+            document.getElementById('new').href = target;
+            document.getElementById('go').href = target;
+            function stored(key) {
+                try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+            }
+            var state = stored('handbookState');
+            var settings = stored('handbookSettings');
+            var has = function (o) { return o && typeof o === 'object' && Object.keys(o).length > 0; };
+            if (!has(state) && !has(settings)) { location.replace(target); return; }
+            document.getElementById('progress').hidden = false;
+            document.getElementById('save').addEventListener('click', function () {
+                var file = { format: 'handbook-progress', version: 1, exportedAt: new Date().toISOString(), handbookState: state, handbookSettings: settings };
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }));
+                link.download = 'handbook-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+                document.getElementById('saved').textContent = 'Progress downloaded. Now continue to the new handbook.';
+            });
+        })();
+    </script>
+</body>
+</html>

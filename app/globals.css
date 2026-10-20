@@ -478,6 +478,7 @@
         .nav-search-input::placeholder { color: #64748b; }
         .search-results { list-style: none; margin: 8px -20px -12px; max-height: 50vh; overflow-y: auto; }
         .search-results[hidden] { display: none; }
+        tr[hidden] { display: none; }
         #sidebar.searching .nav-list { display: none; }
         #sidebar.searching .search-results { max-height: none; }
         .search-result { display: block; padding: 9px 20px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent; }
@@ -519,6 +520,10 @@
         .settings-reset { display: block; width: 100%; text-align: center; }
         .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid #cbd5e1; font-size: 0.8rem; line-height: 1.6; white-space: nowrap; text-align: center; color: #475569; }
         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: #475569; }
+        .settings-transfer-title { font-size: 0.9rem; font-weight: 600; }
+        .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0; }
+        .settings-confirm { margin-top: 8px; }
+        .settings-confirm .btn-mini { margin: 6px 8px 0 0; }
         #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-item.read::after { display: none; }
         .progress-bar { height: 6px; border-radius: 3px; background: #e2e8f0; overflow: hidden; }
         .progress-bar span { display: block; height: 100%; width: 0; background: #0284c7; transition: width 0.3s; }
@@ -577,7 +582,7 @@
         .btn-mini:hover { background: #e0e7ff; }
         .box.script.practicing .script-body { display: none; }
         .practice-area { margin-top: 12px; }
-        .practice-area[hidden], .trainer-answer[hidden], .btn-mini[hidden] { display: none; }
+        .practice-area[hidden], .trainer-answer[hidden], .btn-mini[hidden], .script-actions[hidden] { display: none; }
         .practice-label { display: block; font-size: 0.85rem; font-weight: 600; margin: 12px 0 6px; }
         .practice-text { display: block; width: 100%; margin-top: 6px; padding: 10px; font: inherit; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; }
         .trainer-prompt { font-weight: 700; font-size: 1.05rem; }
@@ -891,3 +896,4 @@
             .lifecycle-container { flex-direction: column; }
             .lifecycle-arrow { transform: rotate(90deg); }
         }
+        html.hide-quizzes .box.quiz { display: none; }
