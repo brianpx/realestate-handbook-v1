@@ -12,7 +12,7 @@ export const NAV: NavGroup[] = [
   { part: null, pages: [p('cover', 'Title Page'), p('pref', 'Handbook Overview & Plan')] },
   { part: 'PART I: Foundations', pages: [p('ch1', '1. Mindset & Foundations')] },
   { part: 'PART II: Find', pages: [p('ch2', '2. Finding Clients'), p('ch3', '3. Marketing & Brand Presence')] },
-  { part: 'PART III: Operating System', pages: [p('ch4', '4. Technology and Systems')] },
+  { part: 'PART III: Operating System', pages: [p('ch4', '4. Your CRM and daily operating system')] },
   { part: 'PART IV: Nurture', pages: [p('ch5', '5. Nurturing Leads'), p('ch6', '6. Scripts & Conversations')] },
   { part: 'PART V: Stay on Track', pages: [p('ch7', '7. Common Errors & Pitfalls'), p('ch8', '8. Staying Organized & Motivated')] },
   {
