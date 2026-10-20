@@ -597,6 +597,14 @@
         .calc-verdict { margin-bottom: 12px; }
         .calc-stress-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
         .calc-note { margin-top: 12px; font-size: 0.85rem; color: #475569; }
+        .footnote { margin-top: 4px; font-size: 0.85rem; color: #475569; }
+        .footnote-ref { font: inherit; font-weight: 600; padding: 0 3px; background: none; border: 0; color: #1d4ed8; cursor: pointer; }
+        .footnote-ref:hover { color: #1e3a8a; }
+        .note-dialog { margin: auto; width: min(640px, 94vw); max-height: 90vh; overflow-y: auto; padding: 20px; border: 0; border-radius: 8px; }
+        .note-dialog::backdrop { background: rgba(15, 23, 42, 0.6); }
+        .note-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .note-dialog-head h4 { margin: 0; }
+        .note-dialog-foot { margin: 0; font-size: 0.85rem; color: #475569; }
         .btn-mini[aria-pressed="true"] { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
         .btn-mini:disabled { opacity: 0.45; cursor: default; }
 

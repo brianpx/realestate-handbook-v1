@@ -151,6 +151,38 @@ const fmtPerDay = n => {
     return lo === hi ? String(lo) : `${lo} to ${hi}`;
 };
 
+// The example column is fixed, so the dialog explains how those figures were reached and what they assume.
+function calcFootnote() {
+    const dialog = el('dialog', 'note-dialog');
+    dialog.id = 'calc-footnote';
+    dialog.setAttribute('aria-labelledby', 'calc-footnote-title');
+    dialog.innerHTML =
+        '<div class="note-dialog-head"><h4 id="calc-footnote-title">How the example numbers were derived</h4>' +
+        '<button type="button" class="btn-mini" data-close-note>Close</button></div>' +
+        '<p>Each row feeds the next. Using the example goal of $80,000:</p>' +
+        '<ol>' +
+        '<li><strong>Closings:</strong> $80,000 ÷ $6,500 = 12.3, rounded <em>up</em> to 13, because you cannot close part of a sale.</li>' +
+        '<li><strong>Appointments:</strong> 13 closings × 3 appointments per closing = 39.</li>' +
+        '<li><strong>Conversations:</strong> 39 appointments × 20 conversations per appointment = 780.</li>' +
+        '<li><strong>Per week:</strong> 780 ÷ 48 working weeks = 16.25, shown as about 16.</li>' +
+        '<li><strong>Per day:</strong> 16.25 ÷ ' + WORKDAYS_PER_WEEK + ' working days = 3.25, shown as 3 to 4.</li>' +
+        '</ol>' +
+        '<p><strong>Assumptions</strong></p>' +
+        '<ul>' +
+        '<li>The income goal and the $6,500 average are both what you keep from a closed side <em>after</em> your broker split. Business expenses and taxes are not subtracted, so set your goal with those in mind.</li>' +
+        '<li>Three appointments per closing and 20 conversations per appointment are rules of thumb for a new agent, blended across lead sources. They are not measured results. Your own ratios will differ and should replace these as soon as you have a few months of data.</li>' +
+        '<li>48 working weeks is 52 less about four for vacation, holidays and illness. A working week is ' + WORKDAYS_PER_WEEK + ' days.</li>' +
+        '<li>Every closing is assumed to come from the work counted here. Referrals and repeat clients would lower the conversations you need.</li>' +
+        '<li>Closings trail conversations by roughly 60 to 120 days, so income lags the work.</li>' +
+        '</ul>' +
+        '<p class="note-dialog-foot">Change any input in the table and the whole ladder recalculates with your numbers.</p>';
+    dialog.addEventListener('click', e => {
+        // a click on the backdrop targets the dialog itself
+        if (e.target === dialog || e.target.closest('[data-close-note]')) dialog.close();
+    });
+    return dialog;
+}
+
 function setupGoalCalculator(section) {
     if (section.dataset.page !== 'ch1') return;
     const table = [...section.querySelectorAll('.table-wrapper table')]
@@ -202,7 +234,24 @@ function setupGoalCalculator(section) {
         '<div class="script-actions" role="group" aria-label="Stress test"></div></div>' +
         '<p class="calc-note">Conversations are real two-way talks. A working week is counted as ' + WORKDAYS_PER_WEEK +
         ' days. Closings lag conversations by roughly 60 to 120 days, so judge yourself on the conversations.</p>';
-    table.closest('.table-wrapper').nextElementSibling.after(panel);
+    const caption = table.closest('.table-wrapper').nextElementSibling;
+    caption.after(panel);
+    const noteDialog = calcFootnote();
+    const marker = el('button', 'footnote-ref', '1');
+    marker.type = 'button';
+    marker.setAttribute('aria-haspopup', 'dialog');
+    marker.setAttribute('aria-label', 'Footnote: how these numbers were derived');
+    marker.addEventListener('click', () => noteDialog.showModal());
+    const sup = el('sup');
+    sup.appendChild(marker);
+    const note = el('p', 'footnote');
+    note.append(sup, ' How these numbers were derived, and what they assume. ');
+    const open = el('button', 'link-btn', 'Read the footnote');
+    open.type = 'button';
+    open.setAttribute('aria-haspopup', 'dialog');
+    open.addEventListener('click', () => noteDialog.showModal());
+    note.appendChild(open);
+    caption.after(note, noteDialog);
     table.closest('.table-wrapper').before(interactiveHeader('Type your own numbers in the "Your number" column. Your daily target appears below the table and saves on this device.', 'goal-calculator', 'Income goal calculator'));
 
     const stats = panel.querySelector('.calc-stats');
