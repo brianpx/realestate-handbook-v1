@@ -1,0 +1,46 @@
+// Mirrors Appendix B.1 (new online lead, 90 days). Every third touch gives value, per the chapter.
+// Copied from legacy/js/widgets.js unchanged.
+export type Channel = 'text' | 'email' | 'call';
+export type Touch = { n: number; day: number; channels: Channel[]; label: string; role: string; value: boolean; plan: string; sample: string };
+
+export const NURTURE_TOUCHES: Touch[] = [
+    { n: 1, day: 0, channels: ['text', 'email'], label: 'Text + email', role: 'Respond', value: false,
+        plan: 'Automated. Thanks for the inquiry about [property]. One easy question.',
+        sample: 'Hi Jordan, it\'s Sam with [Brokerage]. Thanks for asking about 14 Maple Street. Are you thinking of buying soon, or just starting to look?' },
+    { n: 2, day: 0, channels: ['call'], label: 'Call', role: 'Connect', value: false,
+        plan: 'You call. Speed-to-lead script. Leave a short voicemail if no answer.',
+        sample: 'Hi Jordan, Sam with [Brokerage]. I saw you asked about 14 Maple Street and wanted to say hello. What caught your eye about it?' },
+    { n: 3, day: 1, channels: ['email'], label: 'Email', role: 'Give value', value: true,
+        plan: 'Three similar homes and an offer to set up a search.',
+        sample: 'Here are three homes like 14 Maple Street, with prices and photos. Want me to set up a search so new ones reach you as they list?' },
+    { n: 4, day: 3, channels: ['text'], label: 'Text', role: 'Check in', value: false,
+        plan: '"Did any of those catch your eye?"',
+        sample: 'Did any of those homes catch your eye, Jordan?' },
+    { n: 5, day: 7, channels: ['call'], label: 'Call', role: 'Qualify', value: false,
+        plan: 'Qualify: timeline, motivation, financing, representation.',
+        sample: 'So I can send the right things: when are you hoping to be settled in? And what\'s prompting the move?' },
+    { n: 6, day: 10, channels: ['email'], label: 'Email', role: 'Give value', value: true,
+        plan: 'Value piece: buyer guide or neighborhood report.',
+        sample: 'I pulled together a short guide to the Maple Street area: what homes sold for and how fast. Hope it helps.' },
+    { n: 7, day: 14, channels: ['text'], label: 'Text', role: 'Stay visible', value: false,
+        plan: 'Market note with one number.',
+        sample: 'Homes near Maple Street are selling in a median of [X] days this month. Want the full picture?' },
+    { n: 8, day: 21, channels: ['call'], label: 'Call', role: 'Offer a consultation', value: false,
+        plan: 'Check in; offer a consultation.',
+        sample: 'Just checking in. If it would help to talk through your options, I can set aside 20 minutes. No pressure.' },
+    { n: 9, day: 30, channels: ['email'], label: 'Email', role: 'Give value', value: true,
+        plan: 'Monthly market update.',
+        sample: 'Here is this month\'s update for your area: median price, days on market and months of inventory.' },
+    { n: 10, day: 45, channels: ['text'], label: 'Text', role: 'Match their search', value: false,
+        plan: 'New listing or price change that fits their search.',
+        sample: 'A new listing just came up that fits what you described: [address]. Want to see it?' },
+    { n: 11, day: 60, channels: ['call'], label: 'Call', role: 'Check in', value: false,
+        plan: '"Where are things at for you?"',
+        sample: 'Hi Jordan, Sam here. Where are things at for you? Has your timeline changed?' },
+    { n: 12, day: 75, channels: ['email'], label: 'Email', role: 'Give value', value: true,
+        plan: 'Value piece: case study of a recent client.',
+        sample: 'A recent client was in a spot like yours. Here is a short story of how it went and what they would do again.' },
+    { n: 13, day: 90, channels: ['call'], label: 'Call', role: 'Final check-in', value: false,
+        plan: 'Final check-in, then move to the quarterly database plan.',
+        sample: 'I will keep sending the occasional update. Is there anything you would like more of, or less?' }
+];
