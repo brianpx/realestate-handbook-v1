@@ -1,6 +1,6 @@
 # Reading plan coach: reminders, progress, and spaced review
 
-Drafted 19 October 2026 against branch `next`; revised the same day after a design review. Nothing here has been built. File names, line numbers and word counts come from reading the repo; the learning-science choices are standard practice (retrieval practice, spacing, interleaving), not measurements from this handbook. **Provider requirements (SendGrid, Twilio, Vercel cron limits) have not been checked against current docs.** Verify them before building phases E and F.
+Drafted 19 October 2026 against branch `next`; revised the same day after a design review. Status as of the same day: the local learning loop and the planner are built for one chapter (see "Build status"); accounts, sync, reminders and SMS are not. File names, line numbers and word counts come from reading the repo; the learning-science choices are standard practice (retrieval practice, spacing, interleaving), not measurements from this handbook. **Provider requirements (SendGrid, Twilio, Vercel cron limits) have not been checked against current docs.** Verify them before building phases E and F.
 
 ## What changed in this revision
 
@@ -16,15 +16,36 @@ Drafted 19 October 2026 against branch `next`; revised the same day after a desi
 - **Acceptance criteria** added for grading, reflow, sync and delivery.
 - Email stays ahead of SMS; reminders use the phase 5 account system, not a second identity path.
 
+## Build status
+
+Checked against branch `next` at `3a5f13f` plus uncommitted edits. `pnpm test` passed (338 passed, 4 skipped) and `pnpm typecheck` was clean.
+
+| Piece | Status | Where |
+| --- | --- | --- |
+| `grade`, `replay`, `dueQueue`, `interleave`, deck building and miss requeue | Built, with unit tests | `lib/coach/grade.ts`, `replay.ts`, `queue.ts`, `review.ts` |
+| Planner: `buildPlan`, `reflow`, paces, study-day warnings, partly-done sessions | Built, with unit tests | `lib/coach/plan.ts`, `today.ts` |
+| `/plan` setup and Today card, `/review` deck, confidence prompt, chapter check writing attempts | Built, behind `NEXT_PUBLIC_COACH_ENABLED` (404 otherwise) | `components/coach/*`, `components/widgets/CoachCheck.tsx`, `app/plan`, `app/review` |
+| Concept registry and tagged question bank | **Chapter 4 only**: 5 concepts, 20 questions, 4 heading anchors | `content/data/concepts.ts`, `questions.ts` |
+| Reviewed questions | **5 of 20**; 15 are `draft` and stay out of the check and the deck | `content/data/questions.ts` |
+| Chapter read and exercise minutes | Not written; `longSessions` has no data, so the over-75-minute warning cannot fire | `lib/coach/plan.ts` |
+| Reminder send-time setting | A stored default of `08:00`; no control for it found in the setup screen | `lib/coach/actions.ts` |
+| Coach end-to-end tests | None in `e2e/` | |
+| Accounts, attempt and plan sync | Not started (migration phase 5) | |
+| Reminder tables, cron, outbox, signed links, webhooks | Not started; `db/migrations` has only `001_leads.sql` | |
+| SendGrid sending | Plain-`fetch` sender exists for the lead welcome email and needs a real from-address and mailing address; reminders can reuse the pattern | `lib/leads/mail.ts` |
+| Twilio and SMS | Not started (deferred by design) | |
+| Pre-test, weekly quiz, final check, concept map, chapter banners | Not started (deferred by design) | |
+
+So the first vertical slice is done for chapter 4. What it was meant to test (concept granularity, question count, plan placement, version handling) has not yet been reviewed, and the other twelve chapters should wait for that review.
+
 ## What exists today
 
-- The reading plan is a four-item list in `content/pages/pref.html` (Week 1: Ch 1, 4, 12; Week 2: Ch 2, 5, 6; Week 3: Ch 7, 8, 9; Week 4: Ch 3, 10, 11, 13). It is static text. Nothing tracks it, reminds anyone, or adapts to a start date.
-- Each chapter ends with a "Test your knowledge" box: **three multiple-choice questions plus one fill-in-the-blank, four per chapter, 52 in all** (`KNOWLEDGE_CHECKS`, `legacy/js/widgets-practice.js:~866`). Scores are not stored, and questions carry no concept label.
+- The reading plan is a four-item list in `content/pages/pref.html` (Week 1: Ch 1, 4, 12; Week 2: Ch 2, 5, 6; Week 3: Ch 7, 8, 9; Week 4: Ch 3, 10, 11, 13). The planner's week-to-chapter mapping (`content/data/plan.ts`) mirrors it, but the preface list is still static text.
+- The static site's chapter ends have a "Test your knowledge" box: **three multiple-choice questions plus one fill-in-the-blank, four per chapter, 52 in all** (`KNOWLEDGE_CHECKS`, ported to `content/data/knowledge-checks.ts`). Those carry no concept label. Only chapter 4's check is wired to the coach and records attempts.
 - The drills (`choiceDrill`) already have an optional `tag` field, but it is a display label, not a concept id.
-- Progress is a `read` map in `localStorage` (`handbookState`), marked when a sentinel scrolls into view. Scrolling past a chapter counts as reading it.
+- Reading progress is a `read` map in `localStorage` (`handbookState`), marked when a sentinel scrolls into view. Scrolling past a chapter counts as reading it. The coach adds explicit "Mark read" and exercise steps under its own key (`handbookCoach`).
 - Chapters are small: 308 to 1,298 words (about 10,700 total, so 2 to 7 minutes of reading each). **The time cost is the "Try it today" exercises, which the preface sizes at up to an hour.** A plan that schedules reading minutes alone will under-budget every week.
-- Headings in `content/pages/*.html` have no `id` attributes, so nothing can deep-link to "the section about 8x8".
-- Port status: the state layer (migration phase 2), widgets (phase 3) and accounts (phase 5) are not built yet. See `docs/nextjs-migration-plan.md`.
+- Heading anchors exist only where a concept points at one (4 in `ch4.html`). Other headings have no `id`, so they cannot be deep-linked yet.
 
 ## Goal and design principles
 
@@ -276,7 +297,7 @@ Both are called from server code only; keys are never `NEXT_PUBLIC_*`.
 - **SendGrid:** authenticate the sending domain (SPF, DKIM, and a DMARC record) before the first send, or reminders land in spam and the whole feature quietly fails. Use a dedicated sender subdomain. Every email carries an unsubscribe link and a physical mailing address (CAN-SPAM). Subscribe to the **Event Webhook** (delivered, bounce, spam report, unsubscribe) and write those back to the channel status and the outbox. Pass our `outbox.id` as custom data so events can be matched to rows.
 - **Twilio** (later): use a **Messaging Service**, not a loose number. US application-to-person texting requires **A2P 10DLC brand and campaign registration**, which can take days or weeks to approve, so start it first. Point Twilio's inbound webhook at us so `STOP`, `START` and `HELP` update our consent and suppression records (Twilio blocks sending to a number that sent STOP, but our table must agree so the UI is truthful).
 - **Both webhooks verify the provider's signature** before touching the database. Both are idempotent.
-- Wrap each provider in a small interface (`sendEmail(msg)`, `sendSms(msg)`) so the scheduler never imports a vendor SDK. Both providers have plain REST APIs, so `fetch` may be enough and avoid a dependency. That is your call; see open questions.
+- Wrap each provider in a small interface (`sendEmail(msg)`, `sendSms(msg)`) so the scheduler never imports a vendor SDK. Both providers have plain REST APIs. The lead welcome email already calls SendGrid with plain `fetch` (`lib/leads/mail.ts`), so reminders use the same approach and add no dependency. Webhook signature checks are written by hand and covered by tests.
 
 ### Consent, suppression and deletion
 
@@ -501,9 +522,9 @@ Then review what was awkward before tagging the other twelve chapters. This flus
 ## Content work that has to happen
 
 1. **Fix the contradictions before tagging them** (`docs/handbook-webpage-review.md`): the 8x8 definition, 8 to 12 versus 13 touches, and the Chapter 2 checkpoint mismatch. A concept tag on a contradictory idea makes a quiz that teaches the wrong answer.
-2. **Add anchors**: a stable `id` on every `h2` and `h3` that a concept points to. Done by a one-time script plus a unit test that every `Concept.anchor` exists in its page, so renaming a heading cannot silently break a review link.
-3. **Write the item bank**: aim for 3 questions per concept (about 150 total from today's 52), at least a quarter scenario-style. The final readiness check needs its own sampled pool, and the pre-test, if built, needs parallel items for the concepts it shares with the final. This is the biggest cost in the project and should be reviewed by someone who has worked as an agent.
-4. **Time estimates**: a per-chapter "minutes" figure for reading and for the Try-it exercise, written by hand (the exercise times vary too much to compute).
+2. **Add anchors**: a stable `id` on every `h2` and `h3` that a concept points to. Done by a one-time script plus a unit test that every `Concept.anchor` exists in its page, so renaming a heading cannot silently break a review link. *Status: done for chapter 4, with the test in `lib/coach/anchors.test.ts`.*
+3. **Write the item bank**: aim for 3 questions per concept (about 150 total from today's 52), at least a quarter scenario-style. The final readiness check needs its own sampled pool, and the pre-test, if built, needs parallel items for the concepts it shares with the final. This is the biggest cost in the project and should be reviewed by someone who has worked as an agent. *Status: 20 questions written for chapter 4, 15 still `draft` and held out of the check and deck until reviewed.*
+4. **Time estimates**: a per-chapter "minutes" figure for reading and for the Try-it exercise, written by hand (the exercise times vary too much to compute). *Status: not started. `longSessions` in `lib/coach/plan.ts` is ready to use the data, but until it exists the over-75-minute warning cannot fire.*
 5. **Question and concept versions**: a convention for when an edit bumps a version, and who decides.
 
 ## Phases
@@ -559,10 +580,9 @@ Resolved by this revision (change them if you disagree):
 
 Still open:
 
-1. **Dependencies.** Official `@sendgrid/mail` and `twilio` SDKs, or plain `fetch` against their REST APIs plus manual webhook-signature checks? (Per your rule I have not added anything.)
-2. **Scheduler.** Is Vercel Cron on your plan frequent enough, or should this use Vercel Queues or an external scheduler?
-3. **Who authors the item bank**, and who reviews it for accuracy?
-4. **Sender identity.** What name, domain and mailing address appear on messages (and, later, on the "Reply YES" text)?
-5. **Retention period for consent evidence**, and whether hashed suppression rows are acceptable under counsel's reading of the rules that apply to you.
-6. **Exercise completion wording.** Is "I did this" enough, or should some exercises (for example CRM setup) require evidence such as a short free-text note?
-7. **Concept granularity.** Is about 50 concepts the right size, or does the first vertical slice suggest bigger or smaller ones?
+1. **Scheduler.** Is Vercel Cron on your plan frequent enough, or should this use Vercel Queues or an external scheduler?
+2. **Who authors the item bank**, and who reviews it for accuracy?
+3. **Sender identity.** What name, domain and mailing address appear on messages (and, later, on the "Reply YES" text)?
+4. **Retention period for consent evidence**, and whether hashed suppression rows are acceptable under counsel's reading of the rules that apply to you.
+5. **Exercise completion wording.** Is "I did this" enough, or should some exercises (for example CRM setup) require evidence such as a short free-text note?
+6. **Concept granularity.** Is about 50 concepts the right size? Chapter 4's slice has 5 concepts and 20 questions; review whether that is bigger or smaller than it should be before tagging the other twelve.
