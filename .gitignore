@@ -9,3 +9,4 @@ test-results/
 playwright-report/
 .idea/
 *.iml
+.data/
