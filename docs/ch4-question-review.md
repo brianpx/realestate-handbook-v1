@@ -192,9 +192,9 @@ Explanation shown to the reader: Figure 3: start by reviewing the dashboard and 
 
 Chapter source:
 > Start in your CRM, work the follow-ups it hands you, prospect, hold appointments, and end in your CRM.
-> End-of-Day Update in your CRM
+> The day opens and closes in your CRM, and follow-ups come before new prospecting.
 
-Note: Very easy. Keep it only as a recall item; consider dropping it if you want a harder bank.
+Note: Very easy. Keep it only as a recall item; consider dropping it if you want a harder bank. The explanation says "the update in your CRM", but Figure 3 now says "close your CRM", so that wording may need to follow the figure.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
