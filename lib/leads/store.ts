@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { NeonLeadStore } from './neon-store';
 
 export type NewLead = { email: string; source: string; consentVersion: string; consentText: string; at: Date };
 export type EmailStatus = 'sent' | 'failed' | 'skipped';
@@ -95,9 +96,12 @@ export class MemoryLeadStore implements LeadStore {
   async countAttempts(ipHash: string, since: Date) { this.check(); return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length; }
 }
 
-/** Picks the store from the environment. Returns null when none is configured, so the route can refuse cleanly. */
+/**
+ * Picks the store from the environment: a database when DATABASE_URL is set, the throwaway file store only when
+ * asked for by name, otherwise none (the route then refuses with 503).
+ */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
   if (env.LEAD_STORE === 'file') return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
-  // A database-backed store is added with the Neon setup (DATABASE_URL); until then production has no store.
+  if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);
   return null;
 }

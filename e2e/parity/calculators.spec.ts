@@ -17,7 +17,7 @@ test.describe('goal calculator', () => {
     await expect(page.getByLabel(/^Conversations needed per appointment/)).toHaveValue('20');
     await expect(weeks(page)).toHaveValue('48');
     await expect(outputCell(page, 'Closings needed')).toHaveText('—');
-    await expect(page.locator('.calc-empty')).toHaveText('Enter your income goal and average commission to see your daily conversation target.');
+    await expect(page.locator('.calc-empty')).toHaveText('Enter your income goal and average commission in the table above to see your daily conversation target.');
   });
 
   test('reproduces the worked example and saves it', async ({ page }) => {

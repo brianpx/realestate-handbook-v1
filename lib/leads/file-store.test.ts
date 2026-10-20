@@ -50,5 +50,6 @@ describe('storeFromEnv', () => {
     expect(storeFromEnv({})).toBeNull();
     expect(storeFromEnv({ NODE_ENV: 'production' })).toBeNull();
     expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file })).toBeInstanceOf(FileLeadStore);
+    expect(storeFromEnv({ DATABASE_URL: 'postgres://u:p@ep-x.us-east-1.aws.neon.tech/db' })?.constructor.name).toBe('NeonLeadStore');
   });
 });

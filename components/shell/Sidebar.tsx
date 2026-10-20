@@ -128,9 +128,17 @@ export function Sidebar() {
   const lastPath = useRef<string | null>(null);
   useEffect(() => {
     setMenuOpen(false);
-    const main = document.getElementById('main-content');
-    if (main) main.scrollTop = 0;
-    window.scrollTo(0, 0);
+    // A link with #heading-id (the review deck's "Read the passage") lands on that heading, not the top of the page.
+    let hash = window.location.hash.slice(1);
+    try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use it as typed */ }
+    const target = hash ? document.getElementById(hash) : null;
+    if (target) {
+      target.scrollIntoView();
+    } else {
+      const main = document.getElementById('main-content');
+      if (main) main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
     const changed = lastPath.current !== null && lastPath.current !== pathname;
     lastPath.current = pathname;
     if (!changed) return; // first load (and dev double-run) keeps focus where it is

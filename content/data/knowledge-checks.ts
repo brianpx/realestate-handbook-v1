@@ -145,8 +145,8 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 options: ['Clients prefer to meet in the morning', 'It is the only time of day nobody else wants', 'Lenders only answer calls before noon', 'Mornings are when leads arrive'], answer: 1,
                 explain: 'Clients, lenders and inspectors will all ask for afternoons. Give them afternoons.' },
             { q: 'What is the weekly target for conversations in Table 8.2?',
-                options: ['3 to 6', '40 to 60', '15 to 25', '30 to 50'], answer: 2,
-                explain: 'Conversations are actual two-way talks. 40 to 60 is outbound calls, 30 to 50 is follow-ups completed, and 3 to 6 is appointments set.' },
+                options: ['1 to 2', '40 to 60', '15 to 25', '30 to 50'], answer: 2,
+                explain: 'Conversations are actual two-way talks. 40 to 60 is outbound calls, 30 to 50 is follow-ups completed, and 1 to 2 is appointments set.' },
             { q: 'A conversation happened but is not in your CRM. What do you do?',
                 options: ['Nothing; you will remember it', 'Write it in a notebook', 'Mention it at the Friday review', 'Treat it as not having happened and log it now'], answer: 3,
                 explain: 'The moment you keep a second list, you have two places to check and one of them will be wrong.' }

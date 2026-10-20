@@ -67,7 +67,7 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Every contact, note and task lives in your CRM.', 'If a conversation happened and it is not logged, treat it as not having happened and log it now.'],
         ['The morning is the only time of day nobody else wants. Clients, lenders and inspectors will ask for afternoons.',
             'Putting it in the same place every day means it never depends on how you feel.'],
-        ['The same rows as Appendix A and Table 8.2: calls 40 to 60, conversations 15 to 25, follow-ups 30 to 50, appointments set 3 to 6, appointments held 2 or more, one open house or event, database updated 5 days, 15 new contacts, 2 posts, morning blocks 4 or more days, pipeline count and value growing, referrals tracked.']
+        ['The same rows as Appendix A and Table 8.2: calls 40 to 60, conversations 15 to 25, follow-ups 30 to 50, appointments set 1 to 2, appointments held 1 or more, one open house or event, database updated 5 days, 15 new contacts, 2 posts, morning blocks 4 or more days, pipeline count and value growing, referrals tracked.']
     ],
     ch9: [
         ['Frame, ask, listen, present, agree.', 'Asking and listening (steps 2 and 3) should take at least half the meeting.'],

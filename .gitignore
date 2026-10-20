@@ -10,3 +10,5 @@ playwright-report/
 .idea/
 *.iml
 .data/
+.vercel
+.env*

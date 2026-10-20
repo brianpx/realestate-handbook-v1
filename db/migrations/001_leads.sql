@@ -1,5 +1,6 @@
--- Lead capture tables for the Neon store. NOT YET APPLIED: no database exists for this project and the store
--- that would use it (lib/leads/store.ts) is not written. Apply to a branch first, never straight to production.
+-- Lead capture tables for the Neon store (lib/leads/neon-store.ts).
+-- Applied 2026-10-19 to the default branch of Neon project morning-credit-15469990 ("realestate-handbook"), which
+-- was empty at the time. For any later change, apply to a branch first, never straight to production.
 --
 -- Rules the code relies on:
 --   * one row per address, compared case-insensitively (the route lower-cases before it inserts)

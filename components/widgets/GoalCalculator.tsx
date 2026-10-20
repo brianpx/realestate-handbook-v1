@@ -105,10 +105,15 @@ export function GoalCalculator() {
         onClick={e => { if (e.target === dialogRef.current || (e.target as Element).closest('[data-close-note]')) dialogRef.current?.close(); }}
       >
         <div className="note-dialog-head">
-          <h4 id="calc-footnote-title">How the example numbers were derived</h4>
-          <button type="button" className="btn-mini" data-close-note>Close</button>
+          <div>
+            <span className="note-dialog-eyebrow">Footnote 1</span>
+            <h4 id="calc-footnote-title">How the example numbers were derived</h4>
+          </div>
+          <button type="button" className="note-dialog-close" aria-label="Close footnote" data-close-note>×</button>
         </div>
-        <p>Each row feeds the next. Using the example goal of $80,000:</p>
+        <div className="note-dialog-body">
+        <p className="note-dialog-lede">Each row feeds the next. Using the example goal of $80,000:</p>
+        <h5 className="note-dialog-section">Derivation</h5>
         <ol>
           <li><strong>Closings:</strong> $80,000 ÷ $6,500 = 12.3, rounded <em>up</em> to 13, because you cannot close part of a sale.</li>
           <li><strong>Appointments:</strong> 13 closings × 3 appointments per closing = 39.</li>
@@ -116,7 +121,7 @@ export function GoalCalculator() {
           <li><strong>Per week:</strong> 780 ÷ 48 working weeks = 16.25, shown as about 16.</li>
           <li><strong>Per day:</strong> 16.25 ÷ {WORKDAYS_PER_WEEK} working days = 3.25, shown as 3 to 4.</li>
         </ol>
-        <p><strong>Assumptions</strong></p>
+        <h5 className="note-dialog-section">Assumptions</h5>
         <ul>
           <li>The income goal and the $6,500 average are both what you keep from a closed side <em>after</em> your broker split. Business expenses and taxes are not subtracted, so set your goal with those in mind.</li>
           <li>Three appointments per closing and 20 conversations per appointment are rules of thumb for a new agent, blended across lead sources. They are not measured results. Your own ratios will differ and should replace these as soon as you have a few months of data.</li>
@@ -124,7 +129,11 @@ export function GoalCalculator() {
           <li>Every closing is assumed to come from the work counted here. Referrals and repeat clients would lower the conversations you need.</li>
           <li>Closings trail conversations by roughly 60 to 120 days, so income lags the work.</li>
         </ul>
-        <p className="note-dialog-foot">Change any input in the table and the whole ladder recalculates with your numbers.</p>
+        </div>
+        <div className="note-dialog-foot">
+          <p>Change any input in the table and the whole ladder recalculates with your numbers.</p>
+          <button type="button" className="note-dialog-done" data-close-note>Got it</button>
+        </div>
       </dialog>
       <div className="box try-it calc-panel iw">
         <div className="box-title">● CALCULATOR · YOUR DAILY TARGET</div>
@@ -136,7 +145,7 @@ export function GoalCalculator() {
               <Stat value={fmtPerDay(shown.perDay)} label="conversations a day" />
             </>
           ) : (
-            <p className="calc-empty">Enter your income goal and average commission to see your daily conversation target.</p>
+            <p className="calc-empty">Enter your income goal and average commission in the table above to see your daily conversation target.</p>
           )}
         </div>
         <p className="calc-verdict">{shown && asEntered ? goalVerdict(shown, factor, asEntered) : ''}</p>

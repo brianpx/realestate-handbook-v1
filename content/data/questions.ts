@@ -22,7 +22,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'What is the first of the six CRM setup steps?',
     options: ['Import your contacts', 'Complete your profile and Marketing Profile', 'Create your follow-up plans', 'Install the mobile app'],
     answer: 1,
-    explain: 'Everything your CRM generates for you pulls from your profile, so it comes first.',
+    explain: 'Step one of the six is your profile and Marketing Profile. Everything your CRM generates for you pulls from there.',
   },
   {
     id: 'ch4.crm-setup.import', version: 1, concept: 'ch4.crm-setup', kind: 'mcq', draft: true,
@@ -34,7 +34,7 @@ export const QUESTIONS: Question[] = [
       'Deduplicate, then tag each contact by relationship and by source',
     ],
     answer: 3,
-    explain: 'Tagging by relationship (sphere, past client, lead) and by source is what lets your plans and reports work later.',
+    explain: 'Step two: import contacts, deduplicate, then tag each contact by relationship (sphere, past client, lead) and by source.',
   },
   {
     id: 'ch4.crm-setup.routing', version: 1, concept: 'ch4.crm-setup', kind: 'mcq', draft: true, scenario: true,
@@ -78,7 +78,7 @@ export const QUESTIONS: Question[] = [
       'None: appointments always come first',
     ],
     answer: 0,
-    explain: 'Protect the first three blocks before you accept any appointment. Appointments fill the time that is left.',
+    explain: 'Table 4.1: protect the first three blocks before you accept any appointment.',
   },
   {
     id: 'ch4.daily-rhythm.end-of-day', version: 1, concept: 'ch4.daily-rhythm', kind: 'mcq', draft: true, scenario: true,
@@ -90,7 +90,7 @@ export const QUESTIONS: Question[] = [
       'Rebuild your follow-up plans from scratch',
     ],
     answer: 2,
-    explain: 'The end-of-day update takes about 15 minutes and is what keeps tomorrow\'s dashboard accurate.',
+    explain: 'The end-of-day block (about 15 minutes) is: log every conversation, move Opportunities to the right stage and set tomorrow\'s top three.',
   },
   {
     id: 'ch4.daily-rhythm.opens-closes', version: 1, concept: 'ch4.daily-rhythm', kind: 'blank', draft: true,
@@ -184,7 +184,7 @@ export const QUESTIONS: Question[] = [
     id: 'ch4.text-permission.opt-out', version: 1, concept: 'ch4.text-permission', kind: 'blank', draft: true,
     before: 'Honor quiet hours and stop on the first', after: '.',
     answer: 'opt-out', accept: ['opt-out', 'opt out', 'optout'],
-    explain: 'Respecting quiet hours and opt-outs is part of the standard, not an extra.',
+    explain: 'The automated first touch should honor quiet hours and stop on the first opt-out.',
   },
 
   // ---- ch4.optional-tools
