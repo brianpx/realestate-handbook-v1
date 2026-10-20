@@ -9,7 +9,7 @@
 | Opening / transition | No bridge; abrupt |
 | Exercises | None |
 | Diagrams | None; recap graphic recommended |
-| Prose | Warm, clear; a little generic |
+| Prose | Warm, clear; a little generic |   
 
 ## Title vs. content
 
