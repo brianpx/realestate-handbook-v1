@@ -156,7 +156,10 @@
             <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="gate-trap" aria-hidden="true">
             <p id="gateError" class="gate-error" role="alert" hidden></p>
             <button type="submit" class="btn-nav" id="gateSubmit">Send me a note</button>
-            <p class="gate-privacy">Your address is sent to the form service for that note. It is not an account, and it is not sold.</p>
+            <details class="gate-details">
+                <summary>How your email is used</summary>
+                <p>Your address goes to Formspree, the form service, and then to the author. It is used only to send follow-up notes about this handbook. Reply "unsubscribe" to any note and they stop. It is not sold, and it is not an account. If you continue without email, nothing is sent.</p>
+            </details>
             <button type="button" class="gate-skip" id="gateSkip">Continue without email</button>
         </form>
     </div>
