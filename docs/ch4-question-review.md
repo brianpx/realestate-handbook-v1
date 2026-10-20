@@ -27,10 +27,19 @@ Approved questions lose their `draft` flag and join the review deck, where a con
 
 ## Things I would look at first
 
-- **`ch4.speed-to-lead.showing`**: the chapter says both "step out of whatever you are doing" and "if you are with a client, let the automated text buy you time". The question teaches the second. Make sure that is what you want agents to do at a showing.
-- **`ch4.speed-to-lead.no-call-in-hour`**: suggests a "short text" without the consent condition that the next question set insists on.
+- **`ch4.speed-to-lead.showing`**: the chapter now says "step out of whatever you are doing, unless you are with a client", then "if you are with a client, let the automated first touch buy you time". The question teaches the second. Make sure that is what you want agents to do at a showing.
+- **`ch4.speed-to-lead.no-call-in-hour`**: the "short text" now carries the consent condition ("if you have permission to text them") that the text-permission questions insist on.
 - **`ch4.crm-setup.pipeline-honest`**: a one-word blank with one accepted answer.
 - **`ch4.text-permission.inquiry`**: wording about permission to text; worth a second pair of eyes.
+
+## Reviewer pre-pass: two things that affect every decision
+
+Added by Claude after reading each draft against `content/pages/ch4.html`. The per-question notes below are leanings, not decisions. Every keyed answer matches the chapter text.
+
+1. **Approved questions also join the end-of-chapter check, not only the review deck.** `chapterCheck()` in `lib/coach/check.ts` serves every non-draft question for the chapter, and `check.test.ts` pins it to the original four. Approving all 15 would grow the chapter-end quiz to about 19 questions. Decide whether to cap the check or mark some questions review-only before approving in bulk.
+2. **The keyed answer is the longest option in 7 of the 11 multiple-choice drafts and all 3 shipped ones.** A test-savvy reader can pick it without knowing the chapter. Even out option lengths when editing.
+
+If every leaning is followed: four drafts are dropped (4, 7, 15, and 10 unless reframed), about five are edited, and `text-permission` has two or three live questions. Its review link also points at `#speed-to-lead`, the top of a section covering two concepts; a dedicated anchor on that paragraph would be better.
 
 ## The questions
 
@@ -54,6 +63,8 @@ Note: The chapter lists the six steps "in order", so "first" is supported. Check
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve. The keyed option is the longest (43 vs 27 characters). "Marketing Profile" may be one CRM's feature name; you would know whether readers recognise it.
+
 ---
 
 ### 2. `ch4.crm-setup.import`
@@ -72,6 +83,8 @@ Chapter source:
 > Import contacts. Phone, email, social and any spreadsheet you have. Deduplicate, then tag each contact by relationship (sphere, past client, lead) and by source.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve. Keyed option is the longest (64 vs 42); even out the option lengths.
 
 ---
 
@@ -94,6 +107,8 @@ Note: Distractor "Turning on mobile notifications" is step six and also helps yo
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning change. "Turning on mobile notifications" is a defensible answer to "reach the right person instantly" (step 6 notifies you of new leads). Reword to "route to the right team member" or swap that option. Labelled scenario but it is plain recall.
+
 ---
 
 ### 4. `ch4.crm-setup.pipeline-honest`
@@ -111,6 +126,8 @@ Chapter source:
 Note: The only accepted answer is "honest". A reader who types "accurate" is marked wrong. Decide whether to add near-synonyms to the accepted list, or change this to multiple choice.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning drop or replace. One word, one accepted answer, tests the chapter's phrasing rather than the idea. A multiple-choice "why rename the stages" would test the idea.
 
 ---
 
@@ -132,9 +149,11 @@ Chapter source:
 > Follow-up plan tasks
 > Prospecting block
 
-Note: Table 4.1 has five rows (start of day, follow-up tasks, prospecting, client appointments, end of day), while the learning objective says "four blocks". "The first three" is correct against the table. Check this does not confuse a reader who counted four.
+Note: Table 4.1 has five rows (start of day, follow-up tasks, prospecting, client appointments, end of day), and the learning objective now says "five blocks" and "protect the first three". Check the question reads clearly against both.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve. Keyed option is the longest (69 vs 45); even out the lengths.
 
 ---
 
@@ -158,6 +177,8 @@ Note: The first option ("Nothing; appointments count as the day's work") may be 
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve; the strongest daily-rhythm question. Keyed option is the longest (90 vs 45); even out the lengths.
+
 ---
 
 ### 7. `ch4.daily-rhythm.opens-closes`
@@ -177,6 +198,8 @@ Note: Very easy. Keep it only as a recall item; consider dropping it if you want
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning drop. The answer is "CRM" and it overlaps `followups-first`.
+
 ---
 
 ### 8. `ch4.speed-to-lead.showing`
@@ -192,12 +215,14 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 Explanation shown to the reader: The automated reply buys you time, and the live call still happens as soon as you can, always the same day.
 
 Chapter source:
-> If you are with a client, let the automated text buy you time and call at the first break.
+> If you are with a client, let the automated first touch buy you time and call at the first break.
 > A new inquiry arrives while you are showing a house. Describe what happens in the first minute, the first hour and the same day.
 
-Note: The chapter also says to "step out of whatever you are doing" for new-lead notifications, and then says to let the automated text buy time when you are with a client. The question follows the second sentence. Confirm that is the advice you want taught, and that "call at your first break" is right for a showing.
+Note: The chapter now says to "step out of whatever you are doing, unless you are with a client", and then to let the automated first touch buy you time when you are with a client. The question follows the second sentence. Confirm that is the advice you want taught, and that "call at your first break" is right for a showing.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve if you agree with the book's position at a showing (the automated touch buys time, call at the first break). It repeats the explanation on the shipped `two-layers` question, so a reader may pattern-match instead of think.
 
 ---
 
@@ -206,7 +231,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 **You cannot make a live call within the hour. What does the chapter suggest?**
 
-- A. Send a personal voice note or a short text that names the property or area they asked about ✓
+- A. Send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about ✓
 - B. Wait and call tomorrow
 - C. Send the same automated message a second time
 - D. Add them to the quarterly call plan
@@ -214,11 +239,13 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 Explanation shown to the reader: Specificity proves a human read the inquiry.
 
 Chapter source:
-> If you cannot make a live call within the hour, send a personal voice note or a short text that names the property or area they asked about. Specificity proves a human read the inquiry.
+> If you cannot make a live call within the hour, send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about. Specificity proves a human read the inquiry.
 
-Note: A text is only permitted with consent (see the text-permission questions). The chapter itself lists "a short text" here without repeating that condition. Check the answer should not say "if you have permission".
+Note: A text is only permitted with consent (see the text-permission questions). The chapter and the keyed answer now state that condition. Confirm the wording reads naturally as an answer option.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning change, lengths only. The keyed option is far the longest (129 vs 45 characters). The consent condition is already in the keyed option, so the earlier worry about it is closed.
 
 ---
 
@@ -240,6 +267,8 @@ Chapter source:
 Note: This tests reading the caption rather than a skill. It guards against readers quoting the figure as a statistic. Keep or drop as you prefer.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning change or drop. It tests the figure caption ("illustrative, not measured") rather than a skill. Separate content issue: the shipped `five-minutes` blank states "conversion is highest under 5 minutes" as fact, while the chapter calls the figure illustrative.
 
 ---
 
@@ -263,6 +292,8 @@ Note: Legal wording. Have counsel or your broker confirm this matches how you wa
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve. Keyed option is the longest (105 vs 54); even out the lengths. The chapter never says how to obtain permission; the legal-wording note above still stands.
+
 ---
 
 ### 12. `ch4.text-permission.first-touch`
@@ -284,6 +315,8 @@ Note: The question asks two things (tone and content) but the answer is one phra
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning change. The wrong options are obviously silly, and tone of the first touch belongs to `speed-to-lead`, not `text-permission`. Retag it, or replace it with a question about getting permission.
+
 ---
 
 ### 13. `ch4.text-permission.opt-out`
@@ -301,6 +334,8 @@ Chapter source:
 Note: Accepted answers: "opt-out", "opt out", "optout". "Opt-out" is hyphenated in the chapter; check the accepted list covers what readers will type.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve. It is a verbatim blank, but it tests the one rule that matters legally.
 
 ---
 
@@ -323,6 +358,8 @@ Note: The prompt copies the chapter's own example. Because the stem nearly quote
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning approve with one edit: "Yes, but only after a year" is not clearly wrong (the chapter does not rule out adding a second CRM later). Replace it with a clearly wrong option. Keyed option is the longest (61 vs 26).
+
 ---
 
 ### 15. `ch4.optional-tools.lost`
@@ -340,6 +377,8 @@ Chapter source:
 Note: This is a verbatim-sentence blank. It rewards memorising the line. Consider replacing it with a scenario.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
+
+Reviewer note (Claude, pre-pass; the decision is yours): Leaning drop. Verbatim blank; `optional-tools.when` and `second-crm` already cover the concept.
 
 ---
 
