@@ -218,4 +218,329 @@ export const QUESTIONS: Question[] = [
     answer: 'lost', accept: ['lost'],
     explain: 'Master the basic CRM first; add tools when volume justifies them.',
   },
+
+  // ---- ch5.multi-touch
+  {
+    id: 'ch5.multi-touch.fifth-to-twelfth', version: 1, concept: 'ch5.multi-touch', kind: 'mcq',
+    prompt: 'Industry follow-up data says most conversions happen between which contacts?',
+    options: ['The first and second', 'The third and fourth', 'The fifth and twelfth', 'The fifteenth and twentieth'],
+    answer: 2,
+    explain: 'Most new agents stop after one or two attempts, so they abandon the leads that would have closed for the agent who kept going.',
+  },
+
+  // ---- ch5.plan-properties
+  {
+    id: 'ch5.plan-properties.value-every-third', version: 1, concept: 'ch5.plan-properties', kind: 'blank',
+    before: 'A good nurture plan gives something of value every', after: 'touch instead of always asking for something.',
+    answer: 'third', accept: ['third', '3rd', '3'],
+    explain: 'The four properties are front-loaded, mixed channel, value every third touch (3, 6, 9 and 12), and long (13 touches over at least 90 days).',
+  },
+
+  // ---- ch5.qualify
+  {
+    id: 'ch5.qualify.four-questions', version: 1, concept: 'ch5.qualify', kind: 'mcq',
+    prompt: 'Which are the four qualifying questions?',
+    options: ['Budget, bedrooms, schools, commute', 'Name, phone, email, address', 'Price, location, size, age', 'Timeline, motivation, financing, representation'],
+    answer: 3,
+    explain: 'Work them naturally into your first real conversation and record the answers in your CRM the same day.',
+  },
+
+  // ---- ch5.pipeline-review
+  {
+    id: 'ch5.pipeline-review.monday-call', version: 1, concept: 'ch5.pipeline-review', kind: 'mcq',
+    prompt: 'What earns a lead a Monday call after the Friday pipeline review?',
+    options: [
+      'Being in the database for more than a month',
+      'No real two-way conversation in 14 days and no scheduled next step',
+      'Not having replied to your last email',
+      'Not having a lender yet',
+    ],
+    answer: 1,
+    explain: 'This 30-minute habit is the difference between a pipeline and a list of names.',
+  },
+
+  // ---- ch5 drafts: second questions per concept, awaiting accuracy review
+  {
+    id: 'ch5.multi-touch.no-answer', version: 1, concept: 'ch5.multi-touch', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A lead has not replied to your first three touches. What does the chapter say to do?',
+    options: [
+      'Move them to the quarterly plan',
+      'Keep the plan going until they say stop or until they buy',
+      'Pause for six months, then restart',
+      'Delete them from the database',
+    ],
+    answer: 1,
+    explain: 'Unanswered calls are normal. A lead who has not replied to three touches is still a lead.',
+  },
+  {
+    id: 'ch5.plan-properties.front-loaded', version: 1, concept: 'ch5.plan-properties', kind: 'mcq', draft: true,
+    prompt: 'A front-loaded nurture plan puts how many touches in the first 14 days?',
+    options: ['Two', 'Four', 'Seven', 'Thirteen'],
+    answer: 2,
+    explain: 'Seven touches in the first 14 days, while interest is highest.',
+  },
+  {
+    id: 'ch5.starter-library.first-three', version: 1, concept: 'ch5.starter-library', kind: 'mcq', draft: true,
+    prompt: 'Which three plans does the chapter say to start with?',
+    options: [
+      'The 8x8, the Quarterly Call Plan and the 90-day new-lead plan',
+      'Home Anniversary, Post-Close and the Quarterly Call Plan',
+      'Buyer Long-Term Nurture, Seller Long-Term Nurture and the 8x8',
+      'Monthly Neighborhood Nurture, the 8x8 and Home Anniversary',
+    ],
+    answer: 0,
+    explain: 'Between them they cover the highest-impact activities. Add the neighborhood and long-term nurture plans once the first three are running consistently.',
+  },
+  {
+    id: 'ch5.starter-library.nobody-leaves', version: 1, concept: 'ch5.starter-library', kind: 'blank', draft: true,
+    before: 'Chain plans so that nobody leaves the database unless they', after: '.',
+    answer: 'ask to', accept: ['ask to', 'ask', 'ask you to'],
+    explain: 'Instant Response rolls into a long-term nurture, which rolls into the Quarterly Call Plan.',
+  },
+  {
+    id: 'ch5.qualify.jordan', version: 1, concept: 'ch5.qualify', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'On the day-7 call a lead says they want to move by next summer, have not spoken to a lender, and are not working with an agent. What stage and next step does the chapter give for this lead?',
+    options: [
+      'Active, with a showing this week',
+      'Drop them until they get pre-approved',
+      'Nurture, with a lender introduction as your next step',
+      'Send them to another agent',
+    ],
+    answer: 2,
+    explain: 'In the chapter\'s example of Jordan, this is a nurture lead with a lender introduction as the next step.',
+  },
+  {
+    id: 'ch5.pipeline-review.three-questions', version: 1, concept: 'ch5.pipeline-review', kind: 'mcq', draft: true,
+    prompt: 'Which is one of the three Friday pipeline review questions?',
+    options: [
+      'Is this person in the right stage?',
+      'How many open houses did I hold this month?',
+      'What is their price range?',
+      'Have they referred anyone yet?',
+    ],
+    answer: 0,
+    explain: 'The three: when did I last have a real two-way conversation, what is the next step and is it scheduled, and is this person in the right stage.',
+  },
+
+  // ---- ch12.phases
+  {
+    id: 'ch12.phases.three-phases', version: 1, concept: 'ch12.phases', kind: 'mcq',
+    prompt: 'What are the three 30-day phases of the first 90 days?',
+    options: ['Learn, wait, close', 'Plan, advertise, close', 'Study, practice, perform', 'Install the system, build the rhythm, grow the pipeline'],
+    answer: 3,
+    explain: 'Days 1 to 30 install the system, 31 to 60 build the rhythm, and 61 to 90 grow the pipeline.',
+  },
+  {
+    id: 'ch12.phases.closings-follow', version: 1, concept: 'ch12.phases', kind: 'blank',
+    before: 'Closings usually follow in the', after: '90 days.',
+    answer: 'second', accept: ['second', '2nd'],
+    explain: 'The first 90 days are for installing the system and building a pipeline, so do not worry about closings yet.',
+  },
+  {
+    id: 'ch12.phases.fifty-conversations', version: 1, concept: 'ch12.phases', kind: 'mcq', draft: true,
+    prompt: 'In days 1 to 30, at least how many real conversations should you have with your sphere?',
+    options: ['10', '25', '50', '200'],
+    answer: 2,
+    explain: 'About 12 a week, the lower end of the Chapter 8 range.',
+  },
+
+  // ---- ch12.pipeline-milestone
+  {
+    id: 'ch12.pipeline-milestone.five-active', version: 1, concept: 'ch12.pipeline-milestone', kind: 'mcq',
+    prompt: 'By days 61 to 90, how many active opportunities should your pipeline review show?',
+    options: ['1', '3', '5 or more', '20'],
+    answer: 2,
+    explain: 'Also by day 90: your first contract written, the post-close plan built and lead sources evaluated with data.',
+  },
+  {
+    id: 'ch12.pipeline-milestone.by-day-90', version: 1, concept: 'ch12.pipeline-milestone', kind: 'mcq', draft: true,
+    prompt: 'Which of these belongs to days 61 to 90?',
+    options: [
+      'Write your first contract',
+      'Finish your CRM setup',
+      'Hold your first open house or networking event',
+      'Get the content calendar running on its own',
+    ],
+    answer: 0,
+    explain: 'The other three belong to days 1 to 30 and 31 to 60.',
+  },
+
+  // ---- ch12.scorecard
+  {
+    id: 'ch12.scorecard.which-list', version: 1, concept: 'ch12.scorecard', kind: 'mcq',
+    prompt: 'Which list is the weekly scorecard?',
+    options: ['Closings, commission, listings and referrals', 'Appendix A, the same rows as Table 8.2', 'Calls, emails, posts and mailers', 'Showings, offers, contracts and closings'],
+    answer: 1,
+    explain: 'Fill in Appendix A every Friday. Table 8.2 is that same list, not a shorter one.',
+  },
+  {
+    id: 'ch12.scorecard.core-numbers', version: 1, concept: 'ch12.scorecard', kind: 'blank', draft: true,
+    before: 'If the full scorecard is too much at first, start with the', after: 'core numbers from Chapter 8.',
+    answer: 'five', accept: ['five', '5'],
+    explain: 'Conversations, appointments set, follow-ups completed, new contacts added and morning blocks held. Then name the one number you will move next week.',
+  },
+
+  // ---- ch12.monthly-review
+  {
+    id: 'ch12.monthly-review.questions', version: 1, concept: 'ch12.monthly-review', kind: 'mcq', draft: true,
+    prompt: 'Which is one of the four questions in the monthly review?',
+    options: [
+      'How many contacts are in my database?',
+      'Which brokerage pays the best split?',
+      'Where did leads stall in the pipeline?',
+      'How many hours did I work this month?',
+    ],
+    answer: 2,
+    explain: 'The four: which source produced the most appointments per hour spent, which follow-up plan got the most replies, where leads stalled, and what one change you will make this month.',
+  },
+  {
+    id: 'ch12.monthly-review.where-recorded', version: 1, concept: 'ch12.monthly-review', kind: 'mcq', draft: true,
+    prompt: 'Where does the chapter say to write the answers to your monthly review?',
+    options: [
+      'On a paper planner',
+      'In an email to your broker',
+      'In a spreadsheet separate from your CRM',
+      'In your CRM, as a note titled "Monthly note"',
+    ],
+    answer: 3,
+    explain: 'So next month\'s review can find and check them.',
+  },
+
+  // ---- ch12.plan-assembly
+  {
+    id: 'ch12.plan-assembly.post-close', version: 1, concept: 'ch12.plan-assembly', kind: 'mcq', draft: true,
+    prompt: 'Which chapter\'s Try It gives you the post-close plan for your 90-Day Business Plan?',
+    options: ['Chapter 5', 'Chapter 10', 'Chapter 11', 'Chapter 12'],
+    answer: 1,
+    explain: 'The list runs from Chapter 1 to Chapter 11; the post-close plan is item 10.',
+  },
+  {
+    id: 'ch12.plan-assembly.compliance-card', version: 1, concept: 'ch12.plan-assembly', kind: 'mcq', draft: true,
+    prompt: 'What goes on the compliance card in your plan?',
+    options: [
+      'Disclosure timing, the consent rule and three "ask first" situations',
+      'Your license number and your broker\'s phone number',
+      'A list of every form you might need',
+      'The dates of your continuing education classes',
+    ],
+    answer: 0,
+    explain: 'The compliance card comes from Chapter 11.',
+  },
+
+  // ---- ch2.sphere
+  // The knowledge check's old "five to ten times" question is not in the chapter text (it says "often converts far
+  // better"), so it is not carried over; these two replace it.
+  {
+    id: 'ch2.sphere.why-best', version: 1, concept: 'ch2.sphere', kind: 'mcq', draft: true,
+    prompt: 'Why is your sphere of influence, for most agents, the highest-return lead source?',
+    options: [
+      'Referral fees make every contact profitable',
+      'Trust is already built and the cost is only time',
+      'Sphere contacts always respond to a mass message',
+      'It needs no follow-up once you have announced yourself',
+    ],
+    answer: 1,
+    explain: 'Your sphere often converts far better than a portal lead, and the awkwardness of calling fades after the tenth call.',
+  },
+  {
+    id: 'ch2.sphere.list-size', version: 1, concept: 'ch2.sphere', kind: 'mcq', draft: true,
+    prompt: 'When you build your sphere list from your phone, social media, email and holiday cards, how many names do most people find?',
+    options: ['25 to 50', '60 to 100', '150 to 300', '500 to 1,000'],
+    answer: 2,
+    explain: 'Import every one into your CRM and tag them by relationship so you can sort later.',
+  },
+
+  // ---- ch2.sphere-order
+  {
+    id: 'ch2.sphere-order.order', version: 1, concept: 'ch2.sphere-order', kind: 'mcq',
+    prompt: 'What is the right order for working your sphere?',
+    options: ['Ask, give, announce, repeat', 'Give, ask, announce, repeat', 'Announce, ask, give, repeat', 'Announce, give, ask, repeat'],
+    answer: 3,
+    explain: 'Announce that you are in real estate, give something useful, ask for introductions after two or three helpful touches, then repeat so nobody hears from you only when you want something.',
+  },
+  {
+    id: 'ch2.sphere-order.announce-how', version: 1, concept: 'ch2.sphere-order', kind: 'mcq', draft: true,
+    prompt: 'How should you send the announcement that you are in real estate?',
+    options: [
+      'As a mass email blast to your whole database',
+      'Through an automated text tool, to save time',
+      'As a social media post only',
+      'As a personal call or text, after checking your broker\'s outreach rules',
+    ],
+    answer: 3,
+    explain: 'One message, personal, not a mass blast. Chapter 11 covers your broker\'s outreach rules.',
+  },
+
+  // ---- ch2.online-leads
+  {
+    id: 'ch2.online-leads.two-things', version: 1, concept: 'ch2.online-leads', kind: 'mcq', draft: true,
+    prompt: 'Which two things decide whether online leads pay off?',
+    options: ['Speed and persistence', 'Price and location', 'Photos and listing descriptions', 'Exclusivity and brand'],
+    answer: 0,
+    explain: 'The first agent to make real contact usually wins the conversation, and most online leads need a long nurture plan.',
+  },
+  {
+    id: 'ch2.online-leads.months-away', version: 1, concept: 'ch2.online-leads', kind: 'mcq', draft: true,
+    prompt: 'Most online leads are how far from a transaction?',
+    options: ['A few days', '6 to 18 months', 'About 3 years', 'They are ready to sign now'],
+    answer: 1,
+    explain: 'Without a long nurture plan you are paying to warm up a lead for someone else.',
+  },
+
+  // ---- ch2.open-house
+  {
+    id: 'ch2.open-house.follow-up', version: 1, concept: 'ch2.open-house', kind: 'mcq',
+    prompt: 'What is the follow-up standard after an open house?',
+    options: ['Within 24 hours: a text that evening and a call the next morning', 'Within a week, by mailed postcard', 'Only for visitors who ask you to', 'Within a month, once you have a listing to offer'],
+    answer: 0,
+    explain: 'Follow up with every visitor within 24 hours, and put every visitor on a follow-up plan. The visitor who was "just looking" is often the buyer in four months.',
+  },
+  {
+    id: 'ch2.open-house.during', version: 1, concept: 'ch2.open-house', kind: 'mcq', draft: true,
+    prompt: 'During an open house, what is the goal?',
+    options: [
+      'Sell the house to the first serious visitor',
+      'Capture people (name, phone and email), not sell to them',
+      'Hand out your price list and leave the rest to the listing agent',
+      'Collect paper sign-in sheets for next week',
+    ],
+    answer: 1,
+    explain: 'Greet every visitor, ask one open question about their search, and offer a concrete next step.',
+  },
+
+  // ---- ch2.advanced-sources
+  {
+    id: 'ch2.advanced-sources.farm-wait', version: 1, concept: 'ch2.advanced-sources', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You start farming a neighborhood this month. When does the chapter say listings usually begin to appear?',
+    options: ['Within two weeks', 'After about a month', 'After six to twelve months', 'Only after the second year'],
+    answer: 2,
+    explain: 'Farm only if you can afford the wait.',
+  },
+  {
+    id: 'ch2.advanced-sources.expired-opener', version: 1, concept: 'ch2.advanced-sources', kind: 'mcq', draft: true,
+    prompt: 'How should you open a call to an owner whose listing expired?',
+    options: [
+      'Lead with curiosity about what they want to do next',
+      'Point out what their last agent did wrong',
+      'Tell them their price was too high',
+      'Offer to cut your commission',
+    ],
+    answer: 0,
+    explain: 'The chapter\'s opener: "I saw your home came off the market. What would you like to happen next?"',
+  },
+
+  // ---- ch2.track-sources
+  {
+    id: 'ch2.track-sources.cost-per-deal', version: 1, concept: 'ch2.track-sources', kind: 'blank',
+    before: 'For each lead source, the number you want is cost per closed', after: ', which includes your time at a rate you choose.',
+    answer: 'deal', accept: ['deal', 'a deal'],
+    explain: 'Count contacts added, appointments held, closings and dollars spent by source each month. After six months you will know which sources deserve more of your week.',
+  },
+  {
+    id: 'ch2.track-sources.worked-example', version: 1, concept: 'ch2.track-sources', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'An open house source costs $120 in materials plus 24 hours at $25 an hour and produces one closing. What is the cost per closed deal?',
+    options: ['$120', '$600', '$720', '$3,000'],
+    answer: 2,
+    explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
+  },
 ];
