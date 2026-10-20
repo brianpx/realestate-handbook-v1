@@ -1,11 +1,11 @@
 import { defineConfig } from '@playwright/test';
-
-const ORIGIN = 'http://localhost:3187';
+import { BASE_URL as ORIGIN, BYPASS_HEADERS, IS_REMOTE, LOCAL_ONLY_SPECS } from './e2e/target';
 
 export default defineConfig({
   testDir: 'e2e',
   globalSetup: './e2e/global-setup.ts',
-  webServer: {
+  testIgnore: IS_REMOTE ? LOCAL_ONLY_SPECS : undefined,
+  webServer: IS_REMOTE ? undefined : {
     command: 'pnpm build && pnpm start -p 3187',
     url: ORIGIN,
     reuseExistingServer: false,
@@ -15,6 +15,7 @@ export default defineConfig({
   },
   use: {
     baseURL: ORIGIN,
+    extraHTTPHeaders: BYPASS_HEADERS,
     // Every test starts as a reader who has already dismissed the email gate; the gate's own tests clear this.
     storageState: { cookies: [], origins: [{ origin: ORIGIN, localStorage: [{ name: 'handbookAccess', value: '1' }] }] },
   },

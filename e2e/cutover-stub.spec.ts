@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { BASE_URL } from './target';
 
 // The page that replaces the old address at cutover (docs/cutover/pages-stub-index.html). The old address is
 // stood in for by an intercepted fake host; the "new site" is this app.
-const NEW = 'http://localhost:3187';
+const NEW = BASE_URL;
 const OLD = 'https://old-host.test/realestate-handbook-v1/';
 const stub = readFileSync('docs/cutover/pages-stub-index.html', 'utf8').replaceAll('__NEW_ORIGIN__', NEW);
 

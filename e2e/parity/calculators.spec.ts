@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { BYPASS_HEADERS } from '../target';
 
 // Parity checks for the goal calculator (ch1), speed-to-lead explorer and response timer (ch4). Assertions were
 // read off setupGoalCalculator, setupSpeedToLead and setupResponseTimer in legacy/js/widgets.js, not observed
@@ -90,10 +91,10 @@ test.describe('goal calculator', () => {
     await expect(page.locator('#calc-footnote')).toBeHidden();
   });
 
-  test('without JavaScript the ladder still reads, with its example column', async ({ browser }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false });
+  test('without JavaScript the ladder still reads, with its example column', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, baseURL, extraHTTPHeaders: BYPASS_HEADERS });
     const page = await context.newPage();
-    await page.goto('http://localhost:3187/ch1');
+    await page.goto('/ch1');
     await expect(page.locator('tr', { hasText: 'Income goal for the year' }).locator('td').nth(1)).toHaveText('$80,000');
     await context.close();
   });
