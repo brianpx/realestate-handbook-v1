@@ -71,7 +71,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 options: ['A live call within one minute and an email within a day',
                     'An automated text and email within one minute, then a live call within five minutes when possible, and always the same day',
                     'A voicemail within an hour and a text within a day', 'A personal email within 30 minutes and a call within a week'], answer: 1,
-                explain: 'If you are with a client, the automated text buys you time and you call at the first break.' },
+                explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.' },
             { q: 'When should you add optional tools such as AI texting assistants or dialers?',
                 options: ['In your first week', 'As soon as a competitor has one', 'Whenever a vendor offers a free trial',
                     'When your basic CRM system runs cleanly and your lead volume means the tool pays for itself'], answer: 3,

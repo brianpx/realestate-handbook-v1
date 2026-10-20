@@ -110,7 +110,7 @@ export const QUESTIONS: Question[] = [
       'A personal email within 30 minutes and a call within a week',
     ],
     answer: 1,
-    explain: 'If you are with a client, the automated text buys you time and you call at the first break.',
+    explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.',
   },
   {
     id: 'ch4.speed-to-lead.five-minutes', version: 1, concept: 'ch4.speed-to-lead', kind: 'blank',
@@ -134,7 +134,7 @@ export const QUESTIONS: Question[] = [
     id: 'ch4.speed-to-lead.no-call-in-hour', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq', draft: true,
     prompt: 'You cannot make a live call within the hour. What does the chapter suggest?',
     options: [
-      'Send a personal voice note or a short text that names the property or area they asked about',
+      'Send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about',
       'Wait and call tomorrow',
       'Send the same automated message a second time',
       'Add them to the quarterly call plan',

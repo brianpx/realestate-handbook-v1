@@ -28,8 +28,8 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
     ch4: [
         // Added after the static site shipped: the page gained this question at the front, so the answers below it moved down one.
         ['First minute: the automated first touch goes out on its own (an email, and a text only if you have permission to text).',
-            'First five minutes when possible: step out and make the live call. If you are with a client, the automated text buys you time.',
-            'If you cannot call within the hour: send a personal voice note or a short text that names the property or area they asked about.',
+            'First five minutes when possible: step out and make the live call. If you are with a client, the automated first touch buys you time.',
+            'If you cannot call within the hour: send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about.',
             'Same day, always: the live call.'],
         ['Profile and Marketing Profile.', 'Import and tag contacts (deduplicate; tag by relationship and source).', 'Create or download follow-up plans.',
             'Set lead routing rules if you are on a team.', 'Customize the Opportunities pipeline.', 'Install the mobile app and turn on notifications.'],
