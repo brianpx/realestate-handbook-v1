@@ -459,7 +459,10 @@
         .gate-card .btn-nav { width: 100%; padding: 12px; }
         .gate-trap { position: absolute; left: -9999px; }
         .gate-card p.gate-error { color: #dc2626; font-size: 0.85rem; margin: 0 0 12px; }
-        .gate-card p.gate-privacy { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: #64748b; text-align: left; }
+        .gate-details { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: #475569; text-align: left; }
+        .gate-details summary { cursor: pointer; min-height: 24px; font-weight: 600; color: #1e3a8a; }
+        .gate-details summary:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
+        .gate-card .gate-details p { margin: 6px 0 0; font-size: inherit; text-align: left; }
         .gate-skip { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 10px; font: inherit; font-weight: 600; color: #1e3a8a; background: transparent; border: 1px solid #94a3b8; border-radius: 6px; cursor: pointer; }
         .gate-skip:hover { background: #f1f5f9; }
         .gate-skip:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
