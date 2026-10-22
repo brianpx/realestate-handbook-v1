@@ -29,8 +29,8 @@ export function PipelineCalculator() {
   });
 
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● CALCULATOR · YOUR PIPELINE VALUE</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● CALCULATOR · YOUR PIPELINE VALUE</h3>
       <InteractiveHeader
         hint="List your contacts to total your pipeline value and see who needs a Monday call. Use initials if you prefer. Saved on this device only."
         widgetKey="pipeline-calculator"
@@ -85,7 +85,7 @@ export function PipelineCalculator() {
       <p className="calc-note">
         Pipeline value is the sum of likely commission across active opportunities. A contact with no real two-way conversation in {QUIET_DAYS} days and no scheduled next step gets a call on Monday (Chapter 5).
       </p>
-    </div>
+    </aside>
   );
 }
 

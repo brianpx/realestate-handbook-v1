@@ -11,8 +11,8 @@ export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
   const top = ranked[0];
   const chapter = top && fixChapter(top.fix);
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● SELF-SCORE · THE SIX ERRORS</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● SELF-SCORE · THE SIX ERRORS</h3>
       <InteractiveHeader hint="Rate how often each error shows up in your week, from 1 (never) to 5 (every day)." widgetKey="error-self-score" label="Six-errors self-score" />
       <div className="score-rows">
         {errors.map((err, i) => (
@@ -53,6 +53,6 @@ export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
           </>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

@@ -12,15 +12,17 @@ export function CheckpointBox({ page, titleHtml, questions, answers }: { page: s
   const saved = widgetOf(useHandbookState(), 'checkpoints');
   const got = questions.filter((_, i) => entryOf(saved, `${page}:${i}`).status === 'got').length;
   return (
-    <div className="box checkpoint iw">
-      <div className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
+    <aside className="box checkpoint iw">
+      <h3 className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
       <InteractiveHeader hint="Answer in your own words first, then check the key points. Your answers save on this device." widgetKey="checkpoint" label="Checkpoint self-test">
         <span className="cp-count">{got} of {questions.length} confident</span>
       </InteractiveHeader>
-      {questions.map((question, i) => (
-        <Item key={i} id={`${page}:${i}`} question={question} answer={answers[i]!} entry={entryOf(saved, `${page}:${i}`)} />
-      ))}
-    </div>
+      <ol className="cp-list">
+        {questions.map((question, i) => (
+          <Item key={i} id={`${page}:${i}`} question={question} answer={answers[i]!} entry={entryOf(saved, `${page}:${i}`)} />
+        ))}
+      </ol>
+    </aside>
   );
 }
 
@@ -33,7 +35,7 @@ function Item({ id, question, answer, entry }: { id: string; question: string; a
   const set = (patch: Entry) => updateWidget('checkpoints', w => { w[id] = { ...(typeof w[id] === 'object' && w[id] !== null ? (w[id] as object) : {}), ...patch }; });
 
   return (
-    <div className="cp-item">
+    <li className="cp-item">
       <div className="cp-q">{question}</div>
       <label className="practice-label">
         Your answer
@@ -58,6 +60,6 @@ function Item({ id, question, answer, entry }: { id: string; question: string; a
         <button type="button" className="btn-mini" aria-pressed={status === 'got'} onClick={() => set({ status: 'got' })}>I&apos;ve got it</button>
         <button type="button" className="btn-mini" aria-pressed={status === 'review'} onClick={() => set({ status: 'review' })}>Review this</button>
       </div>
-    </div>
+    </li>
   );
 }

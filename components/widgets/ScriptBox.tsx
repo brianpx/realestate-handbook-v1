@@ -13,7 +13,7 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
   const { scripts } = useHandbookState();
   const [mode, setMode] = useState<Mode>('idle');
   const [copyLabel, setCopyLabel] = useState('Copy script');
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLQuoteElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -51,9 +51,9 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
   };
 
   return (
-    <div className={`box script${mode === 'practicing' ? ' practicing' : ''}`} data-widget="script-practice" tabIndex={-1}>
-      <div className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
-      <div className="script-body" ref={bodyRef} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+    <aside className={`box script${mode === 'practicing' ? ' practicing' : ''}`} data-widget="script-practice" tabIndex={-1}>
+      <h3 className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
+      <blockquote className="script-body" ref={bodyRef} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       <div className="script-actions">
         <span className="interactive-pill"><span aria-hidden="true">◉ </span>INTERACTIVE</span>
         <button type="button" className="btn-mini" onClick={copy}>{copyLabel}</button>
@@ -86,6 +86,6 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
         </label>
         <button type="button" className="btn-mini" hidden={mode !== 'practicing'} onClick={() => setMode('revealed')}>Reveal script to compare</button>
       </div>
-    </div>
+    </aside>
   );
 }

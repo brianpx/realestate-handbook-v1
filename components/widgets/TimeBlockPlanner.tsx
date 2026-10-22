@@ -30,8 +30,8 @@ export function TimeBlockPlanner() {
   const set = (patch: Partial<TimeblockCfg>) => setTimeblock({ ...cfg, ...patch });
 
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● PLANNER · YOUR WEEKLY TIME BLOCKS</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● PLANNER · YOUR WEEKLY TIME BLOCKS</h3>
       <InteractiveHeader
         hint="Set your own start time and block lengths, check that lead generation lands before noon, then add the blocks to your calendar."
         widgetKey="timeblock-planner"
@@ -95,6 +95,6 @@ export function TimeBlockPlanner() {
           Add these blocks to my calendar (.ics, 12 weeks)
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

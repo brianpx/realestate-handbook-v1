@@ -43,8 +43,8 @@ export function ObjectionCard({ items }: { items: Objection[] }) {
   const masteredCount = items.filter(i => objections[i.objection]).length;
 
   return (
-    <div className="box try-it objection-trainer iw">
-      <div className="box-title">● PRACTICE · OBJECTION TRAINER</div>
+    <aside className="box try-it objection-trainer iw">
+      <h3 className="box-title">● PRACTICE · OBJECTION TRAINER</h3>
       <InteractiveHeader hint="Read the objection, answer in your own words, reveal the framework, then rate yourself." widgetKey="objection-trainer" label="Objection trainer" />
       <p className="trainer-prompt" aria-live="polite">Client says: {current.objection}</p>
       <label className="practice-label">
@@ -62,6 +62,6 @@ export function ObjectionCard({ items }: { items: Objection[] }) {
         <button type="button" className="btn-mini" onClick={() => next(objections)}>Next objection</button>
       </div>
       <p className="trainer-score" role="status">{masteredCount} of {items.length} objections mastered</p>
-    </div>
+    </aside>
   );
 }

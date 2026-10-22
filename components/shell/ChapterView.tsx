@@ -14,7 +14,7 @@ export async function ChapterView({ id }: { id: PageId }) {
   const used = new Set<string>();
   const gloss = (html: string) => (defs ? wrapGlossary(html, defs, used) : html);
   return (
-    <div className="chapter-section" id={id} data-page={id}>
+    <article className="chapter-section" id={id} data-page={id}>
       {segments.map((s, i) =>
         s.kind === 'html' ? (
           <div key={i} style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: gloss(s.html) }} />
@@ -24,6 +24,6 @@ export async function ChapterView({ id }: { id: PageId }) {
       )}
       <ChapterEnd id={id} />
       <ReadTracker id={id} />
-    </div>
+    </article>
   );
 }

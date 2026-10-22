@@ -11,11 +11,11 @@ export function KnowledgeCheck({ page }: { page: string }) {
   const [round, setRound] = useState(0); // Start over remounts the questions
   if (!quiz) throw new Error(`${page}: no knowledge check in content/data/knowledge-checks.ts`);
   return (
-    <div className="box quiz">
-      <div className="box-title">● TEST YOUR KNOWLEDGE</div>
+    <aside className="box quiz">
+      <h3 className="box-title">● TEST YOUR KNOWLEDGE</h3>
       <InteractiveHeader hint="Pick an answer to see right away whether it is correct, and why. Nothing is saved." widgetKey="knowledge-check" label="Test your knowledge" />
       <Round key={round} page={page} quiz={quiz} onRestart={() => setRound(r => r + 1)} />
-    </div>
+    </aside>
   );
 }
 

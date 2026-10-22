@@ -10,8 +10,8 @@ export function ConsultationLab() {
   const [minutes, setMinutes] = useState<number[]>([...CONSULT_DEFAULT]);
   const { total, share, ok, text } = allocSummary(minutes);
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● LAB · THE FIVE-STEP CONSULTATION</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● LAB · THE FIVE-STEP CONSULTATION</h3>
       <InteractiveHeader hint="Rebalance a meeting, then spot where four sample consultations went wrong." widgetKey="consultation-lab" label="Consultation lab" />
       <div className="alloc">
         <h4 className="lab-title">1. Spend the meeting well</h4>
@@ -44,6 +44,6 @@ export function ConsultationLab() {
         <h4 className="lab-title">2. Spot the misstep</h4>
         <ChoiceDrill stateKey="consultMisstep" noun="Case" items={CONSULT_CASES} />
       </div>
-    </div>
+    </aside>
   );
 }

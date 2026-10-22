@@ -1,6 +1,6 @@
 // Keeps the reader's place while layout changes (e.g. toggling full width). The anchor is the first heading on
 // screen plus how far below the top edge it sits, which survives anything above it changing height.
-const HEADINGS = 'h2, h3, h4';
+const HEADINGS = 'h1, h2, h3, h4';
 const text = (node: Element) => (node.textContent ?? '').replace(/\s+/g, ' ').trim();
 const isPhone = () => window.matchMedia('(max-width: 900px)').matches;
 
@@ -25,7 +25,7 @@ export function captureScrollAnchor(): ScrollAnchor | null {
 
 export function applyScrollAnchor(anchor: ScrollAnchor | null): void {
   if (!anchor) return;
-  const matches = [...document.querySelectorAll<HTMLElement>('.chapter-section h2, .chapter-section h3, .chapter-section h4')].filter(n => text(n) === anchor.text);
+  const matches = [...document.querySelectorAll<HTMLElement>('.chapter-section h1, .chapter-section h2, .chapter-section h3, .chapter-section h4')].filter(n => text(n) === anchor.text);
   const target = matches[anchor.occurrence];
   if (target) scrollRoot().scrollTop += target.getBoundingClientRect().top - viewTop() - anchor.offset;
 }

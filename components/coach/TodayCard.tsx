@@ -25,16 +25,16 @@ export function TodayCard({ plan, completions, today, dueForReview, onEdit }: {
 
   return (
     <>
-      <div className="box try-it" aria-live="polite">
+      <aside className="box try-it" aria-live="polite">
         {next ? <NextSession next={next} status={sessionStatus(completions[next.session.id])} /> : (
           <>
-            <div className="box-title">● PLAN COMPLETE</div>
+            <h3 className="box-title">● PLAN COMPLETE</h3>
             <p>You have finished every session. Keep the ideas fresh with your review deck.</p>
           </>
         )}
-      </div>
+      </aside>
 
-      <div className="box">
+      <aside className="box">
         <p>
           <strong>{complete} of {total} sessions complete.</strong>{' '}
           {next && next.daysBehind > 0
@@ -63,7 +63,7 @@ export function TodayCard({ plan, completions, today, dueForReview, onEdit }: {
           <button type="button" className="btn-mini" onClick={() => reschedule(today)}>Reschedule from today</button>
           <button type="button" className="btn-mini" onClick={onEdit}>Change plan</button>
         </div>
-      </div>
+      </aside>
 
       <details className="box">
         <summary><strong>Full schedule</strong></summary>
@@ -86,7 +86,7 @@ function NextSession({ next, status }: { next: NonNullable<ReturnType<typeof nex
   const heading = when === 'today' ? 'TODAY' : when === 'later' ? `NEXT · ${formatDay(session.date).toUpperCase()}` : 'NEXT UP';
   return (
     <>
-      <div className="box-title">● {heading}</div>
+      <h3 className="box-title">● {heading}</h3>
       <p><strong>{label(chapter)}</strong></p>
       {when === 'behind' && <p>This was planned for {formatDay(session.date)}. Start it whenever you are ready, or move the schedule.</p>}
       <ul>

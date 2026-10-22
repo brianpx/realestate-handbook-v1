@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SCORE_HEADINGS, SCORE_ROWS, type ScoreRow } from '@/content/data/scorecard';
+import { SCORE_HEADINGS, SCORE_ROWS, SCORECARD_CAPTION, type ScoreRow } from '@/content/data/scorecard';
 import { clearScorecard, setScore, setScoreChange, useHandbookState } from '@/lib/state';
 import { AmountInput } from './AmountInput';
 import { InteractiveHeader } from './InteractiveHeader';
@@ -81,13 +81,14 @@ export function Scorecard() {
       />
       <div className="table-wrapper">
         <table className="scorecard">
+          <caption>{SCORECARD_CAPTION}</caption>
           <thead>
             <tr>{SCORE_HEADINGS.map(h => <th key={h}>{h}</th>)}</tr>
           </thead>
           <tbody>
             {SCORE_ROWS.map(row => (
               <tr key={row.id} data-row={row.id} data-min={row.min} data-mode={row.mode}>
-                <td>{row.label}</td>
+                <th scope="row">{row.label}</th>
                 <td>{row.target}</td>
                 {Array.from({ length: WEEKS }, (_, w) => {
                   const key = `${row.id}:${w}`;
@@ -111,7 +112,7 @@ export function Scorecard() {
               </tr>
             ))}
             <tr className="score-total">
-              <td>Targets hit</td>
+              <th scope="row">Targets hit</th>
               <td />
               {hitsPerWeek.map((h, w) => <td key={w}>{h === null ? '' : `${h} of ${MEASURABLE}`}</td>)}
             </tr>

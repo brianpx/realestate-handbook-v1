@@ -17,7 +17,7 @@ export function PlanApp() {
   useEffect(() => setMounted(true), []); // today and the time zone are browser-only, so wait for the client
 
   if (!tracking) {
-    return <div className="box"><p>Your plan needs progress tracking, which is off in Settings. Turn it on and the plan, and what you finish, will be saved on this device.</p></div>;
+    return <aside className="box"><p>Your plan needs progress tracking, which is off in Settings. Turn it on and the plan, and what you finish, will be saved on this device.</p></aside>;
   }
   if (!mounted) return <p aria-live="polite">Loading your plan…</p>;
 

@@ -20,8 +20,8 @@ function CoachCheck({ page }: { page: string }) {
   const [round, setRound] = useState(0); // Start over remounts the questions
   const tracking = trackingProgress(useSettings());
   return (
-    <div className="box quiz">
-      <div className="box-title">● TEST YOUR KNOWLEDGE</div>
+    <aside className="box quiz">
+      <h3 className="box-title">● TEST YOUR KNOWLEDGE</h3>
       <InteractiveHeader
         hint={tracking
           ? 'Say how sure you are, then answer. Your answers are saved on this device so the ideas you miss can come back later.'
@@ -30,7 +30,7 @@ function CoachCheck({ page }: { page: string }) {
         label="Test your knowledge"
       />
       <Round key={round} page={page} retest={round > 0} tracking={tracking} onRestart={() => setRound(r => r + 1)} />
-    </div>
+    </aside>
   );
 }
 

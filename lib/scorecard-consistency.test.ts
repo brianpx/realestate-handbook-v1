@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SCORE_ROWS } from '@/content/data/scorecard';
-import { htmlText } from './html-text';
+import { SCORE_ROWS, SCORECARD_CAPTION } from '@/content/data/scorecard';
+import { htmlText, tableRows } from './html-text';
 import { TIMEBLOCK_DEFAULTS } from './plan';
 
 // One weekly scorecard: Appendix A. Table 8.2 and Chapter 12 are the same list, so these tests tie the prose, the
@@ -15,9 +15,7 @@ const targets = Object.fromEntries(SCORE_ROWS.map(r => [r.id, r.target]));
 function tableWith(html: string, marker: string): string[][] {
   const table = html.split(/<table/i).slice(1).find(t => t.includes(marker));
   if (!table) throw new Error(`no table with ${marker}`);
-  return [...table.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)]
-    .map(row => [...row[1]!.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(cell => htmlText(cell[1]!)))
-    .filter(cells => cells.length);
+  return tableRows(`<table${table}`);
 }
 const sources = [
   ...readdirSync('content/pages').filter(f => f.endsWith('.html')).map(f => `content/pages/${f}`),
@@ -34,7 +32,7 @@ describe('Table 8.2 is the Appendix A list', () => {
   });
   it('says it is the same list as Appendix A, and Appendix A says it matches', () => {
     expect(text('ch8')).toContain('These are the same rows as Appendix A');
-    expect(text('app-a')).toContain('Table A.1. Weekly scorecard. The rows match Table 8.2.');
+    expect(SCORECARD_CAPTION).toBe('Table A.1. Weekly scorecard. The rows match Table 8.2.');
   });
 });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type SyntheticEvent } from 'react';
 import { CONSENT_DETAILS, CONSENT_PURPOSE, CONSENT_VERSION, GATE_KEY } from '@/lib/leads/config';
 import { BOOK_TITLE } from '@/lib/pages';
 
@@ -13,6 +13,7 @@ export function Gate({ enabled }: { enabled: boolean }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
   const skipRef = useRef<HTMLButtonElement>(null);
@@ -28,19 +29,25 @@ export function Gate({ enabled }: { enabled: boolean }) {
     setOpen(true);
   }, [enabled]);
 
-  // aria-modal alone doesn't stop Tab reaching the page behind the dialog
-  useEffect(() => {
+  // showModal puts the dialog in the top layer. The inert flags are what the first-visit check reads.
+  useLayoutEffect(() => {
     if (!open) return;
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
     const behind = document.querySelectorAll<HTMLElement>('.skip-link, #sidebar, #main-content');
     behind.forEach(node => { node.inert = true; });
     inputRef.current?.focus();
-    return () => behind.forEach(node => { node.inert = false; });
+    return () => {
+      behind.forEach(node => { node.inert = false; });
+      if (dialog?.open) dialog.close();
+    };
   }, [open]);
 
   if (!enabled || !open) return null;
 
   const dismiss = () => {
     try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch { /* unlocks for this visit only */ }
+    if (dialogRef.current?.open) dialogRef.current.close();
     setOpen(false);
     queueMicrotask(() => document.getElementById('main-content')?.focus({ preventScroll: true }));
   };
@@ -77,8 +84,13 @@ export function Gate({ enabled }: { enabled: boolean }) {
     }
   };
 
+  const onCancel = (e: SyntheticEvent<HTMLDialogElement>) => {
+    e.preventDefault();
+    dismiss();
+  };
+
   return (
-    <div id="gate" className="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gatePurpose">
+    <dialog ref={dialogRef} id="gate" className="gate" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gatePurpose" onCancel={onCancel}>
       <form id="gateForm" className="gate-card" noValidate onSubmit={submit}>
         <h2 id="gateTitle">{BOOK_TITLE}</h2>
         <p id="gatePurpose">{CONSENT_PURPOSE}</p>
@@ -93,6 +105,6 @@ export function Gate({ enabled }: { enabled: boolean }) {
         </details>
         <button type="button" className="gate-skip" id="gateSkip" ref={skipRef} onClick={dismiss}>Continue without email</button>
       </form>
-    </div>
+    </dialog>
   );
 }

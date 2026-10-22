@@ -3,6 +3,8 @@
 export type ScoreMode = 'min' | 'growing' | 'track';
 export type ScoreRow = { id: string; label: string; target: string; mode: ScoreMode; min: number };
 
+export const SCORECARD_CAPTION = 'Table A.1. Weekly scorecard. The rows match Table 8.2.';
+
 export const SCORE_HEADINGS = ["LEADING INDICATOR", "WEEKLY TARGET", "WK 1", "WK 2", "WK 3", "WK 4"];
 
 export const SCORE_ROWS: ScoreRow[] = [

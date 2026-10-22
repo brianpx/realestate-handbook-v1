@@ -167,7 +167,7 @@ export function Sidebar() {
           <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-dark" src="/images/logo3-sidebar-dark.png" width={320} height={320} alt="" />
-          <h1>{BOOK_TITLE}</h1>
+          <p className="sidebar-title">{BOOK_TITLE}</p>
           <p>A practical guide for new agents</p>
         </div>
         <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi}>

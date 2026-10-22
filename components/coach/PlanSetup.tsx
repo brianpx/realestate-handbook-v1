@@ -44,7 +44,7 @@ export function PlanSetup({ today, tz, onDone }: { today: string; tz: string; on
         onDone();
       }}
     >
-      <div className="box-title">● {editing ? 'CHANGE YOUR PLAN' : 'START YOUR READING PLAN'}</div>
+      <h3 className="box-title">● {editing ? 'CHANGE YOUR PLAN' : 'START YOUR READING PLAN'}</h3>
       <p>One chapter per session: read it, do its exercise, then answer its questions. {editing ? 'Sessions you have finished stay where they are.' : ''}</p>
 
       {!editing && (

@@ -36,6 +36,7 @@ describe('indexPage', () => {
   });
   it('adds the text the tools draw themselves: the Table 1.1 caption and the checklist titles', () => {
     expect(indexPage('ch1', '').map(e => e.text)).toContain('Table 1.1. The goal ladder. The example numbers are fixed. Fill in your own in the last column.');
+    expect(indexPage('app-a', '').map(e => e.text)).toContain('Table A.1. Weekly scorecard. The rows match Table 8.2.');
     expect(indexPage('app-c', '').filter(e => e.isHeading).map(e => e.text)).toEqual(['Profile', 'Contacts', 'Follow-up plans', 'Pipeline and routing', 'Mobile and testing']);
     expect(indexPage('ch12', '').map(e => e.text)).toContain('Days 31 to 60 (Build Rhythm)');
   });

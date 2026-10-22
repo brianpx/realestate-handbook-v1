@@ -1,5 +1,6 @@
 import { CHECKLISTS } from '@/content/data/checklists';
 import { GOAL_CAPTION } from '@/content/data/goal';
+import { SCORECARD_CAPTION } from '@/content/data/scorecard';
 import { decodeEntities } from './html-text';
 import { readPageHtml } from './content';
 import { PAGE_IDS, type PageId } from './pages';
@@ -9,9 +10,9 @@ import type { SearchEntry } from './search-query';
 // terms, figure titles, paragraphs and list items, with the footer, next-chapter link and plain fallbacks left
 // out. It is built from the page HTML at build time instead of fetching and parsing every chapter in the browser.
 
-const SELECT_TAGS = new Set(['h2', 'h3', 'h4', 'dt', 'p', 'li']);
-const HEADING_TAGS = new Set(['h2', 'h3', 'h4', 'dt']);
-const BLOCK_TAGS = new Set(['p', 'li', 'h2', 'h3', 'h4']);
+const SELECT_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'dt', 'caption', 'figcaption', 'p', 'li']);
+const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'dt']);
+const BLOCK_TAGS = new Set(['p', 'li', 'h1', 'h2', 'h3', 'h4', 'caption', 'figcaption']);
 const EXCLUDED_CLASSES = new Set(['chapter-foot', 'chapter-next', 'nurture-static']);
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
 
@@ -71,7 +72,8 @@ export function extractSearchable(html: string): { text: string; isTerm: boolean
 /** Text that the page's tools draw themselves but that used to be static page text. */
 function toolText(pageId: PageId): string {
   const parts: string[] = [];
-  if (pageId === 'ch1') parts.push(`<p><em>${GOAL_CAPTION}</em></p>`);
+  if (pageId === 'ch1') parts.push(`<caption>${GOAL_CAPTION}</caption>`);
+  if (pageId === 'app-a') parts.push(`<caption>${SCORECARD_CAPTION}</caption>`);
   const checklist = CHECKLISTS[pageId];
   if (checklist) for (const g of checklist.groups) parts.push(`<${checklist.titleTag}>${g.title}</${checklist.titleTag}>`);
   return parts.join('\n');

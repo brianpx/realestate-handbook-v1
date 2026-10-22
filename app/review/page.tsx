@@ -9,7 +9,7 @@ export default function Page() {
   if (!COACH_ENABLED) notFound();
   return (
     <>
-      <h2>Review</h2>
+      <h1>Review</h1>
       <p>A short deck of the ideas due for another look, mixed across chapters. Everything here is saved on this device only.</p>
       <ReviewDeck />
     </>

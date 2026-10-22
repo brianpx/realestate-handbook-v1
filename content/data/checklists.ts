@@ -2,10 +2,10 @@
 // so do not rename ids or reorder items without a state migration.
 export type ChecklistGroup = { id: string; title: string; items: string[] };
 
-export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h3' | 'h4'; groups: ChecklistGroup[] }> = {
+export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'; groups: ChecklistGroup[] }> = {
   "ch12": {
     header: false,
-    titleTag: 'h4',
+    titleTag: 'h3',
     groups: [
       {
         id: "ch12-d1",
@@ -43,7 +43,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h3' | 'h4'
   },
   "app-c": {
     header: true,
-    titleTag: 'h3',
+    titleTag: 'h2',
     groups: [
       {
         id: "app-c-profile",

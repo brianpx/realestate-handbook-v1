@@ -20,8 +20,8 @@ export function LeadSources() {
   const results = sourceResults(rows, rate ?? 0);
 
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● EXPLORE · COMPARE YOUR LEAD SOURCES</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● EXPLORE · COMPARE YOUR LEAD SOURCES</h3>
       <InteractiveHeader
         hint="See the typical conversion ranges side by side, then enter your own spend, time and closings to find your cost per closed deal."
         widgetKey="lead-sources"
@@ -64,7 +64,7 @@ export function LeadSources() {
         </div>
         <p className="cost-summary" aria-live="polite">{sourceSummary(results, rate ?? 0)}</p>
       </div>
-    </div>
+    </aside>
   );
 }
 

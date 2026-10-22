@@ -44,7 +44,7 @@ export function ReviewDeck() {
   }, []);
 
   if (!tracking) {
-    return <div className="box"><p>Review needs progress tracking, which is off in Settings. Turn it on and your answers will be saved on this device so the ideas you miss can come back.</p></div>;
+    return <aside className="box"><p>Review needs progress tracking, which is off in Settings. Turn it on and your answers will be saved on this device so the ideas you miss can come back.</p></aside>;
   }
   if (!outlook) return <p aria-live="polite">Loading your review…</p>;
   if (!run) return <EmptyState outlook={outlook} />;
@@ -68,7 +68,7 @@ function EmptyState({ outlook }: { outlook: Snapshot }) {
   const { deck, today } = outlook;
   const checked = [...new Set(CONCEPTS.map(c => c.chapter))];
   return (
-    <div className="box" aria-live="polite">
+    <aside className="box" aria-live="polite">
       {deck.hasHistory ? (
         <p>
           Nothing is due today.
@@ -82,7 +82,7 @@ function EmptyState({ outlook }: { outlook: Snapshot }) {
           ))}.
         </p>
       )}
-    </div>
+    </aside>
   );
 }
 
@@ -93,10 +93,10 @@ function Question({ run, onNext }: { run: Run; onNext: (items: DeckItem[], first
   const [result, setResult] = useState<{ correct: boolean; next: DeckItem[]; nextDue: string | null }>();
 
   return (
-    <div className="box">
-      <div className="box-title" aria-live="polite">
+    <aside className="box">
+      <h3 className="box-title" aria-live="polite">
         ● REVIEW · {run.index + 1} OF {run.items.length}{item.retest ? ' · ONE MORE TRY' : ''}
-      </div>
+      </h3>
       <p className="quiz-sentence"><em>{concept.title}</em></p>
       <QuestionItem
         q={q}
@@ -130,7 +130,7 @@ function Question({ run, onNext }: { run: Run; onNext: (items: DeckItem[], first
           </>
         )}
       />
-    </div>
+    </aside>
   );
 }
 
@@ -140,8 +140,8 @@ function Finished({ run, outlook, onMore }: { run: Run; outlook: Snapshot; onMor
   const missed = Object.entries(run.firstPass).filter(([, ok]) => !ok).map(([id]) => CONCEPT.get(id)!);
   const waiting = outlook.deck.items.length + outlook.deck.deferred;
   return (
-    <div className="box" aria-live="polite">
-      <div className="box-title">● DONE FOR NOW</div>
+    <aside className="box" aria-live="polite">
+      <h3 className="box-title">● DONE FOR NOW</h3>
       <p><strong>{right} of {total} right on the first try.</strong></p>
       {missed.length > 0 && (
         <>
@@ -161,6 +161,6 @@ function Finished({ run, outlook, onMore }: { run: Run; outlook: Snapshot; onMor
       ) : (
         <p>{outlook.deck.nextDue ? `Nothing else is due. Your next review is ${dueLabel(outlook.today, outlook.deck.nextDue)}.` : 'Nothing else is due.'}</p>
       )}
-    </div>
+    </aside>
   );
 }

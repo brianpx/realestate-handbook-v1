@@ -91,7 +91,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   if (searching && index) status = results.length ? `${results.length} result${results.length === 1 ? '' : 's'}` : 'No matches';
 
   return (
-    <div className="nav-search">
+    <search className="nav-search">
       <label className="visually-hidden" htmlFor="navSearch">Search the handbook</label>
       <input
         ref={inputRef}
@@ -100,6 +100,8 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         className="nav-search-input"
         placeholder="Search the handbook"
         aria-keyshortcuts="Control+K Meta+K"
+        aria-controls="searchResults"
+        aria-expanded={searching}
         autoComplete="off"
         spellCheck={false}
         value={query}
@@ -140,6 +142,6 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
       </ul>
       <div className="visually-hidden" id="searchStatus" role="status" aria-live="polite">{status}</div>
       {children}
-    </div>
+    </search>
   );
 }

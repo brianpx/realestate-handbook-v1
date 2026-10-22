@@ -67,7 +67,7 @@
         #sidebar.header-collapsed .sidebar-header { margin-top: calc(-1 * var(--header-h, 340px)); visibility: hidden; transition: margin-top 0.3s ease, visibility 0s 0.3s; }
         @media (prefers-reduced-motion: reduce) { .sidebar-header, #sidebar.header-collapsed .sidebar-header { transition: none; } }
 
-        .sidebar-header h1 {
+        .sidebar-header .sidebar-title {
             /* system fonts only, so nothing extra to load: SF Pro on Apple devices, Segoe UI Variable on Windows */
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
             font-size: 1.8rem;
@@ -75,13 +75,14 @@
             font-weight: 600;
             line-height: 1.2;
             letter-spacing: -0.02em;
+            margin: 0.67em 0; /* the margin the book title had as an h1 */
         }
 
         /* decorative: the title text beside it stays, so a failed image just drops out */
         /* centered in the 320px sidebar */
         .sidebar-logo { display: block; width: 200px; max-width: 100%; height: auto; margin: 0 auto 12px; }
 
-        .sidebar-header p {
+        .sidebar-header p:not(.sidebar-title) {
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
             font-size: 1.1rem;
             color: #475569;
@@ -246,6 +247,33 @@
             margin: 20px 0 10px;
         }
 
+        /* Chapter titles are h1, sections h2, subsections h3. These overrides keep the previous sizes. */
+        .chapter-section h1 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin: 0.83em 0 20px;
+            line-height: 1.25;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        .chapter-section h1.visually-hidden { margin: -1px; border: 0; padding: 0; }
+        .chapter-section h2 {
+            font-size: 1.35rem;
+            color: var(--primary-color);
+            margin: 32px 0 16px;
+            line-height: 1.3;
+            border: 0;
+            padding: 0;
+        }
+        .chapter-section h3 {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin: 20px 0 10px;
+            line-height: 1.3;
+            border: 0;
+            padding: 0;
+        }
+
         p {
             margin-bottom: 16px;
             font-size: 0.98rem;
@@ -280,6 +308,15 @@
             align-items: center;
             gap: 6px;
         }
+        /* Beats .chapter-section h3. Color stays on the .box.* .box-title rules below. */
+        .box h3.box-title {
+            font-size: 0.75rem;
+            margin: 0 0 8px;
+            padding: 0;
+            border: 0;
+            line-height: 1.3;
+            font-weight: 800;
+        }
 
         .box.field-note { border-color: #0ea5e9; background-color: #f0f9ff; }
         .box.field-note .box-title { color: #0369a1; }
@@ -310,10 +347,14 @@
             border: 1px solid #cbd5e1;
         }
 
-        .learning-objectives h4 {
-            margin-top: 0;
+        .learning-objectives h2 {
+            margin: 0 0 8px;
+            padding: 0;
+            border: 0;
             color: var(--primary-color);
             font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.3;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -326,10 +367,14 @@
             margin-top: 36px;
         }
 
-        .key-takeaways h4 {
+        .key-takeaways h2 {
             color: #7dd3fc;
-            margin-top: 0;
+            margin: 0 0 8px;
+            padding: 0;
+            border: 0;
             font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.3;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -361,6 +406,17 @@
             font-weight: 700;
         }
 
+        caption {
+            caption-side: bottom;
+            text-align: left;
+            font-style: italic;
+            font-weight: 400;
+            font-size: 0.98rem;
+            color: #334155;
+            padding: 12px 2px 0;
+            background: transparent;
+        }
+
         tr:nth-child(even) { background-color: #f8fafc; }
 
         /* Diagrams */
@@ -379,6 +435,17 @@
             color: var(--primary-color);
             margin-bottom: 16px;
         }
+        .diagram-box > figcaption.diagram-title { display: block; font-style: normal; }
+        .diagram-box > figcaption:not(.diagram-title) {
+            display: block;
+            margin: 12px 0 0;
+            text-align: left;
+            font-style: italic;
+            font-weight: 400;
+            font-size: 0.98rem;
+            color: #334155;
+        }
+        .diagram-box > .figure-note { text-align: left; margin: 12px 0 0; }
 
         .lifecycle-container {
             display: flex;
@@ -437,6 +504,17 @@
             background: rgba(2, 6, 23, 0.92);
         }
         .gate[hidden] { display: none; }
+        dialog.gate {
+            border: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            max-height: none;
+            color: inherit;
+        }
+        dialog.gate[open] { display: flex; }
+        dialog.gate::backdrop { background: transparent; }
         .gate-card {
             width: 100%;
             max-width: 420px;
@@ -473,7 +551,7 @@
         .colophon { margin-top: 32px; font-size: 0.85rem; color: #64748b; }
 
         /* Sidebar search */
-        .nav-search { flex-shrink: 0; padding: 12px 20px; border-bottom: 1px solid #cbd5e1; background-color: #f8fafc; }
+        .nav-search { display: block; flex-shrink: 0; padding: 12px 20px; border-bottom: 1px solid #cbd5e1; background-color: #f8fafc; }
         .nav-search-input { width: 100%; padding: 9px 12px; font: inherit; font-size: 16px; color: #0f172a; background: #ffffff; border: 1px solid #94a3b8; border-radius: 6px; }
         .nav-search-input::placeholder { color: #64748b; }
         .search-results { list-style: none; margin: 8px -20px -12px; max-height: 50vh; overflow-y: auto; }
@@ -512,7 +590,7 @@
         @media (prefers-reduced-motion: reduce) { .note-dialog[open] { animation: none; } }
         .note-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 24px 16px; border-bottom: 1px solid #e2e8f0; }
         .note-dialog-eyebrow { display: block; margin-bottom: 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #2563eb; }
-        .note-dialog-head h4 { margin: 0; font-size: 1.15rem; line-height: 1.3; color: #0f172a; }
+        .note-dialog-head h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; color: #0f172a; }
         .note-dialog-close { flex-shrink: 0; width: 32px; height: 32px; padding: 0; font-size: 1.4rem; line-height: 1; color: #64748b; background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
         .note-dialog-close:hover { color: #0f172a; background: #f1f5f9; }
         .note-dialog-close:focus-visible, .note-dialog-done:focus-visible, .footnote-ref:focus-visible, .footnote .link-btn:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
@@ -567,7 +645,7 @@
         .check-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; cursor: pointer; }
         .check-item input { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; accent-color: #2563eb; }
         .check-item input:checked + span { color: #64748b; text-decoration: line-through; }
-        .checklist-title { margin: 16px 0 0; }
+        h3.checklist-title { margin: 16px 0 0; }
         .checklist-total { font-weight: 700; color: #1e3a8a; margin: 8px 0; }
         .checklist-meter { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 0.85rem; color: #475569; }
         .meter-bar { flex: 1; height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
@@ -582,7 +660,8 @@
         table.scorecard td[data-status="hit"] .score-status { color: #14532d; }
         table.scorecard td[data-status="close"] .score-status { color: #713f12; }
         table.scorecard td[data-status="miss"] .score-status { color: #7f1d1d; }
-        table.scorecard .score-total td { font-weight: 700; background: #f1f5f9; text-align: center; }
+        table.scorecard .score-total td,
+        table.scorecard .score-total th { font-weight: 700; background: #f1f5f9; text-align: center; }
         .scorecard-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
         .scorecard-confirm { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-weight: 600; }
         .scorecard-confirm[hidden], .scorecard-tools [hidden] { display: none; }
@@ -618,6 +697,7 @@
         .transcript-note { margin: 8px 0; color: #475569; font-style: italic; }
         .transcript-line { margin: 6px 0; }
         .transcript-step { color: #6d28d9; font-size: 0.85em; }
+        blockquote.script-body { margin: 0 0 12px; padding: 0; border: 0; color: inherit; }
         .box.script.practicing .script-body { display: none; }
         .practice-area { margin-top: 12px; }
         .practice-area[hidden], .trainer-answer[hidden], .btn-mini[hidden], .script-actions[hidden] { display: none; }
@@ -718,6 +798,7 @@
         .progress-sub { margin-top: 6px; font-size: 0.75rem; color: #475569; }
 
         /* Checkpoint self-tests */
+        ol.cp-list { margin: 8px 0 0; padding-left: 1.4rem; list-style: decimal; }
         .cp-count { margin-left: auto; font-weight: 600; font-size: 0.85rem; }
         .cp-item { margin-top: 16px; padding-top: 12px; border-top: 1px solid #fcd34d; }
         .cp-q { font-weight: 600; }
@@ -866,7 +947,7 @@
             #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible; }
             #main-content { min-height: 0; overflow: visible; }
             /* anchored jumps (search, tool links) must land below the sticky search row */
-            h2, h3, h4, [data-widget] { scroll-margin-top: 72px; }
+            h1, h2, h3, h4, [data-widget] { scroll-margin-top: 72px; }
             .chapter-section + .chapter-section {
                 margin-top: 40px;
                 padding-top: 40px;
@@ -875,13 +956,13 @@
             /* Compact header: logo | title over subtitle. Scrolling the page slides it away (the shared rule
                above), leaving the search row, which always holds the menu button on its right. */
             .sidebar-header { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 10px 14px; }
-            .sidebar-header h1 {
+            .sidebar-header .sidebar-title {
                 grid-column: 2; grid-row: 1; align-self: end; margin: 0;
                 /* sized from the window width so the whole title always fits on one line */
                 font-size: clamp(11px, calc((100vw - 75px) / 19), 22px);
                 line-height: 1.2; white-space: nowrap;
             }
-            .sidebar-header p {
+            .sidebar-header p:not(.sidebar-title) {
                 display: block; grid-column: 2; grid-row: 2; align-self: start; margin: 2px 0 0;
                 font-size: 13.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             }
@@ -935,3 +1016,13 @@
             .lifecycle-arrow { transform: rotate(90deg); }
         }
         html.hide-quizzes .box.quiz { display: none; }
+
+        /* Plan and review titles are h1. Chapter titles sit inside .chapter-section and use that rule. */
+        #content-container > h1:not(.hb-title) {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin: 0.83em 0 20px;
+            line-height: 1.25;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }

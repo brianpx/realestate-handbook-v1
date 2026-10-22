@@ -21,6 +21,6 @@ export function htmlText(html: string): string {
 export function tableRows(html: string): string[][] {
   const body = /<tbody[^>]*>([\s\S]*?)<\/tbody>/i.exec(html)?.[1] ?? '';
   return [...body.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map(row =>
-    [...row[1]!.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(cell => htmlText(cell[1]!)),
+    [...row[1]!.matchAll(/<t([dh])\b[^>]*>([\s\S]*?)<\/t\1>/gi)].map(cell => htmlText(cell[2]!)),
   );
 }

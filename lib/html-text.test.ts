@@ -22,6 +22,10 @@ describe('tableRows', () => {
       '<tr><td>"x"</td><td><em>Do</em> this</td></tr><tr><td>y</td><td>z &amp; w</td></tr></tbody></table>';
     expect(tableRows(html)).toEqual([['"x"', 'Do this'], ['y', 'z & w']]);
   });
+  it('keeps a row header as the first cell', () => {
+    const html = '<table><thead><tr><th>When</th><th>Do</th></tr></thead><tbody><tr><th scope="row">Day 1</th><td>Call</td></tr></tbody></table>';
+    expect(tableRows(html)).toEqual([['Day 1', 'Call']]);
+  });
   it('returns nothing without a tbody', () => {
     expect(tableRows('<p>no table</p>')).toEqual([]);
   });

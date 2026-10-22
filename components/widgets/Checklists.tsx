@@ -21,7 +21,7 @@ export function Checklists({ page }: { page: string }) {
   const roadmapStart = parseIso(typeof widgetOf(state, 'roadmap').start === 'string' ? (widgetOf(state, 'roadmap').start as string) : undefined);
   const today = new Date();
   const Title = config.titleTag;
-  const titleClass = config.titleTag === 'h4' ? 'checklist-title' : undefined;
+  const titleClass = config.titleTag === 'h3' ? 'checklist-title' : undefined;
 
   const counts = config.groups.map(g => g.items.filter((_, i) => checks[`${g.id}:${i}`] === true).length);
   const done = counts.reduce((a, b) => a + b, 0);
@@ -38,7 +38,7 @@ export function Checklists({ page }: { page: string }) {
       )}
       {config.groups.map((g, gi) => (
         <Fragment key={g.id}>
-          <Title className={titleClass}>
+          <Title id={g.id} className={titleClass}>
             {g.title}
             {roadmap && roadmapStart && <span className="phase-dates">{phaseSummary(ROADMAP_PHASES[gi]!, roadmapStart, today, counts[gi]!, g.items.length)}</span>}
           </Title>

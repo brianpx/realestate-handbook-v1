@@ -63,13 +63,14 @@ export function GoalCalculator() {
       />
       <div className="table-wrapper">
         <table>
+          <caption>{GOAL_CAPTION}</caption>
           <thead>
             <tr>{GOAL_HEADINGS.map(h => <th key={h}>{h}</th>)}</tr>
           </thead>
           <tbody>
             {GOAL_ROWS.map((row, i) => (
               <tr key={row.step}>
-                <td>{row.step}</td>
+                <th scope="row">{row.step}</th>
                 <td>{row.example}</td>
                 <td>
                   {i === 0 && field(0, 'goal', { prefix: '$', placeholder: '80,000', min: 1 })}
@@ -88,7 +89,6 @@ export function GoalCalculator() {
           </tbody>
         </table>
       </div>
-      <p><em>{GOAL_CAPTION}</em></p>
       <p className="footnote">
         <sup>
           <button type="button" className="footnote-ref" aria-haspopup="dialog" aria-label="Footnote: how these numbers were derived" onClick={openNote}>1</button>
@@ -107,7 +107,7 @@ export function GoalCalculator() {
         <div className="note-dialog-head">
           <div>
             <span className="note-dialog-eyebrow">Footnote 1</span>
-            <h4 id="calc-footnote-title">How the example numbers were derived</h4>
+            <h3 id="calc-footnote-title">How the example numbers were derived</h3>
           </div>
           <button type="button" className="note-dialog-close" aria-label="Close footnote" data-close-note>×</button>
         </div>
@@ -135,8 +135,8 @@ export function GoalCalculator() {
           <button type="button" className="note-dialog-done" data-close-note>Got it</button>
         </div>
       </dialog>
-      <div className="box try-it calc-panel iw">
-        <div className="box-title">● CALCULATOR · YOUR DAILY TARGET</div>
+      <aside className="box try-it calc-panel iw">
+        <h3 className="box-title">● CALCULATOR · YOUR DAILY TARGET</h3>
         <div className="calc-stats" role="status">
           {shown ? (
             <>
@@ -160,7 +160,7 @@ export function GoalCalculator() {
         <p className="calc-note">
           Conversations are real two-way talks. A working week is counted as {WORKDAYS_PER_WEEK} days. Closings lag conversations by roughly 60 to 120 days, so judge yourself on the conversations.
         </p>
-      </div>
+      </aside>
     </>
   );
 }

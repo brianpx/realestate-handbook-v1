@@ -15,8 +15,8 @@ export function PostCloseCard({ rows }: { rows: PostCloseRows }) {
   const [who, setWho] = useState(''); // deliberately not saved
   const plan = postCloseSchedule(parseIso(iso), rows);
   return (
-    <div className="box try-it iw">
-      <div className="box-title">● SCHEDULER · YOUR POST-CLOSE DATES</div>
+    <aside className="box try-it iw">
+      <h3 className="box-title">● SCHEDULER · YOUR POST-CLOSE DATES</h3>
       <InteractiveHeader hint="Enter a closing date to see every touch in the first year with its date, then add them to your calendar." widgetKey="postclose-scheduler" label="Post-close scheduler" />
       <div className="planner-controls">
         <label className="cost-field">
@@ -56,6 +56,6 @@ export function PostCloseCard({ rows }: { rows: PostCloseRows }) {
         </button>
       </div>
       <p className="calc-note">{postCloseNote(closings)}</p>
-    </div>
+    </aside>
   );
 }

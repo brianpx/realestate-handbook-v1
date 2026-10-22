@@ -51,7 +51,7 @@ test.describe('sidebar search', () => {
     await expect(result).toBeVisible();
     await result.click();
     await expect(page).toHaveURL(/\/ch12$/);
-    const heading = page.locator('h4.checklist-title', { hasText: 'Days 31 to 60 (Build Rhythm)' });
+    const heading = page.locator('h3.checklist-title', { hasText: 'Days 31 to 60 (Build Rhythm)' });
     await expect(heading).toBeFocused();
     await expect(heading).toHaveClass(/widget-found/);
     await expect(page.getByLabel('Search the handbook')).toHaveValue('');

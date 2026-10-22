@@ -59,7 +59,7 @@ const ALWAYS_BUILT = new Set(['scorecard', 'scorecard-change', 'goal-calculator'
 function gatedFallback(name: string, html?: string): string | undefined {
   if (name === 'nurture-timeline') return NURTURE_STATIC_HTML;
   if (name === 'pitfall-cycle') return PITFALL_STATIC_HTML;
-  if (name === 'checkpoints' && html !== undefined) return `<div class="box checkpoint">${html}</div>`; // the marker replaced this box's outer div
+  if (name === 'checkpoints' && html !== undefined) return `<aside class="box checkpoint">${html}</aside>`; // the marker replaced this box's outer element
   return undefined;
 }
 
