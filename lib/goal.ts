@@ -20,6 +20,9 @@ export const fmtPerDay = (n: number): string => {
   return lo === hi ? String(lo) : `${lo} to ${hi}`;
 };
 
+/** A single whole number for a day's target (one decimal below 1), for the sales page and the guided setup. The book's own tools keep fmtPerDay's range. */
+export const roundPerDay = (n: number): string => (n < 1 ? n.toFixed(1) : String(Math.round(n)));
+
 export type GoalInputs = { goal?: number; commission?: number; apc?: number; cpa?: number; weeks?: number };
 export type GoalPlan = { closings: number; appts: number; convs: number; perWeek: number; perDay: number };
 

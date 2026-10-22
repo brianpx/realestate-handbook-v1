@@ -9,7 +9,7 @@ const firstBox = (page: Page) => page.locator('.box.script').first();
 
 test.describe('script practice', () => {
   test('every script box gets Copy and Practice, and keeps its words visible', async ({ page }) => {
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     await expect(page.locator('.box.script')).toHaveCount(11);
     await expect(page.locator('.script-actions .interactive-pill')).toHaveCount(11);
     const box = firstBox(page);
@@ -28,7 +28,7 @@ test.describe('script practice', () => {
   });
 
   test('Practice hides the script, focuses the textarea and saves what is typed under the title', async ({ page }) => {
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     const box = firstBox(page);
     await box.getByRole('button', { name: 'Practice' }).click();
     await expect(box).toHaveClass(/practicing/);
@@ -43,7 +43,7 @@ test.describe('script practice', () => {
   });
 
   test('Reveal brings the script back beside the answer; Stop practicing tucks the answer away', async ({ page }) => {
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     const box = firstBox(page);
     await box.getByRole('button', { name: 'Practice' }).click();
     await box.getByRole('button', { name: 'Reveal script to compare' }).click();
@@ -63,14 +63,14 @@ test.describe('script practice', () => {
     await page.addInitScript(([k]) => {
       if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ scripts: { [k!]: 'from the old site' } }));
     }, [KEY]);
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     await firstBox(page).getByRole('button', { name: 'Practice' }).click();
     await expect(firstBox(page).locator('.practice-text')).toHaveValue('from the old site');
   });
 
   test('Copy script puts only the words to say on the clipboard', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     const box = firstBox(page);
     await box.getByRole('button', { name: 'Copy script' }).click();
     await expect(box.getByRole('button', { name: 'Copied' })).toBeVisible();
@@ -86,7 +86,7 @@ const OBJECTIONS = ['"I\'m just looking."', '"We\'re not ready yet."', '"I alrea
 
 test.describe('objection trainer', () => {
   test('keeps the quick-reference table and adds a card with a prompt and a score', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await expect(page.locator('[data-widget="objection-trainer"]')).toBeVisible();
     await expect(page.locator('table', { has: page.getByRole('columnheader', { name: 'OBJECTION' }) }).locator('tbody tr')).toHaveCount(8);
     await expect(page.locator('.trainer-prompt')).toHaveText(/^Client says: ".+"$/);
@@ -96,7 +96,7 @@ test.describe('objection trainer', () => {
   });
 
   test('Show framework reveals the answer and the rating buttons, and moves focus to the answer', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await page.getByRole('button', { name: 'Show framework' }).click();
     await expect(page.locator('.trainer-answer')).toBeVisible();
     await expect(page.locator('.trainer-answer')).toBeFocused();
@@ -108,7 +108,7 @@ test.describe('objection trainer', () => {
   });
 
   test('Nailed it saves under the objection text, moves on, and focuses the next Show framework', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await page.waitForLoadState('networkidle'); // the card re-picks its objection at random once hydrated
     const before = await page.locator('.trainer-prompt').innerText();
     await page.locator('.objection-trainer .practice-text').fill('my answer');
@@ -128,7 +128,7 @@ test.describe('objection trainer', () => {
     await page.addInitScript(o => {
       if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ objections: Object.fromEntries(o.map(x => [x, true])) }));
     }, OBJECTIONS.slice(0, 7));
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     // seven mastered, so the only open objection is the last one
     await expect(page.locator('.trainer-prompt')).toHaveText(`Client says: ${OBJECTIONS[7]}`);
     await expect(page.locator('.trainer-score')).toHaveText('7 of 8 objections mastered');
@@ -144,7 +144,7 @@ test.describe('objection trainer', () => {
   });
 
   test('Next objection never repeats the one on screen', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await page.waitForLoadState('networkidle'); // the card re-picks its objection at random once hydrated
     for (let i = 0; i < 6; i++) {
       const before = await page.locator('.trainer-prompt').innerText();

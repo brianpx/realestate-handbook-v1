@@ -12,7 +12,7 @@ type Row = { text: string; occurrence: number; isTerm: boolean; isHeading: boole
 test('the build-time index matches what the browser would find in each page', async ({ page, request }) => {
   const index = (await (await request.get('/search-index.json')).json()) as (Row & { pageId: string })[];
   expect(index.length).toBeGreaterThan(500);
-  await page.goto('/ch1'); // any page gives us a DOM and DOMParser
+  await page.goto('/handbook/ch1'); // any page gives us a DOM and DOMParser
   const extras = (id: string): Set<string> => new Set([
     ...(id === 'ch1' ? [GOAL_CAPTION] : []),
     ...(id === 'app-a' ? [SCORECARD_CAPTION] : []),

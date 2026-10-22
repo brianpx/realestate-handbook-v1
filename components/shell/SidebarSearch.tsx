@@ -2,7 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
-import { NAV } from '@/lib/pages';
+import { NAV, type PageId } from '@/lib/pages';
+import { pageHref } from '@/lib/routes';
 import { searchEntries, type SearchEntry } from '@/lib/search-query';
 import { findSearchTarget, revealSearchTarget } from '@/lib/search-jump';
 
@@ -81,7 +82,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   const choose = (entry: SearchEntry) => {
     setQuery('');
     onNavigate();
-    const path = entry.pageId === 'cover' ? '/' : `/${entry.pageId}`;
+    const path = pageHref(entry.pageId as PageId);
     if (path === pathname) setTimeout(() => land(entry), 0);
     else { pendingJump.current = entry; router.push(path); }
   };
@@ -133,7 +134,11 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         {searching && index && results.length === 0 && <li className="search-empty">No matches.</li>}
         {results.map((entry, n) => (
           <li key={`${entry.pageId}-${entry.text}-${entry.occurrence}-${n}`}>
-            <a className="search-result" href={entry.pageId === 'cover' ? '/' : `/${entry.pageId}`} onClick={e => { e.preventDefault(); choose(entry); }}>
+            <a className="search-result" href={pageHref(entry.pageId as PageId)} onClick={e => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              choose(entry);
+            }}>
               <span className="search-result-title">{entry.text}</span>
               <span className="search-result-where">{entry.isTerm ? 'Glossary term · ' : ''}{labelOf(entry.pageId)}</span>
             </a>

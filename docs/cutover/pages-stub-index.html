@@ -32,7 +32,7 @@
             var NEW_ORIGIN = '__NEW_ORIGIN__';
             var PAGES = /^(pref|ch(?:[1-9]|1[0-3])|app-[a-f])$/;
             var id = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-            var target = NEW_ORIGIN + '/' + (PAGES.test(id) ? id : '');
+            var target = NEW_ORIGIN + (PAGES.test(id) ? '/handbook/' + id : '/');
             document.getElementById('new').href = target;
             document.getElementById('go').href = target;
             function stored(key) {

@@ -16,6 +16,8 @@ export interface LeadStore {
   setEmailStatus(id: string, status: EmailStatus): Promise<void>;
   recordAttempt(ipHash: string, at: Date): Promise<void>;
   countAttempts(ipHash: string, since: Date): Promise<number>;
+  /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
+  recordAndCount(ipHash: string, at: Date, since: Date): Promise<number>;
 }
 
 type Row = NewLead & { id: string; emailStatus: EmailStatus | null };
@@ -74,6 +76,15 @@ export class FileLeadStore implements LeadStore {
     await this.queue;
     return (await this.read()).attempts.filter(a => a.ipHash === ipHash && Date.parse(a.at) >= since.getTime()).length;
   }
+
+  recordAndCount(ipHash: string, at: Date, since: Date) {
+    return this.change(data => {
+      const cutoff = at.getTime() - 24 * 3600 * 1000;
+      data.attempts = data.attempts.filter(a => Date.parse(a.at) >= cutoff); // keep the file small
+      data.attempts.push({ ipHash, at: at.toISOString() });
+      return data.attempts.filter(a => a.ipHash === ipHash && Date.parse(a.at) >= since.getTime()).length;
+    });
+  }
 }
 
 /** In-memory store for unit tests. */
@@ -94,6 +105,11 @@ export class MemoryLeadStore implements LeadStore {
   async setEmailStatus(id: string, status: EmailStatus) { const r = this.leads.find(l => l.id === id); if (r) r.emailStatus = status; }
   async recordAttempt(ipHash: string, at: Date) { this.check(); this.attempts.push({ ipHash, at }); }
   async countAttempts(ipHash: string, since: Date) { this.check(); return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length; }
+  async recordAndCount(ipHash: string, at: Date, since: Date) {
+    this.check();
+    this.attempts.push({ ipHash, at });
+    return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length;
+  }
 }
 
 /**

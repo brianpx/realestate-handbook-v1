@@ -8,7 +8,7 @@ const field = (scope: Locator, label: string) => scope.locator('label', { hasTex
 
 test.describe('lead source comparison', () => {
   test('draws the five illustrative ranges before anything is entered', async ({ page }) => {
-    await page.goto('/ch2');
+    await page.goto('/handbook/ch2');
     await expect(page.locator('[data-widget="lead-sources"]')).toBeVisible();
     await expect(page.locator('.range-row')).toHaveCount(5);
     await expect(page.locator('.range-label')).toHaveText(['15–30%+', '1–5%', '2–6%', '5–15%', '3–8%']);
@@ -19,7 +19,7 @@ test.describe('lead source comparison', () => {
   });
 
   test('prices time at the hourly rate, compares sources and nudges for a rate', async ({ page }) => {
-    await page.goto('/ch2');
+    await page.goto('/handbook/ch2');
     const zillow = page.locator('fieldset.cost-row', { hasText: 'Zillow Premier Agent' });
     const sphere = page.locator('fieldset.cost-row', { hasText: 'Sphere of influence' });
     await field(zillow, 'Money spent').fill('1000');
@@ -38,7 +38,7 @@ test.describe('lead source comparison', () => {
   });
 
   test('numbers save with the static site shape and survive a reload, formatted', async ({ page }) => {
-    await page.goto('/ch2');
+    await page.goto('/handbook/ch2');
     await page.getByLabel('Value of your time, $ per hour').fill('1500');
     await page.getByLabel('Value of your time, $ per hour').blur();
     await expect(page.getByLabel('Value of your time, $ per hour')).toHaveValue('1,500');
@@ -54,7 +54,7 @@ test.describe('lead source comparison', () => {
 test.describe('pipeline calculator', () => {
   // a new contact is an active opportunity until its type is changed, so the count starts at one
   test('starts with one empty contact: no value yet, and it counts as an active opportunity', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await expect(page.locator('[data-widget="pipeline-calculator"]')).toBeVisible();
     await expect(page.locator('.pipe-row')).toHaveCount(1);
     await expect(page.locator('.calc-stat-value')).toHaveText(['$0', '1', '0']);
@@ -62,7 +62,7 @@ test.describe('pipeline calculator', () => {
   });
 
   test('sums commission of active opportunities and flags quiet contacts for a Monday call', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     const row = page.locator('.pipe-row').first();
     await field(row, 'Likely commission').fill('$5,000');
     await expect(page.locator('.calc-stat-value')).toHaveText(['$5,000', '1', '0']);
@@ -79,7 +79,7 @@ test.describe('pipeline calculator', () => {
   });
 
   test('adds and removes contacts, always leaving one, and saves the rows', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await field(page.locator('.pipe-row').first(), 'Contact (initials ok)').fill('J.R.');
     await page.getByRole('button', { name: '+ Add a contact' }).click();
     await expect(page.locator('.pipe-row legend')).toHaveText(['Contact 1', 'Contact 2']);
@@ -95,7 +95,7 @@ test.describe('pipeline calculator', () => {
   });
 
   test('contacts survive a reload', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     const row = page.locator('.pipe-row').first();
     await field(row, 'Contact (initials ok)').fill('Sam');
     await field(row, 'Likely commission').fill('6500');
@@ -106,9 +106,9 @@ test.describe('pipeline calculator', () => {
 
   test('is one of the tools Essential tools only leaves out', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('handbookSettings', JSON.stringify({ essentialOnly: true })));
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await expect(page.locator('.pipe-row')).toHaveCount(0);
-    await page.goto('/ch2');
+    await page.goto('/handbook/ch2');
     await expect(page.locator('.cost-calc')).toHaveCount(0);
   });
 });

@@ -43,6 +43,13 @@ describe('FileLeadStore', () => {
     await store.recordAttempt('ip1', new Date(Date.UTC(2026, 10, 4, 12, 0))); // two days later: the earlier ones are dropped
     expect(JSON.parse(await readFile(file, 'utf8')).attempts).toHaveLength(1);
   });
+  it('counts two overlapping attempts for one address as 1 then 2', async () => {
+    const store = new FileLeadStore(file);
+    const at = new Date('2026-11-02T12:00:00Z');
+    const since = new Date('2026-11-02T11:50:00Z');
+    const counts = await Promise.all([store.recordAndCount('ip1', at, since), store.recordAndCount('ip1', at, since)]);
+    expect(counts).toEqual([1, 2]);
+  });
 });
 
 describe('storeFromEnv', () => {

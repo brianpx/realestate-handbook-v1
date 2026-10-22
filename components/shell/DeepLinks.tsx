@@ -3,7 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { announce } from '@/lib/announce';
-import { NAV } from '@/lib/pages';
+import { NAV, type PageId } from '@/lib/pages';
+import { pageHref } from '@/lib/routes';
 import { essentialOnly, settingsStore, useSettings } from '@/lib/state';
 import { ESSENTIAL_WIDGETS } from '@/lib/tools';
 
@@ -36,11 +37,11 @@ export function DeepLinks() {
       const page = link.dataset.goto!;
       const key = link.dataset.widget;
       if (key) pending.current = { page, key };
-      if (pathname === `/${page}` || (page === 'cover' && pathname === '/')) {
+      if (pathname === pageHref(page as PageId)) {
         if (key) setTimeout(() => land(page, key), 0);
         pending.current = null;
       } else {
-        router.push(page === 'cover' ? '/' : `/${page}`);
+        router.push(pageHref(page as PageId));
       }
     };
     document.addEventListener('click', onClick);
@@ -59,7 +60,7 @@ export function DeepLinks() {
   // Appendix E lists every tool; with Essential tools only on, drop the rows for tools that are not built.
   const settings = useSettings();
   useEffect(() => {
-    if (pathname !== '/app-e') return;
+    if (pathname !== pageHref('app-e')) return;
     const off = essentialOnly(settings);
     document.querySelectorAll<HTMLElement>('#content-container tr').forEach(row => {
       const key = row.querySelector<HTMLElement>('[data-widget]')?.dataset.widget;

@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('90-day roadmap', () => {
   test('waits for a start date, then dates each phase and counts ticks', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await expect(page.locator('[data-widget="roadmap"]')).toBeVisible();
     await expect(page.locator('.roadmap-status')).toHaveText('Pick a start date to see your three milestone dates.');
     await expect(page.getByRole('button', { name: /Add reviews and milestones/ })).toBeDisabled();
@@ -38,7 +38,7 @@ test.describe('90-day roadmap', () => {
   });
 
   test('says when Day 1 is still ahead and when the 90 days are over', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await page.getByLabel('Day 1 (your start date)').fill('2026-11-23');
     await expect(page.locator('.roadmap-status')).toHaveText('Day 1 is in 3 days.');
     await page.getByLabel('Day 1 (your start date)').fill('2026-06-01');
@@ -47,7 +47,7 @@ test.describe('90-day roadmap', () => {
   });
 
   test('exports three milestones, a weekly Friday review and three monthly reviews', async ({ page }) => {
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await page.getByLabel('Day 1 (your start date)').fill('2026-11-02');
     const file = await downloaded(page, () => page.getByRole('button', { name: /Add reviews and milestones/ }).click());
     expect(file.name).toBe('handbook-90-day-plan.ics');
@@ -64,7 +64,7 @@ test.describe('90-day roadmap', () => {
 
   test('Essential tools only turns the lists back into plain checkboxes with no roadmap', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('handbookSettings', JSON.stringify({ essentialOnly: true })));
-    await page.goto('/ch12');
+    await page.goto('/handbook/ch12');
     await expect(page.locator('.roadmap-panel')).toHaveCount(0);
     await expect(page.locator('.check-item')).toHaveCount(14);
   });
@@ -72,7 +72,7 @@ test.describe('90-day roadmap', () => {
 
 test.describe('weekly time-block planner', () => {
   test('starts with the sample day: 2h 45m protected, done before noon', async ({ page }) => {
-    await page.goto('/ch8');
+    await page.goto('/handbook/ch8');
     await expect(page.locator('[data-widget="timeblock-planner"]')).toBeVisible();
     await expect(page.locator('.planner-legend li')).toHaveText([
       '8:00 am: CRM dashboard (15 min)', '8:15 am: Follow-up plan tasks (60 min)', '9:15 am: Prospecting (90 min)',
@@ -85,7 +85,7 @@ test.describe('weekly time-block planner', () => {
   });
 
   test('a late start fails the noon test; an early end-of-day update is rejected and blocks the export', async ({ page }) => {
-    await page.goto('/ch8');
+    await page.goto('/handbook/ch8');
     await page.getByLabel('Day starts').fill('10:30');
     await expect(page.locator('.alloc-verdict').last()).toHaveText(/^2h 45m protected, finishing at 1:15 pm\. ✗ Prospecting runs past noon/);
     await expect(page.locator('.alloc-verdict').last()).toHaveClass(/no/);
@@ -95,7 +95,7 @@ test.describe('weekly time-block planner', () => {
   });
 
   test('the sliders, day boxes and Friday option feed the plan and are saved', async ({ page }) => {
-    await page.goto('/ch8');
+    await page.goto('/handbook/ch8');
     await page.getByLabel('Prospecting (60 to 90 min)').fill('60');
     await expect(page.locator('.alloc-out').nth(1)).toHaveText('60 min');
     await expect(page.locator('.planner-legend li').nth(2)).toHaveText('9:15 am: Prospecting (60 min)');
@@ -110,7 +110,7 @@ test.describe('weekly time-block planner', () => {
   });
 
   test('exports twelve weeks of the chosen days, with the Friday review', async ({ page }) => {
-    await page.goto('/ch8');
+    await page.goto('/handbook/ch8');
     const file = await downloaded(page, () => page.getByRole('button', { name: /Add these blocks to my calendar/ }).click());
     expect(file.name).toBe('handbook-weekly-time-blocks.ics');
     expect(file.text.match(/BEGIN:VEVENT/g)).toHaveLength(5);
@@ -125,7 +125,7 @@ test.describe('weekly time-block planner', () => {
 
 test.describe('post-close scheduler', () => {
   test('asks for a date, then lists the seven dated touches and the note about annual events', async ({ page }) => {
-    await page.goto('/ch10');
+    await page.goto('/handbook/ch10');
     await expect(page.locator('[data-widget="postclose-scheduler"]')).toBeVisible();
     await expect(page.locator('.postclose-result')).toHaveText('Enter a closing date to see your schedule.');
     await expect(page.getByRole('button', { name: /Add these touches to my calendar/ })).toBeDisabled();
@@ -140,7 +140,7 @@ test.describe('post-close scheduler', () => {
   });
 
   test('multiplies touches by expected closings and saves the date and count but not the client name', async ({ page }) => {
-    await page.goto('/ch10');
+    await page.goto('/handbook/ch10');
     await page.getByLabel('Closing date').fill('2026-08-31');
     await page.getByLabel('Client name (optional, not saved)').fill('Sam');
     await page.getByLabel('Closings you expect this year').fill('12');
@@ -152,7 +152,7 @@ test.describe('post-close scheduler', () => {
   });
 
   test('exports one all-day entry per touch, naming the client when given', async ({ page }) => {
-    await page.goto('/ch10');
+    await page.goto('/handbook/ch10');
     await page.getByLabel('Closing date').fill('2026-08-31');
     await page.getByLabel('Client name (optional, not saved)').fill('Sam');
     const file = await downloaded(page, () => page.getByRole('button', { name: /Add these touches to my calendar/ }).click());

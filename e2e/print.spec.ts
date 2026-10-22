@@ -6,7 +6,7 @@ test.describe('printing', () => {
   test.beforeEach(async ({ page }) => { await page.emulateMedia({ media: 'print' }); });
 
   test('hides the sidebar, menu button, gate and scorecard tools, and keeps the chapter', async ({ page }) => {
-    await page.goto('/app-a');
+    await page.goto('/handbook/app-a');
     await expect(page.locator('#sidebar')).toBeHidden();
     await expect(page.locator('.menu-toggle')).toBeHidden();
     await expect(page.locator('.scorecard-tools')).toBeHidden();
@@ -16,7 +16,7 @@ test.describe('printing', () => {
 
   test('prints white on dark mode, with the chapter text readable', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('handbookSettings', JSON.stringify({ dark: true })));
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(page.locator('html')).toHaveClass(/dark/);
     const colors = await page.evaluate(() => {
       const lum = (rgb: string) => { const m = rgb.match(/\d+(\.\d+)?/g)!.map(Number); return (0.2126 * m[0]! + 0.7152 * m[1]! + 0.0722 * m[2]!) / 255; };
@@ -29,7 +29,8 @@ test.describe('printing', () => {
   });
 
   test('the next-chapter link and footer stay together, and the page makes a multi-page PDF', async ({ page }) => {
-    await page.goto('/ch8');
+    await page.goto('/handbook/ch8');
+    await expect(page.locator('.chapter-outline').first()).toBeHidden();
     const pdf = await page.pdf({ format: 'Letter' });
     expect(pdf.byteLength).toBeGreaterThan(20_000);
     const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;

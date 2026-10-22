@@ -19,7 +19,7 @@ const staticSiteFile = JSON.stringify({
 
 test('Download my progress writes a file the static site\'s format can round-trip', async ({ page }) => {
   await page.addInitScript(() => { if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ read: { ch1: true }, calc: { goal: 50000 } })); });
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await open(page);
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download my progress' }).click()]);
   expect(download.suggestedFilename()).toMatch(/^handbook-progress-\d{4}-\d{2}-\d{2}\.json$/);
@@ -30,7 +30,7 @@ test('Download my progress writes a file the static site\'s format can round-tri
 
 test('restoring asks first, shows what is in the file, and replaces progress only when confirmed', async ({ page }) => {
   await page.addInitScript(() => { if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ read: { ch9: true } })); });
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await open(page);
   await page.setInputFiles('#settingImportFile', { name: 'progress.json', mimeType: 'application/json', buffer: Buffer.from(staticSiteFile) });
   const confirm = page.getByRole('group', { name: 'Confirm restoring progress' });
@@ -56,7 +56,7 @@ test('restoring asks first, shows what is in the file, and replaces progress onl
 });
 
 test('restored answers show up in the tools', async ({ page }) => {
-  await page.goto('/ch12');
+  await page.goto('/handbook/ch12');
   await open(page);
   await page.setInputFiles('#settingImportFile', { name: 'progress.json', mimeType: 'application/json', buffer: Buffer.from(staticSiteFile) });
   await page.getByRole('button', { name: 'Replace my progress' }).click();
@@ -72,7 +72,7 @@ test.describe('files that are not progress files', () => {
   ] as const) {
     test(`${name} is refused with a reason and changes nothing`, async ({ page }) => {
       await page.addInitScript(() => { if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ read: { ch9: true } })); });
-      await page.goto('/ch1');
+      await page.goto('/handbook/ch1');
       await open(page);
       await page.setInputFiles('#settingImportFile', { name, mimeType: 'application/json', buffer: Buffer.from(content) });
       await expect(page.locator('#settingTransferNote')).toHaveText(message);

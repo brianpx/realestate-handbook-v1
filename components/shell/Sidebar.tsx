@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { BOOK_TITLE, NAV } from '@/lib/pages';
+import { HANDBOOK, pageHref, pageIdFromPath } from '@/lib/routes';
 import { trackingProgress, useHandbookState, useSettings } from '@/lib/state';
 import { ProgressItem } from './ProgressItem';
 import { Settings } from './Settings';
@@ -16,7 +17,8 @@ const PHONE_QUERY = '(max-width: 900px)';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const current = pathname === '/' ? 'cover' : pathname.slice(1);
+  // Which sidebar row is active: a page id, or one of 'home', 'start', 'plan', 'review', 'account', 'support'.
+  const current = pathname === HANDBOOK ? 'home' : (pageIdFromPath(pathname) ?? pathname.slice(1));
 
   const sidebarRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -167,7 +169,7 @@ export function Sidebar() {
           <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-dark" src="/images/logo3-sidebar-dark.png" width={320} height={320} alt="" />
-          <p className="sidebar-title">{BOOK_TITLE}</p>
+          <p className="sidebar-title"><Link href={HANDBOOK}>{BOOK_TITLE}</Link></p>
           <p>A practical guide for new agents</p>
         </div>
         <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi}>
@@ -186,10 +188,12 @@ export function Sidebar() {
         </SidebarSearch>
         <ul className="nav-list" id="navList">
           <ProgressItem />
+          <ProductLinks current={current} />
           {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} />}
           {NAV.map(group => (
             <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} />
           ))}
+          <HelpLinks current={current} />
           <Settings />
           <li className="menu-close">
             <button type="button" onClick={() => { setMenuOpen(false); toggleRef.current?.focus(); }}>Close menu</button>
@@ -211,6 +215,41 @@ const STUDY_LINKS = [
   { id: 'review', label: 'Review' },
 ];
 
+// Orientation and the guided first session sit above the chapters so a new reader and a returning one both see them first.
+const PRODUCT_LINKS = [
+  { id: 'home', label: 'Handbook home', href: HANDBOOK },
+  { id: 'start', label: 'Start here: guided setup', href: `${HANDBOOK}/start` },
+  { id: 'tools', label: 'Interactive tools', href: pageHref('app-e') }, // the same page as Appendix E, so never marked current here
+];
+
+function ProductLinks({ current }: { current: string }) {
+  return (
+    <>
+      <li className="nav-section-title" role="presentation">GET STARTED</li>
+      {PRODUCT_LINKS.map(link => {
+        const active = link.id === current;
+        return (
+          <li key={link.id}>
+            <Link href={link.href} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>{link.label}</Link>
+          </li>
+        );
+      })}
+    </>
+  );
+}
+
+// Progress and help live outside the book, on the public and account routes.
+function HelpLinks({ current }: { current: string }) {
+  return (
+    <>
+      <li className="nav-section-title" role="presentation">PROGRESS AND HELP</li>
+      <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}>Account and saved progress</Link></li>
+      <li><Link href="/support" className="nav-item" data-page="support">Support</Link></li>
+      <li><Link href="/" className="nav-item" data-page="site">Back to the website</Link></li>
+    </>
+  );
+}
+
 function StudyLinks({ current }: { current: string }) {
   return (
     <>
@@ -219,7 +258,7 @@ function StudyLinks({ current }: { current: string }) {
         const active = link.id === current;
         return (
           <li key={link.id}>
-            <Link href={`/${link.id}`} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
+            <Link href={`${HANDBOOK}/${link.id}`} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
               {link.label}
             </Link>
           </li>
@@ -238,7 +277,7 @@ function SectionGroup({ group, current, read }: { group: (typeof NAV)[number]; c
         return (
           <li key={page.id}>
             <Link
-              href={page.id === 'cover' ? '/' : `/${page.id}`}
+              href={pageHref(page.id)}
               className={`nav-item${active ? ' active' : ''}${read[page.id] ? ' read' : ''}`}
               data-page={page.id}
               aria-current={active ? 'page' : undefined}

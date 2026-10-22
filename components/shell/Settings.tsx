@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { captureScrollAnchor, applyScrollAnchor } from '@/lib/scroll-anchor';
-import { essentialOnly, quizzesShown, resetProgress, trackingProgress, useSettings, writeSettings } from '@/lib/state';
-import type { Settings as SettingsShape } from '@/lib/state/schema';
+import { essentialOnly, quizzesShown, resetProgress, textSize, trackingProgress, useSettings, writeSettings } from '@/lib/state';
+import { TEXT_SIZES, type Settings as SettingsShape, type TextSize } from '@/lib/state/schema';
 import { ProgressTransfer } from './ProgressTransfer';
+
+const SIZE_LABELS: Record<TextSize, string> = { small: 'Small', medium: 'Medium', large: 'Large' };
 
 export function Settings() {
   const settings = useSettings();
@@ -19,12 +21,33 @@ export function Settings() {
   useEffect(() => {
     if (systemDark !== null) document.documentElement.classList.toggle('dark', dark);
   }, [dark, systemDark]);
-  useEffect(() => { document.documentElement.classList.toggle('hide-quizzes', !quizzesShown(settings)); }, [settings]);
+
+  // Until mounted, settings are still the server snapshot. Applying hide-quizzes or wide then
+  // would strip the classes the inline script painted; the client snapshot arrives in a later effect.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
+    if (!mounted) return;
+    document.documentElement.classList.toggle('hide-quizzes', !quizzesShown(settings));
+  }, [mounted, settings]);
+  useEffect(() => {
+    if (!mounted) return;
     const anchor = captureScrollAnchor();
     document.documentElement.classList.toggle('wide', settings.fullWidth === true);
     applyScrollAnchor(anchor);
-  }, [settings.fullWidth]);
+  }, [mounted, settings.fullWidth]);
+
+  // Text size is a class on <html> (text-small / text-large; medium has none). The inline script in layout.tsx set it
+  // before first paint. Until mounted, settings are still the server default, so applying then would strip that class.
+  const size = textSize(settings);
+  useEffect(() => {
+    if (!mounted) return;
+    const root = document.documentElement;
+    const anchor = captureScrollAnchor();
+    root.classList.toggle('text-small', size === 'small');
+    root.classList.toggle('text-large', size === 'large');
+    applyScrollAnchor(anchor);
+  }, [mounted, size]);
 
   // Scrolling up folds Settings away. Only real user scrolling counts (wheel, swipe, keys, dragging the scrollbar),
   // so programmatic jumps never collapse it.
@@ -82,6 +105,15 @@ export function Settings() {
           <input type="checkbox" id="settingDark" checked={dark} onChange={e => set({ dark: e.target.checked })} />
           <span>Dark mode</span>
         </label>
+        <fieldset className="settings-size">
+          <legend>Text size</legend>
+          {TEXT_SIZES.map(option => (
+            <label key={option} className={`settings-size-option size-${option}`}>
+              <input type="radio" name="textSize" id={`settingText-${option}`} value={option} checked={size === option} onChange={() => set({ textSize: option })} />
+              <span>{SIZE_LABELS[option]}</span>
+            </label>
+          ))}
+        </fieldset>
         <label className="settings-row settings-wide">
           <input type="checkbox" id="settingWide" checked={settings.fullWidth === true} onChange={e => set({ fullWidth: e.target.checked })} />
           <span>Full width</span>

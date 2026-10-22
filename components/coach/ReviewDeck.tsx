@@ -78,7 +78,7 @@ function EmptyState({ outlook }: { outlook: Snapshot }) {
         <p>
           Nothing to review yet. Answer a chapter&apos;s &ldquo;Test your knowledge&rdquo; questions and the ideas you meet will come back here on a schedule.
           {' '}Chapters that feed this deck: {checked.map((c, i) => (
-            <span key={c}>{i > 0 ? ', ' : ''}<Link href={`/${c}`}>{chapterLabel(c)}</Link></span>
+            <span key={c}>{i > 0 ? ', ' : ''}<Link href={`/handbook/${c}`}>{chapterLabel(c)}</Link></span>
           ))}.
         </p>
       )}
@@ -112,7 +112,7 @@ function Question({ run, onNext }: { run: Run; onNext: (items: DeckItem[], first
           <>
             {!result.correct && (
               <p>
-                <Link href={`/${concept.chapter}#${concept.anchor}`}>Read the passage in {chapterLabel(concept.chapter)}</Link>
+                <Link href={`/handbook/${concept.chapter}#${concept.anchor}`}>Read the passage in {chapterLabel(concept.chapter)}</Link>
               </p>
             )}
             {result.nextDue && !item.retest && <p>Next review: {dueLabel(run.today, result.nextDue)}.</p>}
@@ -148,7 +148,7 @@ function Finished({ run, outlook, onMore }: { run: Run; outlook: Snapshot; onMor
           <p>Ideas to look at again:</p>
           <ul>
             {missed.map(c => (
-              <li key={c.id}><Link href={`/${c.chapter}#${c.anchor}`}>{c.title}</Link></li>
+              <li key={c.id}><Link href={`/handbook/${c.chapter}#${c.anchor}`}>{c.title}</Link></li>
             ))}
           </ul>
         </>

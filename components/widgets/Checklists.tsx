@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { CHECKLISTS } from '@/content/data/checklists';
 import { essentialOnly, setCheck, useHandbookState, useSettings, widgetOf } from '@/lib/state';
 import { parseIso } from '@/lib/dates';
@@ -15,11 +15,13 @@ export function Checklists({ page }: { page: string }) {
   const state = useHandbookState();
   const { checks } = state;
   const plain = essentialOnly(useSettings());
+  // The reader's calendar day is not the server's, so phase dates wait until after mount and the first client render matches the HTML.
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => { setToday(new Date()); }, []);
   if (!config) return null;
   // Chapter 12's three lists are the Figure 7 roadmap: they carry the Day 1 picker and a dated summary on each title.
   const roadmap = page === 'ch12' && !plain && config.groups.length === ROADMAP_PHASES.length;
   const roadmapStart = parseIso(typeof widgetOf(state, 'roadmap').start === 'string' ? (widgetOf(state, 'roadmap').start as string) : undefined);
-  const today = new Date();
   const Title = config.titleTag;
   const titleClass = config.titleTag === 'h3' ? 'checklist-title' : undefined;
 
@@ -40,7 +42,7 @@ export function Checklists({ page }: { page: string }) {
         <Fragment key={g.id}>
           <Title id={g.id} className={titleClass}>
             {g.title}
-            {roadmap && roadmapStart && <span className="phase-dates">{phaseSummary(ROADMAP_PHASES[gi]!, roadmapStart, today, counts[gi]!, g.items.length)}</span>}
+            {roadmap && roadmapStart && today && <span className="phase-dates">{phaseSummary(ROADMAP_PHASES[gi]!, roadmapStart, today, counts[gi]!, g.items.length)}</span>}
           </Title>
           <div className="checklist" data-checklist={g.id}>
             {g.items.map((item, i) => (

@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 // legacy/js/widgets.js, not observed by running the static site.
 test.describe('nurture timeline', () => {
   test('opens on touch 5, inside the conversion zone, with 13 touch buttons', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await expect(page.locator('[data-widget="nurture-timeline"]')).toBeVisible();
     await expect(page.locator('.touch-btn')).toHaveCount(13);
     await expect(page.locator('.touch-btn[aria-pressed="true"]')).toHaveAttribute('data-n', '5');
@@ -15,13 +15,13 @@ test.describe('nurture timeline', () => {
   });
 
   test('describes every touch to a screen reader', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await expect(page.getByRole('button', { name: 'Touch 6, day 10, Email, value touch, in the conversion zone' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Touch 1, day 0, Text + email' })).toBeVisible();
   });
 
   test('selecting a touch shows its plan, sample wording and note', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await page.locator('.touch-btn[data-n="2"]').click();
     await expect(page.locator('.nurture-head strong')).toHaveText('Touch 2 of 13 · Day 0');
     await expect(page.locator('.nurture-tag')).toHaveText(['Call', 'Connect']);
@@ -33,7 +33,7 @@ test.describe('nurture timeline', () => {
   });
 
   test('Previous and Next step through the plan and stop at the ends', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     const prev = page.getByRole('button', { name: '← Previous touch' });
     const next = page.getByRole('button', { name: 'Next touch →' });
     await next.click();
@@ -48,7 +48,7 @@ test.describe('nurture timeline', () => {
   });
 
   test('filters dim touches that do not match', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await expect(page.getByRole('button', { name: 'All touches' })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Calls' }).click();
     await expect(page.getByRole('button', { name: 'Calls' })).toHaveAttribute('aria-pressed', 'true');
@@ -61,7 +61,7 @@ test.describe('nurture timeline', () => {
   });
 
   test('touches can be chosen from the keyboard', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await page.locator('.touch-btn[data-n="7"]').focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('.touch-btn[aria-pressed="true"]')).toHaveAttribute('data-n', '7');

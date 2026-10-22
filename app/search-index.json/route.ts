@@ -4,5 +4,5 @@ import { buildSearchIndex } from '@/lib/search-index';
 export const dynamic = 'force-static';
 
 export async function GET() {
-  return Response.json(await buildSearchIndex());
+  return Response.json(await buildSearchIndex(), { headers: { 'X-Robots-Tag': 'noindex' } });
 }

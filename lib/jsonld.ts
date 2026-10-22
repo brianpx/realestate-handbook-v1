@@ -30,7 +30,7 @@ export function chapterJsonLd(id: PageId) {
     '@context': 'https://schema.org',
     '@type': 'Chapter',
     name: label,
-    url: `${root}/${id}`,
+    url: `${root}/handbook/${id}`,
     isPartOf: { '@type': 'Book', '@id': `${root}/#book`, name: BOOK_TITLE, url: `${root}/` },
     inLanguage: 'en',
   };

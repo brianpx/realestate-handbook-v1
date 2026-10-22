@@ -29,5 +29,7 @@ create table if not exists lead_attempts (
 );
 create index if not exists lead_attempts_lookup on lead_attempts (ip_hash, at desc);
 
--- Housekeeping, run daily (a Vercel cron or a Neon function): the counters only matter for ten minutes.
+-- Rows older than a day are deleted on the request path, after the attempt is inserted and counted.
+-- That delete is its own statement: a cleanup failure must not fail the insert. The counters only matter
+-- for ten minutes.
 --   delete from lead_attempts where at < now() - interval '1 day';

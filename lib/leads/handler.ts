@@ -27,9 +27,8 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
   const now = deps.now();
   const ipHash = hashIp(req.ip, deps.ipSalt);
   try {
-    await deps.store.recordAttempt(ipHash, now);
     const since = new Date(now.getTime() - RATE_LIMIT.windowSeconds * 1000);
-    if ((await deps.store.countAttempts(ipHash, since)) > RATE_LIMIT.attempts) {
+    if ((await deps.store.recordAndCount(ipHash, now, since)) > RATE_LIMIT.attempts) {
       return reply(429, 'rate_limited', { retryAfterSeconds: RATE_LIMIT.windowSeconds }, { 'Retry-After': String(RATE_LIMIT.windowSeconds) });
     }
 

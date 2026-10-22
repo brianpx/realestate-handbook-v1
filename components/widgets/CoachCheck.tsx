@@ -11,7 +11,8 @@ import { KnowledgeCheck } from './KnowledgeCheck';
 import { QuestionItem } from './QuestionItem';
 
 // The registry entry for "Test your knowledge": chapters with tagged questions get the coach version (confidence
-// first, answers recorded); every other chapter keeps the plain check until its questions are tagged.
+// first; answers recorded only when the reading plan is on). Every other chapter keeps the plain check until its
+// questions are tagged.
 export function KnowledgeCheckEntry({ page }: { page: string }) {
   return hasCoachCheck(page) ? <CoachCheck page={page} /> : <KnowledgeCheck page={page} />;
 }
@@ -19,13 +20,16 @@ export function KnowledgeCheckEntry({ page }: { page: string }) {
 function CoachCheck({ page }: { page: string }) {
   const [round, setRound] = useState(0); // Start over remounts the questions
   const tracking = trackingProgress(useSettings());
+  const hint = COACH_ENABLED && tracking
+    ? 'Say how sure you are, then answer. Your answers are saved on this device so the ideas you miss can come back later.'
+    : tracking
+      ? 'Say how sure you are, then answer. Nothing here is saved.'
+      : 'Say how sure you are, then answer. Progress tracking is off in Settings, so nothing here is saved.';
   return (
     <aside className="box quiz">
       <h3 className="box-title">● TEST YOUR KNOWLEDGE</h3>
       <InteractiveHeader
-        hint={tracking
-          ? 'Say how sure you are, then answer. Your answers are saved on this device so the ideas you miss can come back later.'
-          : 'Say how sure you are, then answer. Progress tracking is off in Settings, so nothing here is saved.'}
+        hint={hint}
         widgetKey="knowledge-check"
         label="Test your knowledge"
       />
@@ -52,6 +56,7 @@ function Round({ page, retest, tracking, onRestart }: { page: string; retest: bo
           onAnswer={({ correct, confidence }) => {
             const next = { ...results, [q.id]: correct };
             setResults(next);
+            if (!COACH_ENABLED) return;
             recordAttempt(attemptInput(q, correct, confidence, retest ? 'retest' : 'chapter_check'));
             if (questions.every(x => next[x.id] !== undefined)) markStep(page, 'checked');
           }}
@@ -63,7 +68,7 @@ function Round({ page, retest, tracking, onRestart }: { page: string; retest: bo
       </div>
       <div className="script-actions">
         <button type="button" className="btn-mini" onClick={onRestart}>Start over</button>
-        {COACH_ENABLED && allDone && tracking && <Link className="btn-mini" href="/review">Open your review deck</Link>}
+        {COACH_ENABLED && allDone && tracking && <Link className="btn-mini" href="/handbook/review">Open your review deck</Link>}
       </div>
     </>
   );

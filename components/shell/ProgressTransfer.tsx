@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { coachStore } from '@/lib/coach';
 import { applyImport, exportProgress } from '@/lib/state';
 import { describeSummary, parseImport, type ImportResult } from '@/lib/state/transfer';
 
@@ -14,7 +15,7 @@ export function ProgressTransfer() {
 
   const download = () => {
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob([JSON.stringify(exportProgress(), null, 2)], { type: 'application/json' }));
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(exportProgress(coachStore.get()), null, 2)], { type: 'application/json' }));
     link.download = `handbook-progress-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(link);
     link.click();
@@ -49,7 +50,7 @@ export function ProgressTransfer() {
               type="button"
               className="btn-mini"
               id="settingImportConfirm"
-              onClick={() => { const saved = applyImport(ready); setReady(null); setNote(saved ? 'Progress restored.' : 'Progress restored for this visit only: your browser would not save it.'); }}
+              onClick={() => { const saved = applyImport(ready, coachStore); setReady(null); setNote(saved ? 'Progress restored.' : 'Progress restored for this visit only: your browser would not save it.'); }}
             >
               Replace my progress
             </button>

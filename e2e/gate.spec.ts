@@ -13,7 +13,7 @@ const leads = async () => (JSON.parse(await readFile('.data/e2e-leads.json', 'ut
 const gate = (page: Page) => page.locator('#gate');
 
 test('shows on the first visit, with the purpose, a skip button, and the page behind it inert', async ({ page }) => {
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await expect(gate(page)).toBeVisible();
   await expect(gate(page)).toHaveAttribute('aria-modal', 'true');
   await expect(page.locator('#gateTitle')).toHaveText('Finding, Keeping, and Nurturing Clients');
@@ -27,7 +27,7 @@ test('shows on the first visit, with the purpose, a skip button, and the page be
 });
 
 test('Continue without email dismisses it, frees the page and remembers the choice', async ({ page }) => {
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.getByRole('button', { name: 'Continue without email' }).click();
   await expect(gate(page)).toHaveCount(0);
   expect(await page.locator('#main-content').evaluate(el => (el as HTMLElement).inert)).toBe(false);
@@ -39,7 +39,7 @@ test('Continue without email dismisses it, frees the page and remembers the choi
 
 test('a valid address is stored once with the consent text, then the gate closes', async ({ page }) => {
   const email = fresh();
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.locator('#gateEmail').fill(email.toUpperCase());
   await page.getByRole('button', { name: 'Send me a note' }).click();
   await expect(gate(page)).toHaveCount(0);
@@ -53,7 +53,7 @@ test('a valid address is stored once with the consent text, then the gate closes
 test('an empty or malformed address is refused in the form, and nothing is sent', async ({ page }) => {
   let posts = 0;
   page.on('request', r => { if (r.url().endsWith('/api/lead')) posts++; });
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.getByRole('button', { name: 'Send me a note' }).click();
   await expect(page.locator('#gateError')).toHaveText('Please enter a valid email address.');
   await page.locator('#gateEmail').fill('not an email');
@@ -67,7 +67,7 @@ test('a repeat address looks the same to the reader and adds no second record', 
   const email = fresh();
   for (let i = 0; i < 2; i++) {
     const p = await context.newPage();
-    await p.goto('/ch1');
+    await p.goto('/handbook/ch1');
     await p.locator('#gateEmail').fill(email);
     await p.getByRole('button', { name: 'Send me a note' }).click();
     await expect(p.locator('#gate')).toHaveCount(0);
@@ -80,7 +80,7 @@ test('a repeat address looks the same to the reader and adds no second record', 
 
 test('the hidden field marks a bot: it sees success but nothing is stored', async ({ page }) => {
   const email = fresh();
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.locator('#gateEmail').fill(email);
   await page.locator('input[name="_gotcha"]').evaluate(el => { (el as HTMLInputElement).value = 'http://spam.example'; });
   await page.getByRole('button', { name: 'Send me a note' }).click();
@@ -91,7 +91,7 @@ test('the hidden field marks a bot: it sees success but nothing is stored', asyn
 test('while it sends, the button says so and cannot be pressed twice', async ({ page }) => {
   let posts = 0;
   await page.route('**/api/lead', async route => { posts++; await new Promise(r => setTimeout(r, 600)); await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); });
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.locator('#gateEmail').fill(fresh());
   await page.getByRole('button', { name: 'Send me a note' }).click();
   await expect(page.locator('#gateSubmit')).toHaveText('Submitting…');
@@ -103,7 +103,7 @@ test('while it sends, the button says so and cannot be pressed twice', async ({ 
 
 test('a server failure keeps the gate open, explains, and moves focus to Continue without email', async ({ page }) => {
   await page.route('**/api/lead', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{"ok":false,"error":"unavailable"}' }));
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.locator('#gateEmail').fill(fresh());
   await page.getByRole('button', { name: 'Send me a note' }).click();
   await expect(page.locator('#gateError')).toHaveText('Something went wrong. Please try again in a moment, or continue without email.');
@@ -114,14 +114,14 @@ test('a server failure keeps the gate open, explains, and moves focus to Continu
 
 test('a network failure is handled the same way', async ({ page }) => {
   await page.route('**/api/lead', route => route.abort());
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   await page.locator('#gateEmail').fill(fresh());
   await page.getByRole('button', { name: 'Send me a note' }).click();
   await expect(page.locator('#gateError')).toContainText('Something went wrong.');
 });
 
 test('too many tries from one address get a rate-limit message, from the real route', async ({ page }) => {
-  await page.goto('/ch1');
+  await page.goto('/handbook/ch1');
   for (let i = 0; i < 6; i++) {
     await page.locator('#gateEmail').fill(`not-valid-${i}@`);
     await page.evaluate(() => { (document.getElementById('gateEmail') as HTMLInputElement).setCustomValidity(''); });

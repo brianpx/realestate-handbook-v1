@@ -1,7 +1,8 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { handbookStateSchema, migrate, settingsSchema, SETTINGS_KEY, STATE_KEY, type HandbookState, type Settings } from './schema';
+import { COACH_KEY, coachSchema, type CoachState } from '../coach/schema';
+import { handbookStateSchema, migrate, settingsSchema, SETTINGS_KEY, STATE_KEY, type HandbookState, type Settings, type TextSize } from './schema';
 import { createStore } from './store';
 import { buildExport, type ImportResult } from './transfer';
 
@@ -18,6 +19,7 @@ export const useSettings = (): Settings =>
 export const trackingProgress = (s: Settings) => s.trackProgress !== false;
 export const quizzesShown = (s: Settings) => s.hideQuizzes !== true;
 export const essentialOnly = (s: Settings) => s.essentialOnly === true;
+export const textSize = (s: Settings): TextSize => s.textSize ?? 'medium';
 
 export function markRead(pageId: string): void {
   if (!trackingProgress(settingsStore.get())) return;
@@ -116,16 +118,32 @@ export function setPostClose(patch: { date?: string; closings?: number | undefin
   });
 }
 
+// lib/coach imports this module, so the live coach store cannot be imported here. Callers pass the snapshot and the
+// store; with no snapshot, export reads whatever localStorage holds under handbookCoach.
+function readCoach(): unknown {
+  try {
+    const text = window.localStorage.getItem(COACH_KEY);
+    if (text === null) return coachSchema.parse({});
+    const parsed = coachSchema.safeParse(JSON.parse(text));
+    return parsed.success ? parsed.data : coachSchema.parse({});
+  } catch {
+    return coachSchema.parse({});
+  }
+}
+
 /** Everything saved on this device, as the file the Settings panel offers to download. */
-export const exportProgress = () => buildExport(stateStore.get(), settingsStore.get(), new Date());
+export const exportProgress = (coach: unknown = readCoach()) => buildExport(stateStore.get(), settingsStore.get(), new Date(), coach);
 
 /**
  * Replaces this device's progress with a validated import. What was there is first copied to `<key>.pre-import`
  * (one copy, overwritten by the next import) so a mistaken restore can be undone by hand. Returns false when the
- * browser would not save the new values.
+ * browser would not save the new values. A file with no handbookCoach leaves that store as it is. `coachStore` is
+ * the live one; this module cannot import it.
  */
-export function applyImport(result: Extract<ImportResult, { ok: true }>): boolean {
-  for (const key of [STATE_KEY, SETTINGS_KEY]) {
+export function applyImport(result: Extract<ImportResult, { ok: true }>, coachStore?: { replace: (next: CoachState) => boolean }): boolean {
+  const keys = [STATE_KEY, SETTINGS_KEY];
+  if (result.coach !== undefined) keys.push(COACH_KEY);
+  for (const key of keys) {
     try {
       const current = window.localStorage.getItem(key);
       if (current !== null) window.localStorage.setItem(`${key}.pre-import`, current);
@@ -135,6 +153,13 @@ export function applyImport(result: Extract<ImportResult, { ok: true }>): boolea
   }
   const a = stateStore.replace(result.state);
   const b = settingsStore.replace(result.settings);
+  if (result.coach === undefined) return a && b;
+  if (coachStore) return a && b && coachStore.replace(result.coach);
+  try {
+    window.localStorage.setItem(COACH_KEY, JSON.stringify(result.coach));
+  } catch {
+    return false;
+  }
   return a && b;
 }
 

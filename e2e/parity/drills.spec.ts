@@ -7,7 +7,7 @@ const widgets = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getI
 
 test.describe('qualifying drill', () => {
   test('starts on lead 1, asks for a stage before grading, and grades a correct answer', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await expect(page.locator('[data-widget="qualifying-drill"]')).toBeVisible();
     await expect(page.locator('.drill-progress')).toHaveText('Lead 1 of 4 · 0 done');
     await page.getByRole('button', { name: 'Check my answer' }).click();
@@ -23,7 +23,7 @@ test.describe('qualifying drill', () => {
   });
 
   test('flags fields marked the wrong way and a wrong stage, then moves on and wraps around', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     await page.getByLabel('Nurture (follow-up plan)').check();
     await page.getByRole('button', { name: 'Check my answer' }).click();
     await expect(page.locator('.drill .drill-feedback strong')).toHaveText('✗ Not quite.');
@@ -42,7 +42,7 @@ test.describe('qualifying drill', () => {
   });
 
   test('a lead with all four answered has nothing left to ask', async ({ page }) => {
-    await page.goto('/ch5');
+    await page.goto('/handbook/ch5');
     for (let n = 0; n < 2; n++) {
       await page.getByLabel('Nurture (follow-up plan)').check();
       await page.getByRole('button', { name: 'Check my answer' }).click();
@@ -58,7 +58,7 @@ test.describe('qualifying drill', () => {
 
 test.describe('pitfall cycle', () => {
   test('switching the four parts on and off marks which links they interrupt', async ({ page }) => {
-    await page.goto('/ch7');
+    await page.goto('/handbook/ch7');
     await expect(page.locator('.cycle-status')).toHaveText('With nothing installed, the loop runs on its own: each link causes the next.');
     const crm = page.getByRole('button', { name: 'CRM + follow-up plans' });
     await expect(crm).toHaveAttribute('aria-pressed', 'false');
@@ -82,7 +82,7 @@ test.describe('pitfall cycle', () => {
 
 test.describe('six-errors self-score', () => {
   test('lists six errors with 1 to 5 scores and waits for a rating', async ({ page }) => {
-    await page.goto('/ch7');
+    await page.goto('/handbook/ch7');
     await expect(page.locator('[data-widget="error-self-score"]')).toBeVisible();
     await expect(page.locator('.score-row')).toHaveCount(6);
     await expect(page.locator('.score-row').first().locator('input[type=radio]')).toHaveCount(5);
@@ -90,7 +90,7 @@ test.describe('six-errors self-score', () => {
   });
 
   test('ranks the rated errors, starts with the highest and links to the chapter that fixes it', async ({ page }) => {
-    await page.goto('/ch7');
+    await page.goto('/handbook/ch7');
     const legend = (i: number) => page.locator('.score-row legend').nth(i);
     const names = [await legend(0).innerText(), await legend(2).innerText()];
     await page.locator('.score-row').nth(0).locator('label.score-opt', { hasText: /^4$/ }).click();
@@ -108,7 +108,7 @@ test.describe('six-errors self-score', () => {
 
 test.describe('consultation lab', () => {
   test('rebalancing the sliders updates the verdict and the bar description', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await expect(page.locator('.alloc-verdict')).toHaveText('Asking and listening: 15 of 60 minutes (25%). ✗ Below half. Move time from presenting into asking and listening.');
     await expect(page.locator('.alloc-row output').nth(3)).toHaveText('30 min');
     await page.locator('#alloc-3').fill('0');
@@ -118,7 +118,7 @@ test.describe('consultation lab', () => {
   });
 
   test('the misstep cases grade each pick, then show the score and keep a best', async ({ page }) => {
-    await page.goto('/ch9');
+    await page.goto('/handbook/ch9');
     await expect(page.locator('.drill-progress')).toHaveText('Case 1 of 4 · 0 correct so far');
     await expect(page.locator('.spot .drill-option')).toHaveText(['Frame', 'Ask', 'Listen', 'Present', 'Agree']);
     await page.getByRole('button', { name: 'Frame', exact: true }).click();
@@ -145,7 +145,7 @@ test.describe('consultation lab', () => {
 
 test.describe('Fair Housing drill', () => {
   test('nine phrases to judge, a clean sweep message and a saved best', async ({ page }) => {
-    await page.goto('/ch11');
+    await page.goto('/handbook/ch11');
     await expect(page.locator('.drill-progress')).toHaveText('Phrase 1 of 9 · 0 correct so far');
     await expect(page.locator('.drill-tag')).toHaveText('In marketing');
     await expect(page.locator('.drill-option')).toHaveText(['Problem', 'Fine as written']);

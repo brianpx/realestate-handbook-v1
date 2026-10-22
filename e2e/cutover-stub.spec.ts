@@ -20,7 +20,7 @@ test.describe('a reader with no saved progress', () => {
   for (const id of PAGES) {
     test(`/#${id} goes to the same chapter on the new site`, async ({ page }) => {
       await page.goto(`${OLD}#${id}`);
-      await expect(page).toHaveURL(`${NEW}/${id}`);
+      await expect(page).toHaveURL(`${NEW}/handbook/${id}`);
     });
   }
 
@@ -42,7 +42,7 @@ test.describe('a reader with saved progress', () => {
     await expect(page.getByText('You have saved progress on this device.')).toBeVisible();
     await page.waitForTimeout(1200);
     expect(page.url()).toBe(`${OLD}#ch5`);
-    await expect(page.locator('#go')).toHaveAttribute('href', `${NEW}/ch5`);
+    await expect(page.locator('#go')).toHaveAttribute('href', `${NEW}/handbook/ch5`);
   });
 
   test('the file it writes restores on the new site, migrated, and Continue lands on the same chapter', async ({ page }) => {
@@ -55,7 +55,7 @@ test.describe('a reader with saved progress', () => {
     expect(JSON.parse(readFileSync(path, 'utf8'))).toMatchObject({ format: 'handbook-progress', version: 1, handbookState: progress, handbookSettings: { dark: true } });
     await expect(page.locator('#saved')).toHaveText('Progress downloaded. Now continue to the new handbook.');
     await page.locator('#go').click();
-    await expect(page).toHaveURL(`${NEW}/ch5`);
+    await expect(page).toHaveURL(`${NEW}/handbook/ch5`);
     // the new site starts empty (a different origin), then restores the file
     await page.evaluate(() => localStorage.setItem('handbookAccess', '1'));
     await page.reload();
@@ -70,7 +70,7 @@ test.describe('a reader with saved progress', () => {
   test('a reader whose storage holds only empty objects is treated as having none', async ({ page }) => {
     await page.addInitScript(() => { localStorage.setItem('handbookState', '{}'); });
     await page.goto(`${OLD}#ch2`);
-    await expect(page).toHaveURL(`${NEW}/ch2`);
+    await expect(page).toHaveURL(`${NEW}/handbook/ch2`);
   });
 });
 

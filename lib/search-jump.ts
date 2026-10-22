@@ -3,7 +3,7 @@ import type { SearchEntry } from './search-query';
 // Finding the block a search result points at, in the page as it is on screen. The index counts blocks in the
 // page HTML, so tool markup (.iw) is left out here too and the nth block with the same text lines up.
 const SELECTOR = 'h1, h2, h3, h4, dt, caption, figcaption, .diagram-title, p, li';
-const EXCLUDED = 'dialog, .chapter-foot, .chapter-next, .nurture-static, .iw';
+const EXCLUDED = 'dialog, .chapter-foot, .chapter-next, .nurture-static, .iw, .chapter-outline';
 
 export function findSearchTarget(root: ParentNode, entry: Pick<SearchEntry, 'text' | 'occurrence'>): HTMLElement | null {
   const matches = [...root.querySelectorAll<HTMLElement>(SELECTOR)].filter(node => {

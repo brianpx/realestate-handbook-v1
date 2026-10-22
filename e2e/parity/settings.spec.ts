@@ -88,8 +88,8 @@ test.describe('chapter end parity', () => {
     ]);
   });
 
-  test('the last page links back to the title page', async ({ page }) => {
+  test('the last page links back to the handbook home', async ({ page }) => {
     await open(page, 'app-f');
-    await expect(page.locator('.chapter-next a')).toHaveText('Back to the title page');
+    await expect(page.locator('.chapter-next a')).toHaveText('Back to the handbook home');
   });
 });

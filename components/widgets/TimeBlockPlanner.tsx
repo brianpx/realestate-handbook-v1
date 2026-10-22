@@ -3,24 +3,12 @@
 import { useEffect, useState } from 'react';
 import { isoDate, nextMonday, parseIso } from '@/lib/dates';
 import { downloadIcs } from '@/lib/ics';
-import { fmtClock, planBlocks, plannerVerdict, TIMEBLOCK_DEFAULTS, timeblockEvents, WEEKDAY_NAMES, type TimeblockCfg } from '@/lib/plan';
+import { fmtClock, planBlocks, plannerVerdict, readTimeblockCfg, timeblockEvents, WEEKDAY_NAMES, type TimeblockCfg } from '@/lib/plan';
 import { setTimeblock, useHandbookState, widgetOf } from '@/lib/state';
 import { InteractiveHeader } from './InteractiveHeader';
 
-function readCfg(saved: Record<string, unknown>): TimeblockCfg {
-  const d = TIMEBLOCK_DEFAULTS;
-  return {
-    start: typeof saved.start === 'string' && saved.start ? saved.start : d.start,
-    endOfDay: typeof saved.endOfDay === 'string' && saved.endOfDay ? saved.endOfDay : d.endOfDay,
-    followUps: typeof saved.followUps === 'number' ? saved.followUps : d.followUps,
-    prospecting: typeof saved.prospecting === 'number' ? saved.prospecting : d.prospecting,
-    days: Array.isArray(saved.days) ? saved.days.filter((x): x is number => typeof x === 'number') : [...d.days],
-    friday: typeof saved.friday === 'boolean' ? saved.friday : d.friday,
-  };
-}
-
 export function TimeBlockPlanner() {
-  const cfg = readCfg(widgetOf(useHandbookState(), 'timeblock'));
+  const cfg = readTimeblockCfg(widgetOf(useHandbookState(), 'timeblock'));
   // "next Monday" depends on today's date, so it is set after mount to keep the server HTML the same for everyone
   const [week, setWeek] = useState('');
   useEffect(() => { setWeek(isoDate(nextMonday())); }, []);

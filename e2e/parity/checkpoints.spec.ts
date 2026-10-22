@@ -8,7 +8,7 @@ const checkpoints = (page: Page) => page.evaluate(() => JSON.parse(localStorage.
 
 test.describe('checkpoint self-tests', () => {
   test('turn the Checkpoint box into questions with an answer box, key points and a confidence count', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     const box = page.locator('.box.checkpoint');
     await expect(box.locator('[data-widget="checkpoint"]')).toBeVisible();
     await expect(box.locator('.cp-count')).toHaveText('0 of 3 confident');
@@ -19,7 +19,7 @@ test.describe('checkpoint self-tests', () => {
   });
 
   test('checking against the book shows key points and the rating buttons; ratings save and count', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     const item = page.locator('.cp-item').nth(1);
     await item.getByRole('button', { name: 'Check against the book' }).click();
     await expect(item.getByRole('button', { name: 'Hide key points' })).toHaveAttribute('aria-expanded', 'true');
@@ -39,7 +39,7 @@ test.describe('checkpoint self-tests', () => {
   });
 
   test('typed answers are saved per question', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await page.locator('.cp-item').first().locator('.practice-text').fill('calls, appointments, follow-ups');
     expect(await checkpoints(page)).toEqual({ 'ch1:0': { text: 'calls, appointments, follow-ups' } });
     await page.reload();
@@ -47,7 +47,7 @@ test.describe('checkpoint self-tests', () => {
   });
 
   test('a personal question offers a tip instead of key points', async ({ page }) => {
-    await page.goto('/ch6');
+    await page.goto('/handbook/ch6');
     const item = page.locator('.cp-item').nth(2);
     await item.getByRole('button', { name: 'Show a tip' }).click();
     await expect(item.locator('.cp-key')).toContainText('Reading is not rehearsal.');
@@ -58,7 +58,7 @@ test.describe('checkpoint self-tests', () => {
     await page.addInitScript(() => {
       if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ widgets: { checkpoints: { 'ch4:0': { status: 'got', text: 'six parts' } } } }));
     });
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     await expect(page.locator('.cp-item')).toHaveCount(4);
     await expect(page.locator('.cp-item').first().locator('.practice-text')).toHaveValue('');
     await expect(page.locator('.cp-item').nth(1).locator('.cp-q')).toHaveText('What are the six parts of the CRM setup?');
@@ -68,7 +68,7 @@ test.describe('checkpoint self-tests', () => {
   });
 
   test('the roll-up sits under the progress bar and goes when progress tracking is off', async ({ page }) => {
-    await page.goto('/ch2');
+    await page.goto('/handbook/ch2');
     await expect(page.locator('.progress-item #checkpointRollup')).toHaveText('0 of 38 checkpoint questions confident');
     await page.locator('details.settings summary').click();
     await page.locator('#settingTrack').uncheck();
@@ -77,7 +77,7 @@ test.describe('checkpoint self-tests', () => {
 
   test('Essential tools only leaves the Checkpoint box as plain text', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('handbookSettings', JSON.stringify({ essentialOnly: true })));
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(page.locator('.box.checkpoint')).toBeVisible();
     await expect(page.locator('.box.checkpoint .cp-item')).toHaveCount(0);
     await expect(page.locator('.box.checkpoint')).toContainText('Pick three leading indicators to track every week');
@@ -89,7 +89,7 @@ test.describe('test your knowledge', () => {
   const ch1 = KNOWLEDGE_CHECKS.ch1!;
 
   test('adds three questions and a blank after the key takeaways, saving nothing', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     const quiz = page.locator('.box.quiz');
     await expect(quiz.locator('[data-widget="knowledge-check"]')).toBeVisible();
     await expect(quiz.locator('fieldset.quiz-item')).toHaveCount(3);
@@ -102,7 +102,7 @@ test.describe('test your knowledge', () => {
   });
 
   test('marks right and wrong picks, locks the question and scores after the third', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     const quiz = page.locator('.box.quiz');
     const wrongFor = (answer: number) => (answer === 0 ? 1 : 0);
     // first question wrong, the other two right
@@ -120,7 +120,7 @@ test.describe('test your knowledge', () => {
   });
 
   test('the blank is graded when the answer is shown, and Start over clears everything', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     const quiz = page.locator('.box.quiz');
     await quiz.getByRole('button', { name: 'Show answer' }).click();
     await expect(quiz.locator('.cp-key')).toContainText(`The answer is "${ch1.blank.answer}".`);
@@ -139,7 +139,7 @@ test.describe('test your knowledge', () => {
 
   test('every chapter from 1 to 13 has one, and the Settings toggle hides and shows them', async ({ page }) => {
     for (let n = 1; n <= 13; n++) {
-      await page.goto(`/ch${n}`);
+      await page.goto(`/handbook/ch${n}`);
       await expect(page.locator('.box.quiz'), `ch${n}`).toHaveCount(1);
     }
     await page.locator('details.settings summary').click();

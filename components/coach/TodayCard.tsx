@@ -56,7 +56,7 @@ export function TodayCard({ plan, completions, today, dueForReview, onEdit }: {
         )}
         <p>
           {dueForReview > 0
-            ? <><Link href="/review">{dueForReview} {dueForReview === 1 ? 'idea is' : 'ideas are'} due for review</Link>.</>
+            ? <><Link href="/handbook/review">{dueForReview} {dueForReview === 1 ? 'idea is' : 'ideas are'} due for review</Link>.</>
             : 'Nothing is due for review.'}
         </p>
         <div className="script-actions">
@@ -70,7 +70,7 @@ export function TodayCard({ plan, completions, today, dueForReview, onEdit }: {
         <ol>
           {scheduleRows(plan.sessions, completions, today).map(r => (
             <li key={r.session.id}>
-              {formatDay(r.session.date)}: <Link href={`/${r.session.chapter}`}>{label(r.session.chapter)}</Link>
+              {formatDay(r.session.date)}: <Link href={`/handbook/${r.session.chapter}`}>{label(r.session.chapter)}</Link>
               {r.status === 'complete' ? ' ✓' : r.status === 'partly' ? ' (exercise still open)' : r.isNext ? ' ← next' : ''}
             </li>
           ))}
@@ -92,7 +92,7 @@ function NextSession({ next, status }: { next: NonNullable<ReturnType<typeof nex
       <ul>
         <li>
           {steps.read ? '✓' : '○'} Read the chapter.{' '}
-          <Link href={`/${chapter}`}>Open it</Link>{' '}
+          <Link href={`/handbook/${chapter}`}>Open it</Link>{' '}
           {!steps.read && <button type="button" className="btn-mini" onClick={() => markStep(chapter, 'read')}>Mark read</button>}
         </li>
         <li>
@@ -102,7 +102,7 @@ function NextSession({ next, status }: { next: NonNullable<ReturnType<typeof nex
         <li>
           {steps.checked ? '✓' : '○'} Answer the questions at the end of the chapter.{' '}
           {!steps.checked && (hasCoachCheck(chapter)
-            ? <Link href={`/${chapter}`}>Go to the questions</Link>
+            ? <Link href={`/handbook/${chapter}`}>Go to the questions</Link>
             : <button type="button" className="btn-mini" onClick={() => markStep(chapter, 'checked')}>I answered them</button>)}
         </li>
       </ul>

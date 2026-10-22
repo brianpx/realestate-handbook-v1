@@ -31,12 +31,33 @@ export class NeonLeadStore implements LeadStore {
 
   async recordAttempt(ipHash: string, at: Date) {
     await this.sql`insert into lead_attempts (ip_hash, at) values (${ipHash}, ${at.toISOString()})`;
-    // housekeeping: the counters only matter for minutes, so now and then drop anything a day old
-    if (Math.random() < 0.02) await this.sql`delete from lead_attempts where at < now() - interval '1 day'`;
   }
 
   async countAttempts(ipHash: string, since: Date) {
     const rows = await this.sql`select count(*)::int as n from lead_attempts where ip_hash = ${ipHash} and at >= ${since.toISOString()}`;
+    return Number(rows[0]?.n ?? 0);
+  }
+
+  async recordAndCount(ipHash: string, at: Date, since: Date) {
+    const atIso = at.toISOString();
+    const sinceIso = since.toISOString();
+    // The count cannot see this statement's insert, so the new row is added from RETURNING.
+    const rows = await this.sql`
+      with inserted as (
+        insert into lead_attempts (ip_hash, at) values (${ipHash}, ${atIso})
+        returning at
+      )
+      select count(*)::int as n from (
+        select at from lead_attempts where ip_hash = ${ipHash} and at >= ${sinceIso}
+        union all
+        select at from inserted where at >= ${sinceIso}
+      ) as in_window`;
+    try {
+      // Its own statement: a cleanup failure must not fail the insert above.
+      await this.sql`delete from lead_attempts where at < now() - interval '1 day'`;
+    } catch (err) {
+      console.error('lead: attempt cleanup failed', err instanceof Error ? err.name : 'error');
+    }
     return Number(rows[0]?.n ?? 0);
   }
 }

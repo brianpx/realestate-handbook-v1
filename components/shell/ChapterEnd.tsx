@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { neighbors, type PageId } from '@/lib/pages';
+import { HANDBOOK, pageHref } from '@/lib/routes';
 
 export function ChapterEnd({ id }: { id: PageId }) {
   const { next } = neighbors(id);
   return (
     <>
       <p className="chapter-next">
-        {next ? <Link href={`/${next.id}`}>Next: {next.label}</Link> : <Link href="/">Back to the title page</Link>}
+        {next ? <Link href={pageHref(next.id)}>Next: {next.label}</Link> : <Link href={HANDBOOK}>Back to the handbook home</Link>}
       </p>
       <footer className="chapter-foot">
         <p>Not legal advice. Confirm forms, compensation, and prospecting rules with your broker.</p>

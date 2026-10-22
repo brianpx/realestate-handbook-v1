@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { NeonLeadStore, type Sql } from './neon-store';
 
 // A fake of the tagged-template query function: it records each statement and answers from a queue.
@@ -40,5 +40,28 @@ describe('NeonLeadStore', () => {
   });
   it('counts zero when the query returns nothing', async () => {
     expect(await new NeonLeadStore(fake([]).sql).countAttempts('h', new Date())).toBe(0);
+  });
+  it('inserts and counts in one statement, and still returns the count when cleanup throws', async () => {
+    const { sql, calls } = fake([{ n: 4 }]);
+    const cleanup = new Error('delete failed');
+    cleanup.name = 'CleanupError';
+    const flaky: Sql = async (strings, ...values) => {
+      if (strings.join('').includes('delete')) throw cleanup;
+      return sql(strings, ...values);
+    };
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const at = new Date('2026-11-02T12:00:00Z');
+      const since = new Date('2026-11-02T11:50:00Z');
+      await expect(new NeonLeadStore(flaky).recordAndCount('ip-hash-1', at, since)).resolves.toBe(4);
+      expect(calls).toHaveLength(1);
+      expect(calls[0]!.text).toContain('insert into lead_attempts');
+      expect(calls[0]!.text).toContain('count(');
+      expect(calls[0]!.text).not.toContain('ip-hash-1');
+      expect(calls[0]!.values).toEqual(['ip-hash-1', at.toISOString(), 'ip-hash-1', since.toISOString(), since.toISOString()]);
+      expect(spy).toHaveBeenCalledWith('lead: attempt cleanup failed', 'CleanupError');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

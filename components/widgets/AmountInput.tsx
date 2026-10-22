@@ -4,6 +4,8 @@ import { useId, useState } from 'react';
 import { checkAmount, type AmountBounds } from '@/lib/amount';
 
 type Props = AmountBounds & {
+  /** For a <label htmlFor> that sits apart from the input. */
+  id?: string;
   /** aria-label, for inputs that sit in a table cell; omit when a wrapping <label> names the field. */
   label?: string;
   value: number | undefined;
@@ -16,7 +18,7 @@ type Props = AmountBounds & {
 
 // What the reader typed is kept as typed (even "$1,500" or a half-finished entry) until they edit it again;
 // only the parsed number is stored. `value` is what shows before the reader types anything.
-export function AmountInput({ label, value, onValue, className = 'calc-input', placeholder, format, ...bounds }: Props) {
+export function AmountInput({ id, label, value, onValue, className = 'calc-input', placeholder, format, ...bounds }: Props) {
   const [text, setText] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [current, setCurrent] = useState<number | undefined>(undefined);
@@ -25,6 +27,7 @@ export function AmountInput({ label, value, onValue, className = 'calc-input', p
   return (
     <>
       <input
+        id={id}
         type="text"
         inputMode="decimal"
         autoComplete="off"

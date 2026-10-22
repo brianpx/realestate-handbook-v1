@@ -12,7 +12,7 @@ const outputCell = (page: Page, step: string) => page.locator('tr', { hasText: s
 
 test.describe('goal calculator', () => {
   test('starts with the default ratios filled in and waits for a goal', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(page.locator('[data-widget="goal-calculator"]')).toBeVisible();
     await expect(page.getByLabel(/^Appointments needed per closing/)).toHaveValue('3');
     await expect(page.getByLabel(/^Conversations needed per appointment/)).toHaveValue('20');
@@ -22,7 +22,7 @@ test.describe('goal calculator', () => {
   });
 
   test('reproduces the worked example and saves it', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await goal(page).fill('$80,000');
     await commission(page).fill('6500');
     await expect(outputCell(page, 'Closings needed')).toHaveText('13');
@@ -44,12 +44,12 @@ test.describe('goal calculator', () => {
     await page.addInitScript(() => {
       if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ calc: { goal: 80000, commission: 6500, apc: 3, cpa: 20, weeks: 48 } }));
     });
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(outputCell(page, 'Conversations per week')).toHaveText('≈ 16');
   });
 
   test('the stress test raises the weekly target and says so', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await goal(page).fill('80000');
     await commission(page).fill('6500');
     const asEntered = page.getByRole('button', { name: 'Ratios as entered' });
@@ -61,7 +61,7 @@ test.describe('goal calculator', () => {
   });
 
   test('explains bad input and drops the stored value', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await goal(page).fill('80000');
     await goal(page).fill('abc');
     await expect(goal(page)).toHaveAttribute('aria-invalid', 'true');
@@ -74,7 +74,7 @@ test.describe('goal calculator', () => {
   });
 
   test('a cleared ratio stays empty this visit and returns to its default next visit', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await goal(page).fill('80000');
     await commission(page).fill('6500');
     await weeks(page).fill('');
@@ -84,7 +84,7 @@ test.describe('goal calculator', () => {
   });
 
   test('the footnote opens as a dialog and closes again', async ({ page }) => {
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await page.getByRole('button', { name: 'Read the footnote' }).click();
     await expect(page.getByRole('dialog', { name: 'How the example numbers were derived' })).toBeVisible();
     await page.getByRole('button', { name: 'Close' }).click();
@@ -94,7 +94,7 @@ test.describe('goal calculator', () => {
   test('without JavaScript the ladder still reads, with its example column', async ({ browser, baseURL }) => {
     const context = await browser.newContext({ javaScriptEnabled: false, baseURL, extraHTTPHeaders: BYPASS_HEADERS });
     const page = await context.newPage();
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(page.locator('tr', { hasText: 'Income goal for the year' }).locator('td').nth(1)).toHaveText('$80,000');
     await context.close();
   });
@@ -102,7 +102,7 @@ test.describe('goal calculator', () => {
 
 test.describe('speed-to-lead explorer', () => {
   test('starts at 10 minutes and follows the slider through the three bands', async ({ page }) => {
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     const slider = page.locator('#speedSlider, .speed-slider');
     await expect(page.locator('.speed-when')).toHaveText('If you respond in 10 min');
     await expect(page.locator('.speed-band')).toHaveText('Strong conversion');
@@ -115,7 +115,7 @@ test.describe('speed-to-lead explorer', () => {
   });
 
   test('works from the keyboard', async ({ page }) => {
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     await page.locator('.speed-slider').focus();
     await page.keyboard.press('ArrowRight');
     await expect(page.locator('.speed-when')).toHaveText('If you respond in 20 min');
@@ -131,7 +131,7 @@ test.describe('speed-to-lead explorer', () => {
 
 test.describe('response timer', () => {
   test('replies cannot be stamped before Start, and Reset clears everything', async ({ page }) => {
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     const text = page.getByRole('button', { name: 'Text arrived' });
     await expect(text).toBeDisabled();
     await page.getByRole('button', { name: 'Start', exact: true }).click();
@@ -147,7 +147,7 @@ test.describe('response timer', () => {
 
   test('a slow reply names the band', async ({ page }) => {
     await page.clock.install();
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     await page.getByRole('button', { name: 'Start', exact: true }).click();
     await page.clock.fastForward(6 * 60_000);
     await page.getByRole('button', { name: 'Call arrived' }).click();
@@ -157,10 +157,10 @@ test.describe('response timer', () => {
 
   test('Essential tools only removes the timer but keeps the explorer and calculator', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('handbookSettings', JSON.stringify({ essentialOnly: true })));
-    await page.goto('/ch4');
+    await page.goto('/handbook/ch4');
     await expect(page.locator('.speed-timer')).toHaveCount(0);
     await expect(page.locator('.speed-widget')).toBeVisible();
-    await page.goto('/ch1');
+    await page.goto('/handbook/ch1');
     await expect(page.locator('.calc-panel')).toBeVisible();
   });
 });

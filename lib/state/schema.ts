@@ -53,6 +53,9 @@ export const handbookStateSchema = z.looseObject({
 });
 export type HandbookState = z.infer<typeof handbookStateSchema>;
 
+export const TEXT_SIZES = ['small', 'medium', 'large'] as const;
+export type TextSize = (typeof TEXT_SIZES)[number];
+
 export const settingsSchema = z.looseObject({
   version,
   dark: z.boolean().optional().catch(undefined),
@@ -60,6 +63,8 @@ export const settingsSchema = z.looseObject({
   essentialOnly: z.boolean().optional().catch(undefined),
   hideQuizzes: z.boolean().optional().catch(undefined),
   trackProgress: z.boolean().optional().catch(undefined),
+  // absent means medium; an unknown value is dropped rather than rejecting the whole settings object
+  textSize: z.enum(TEXT_SIZES).optional().catch(undefined),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

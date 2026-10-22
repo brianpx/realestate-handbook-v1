@@ -66,6 +66,19 @@ export const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export type TimeblockCfg = { start: string; followUps: number; prospecting: number; endOfDay: string; days: number[]; friday: boolean };
 export const TIMEBLOCK_DEFAULTS: TimeblockCfg = { start: '08:00', followUps: 60, prospecting: 90, endOfDay: '17:30', days: [1, 2, 3, 4, 5], friday: true };
 
+/** The saved planner settings (widgets.timeblock), with a default for anything missing or of the wrong type. */
+export function readTimeblockCfg(saved: Record<string, unknown>): TimeblockCfg {
+  const d = TIMEBLOCK_DEFAULTS;
+  return {
+    start: typeof saved.start === 'string' && saved.start ? saved.start : d.start,
+    endOfDay: typeof saved.endOfDay === 'string' && saved.endOfDay ? saved.endOfDay : d.endOfDay,
+    followUps: typeof saved.followUps === 'number' ? saved.followUps : d.followUps,
+    prospecting: typeof saved.prospecting === 'number' ? saved.prospecting : d.prospecting,
+    days: Array.isArray(saved.days) ? saved.days.filter((x): x is number => typeof x === 'number') : [...d.days],
+    friday: typeof saved.friday === 'boolean' ? saved.friday : d.friday,
+  };
+}
+
 export const toMinutes = (value: string | undefined): number => {
   const [h, m] = (value || '0:0').split(':').map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
