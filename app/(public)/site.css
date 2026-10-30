@@ -1,0 +1,256 @@
+/* Public site: sales page, preview, about, support, pricing and policies. The handbook's own styles live in
+   app/globals.css and are shared (the sample lesson reuses the handbook's tools). Every rule here is scoped under
+   .pub so nothing leaks into the product. Colors are the shared tokens, so dark mode matches the handbook. */
+@layer components {
+.pub {
+  --pub-ink: var(--color-ink);
+  --pub-body: var(--color-body);
+  --pub-muted: var(--color-muted);
+  --pub-navy: var(--color-brand);
+  --pub-green: var(--color-brand-soft);
+  --pub-green-dark: var(--color-brand-hover);
+  --pub-tint: var(--color-brand-tint);
+  --pub-line: var(--color-line);
+  --pub-radius: 14px;
+  --pub-serif: var(--font-serif);
+  background: var(--color-surface);
+  color: var(--color-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column}
+.pub a { color: var(--color-link); text-underline-offset: 3px}
+.pub a:hover { color: var(--color-ink)}
+.pub-main { flex: 1; outline: none}
+.pub-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px}
+.pub-narrow { max-width: 760px}
+
+/* ---- header ---- */
+.pub-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--color-surface) 96%, transparent); border-bottom: 1px solid var(--pub-line); backdrop-filter: blur(6px)}
+.pub-header-row { display: flex; align-items: center; gap: 24px; min-height: 68px}
+.pub-brand { display: flex; align-items: center; gap: 10px; color: var(--pub-ink) !important; font-weight: 700; text-decoration: none; line-height: 1.2; font-size: 0.98rem}
+.pub-brand img { width: 36px; height: 36px; flex: none}
+.pub-brand span { max-width: 15rem}
+.pub-nav { display: flex; align-items: center; gap: 4px; margin-left: auto}
+.pub-nav a { color: var(--pub-body); text-decoration: none; font-weight: 600; font-size: 0.93rem; padding: 10px 12px; border-radius: 8px}
+.pub-nav a:hover, .pub-nav a[aria-current="page"] { background: var(--pub-tint); color: var(--pub-ink)}
+.pub-nav a.pub-nav-cta { color: var(--color-link); border: 1.5px solid var(--color-line-strong); margin-left: 6px}
+.pub-nav a.pub-nav-cta:hover { background: var(--color-brand); color: var(--color-on-brand); border-color: var(--color-brand)}
+.pub-menu-btn { display: none; margin-left: auto; min-height: 44px; padding: 0 14px; background: var(--color-surface); color: var(--pub-ink); border: 1.5px solid var(--color-line-strong); border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer}
+@media (max-width: 860px) {
+  .pub-menu-btn { display: inline-flex; align-items: center}
+  .pub-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: 8px 16px 16px; background: var(--color-surface); border-bottom: 1px solid var(--pub-line); box-shadow: 0 12px 24px rgba(15,23,42,0.12)}
+  .pub-nav.open { display: flex}
+  .pub-nav a { padding: 14px 12px}
+  .pub-nav a.pub-nav-cta { margin: 8px 0 0; text-align: center}
+}
+
+/* ---- type ---- */
+.pub .pub-eyebrow { font-size: 0.8rem; letter-spacing: 0.09em; text-transform: uppercase; font-weight: 700; color: var(--pub-green); margin: 0 0 14px}
+.pub-h1 { font-family: var(--pub-serif); font-size: clamp(2.1rem, 4.6vw, 3.4rem); line-height: 1.1; letter-spacing: -0.015em; color: var(--pub-ink); font-weight: 700; margin: 0 0 20px; border: 0; padding: 0}
+.pub-h2 { font-family: var(--pub-serif); font-size: clamp(1.65rem, 3vw, 2.3rem); line-height: 1.18; letter-spacing: -0.01em; color: var(--pub-ink); margin: 0 0 14px; border: 0; padding: 0}
+.pub-h3 { font-size: 1.12rem; line-height: 1.3; color: var(--pub-ink); margin: 0 0 8px}
+.pub .pub-lede { font-size: 1.18rem; line-height: 1.6; color: var(--pub-body); margin: 0 0 24px; max-width: 40rem}
+.pub p { font-size: 1.02rem; line-height: 1.65; color: var(--pub-body); margin: 0 0 14px}
+.pub .pub-small { font-size: 0.9rem; color: var(--pub-muted)}
+.pub ul.pub-list, .pub ol.pub-list { padding-left: 22px; margin: 0 0 18px}
+.pub .pub-list li { font-size: 1.02rem; line-height: 1.6; margin-bottom: 8px; color: var(--pub-body)}
+
+/* ---- sections ---- */
+.pub-section { padding: 76px 0}
+.pub-section.tint { background: var(--pub-tint); border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line)}
+.pub-section-head { max-width: 46rem; margin-bottom: 36px}
+.pub-section-head p { font-size: 1.1rem}
+@media (max-width: 700px) { .pub-section { padding: 52px 0} }
+
+/* ---- buttons ---- */
+.pub-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 1.02rem; text-decoration: none; cursor: pointer; border: 2px solid var(--pub-navy); transition: background 0.15s, color 0.15s; text-align: center}
+.pub a.pub-btn-primary, .pub .pub-btn-primary { background: var(--pub-navy); color: var(--color-on-brand); border-color: var(--color-line-strong)}
+.pub a.pub-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand); border-color: var(--color-line-strong)}
+.pub a.pub-btn-secondary { background: var(--color-surface); color: var(--color-link); border-color: var(--color-line-strong)}
+.pub a.pub-btn-secondary:hover { background: var(--color-accent-tint); color: var(--color-link)}
+.pub-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 14px}
+.pub .pub-fineprint { font-size: 0.9rem; color: var(--pub-muted); margin: 0; max-width: 34rem}
+.pub :focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; box-shadow: 0 0 0 3px #0f172a; }
+
+/* ---- hero ---- */
+.pub-hero { padding: 64px 0 72px; background: linear-gradient(180deg, var(--pub-tint) 0%, var(--color-surface) 100%)}
+.pub-hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 56px; align-items: center}
+@media (max-width: 960px) { .pub-hero { padding: 40px 0 52px} .pub-hero-grid { grid-template-columns: 1fr; gap: 36px} }
+
+/* the live preview card in the hero and the first-session result */
+.pub-card { background: var(--color-surface); border: 1px solid var(--pub-line); border-radius: var(--pub-radius); box-shadow: 0 18px 40px -22px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.05)}
+.pub-device { padding: 22px 22px 20px}
+.pub-device-tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pub-green); background: var(--pub-tint); border: 1px solid var(--color-line); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px}
+.pub-device h2, .pub-device h3 { font-size: 1.15rem; margin: 0 0 4px; color: var(--pub-ink); border: 0; padding: 0}
+.pub-device .pub-device-sub { font-size: 0.9rem; color: var(--pub-muted); margin: 0 0 16px}
+.pub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; margin-bottom: 18px}
+@media (max-width: 420px) { .pub-fields { grid-template-columns: 1fr} }
+.pub-field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--pub-ink); margin-bottom: 6px}
+.pub-field .calc-field { display: flex; align-items: center}
+.pub-field .calc-prefix { padding: 10px 0 10px 12px; border: 1.5px solid var(--color-line-strong); border-right: 0; border-radius: 8px 0 0 8px; background: var(--color-canvas); font-weight: 600}
+.pub-field .calc-input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1.5px solid var(--color-line-strong); border-radius: 8px; font: inherit; font-size: 1rem}
+.pub-field .calc-prefix + .calc-input { border-radius: 0 8px 8px 0}
+.pub-field .calc-error { font-size: 0.8rem; color: var(--color-danger); min-height: 1.1em}
+.pub-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px}
+.pub-stat { background: var(--pub-tint); border-radius: 10px; padding: 12px 10px; text-align: center; border: 1px solid var(--color-line)}
+.pub-stat b { display: block; font-family: var(--pub-serif); font-size: 1.7rem; line-height: 1.1; color: var(--pub-ink)}
+.pub-stat span { font-size: 0.78rem; color: var(--pub-muted); line-height: 1.25; display: block; margin-top: 4px}
+/* Three tiles need about 300px ("conversations" cannot wrap), which is wider than a 320 to 360 phone's column.
+   Below the field breakpoint each tile becomes a row: number, then label. */
+@media (max-width: 420px) {
+  .pub-stats { grid-template-columns: 1fr; gap: 8px}
+  .pub-stat { display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 8px 12px}
+  .pub-stat b { font-size: 1.4rem}
+  .pub-stat span { margin-top: 0; font-size: 0.9rem}
+}
+.pub .pub-device-note { font-size: 0.82rem; color: var(--pub-muted); margin: 14px 0 0}
+
+/* ---- grids and cards ---- */
+.pub-grid { display: grid; gap: 20px}
+.pub-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr))}
+.pub-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr))}
+.pub-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr))}
+@media (max-width: 1000px) { .pub-grid.four { grid-template-columns: repeat(2, minmax(0, 1fr))} .pub-grid.three { grid-template-columns: 1fr} }
+@media (max-width: 700px) { .pub-grid.two, .pub-grid.four { grid-template-columns: 1fr} }
+.pub-tile { padding: 24px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface)}
+.pub-tile p:last-child { margin-bottom: 0}
+.pub-tile-num { width: 34px; height: 34px; border-radius: 50%; background: var(--pub-navy); color: var(--color-on-brand); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 14px}
+.pub-reassure { margin-top: 28px; font-size: 1.05rem; max-width: 44rem}
+
+/* ---- first session result ---- */
+.pub-result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start}
+@media (max-width: 900px) { .pub-result { grid-template-columns: 1fr; gap: 32px} }
+.pub-checks { list-style: none; padding: 0; margin: 0}
+.pub-checks li { position: relative; padding: 0 0 0 38px; margin-bottom: 20px; font-size: 1.02rem}
+.pub-checks li::before { content: "✓"; position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.9rem}
+.pub-checks strong { display: block; color: var(--pub-ink); font-size: 1.05rem; margin-bottom: 2px}
+.pub-plan { padding: 24px}
+.pub-plan dl { margin: 0}
+.pub-plan dt { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pub-muted); font-weight: 700; margin-top: 16px}
+.pub-plan dt:first-child { margin-top: 0}
+.pub-plan dd { margin: 4px 0 0; color: var(--pub-ink); font-size: 1.02rem; line-height: 1.45}
+.pub-plan dd small { display: block; color: var(--pub-muted); font-size: 0.85rem}
+
+/* ---- tools ---- */
+.pub-tool { display: flex; flex-direction: column}
+.pub-tool .pub-tool-visual { margin: 14px 0 16px; padding: 12px; border: 1px dashed var(--color-line); border-radius: 10px; background: var(--color-canvas); font-size: 0.86rem; color: var(--pub-body); flex: 1}
+.pub-tool-visual b { color: var(--pub-ink)}
+.pub-tool-visual ul { margin: 0; padding-left: 18px}
+.pub-tool-visual li { margin-bottom: 4px}
+.pub-blocks { list-style: none; padding: 0; margin: 0}
+.pub-blocks li { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--color-line); margin: 0}
+.pub-blocks li:last-child { border-bottom: 0}
+.pub-blocks time { flex: none; width: 4.4rem; color: var(--pub-muted); font-variant-numeric: tabular-nums}
+.pub-tool .pub-link { font-weight: 700; margin-top: auto}
+
+/* ---- phases ---- */
+.pub-phases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); overflow: hidden; background: var(--color-surface)}
+.pub-phase { padding: 28px 26px; border-right: 1px solid var(--pub-line)}
+.pub-phase:last-child { border-right: 0}
+.pub-phase-days { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pub-green); margin: 0 0 6px}
+.pub-phase ul { padding-left: 20px; margin: 10px 0 0}
+.pub-phase li { font-size: 0.98rem; margin-bottom: 6px; color: var(--pub-body)}
+@media (max-width: 900px) { .pub-phases { grid-template-columns: 1fr} .pub-phase { border-right: 0; border-bottom: 1px solid var(--pub-line)} .pub-phase:last-child { border-bottom: 0} }
+
+/* ---- included ---- */
+.pub-included h3 { margin-bottom: 6px}
+.pub-included ul { list-style: none; padding: 0; margin: 0}
+.pub-included li { font-size: 0.98rem; padding: 6px 0 6px 20px; position: relative; margin: 0}
+.pub-included li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 7px; height: 7px; border-radius: 50%; background: var(--pub-green)}
+.pub-details { margin-top: 24px; border: 1px solid var(--pub-line); border-radius: 12px; background: var(--color-surface)}
+.pub-details summary { cursor: pointer; padding: 16px 20px; font-weight: 700; color: var(--pub-ink); min-height: 44px}
+.pub-details .pub-details-body { padding: 0 20px 18px}
+.pub-details ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 40px}
+.pub-details li { font-size: 0.95rem; margin-bottom: 6px; break-inside: avoid}
+@media (max-width: 700px) { .pub-details ol { columns: 1} }
+
+/* ---- fit ---- */
+.pub-fit h3 { display: flex; align-items: center; gap: 8px}
+.pub-fit.yes { border-top: 4px solid var(--pub-green)}
+.pub-fit.no { border-top: 4px solid var(--color-line-strong)}
+.pub-trust { padding: 26px; border-left: 4px solid var(--pub-green); background: var(--pub-tint); border-radius: 0 12px 12px 0; margin-bottom: 28px}
+.pub-trust p:last-child { margin-bottom: 0}
+
+/* ---- offer ---- */
+.pub-offer { padding: 32px; max-width: 44rem}
+.pub-offer dl { margin: 18px 0 22px}
+.pub-offer dt { font-weight: 700; color: var(--pub-ink); margin-top: 12px}
+.pub-offer dd { margin: 2px 0 0}
+.pub-status { display: inline-block; padding: 6px 12px; border-radius: 8px; background: #fef3c7; color: #78350f; border: 1px solid #fcd34d; font-weight: 600; font-size: 0.92rem; margin-bottom: 14px}
+
+/* ---- pricing page ---- */
+.pub-tight { padding-top: 24px}
+.pub-pricing-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 48px; align-items: start}
+.pub-buy { padding: 32px; position: sticky; top: 96px}
+.pub .pub-buy-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pub-muted); margin: 0 0 14px; border: 0; padding: 0; font-family: inherit}
+.pub-price { font-family: var(--pub-serif); font-size: 3rem; line-height: 1.1; color: var(--pub-ink); margin: 0 0 8px}
+.pub-buy-note { margin: 0 0 20px}
+.pub-btn-block { display: flex; justify-content: center; width: 100%; text-align: center}
+.pub-buy .pub-small { margin: 12px 0 0}
+.pub-terms { margin: 0 0 16px; border-top: 1px solid var(--pub-line)}
+.pub-terms > div { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--pub-line)}
+.pub-terms dt { font-weight: 700; color: var(--pub-ink)}
+.pub-terms dd { margin: 0}
+@media (max-width: 800px) {
+  .pub-pricing-grid { grid-template-columns: 1fr; gap: 32px}
+  .pub-buy { position: static; padding: 24px}
+  .pub-terms > div { grid-template-columns: 1fr; gap: 4px}
+}
+
+/* ---- FAQ ---- */
+.pub-faq { border-top: 1px solid var(--pub-line)}
+.pub-faq details { border-bottom: 1px solid var(--pub-line)}
+.pub-faq summary { cursor: pointer; padding: 18px 4px; font-weight: 700; font-size: 1.05rem; color: var(--pub-ink); list-style: none; display: flex; justify-content: space-between; gap: 16px; min-height: 44px}
+.pub-faq summary::-webkit-details-marker { display: none}
+.pub-faq summary::after { content: "+"; font-size: 1.4rem; line-height: 1; color: var(--pub-green); flex: none}
+.pub-faq details[open] summary::after { content: "–"}
+.pub-faq .pub-faq-a { padding: 0 4px 18px; max-width: 46rem}
+
+/* ---- final CTA ---- */
+.pub-final { text-align: center}
+.pub-final .pub-actions { justify-content: center}
+.pub-final .pub-fineprint { margin: 0 auto}
+
+/* ---- sample lesson ---- */
+.pub-sample { padding: 28px 32px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface)}
+.pub-sample > :first-child { margin-top: 0}
+.pub-sample h3 { margin-top: 26px}
+.pub-included-box { padding: 20px 24px; border-radius: 12px; background: var(--pub-tint); border: 1px solid var(--color-line); margin-bottom: 28px}
+.pub-included-box ul { margin: 8px 0 0; padding-left: 20px}
+.pub-included-box li { margin-bottom: 4px; font-size: 0.98rem}
+.pub-upsell { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; justify-content: space-between; padding: 24px 28px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface); margin-top: 36px}
+.pub-upsell p { margin: 0; max-width: 34rem}
+@media (max-width: 700px) { .pub-sample { padding: 18px 16px} }
+
+/* ---- page header, prose and drafts ---- */
+.pub-pagehead { padding: 56px 0 24px}
+.pub-prose { padding-bottom: 80px}
+.pub-prose h2 { font-family: var(--pub-serif); font-size: 1.5rem; color: var(--pub-ink); margin: 40px 0 10px; border: 0; padding: 0}
+.pub-prose h3 { font-size: 1.1rem; color: var(--pub-ink); margin: 26px 0 8px}
+.pub-prose ul, .pub-prose ol { padding-left: 22px; margin: 0 0 16px}
+.pub-prose li { font-size: 1.02rem; line-height: 1.6; margin-bottom: 8px; color: var(--pub-body)}
+.pub-prose table { border-collapse: collapse; width: 100%; margin: 0 0 18px}
+.pub-prose th, .pub-prose td { text-align: left; padding: 10px 12px; border: 1px solid var(--pub-line); font-size: 0.97rem; vertical-align: top}
+.pub-prose th { background: var(--pub-tint); color: var(--pub-ink)}
+.pub-draft { padding: 16px 20px; border: 1.5px solid #f59e0b; background: #fffbeb; border-radius: 12px; margin: 0 0 28px; color: #78350f}
+.pub .pub-draft p { color: #78350f; margin: 0 0 8px; font-size: 0.98rem}
+.pub .pub-draft p:last-child { margin: 0}
+.pub-decision { padding: 12px 16px; border-left: 4px solid #f59e0b; background: #fffbeb; border-radius: 0 8px 8px 0; margin: 0 0 16px; font-size: 0.97rem; color: #78350f}
+.pub-toc { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 0; list-style: none; margin: 0 0 8px}
+.pub-toc a { font-weight: 600}
+
+/* ---- footer ---- */
+.pub-footer { border-top: 1px solid var(--pub-line); background: var(--color-canvas); padding: 40px 0 48px; margin-top: auto}
+.pub-footer-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 32px}
+@media (max-width: 800px) { .pub-footer-grid { grid-template-columns: 1fr 1fr} .pub-footer-grid > :first-child { grid-column: 1 / -1} }
+.pub-footer h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pub-muted); margin: 0 0 10px; border: 0; padding: 0}
+.pub-footer ul { list-style: none; padding: 0; margin: 0}
+.pub-footer li { margin-bottom: 6px}
+.pub-footer a { font-size: 0.95rem}
+.pub-footer p { font-size: 0.9rem; color: var(--pub-muted)}
+.pub-legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--pub-line); font-size: 0.85rem; color: var(--pub-muted)}
+
+@media (prefers-reduced-motion: reduce) { .pub * { transition: none !important; scroll-behavior: auto !important} }
+.pub { scroll-padding-top: 84px}
+html:has(.pub) { scroll-padding-top: 84px}
+}

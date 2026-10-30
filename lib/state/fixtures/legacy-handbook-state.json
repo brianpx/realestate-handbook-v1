@@ -1,0 +1,12 @@
+{
+  "read": { "pref": true, "ch1": true, "ch2": true, "ch5": true },
+  "checks": { "ch3-checklist-0": true, "ch3-checklist-2": true },
+  "scorecard": { "2026-10-12": { "calls": 40, "appointments": 3 } },
+  "scripts": { "expired-listing": { "practiced": 2 } },
+  "objections": { "commission": { "practiced": 1 } },
+  "calc": { "goal": 80000, "avgCommission": 9000 },
+  "widgets": {
+    "roadmap": { "start": "2026-11-02", "done": [0, 1] },
+    "checkpoints": { "ch1-a": { "status": "got" }, "ch1-b": { "status": "review" } }
+  }
+}

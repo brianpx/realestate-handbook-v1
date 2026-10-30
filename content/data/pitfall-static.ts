@@ -1,0 +1,2 @@
+// Figure 6 as plain HTML, shown only when JavaScript is off (the explorer replaces it).
+export const PITFALL_STATIC_HTML = "<p>Slow follow-up ➔ Lost leads ➔ Empty pipeline ➔ Discouragement ➔ Unstructured days ➔ Slow follow-up</p>\n                                    <p style=\"color: #059669; font-weight: bold; margin-top: 10px;\">BREAK THE CYCLE: CRM + Follow-Up Plans, Protected Daily Block, Activity Tracking, Friday Reviews</p>";

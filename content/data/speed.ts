@@ -1,0 +1,2 @@
+// The Figure 4 band list, shown only when JavaScript is off (the explorer replaces it).
+export const SPEED_STATIC_HTML = "<p>• <strong>Under 5 Minutes:</strong> Highest conversion window.<br>\n                                       • <strong>5 to 30 Minutes:</strong> Strong conversion.<br>\n                                       • <strong>After 30 Minutes:</strong> Sharp drop-off. Most agents respond in hours; top producers respond in minutes.</p>";
