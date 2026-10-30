@@ -282,7 +282,7 @@ function recentGateAttempts(now) {
     try {
         stored = JSON.parse(localStorage.getItem(GATE_ATTEMPTS_KEY) || '[]');
     } catch (err) {
-        // storage blocked or corrupt: fall back to what this page load has seen
+        if (!(err instanceof DOMException)) throw err;
     }
     // an attempt lives in both places when storage works, so merge as a set rather than counting it twice
     return [...new Set([...stored, ...gateAttemptsInMemory])].filter(t => Number.isFinite(t) && now - t < HOUR_MS);
@@ -291,7 +291,11 @@ function recentGateAttempts(now) {
 function recordGateAttempt(now) {
     const attempts = [...recentGateAttempts(now), now];
     gateAttemptsInMemory = attempts;
-    try { localStorage.setItem(GATE_ATTEMPTS_KEY, JSON.stringify(attempts)); } catch (err) { /* memory copy still applies */ }
+    try {
+        localStorage.setItem(GATE_ATTEMPTS_KEY, JSON.stringify(attempts));
+    } catch (err) {
+        if (!(err instanceof DOMException)) throw err;
+    }
 }
 
 // Returns a message if the reader must wait before submitting again, otherwise null.
@@ -316,7 +320,7 @@ function setupGate() {
     try {
         if (localStorage.getItem(GATE_KEY)) return;
     } catch (err) {
-        // storage blocked: fall through and show the gate
+        if (!(err instanceof DOMException)) throw err;
     }
 
     const form = document.getElementById('gateForm');
@@ -358,7 +362,11 @@ function setupGate() {
                 body: JSON.stringify({ email: input.value.trim(), _gotcha: form.elements._gotcha.value })
             });
             if (!response.ok) throw new Error(`Formspree responded ${response.status}`);
-            try { localStorage.setItem(GATE_KEY, String(Date.now())); } catch (err) { /* unlocks for this visit only */ }
+            try {
+                localStorage.setItem(GATE_KEY, String(Date.now()));
+            } catch (err) {
+                if (!(err instanceof DOMException)) throw err;
+            }
             gate.hidden = true;
             setBehindInert(false);
             document.getElementById('main-content').focus({ preventScroll: true });
@@ -377,13 +385,21 @@ function setupGate() {
 const ANCHOR_HEADINGS = 'h2, h3, h4';
 const headingText = node => node.textContent.replace(/\s+/g, ' ').trim();
 
+// One numbering loop so a repeated heading stays the same index here and in search.js.
+function headingOccurrences(nodes) {
+    const seen = {};
+    const numbered = [];
+    for (const node of nodes) {
+        const text = headingText(node);
+        numbered.push({ node, text, occurrence: seen[text] = (seen[text] ?? -1) + 1 });
+    }
+    return numbered;
+}
+
 function captureScrollAnchor() {
     const mainTop = viewTop();
     for (const section of document.querySelectorAll('.chapter-section')) {
-        const seen = {};
-        for (const node of section.querySelectorAll(ANCHOR_HEADINGS)) {
-            const text = headingText(node);
-            const occurrence = seen[text] = (seen[text] ?? -1) + 1;
+        for (const { node, text, occurrence } of headingOccurrences(section.querySelectorAll(ANCHOR_HEADINGS))) {
             const top = node.getBoundingClientRect().top;
             if (node.closest('dialog') || top + node.offsetHeight <= mainTop) continue;
             return { page: section.dataset.page, text, occurrence, offset: top - mainTop };
@@ -394,7 +410,8 @@ function captureScrollAnchor() {
 
 function applyScrollAnchor(anchor) {
     const section = anchor && document.querySelector(`.chapter-section[data-page="${anchor.page}"]`);
-    const target = section && [...section.querySelectorAll(ANCHOR_HEADINGS)].filter(n => headingText(n) === anchor.text)[anchor.occurrence];
+    const target = section && headingOccurrences(section.querySelectorAll(ANCHOR_HEADINGS))
+        .find(item => item.text === anchor.text && item.occurrence === anchor.occurrence)?.node;
     if (!target) return;
     scrollContentBy(target.getBoundingClientRect().top - viewTop() - anchor.offset);
 }

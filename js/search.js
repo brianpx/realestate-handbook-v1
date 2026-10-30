@@ -1,6 +1,6 @@
 // Sidebar search: indexes the headings and glossary terms of every chapter and lists jump links
 // as the reader types. Loaded after interactive.js; uses pages / fetchChapter / navigateTo /
-// navLabel / announce / el from the other (classic) scripts.
+// navLabel / announce / el / headingOccurrences from the other (classic) scripts.
 
 const SEARCH_SELECTOR = 'h2, h3, h4, dt, .diagram-title';
 const SEARCH_MAX_RESULTS = 12;
@@ -13,13 +13,9 @@ let searchIndexLoading = null;
 function buildSearchIndex() {
     searchIndexLoading ??= Promise.all(pages.map(async pageId => {
         const doc = new DOMParser().parseFromString(await fetchChapter(pageId), 'text/html');
-        const seen = {};
-        return searchable(doc).map(node => {
-            const text = node.textContent.replace(/\s+/g, ' ').trim();
-            // the nth heading with this exact text on the page, so repeated titles jump to the right one
-            const occurrence = seen[text] = (seen[text] ?? -1) + 1;
-            return { pageId, text, occurrence, lower: text.toLowerCase(), isTerm: node.tagName === 'DT' };
-        }).filter(entry => entry.text);
+        return headingOccurrences(searchable(doc)).map(({ node, text, occurrence }) => (
+            { pageId, text, occurrence, lower: text.toLowerCase(), isTerm: node.tagName === 'DT' }
+        )).filter(entry => entry.text);
     })).then(perPage => { searchIndex = perPage.flat(); });
     return searchIndexLoading;
 }
@@ -37,9 +33,8 @@ function searchEntries(query) {
 async function jumpToEntry(entry) {
     await navigateTo(entry.pageId);
     const section = document.querySelector(`.chapter-section[data-page="${entry.pageId}"]`);
-    const matches = searchable(section)
-        .filter(node => node.textContent.replace(/\s+/g, ' ').trim() === entry.text);
-    const target = matches[entry.occurrence];
+    const target = headingOccurrences(searchable(section))
+        .find(item => item.text === entry.text && item.occurrence === entry.occurrence)?.node;
     if (!target) return;
     target.scrollIntoView({ block: 'start' });
     target.tabIndex = -1;

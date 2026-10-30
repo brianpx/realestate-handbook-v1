@@ -13,7 +13,7 @@ function loadState() {
     try {
         parsed = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
     } catch (err) {
-        // storage blocked or corrupt: start fresh
+        if (!(err instanceof DOMException)) throw err;
     }
     memoryState = Object.assign({ read: {}, checks: {}, scorecard: {}, scripts: {}, objections: {}, calc: {} }, parsed);
     return memoryState;
@@ -23,7 +23,7 @@ function saveState() {
     try {
         localStorage.setItem(STATE_KEY, JSON.stringify(loadState()));
     } catch (err) {
-        // keeps working for this visit only
+        if (!(err instanceof DOMException)) throw err;
     }
 }
 
@@ -82,6 +82,7 @@ function readSettings() {
     try {
         return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {};
     } catch (err) {
+        if (!(err instanceof DOMException)) throw err;
         return {};
     }
 }
@@ -92,6 +93,7 @@ function writeSettings(patch) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...readSettings(), ...patch }));
         return true;
     } catch (err) {
+        if (!(err instanceof DOMException)) throw err;
         return false;
     }
 }

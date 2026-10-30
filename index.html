@@ -60,7 +60,9 @@
             var s = JSON.parse(localStorage.getItem('handbookSettings') || '{}') || {};
             if (s.dark !== undefined ? s.dark : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
             if (s.fullWidth === true) document.documentElement.classList.add('wide');
-        } catch (err) { /* storage blocked: stay light */ }
+        } catch (err) {
+            if (!(err instanceof DOMException)) throw err;
+        }
     </script>
     <link rel="stylesheet" href="css/styles.css?v=20261100">
 </head>
