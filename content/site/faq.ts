@@ -65,7 +65,7 @@ export function pricingFaqs(): Faq[] {
     },
     {
       q: 'Can I try it first?',
-      a: 'Yes. The sample lesson is free and needs no sign-up. It includes a real section of Chapter 1 with its working calculator, a script to practice and the weekly planner.',
+      a: 'Yes. The sample lesson is free and needs no sign-up. It is Chapter 1 and Chapter 7 in full, with every tool, checkpoint and quiz working, plus a script to practice and the weekly planner.',
     },
     {
       q: 'Will I lose my progress if I buy later or change devices?',

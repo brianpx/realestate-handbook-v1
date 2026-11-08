@@ -4,8 +4,8 @@ import { Excerpt } from '@/components/site/Excerpt';
 import { purchaseOpen } from '@/lib/offer';
 
 export const metadata: Metadata = {
-  title: 'Free sample lesson',
-  description: 'Read a real lesson from the handbook and use its tools: turn an income goal into a daily conversation target, practice a script and plan your week. No sign-up.',
+  title: 'Free sample: two full chapters',
+  description: 'Read Chapter 1 and Chapter 7 of the handbook in full, with every tool working: turn an income goal into a daily conversation target, score your week against the six new-agent errors, practice a script and plan your week. No sign-up.',
   alternates: { canonical: '/preview' },
 };
 
@@ -14,32 +14,39 @@ export default function PreviewPage() {
     <>
       <section className="pub-pagehead">
         <div className="pub-wrap pub-narrow">
-          <p className="pub-eyebrow">Free sample lesson</p>
-          <h1 className="pub-h1">Set a daily number you can hit.</h1>
+          <p className="pub-eyebrow">Free sample</p>
+          <h1 className="pub-h1">Read two chapters before you buy.</h1>
           <p className="pub-lede">
-            This is part of Chapter 1 as it appears in the handbook, with the working calculator, followed by two more tools from later
-            chapters. Nothing is blurred or locked, and you do not need to sign up.
+            Chapter 1 and Chapter 7 exactly as they appear in the handbook, with their tools, checkpoints and quizzes working, followed by two
+            more tools from later chapters. Nothing is blurred or locked, and you do not need to sign up.
           </p>
         </div>
       </section>
 
       <section className="pub-wrap pub-narrow" style={{ paddingBottom: 24 }}>
         <div className="pub-included-box">
-          <p className="pub-h3" style={{ margin: 0 }}>What is in this preview</p>
+          <p className="pub-h3" style={{ margin: 0 }}>What is in this sample</p>
           <ul>
-            <li>A full section of Chapter 1 on leading and lagging indicators and working backward from an income goal, with its figure and the working income goal calculator.</li>
+            <li>Chapter 1, Mindset and business foundations, in full: leading and lagging indicators, working backward from an income goal with the income goal calculator, and why your CRM comes first.</li>
+            <li>Chapter 7, Common errors and pitfalls of new agents, in full: the six errors, the pitfall cycle explorer, and a self-score that points you at the chapter that fixes your worst habit.</li>
             <li>One script from Chapter 6 with the practice mode.</li>
             <li>The weekly time-block planner from Chapter 8, including calendar export.</li>
           </ul>
           <p className="pub-small" style={{ margin: '10px 0 0' }}>
-            Not in the preview: the other chapters and tools, the guided setup, the checklists and scorecard, and the quizzes. What you type here is
-            saved in this browser only, the same way it is in the handbook.
+            Not in the sample: the other eleven chapters and their tools, the appendices, the guided setup, the checklists and the scorecard.
+            What you type here is saved in this browser only, the same way it is in the handbook, and it is still there if you buy.
           </p>
         </div>
 
-        <h2 className="pub-h2" id="lesson">The lesson</h2>
+        <h2 className="pub-h2" id="chapter-1">Chapter 1</h2>
         <div className="pub-sample" id="goal-calculator">
-          <Excerpt page="ch1" from={'<h2 id="leading-and-lagging-indicators">Leading and lagging indicators</h2>'} to={'<h2 id="your-crm-is-your-headquarters">Your CRM is your headquarters</h2>'} />
+          <Excerpt page="ch1" />
+        </div>
+
+        <h2 className="pub-h2" id="chapter-7" style={{ marginTop: 56 }}>Chapter 7</h2>
+        <p>Chapter 7 sits later in the book, after the system has been built. It is here because it tells you which trap is yours, and which chapter to read first.</p>
+        <div className="pub-sample">
+          <Excerpt page="ch7" />
         </div>
 
         <h2 className="pub-h2" id="script-practice" style={{ marginTop: 56 }}>Practice a script</h2>
@@ -56,8 +63,8 @@ export default function PreviewPage() {
 
         <div className="pub-upsell">
           <p>
-            <strong>That is a small part of one handbook.</strong> The rest covers finding clients, your CRM, nurturing leads, scripts,
-            consultations, keeping clients and a 90-day plan, with a guided setup for your first session.
+            <strong>That is two of thirteen chapters.</strong> The rest covers finding clients, your CRM, nurturing leads, the full script library,
+            consultations, keeping clients and the 90-day plan, with a guided setup for your first session.
           </p>
           <div className="pub-actions" style={{ margin: 0 }}>
             <Link className="pub-btn pub-btn-primary" href="/pricing">{purchaseOpen() ? 'See pricing' : 'Pricing and availability'}</Link>

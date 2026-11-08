@@ -119,7 +119,7 @@ export default function PricingPage() {
       <section className="pub-section" aria-labelledby="tryTitle">
         <div className="pub-wrap pub-narrow">
           <h2 id="tryTitle" className="pub-h2">Judge it before you decide.</h2>
-          <p>The sample lesson is a real section of Chapter 1 with its working income goal calculator, a Chapter 6 script you can practice, and the Chapter 8 weekly planner. It runs exactly as it does inside the handbook.</p>
+          <p>The sample is Chapter 1 and Chapter 7 in full, with the income goal calculator, the pitfall cycle explorer, the six-errors self-score, the checkpoints and the quizzes working, plus a Chapter 6 script you can practice and the Chapter 8 weekly planner. It runs exactly as it does inside the handbook.</p>
           <div className="pub-actions">
             <Link className="pub-btn pub-btn-primary" href="/preview">Try a sample lesson</Link>
             <Link className="pub-btn pub-btn-secondary" href="/#fit">Is it a good fit?</Link>

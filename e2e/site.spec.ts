@@ -43,6 +43,17 @@ test.describe('public pages', () => {
     await expect(page.getByRole('link', { name: 'Pricing and availability' }).last()).toHaveAttribute('href', '/pricing');
   });
 
+  test('the sample carries Chapters 1 and 7 in full, with their tools, checkpoints and quizzes', async ({ page }) => {
+    await page.goto('/preview');
+    await expect(page.getByRole('heading', { name: '1. Mindset and business foundations' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '7. Common errors and pitfalls of new agents' })).toBeVisible();
+    await expect(page.locator('.box.checkpoint')).toHaveCount(2);
+    await expect(page.locator('.box.quiz')).toHaveCount(2);
+    await expect(page.locator('[data-widget="pitfall-cycle"]')).toBeVisible();
+    await expect(page.locator('[data-widget="error-self-score"]')).toBeVisible();
+    await expect(page.locator('[data-widget="knowledge-check"]')).toHaveCount(2);
+  });
+
   test('the header menu opens by keyboard on a phone and closes with Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/');

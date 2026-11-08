@@ -215,6 +215,8 @@
 .pub-sample { padding: 28px 32px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface)}
 .pub-sample > :first-child { margin-top: 0}
 .pub-sample h3 { margin-top: 26px}
+/* a whole chapter's title, demoted from h1 because the page has its own; the look of .chapter-section h1 in globals.css */
+.pub-sample .pub-chapter-title { font-size: 2rem; color: var(--primary-color); margin: 0.83em 0 20px; line-height: 1.25; border-bottom: 2px solid var(--border-color); padding-bottom: 12px}
 .pub-included-box { padding: 20px 24px; border-radius: 12px; background: var(--pub-tint); border: 1px solid var(--color-line); margin-bottom: 28px}
 .pub-included-box ul { margin: 8px 0 0; padding-left: 20px}
 .pub-included-box li { margin-bottom: 4px; font-size: 0.98rem}

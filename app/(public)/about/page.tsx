@@ -48,7 +48,7 @@ export default function AboutPage() {
         ) : (
           <p>
             The author’s name and background have not been published here yet, and nothing is claimed in their place. Until they are, judge the handbook on
-            the work itself: <Link href="/preview">the free sample lesson</Link> is a full section with its working calculator.
+            the work itself: <Link href="/preview">the free sample</Link> is two full chapters with their tools working.
           </p>
         )}
 
