@@ -99,6 +99,13 @@ html.dark {
   }
 }
 
+/* Viewport breakpoints, shared with app/(public)/site.css. Range syntax, so no width (fractional ones at zoom) falls
+   between the two sides of a breakpoint. Container queries for the chapter column are separate (.chapter-slot).
+     1000px  wide:   the public hero and four-column grids collapse
+      900px  shell:  the handbook's phone layout (sticky sidebar, dropdown menu); the public nav becomes a menu button
+      700px  narrow: public sections, grids, the tool index and the sample lose their side room
+      600px  phone:  teaching widgets stack, controls grow to 44px, dialog footers stack
+      420px  small:  the hero's fields and stat tiles become single rows */
 @layer components {
 
         * {
@@ -167,8 +174,7 @@ html.dark {
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
             font-size: 1.1rem;
             color: var(--color-muted);
-            margin: 4px 0 8px;
-            white-space: nowrap}
+            margin: 4px 0 8px}
 
         .nav-list {
             list-style: none;
@@ -309,7 +315,7 @@ html.dark {
         .procedure > ol > li::before { content: counter(step); position: absolute; left: 12px; top: 10px; width: 24px; height: 24px; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; color: #1d4ed8; background: #dbeafe; border-radius: 999px}
 
         /* Desktop: every chapter is its own page card, with space between pages */
-        @media (min-width: 901px) {
+        @media (width > 900px) {
             .content-container {
                 background: none;
                 padding: 0;
@@ -353,7 +359,12 @@ html.dark {
             font-weight: 700;
             margin-bottom: 8px}
 
-        h2 {
+        /* Running-text element rules, scoped to the two wrappers that carry prose: .chapter-body (the handbook's article
+           and the public sample's Excerpt) and .content-container (the product's own pages: handbook home, guided
+           setup, coach and account). The sidebar, the email gate and the public site style their own elements.
+           :where() keeps these at element specificity, so a single-class rule (.calc-note, .hb-h2, .footnote, …) still
+           wins over them exactly as it did over the bare rules. */
+        :where(.chapter-body, .content-container) h2 {
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 20px;
@@ -361,12 +372,12 @@ html.dark {
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 12px}
 
-        h3 {
+        :where(.chapter-body, .content-container) h3 {
             font-size: 1.35rem;
             color: var(--primary-color);
             margin: 32px 0 16px}
 
-        h4 {
+        :where(.chapter-body, .content-container) h4 {
             font-size: 1.1rem;
             color: var(--color-ink);
             margin: 20px 0 10px}
@@ -398,7 +409,7 @@ html.dark {
             padding-bottom: 12px}
         .chapter-body h1.visually-hidden { margin: -1px; border: 0; padding: 0}
 
-        p {
+        :where(.chapter-body, .content-container) p {
             margin-bottom: 16px;
             font-size: 0.98rem;
             color: var(--color-body)}
@@ -408,11 +419,11 @@ html.dark {
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
         textarea, select { background-color: var(--color-surface); color: var(--color-ink); }
 
-        ul, ol {
+        :where(.chapter-body, .content-container) :is(ul, ol) {
             margin-bottom: 20px;
             padding-left: 24px}
 
-        li {
+        :where(.chapter-body, .content-container) li {
             margin-bottom: 8px}
 
         /* Callout Boxes */
@@ -506,22 +517,22 @@ html.dark {
             overflow-x: auto;
             margin: 24px 0}
 
-        table {
+        :where(.chapter-body, .content-container) table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.9rem}
 
-        th, td {
+        :where(.chapter-body, .content-container) :is(th, td) {
             padding: 12px 14px;
             border: 1px solid var(--border-color)}
 
-        th {
+        :where(.chapter-body, .content-container) th {
             background-color: var(--color-tint);
             color: var(--primary-color);
             font-weight: 700}
 
-        caption {
+        :where(.chapter-body, .content-container) caption {
             caption-side: bottom;
             text-align: left;
             font-style: italic;
@@ -531,7 +542,7 @@ html.dark {
             padding: 12px 2px 0;
             background: transparent}
 
-        tr:nth-child(even) { background-color: var(--color-canvas)}
+        :where(.chapter-body, .content-container) tr:nth-child(even) { background-color: var(--color-canvas)}
 
         /* Diagrams */
         .diagram-box {
@@ -715,7 +726,7 @@ html.dark {
         .note-dialog-foot p { margin: 0; font-size: 0.82rem; color: var(--color-muted)}
         .note-dialog-done { flex-shrink: 0; padding: 8px 16px; font: inherit; font-size: 0.875rem; font-weight: 600; color:var(--color-on-brand); background:var(--color-brand); border: 0; border-radius: 8px; cursor: pointer}
         .note-dialog-done:hover { background:var(--color-brand-hover)}
-        @media (max-width: 480px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
+        @media (width <= 600px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
 
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px}
@@ -744,7 +755,7 @@ html.dark {
         .settings-sub { margin-top: 8px}
         .settings-sub[hidden] { display: none}
         .settings-reset { display: block; width: 100%; text-align: center}
-        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; white-space: nowrap; text-align: center; color: var(--color-muted)}
+        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-muted)}
         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-muted)}
         .settings-transfer-title { font-size: 0.9rem; font-weight: 600}
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
@@ -885,8 +896,11 @@ html.dark {
         .touch-btn:hover { background: var(--color-accent-tint)}
         .touch-btn.in-zone { background: var(--color-accent-tint); border: 2px solid var(--color-link)}
         .touch-btn.value { border-bottom: 4px solid var(--color-warning)}
+        /* A touch outside the chosen filter fades by surface, border and text color, not opacity: at 0.35 its label fell
+           to about 2.3:1 (CR-M5). Muted on tint is 6.8:1 in light mode and 5.7:1 in dark. The selected touch keeps its fill below. */
+        .touch-btn.dim { color: var(--color-muted); background: var(--color-tint); border-color: var(--color-line)}
+        .touch-btn.dim .touch-day { opacity: 1}
         .touch-btn[aria-pressed="true"] { background: var(--color-brand); border-color: var(--color-brand); color: var(--color-on-brand)}
-        .touch-btn.dim { opacity: 0.35}
         .touch-num { font-size: 1.1rem; font-weight: 700}
         .touch-ch { font-size: 0.75rem}
         .touch-day { font-size: 0.75rem; opacity: 0.8}
@@ -1025,7 +1039,7 @@ html.dark {
         .term-pop strong { display: block; margin-bottom: 2px}
         .term-more { display: block; margin-top: 6px; font-size: 0.75rem; opacity: 0.75}
 
-        @media (max-width: 600px) {
+        @media (width <= 600px) {
             .interactive-head { font-size: 0.85rem}
             .calc-stat { flex-basis: 100%}
             .score-bar-row { grid-template-columns: 1fr 24px}
@@ -1041,7 +1055,7 @@ html.dark {
             .nurture-tag { margin: 4px 6px 0 0}
         }
 
-        @media (pointer: coarse), (max-width: 600px) {
+        @media (pointer: coarse), (width <= 600px) {
             .calc-input, .score-input, select.calc-input { min-height: 44px}
             .btn-mini, .btn-nav { min-height: 44px}
             .speed-slider, .alloc-row input[type="range"], .planner-controls input[type="range"] { height: 44px}
@@ -1052,7 +1066,7 @@ html.dark {
         .menu-close { display: none}
         .menu-backdrop { display: none}
 
-        @media (max-width: 900px) {
+        @media (width <= 900px) {
             /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
                toolbar. The sidebar sticks to the top with its header just off-screen, so scrolling slides the
                header away and leaves the search row pinned. */
@@ -1060,8 +1074,10 @@ html.dark {
             #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100}
             #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible}
             #main-content { min-height: 0; overflow: visible}
-            /* anchored jumps (search, tool links) must land below the sticky search row */
-            h1, h2, h3, h4, [data-widget] { scroll-margin-top: 72px}
+            /* The document is the scroll root here, so anything brought into view (anchored jumps, search hits,
+               focused inputs and buttons) must land below the sticky search row. The public site has the same rule
+               for its own header (site.css). */
+            html:has(.shell-handbook) { scroll-padding-top: 72px}
             .chapter-section + .chapter-section {
                 margin-top: 40px;
                 padding-top: 40px;
@@ -1206,7 +1222,7 @@ html.dark {
             .setup-no-print { display: none !important}
             .setup-plan { border: 1px solid #000}
         }
-        @media (max-width: 600px) {
+        @media (width <= 600px) {
             .hb-title { font-size: 1.7rem}
             .setup-step span:not(.setup-step-num) { font-size: 0.85rem}
         }
