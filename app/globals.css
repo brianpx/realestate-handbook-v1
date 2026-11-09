@@ -401,7 +401,7 @@ html.dark {
 
         /* Running-text element rules, scoped to the two wrappers that carry prose: .chapter-body (the handbook's article
            and the public sample's Excerpt) and .content-container (the product's own pages: handbook home, guided
-           setup, coach and account). The sidebar, the email gate and the public site style their own elements.
+           setup, coach and account). The sidebar and the public site style their own elements.
            :where() keeps these at element specificity, so a single-class rule (.calc-note, .hb-h2, .footnote, …) still
            wins over them exactly as it did over the bare rules. */
         :where(.chapter-body, .content-container) h2 {
@@ -670,44 +670,6 @@ html.dark {
             border: 1.5px solid var(--color-line-strong)}
         .btn-nav.btn-secondary:hover { background: var(--color-accent-tint); color: var(--color-link)}
 
-        /* Email gate */
-        .gate {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            background: rgba(2, 6, 23, 0.92)}
-        .gate[hidden] { display: none}
-        dialog.gate {
-            border: 0;
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            max-width: none;
-            max-height: none;
-            color: inherit}
-        dialog.gate[open] { display: flex}
-        dialog.gate::backdrop { background: transparent}
-        .gate-card {
-            width: 100%;
-            max-width: 420px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 32px 24px;
-            text-align: center}
-        .gate-card h2 { font-size: 1.25rem; line-height: 1.3; margin-bottom: 8px}
-        .gate-card p { color: var(--color-ink-muted); margin-bottom: 20px}
-        .gate-field { margin-bottom: 14px; text-align: left}
-        .gate-submit, .gate-skip { width: 100%}
-        .gate-trap { position: absolute; left: -9999px}
-        .gate-details { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: var(--color-ink-muted); text-align: left}
-        .gate-details summary { cursor: pointer; min-height: 24px; font-weight: 600; color: var(--color-link)}
-        .gate-card .gate-details p { margin: 6px 0 0; font-size: inherit; text-align: left}
-
         .part-intro { color: var(--color-ink-muted); margin-bottom: 8px}
         .glossary dt { font-weight: 700; margin-top: 14px}
         .glossary dd { margin-left: 0; color: var(--color-body)}
@@ -847,7 +809,7 @@ html.dark {
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
         @media print {
-            #sidebar, .scorecard-tools, .menu-toggle, .gate, .chapter-outline { display: none !important}
+            #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline { display: none !important}
             .chapter-frame { display: block !important}
             .chapter-frame > .content-container { max-width: none; width: auto; margin: 0}
             .shell-handbook { display: block; height: auto; overflow: visible}
@@ -1213,6 +1175,17 @@ html.dark {
         .hb-part ul { list-style: none; padding: 0; margin: 0}
         .hb-part li { margin-bottom: 4px}
         .hb-read { color: var(--color-brand-soft); font-weight: 700}
+        /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts); the pages show the upsell card */
+        .nav-lock, .hb-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
+        .nav-item .nav-lock { float: right; margin-top: 3px}
+        .nav-item.locked { color: var(--color-ink-muted)}
+        .hb-upsell { max-width: 760px}
+        .hb-upsell-lede { font-size: 1.1rem; line-height: 1.55; color: var(--color-ink-muted)}
+        .hb-upsell-status { margin: 24px 0 8px; padding: 20px 24px; border: 1px solid var(--color-line-strong); border-left: 5px solid var(--accent-color); border-radius: 10px; background: var(--color-accent-tint)}
+        .hb-upsell-status p { margin-bottom: 10px}
+        .hb-upsell-free ul { padding-left: 20px}
+        .hb-upsell-free li { margin-bottom: 6px}
+        .box.tool-locked { border-style: dashed}
 
         .setup-steps ol { list-style: none; padding: 0; margin: 24px 0 20px; display: flex; flex-wrap: wrap; gap: 8px}
         .setup-steps li { margin: 0}

@@ -22,7 +22,6 @@ test('the coach pages are 404s while the chapters still serve', async ({ request
 });
 
 test('the chapter check says nothing is saved, and saves nothing', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('handbookAccess', '1')); // the config's storage state is for the coach-on origin
   await page.goto(at('/handbook/ch4'));
   const quiz = page.locator('aside.box.quiz');
   await expect(quiz).toContainText('Say how sure you are, then answer. Nothing here is saved.');

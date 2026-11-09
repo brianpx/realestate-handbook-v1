@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ComponentType } from 'react';
 import { Checkpoints } from './Checkpoints';
 import { Checklists } from './Checklists';
@@ -72,4 +73,21 @@ export function Widget({ id, name, html }: { id: string; name: string; html?: st
   if (!Component) return null;
   const tool = <Component page={id.split(':')[0]!} id={id} html={html} />;
   return ALWAYS_BUILT.has(name) ? tool : <ToolGate fallbackHtml={gatedFallback(name, html)}>{tool}</ToolGate>;
+}
+
+// A tool outside the reader's plan (Basic on a member page, see PRO_ONLY_WIDGETS): the page's original markup where
+// the tool replaced some, and one line saying which plan builds it. Decided on the server, so the tool's code and
+// data never reach the browser.
+export function LockedWidget({ name, html }: { name: string; html?: string }) {
+  if (!WIDGETS[name]) return null;
+  const fallback = gatedFallback(name, html);
+  return (
+    <>
+      {fallback && <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: fallback }} />}
+      <aside className="box tool-locked" data-locked-tool={name}>
+        <div className="box-title">Interactive tool: Pro</div>
+        <p>This tool is built for Pro members. Your plan includes every chapter and the five essential tools. <Link href="/pricing">See plans</Link>.</p>
+      </aside>
+    </>
+  );
 }

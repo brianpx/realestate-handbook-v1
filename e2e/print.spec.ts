@@ -5,7 +5,7 @@ import { expect, test } from './fixtures';
 test.describe('printing', () => {
   test.beforeEach(async ({ page }) => { await page.emulateMedia({ media: 'print' }); });
 
-  test('hides the sidebar, menu button, gate and scorecard tools, and keeps the chapter', async ({ page }) => {
+  test('hides the sidebar, menu button and scorecard tools, and keeps the chapter', async ({ page }) => {
     await page.goto('/handbook/app-a');
     await expect(page.locator('#sidebar')).toBeHidden();
     await expect(page.locator('.menu-toggle')).toBeHidden();
