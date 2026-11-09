@@ -9,7 +9,7 @@ let file: string;
 beforeEach(async () => { dir = await mkdtemp(path.join(tmpdir(), 'leads-')); file = path.join(dir, 'nested', 'leads.json'); });
 afterEach(() => rm(dir, { recursive: true, force: true }));
 
-const lead = (email: string) => ({ email, source: 'gate', consentVersion: 'v1', consentText: 'text', at: new Date('2026-11-02T12:00:00Z') });
+const lead = (email: string) => ({ email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${email}`, at: new Date('2026-11-02T12:00:00Z') });
 
 describe('FileLeadStore', () => {
   it('creates its folder, stores a lead once and keeps the first record for a repeat', async () => {
@@ -34,6 +34,15 @@ describe('FileLeadStore', () => {
     const { id } = await store.insert(lead('a@b.co'));
     await store.setEmailStatus(id, 'failed');
     expect(JSON.parse(await readFile(file, 'utf8')).leads[0].emailStatus).toBe('failed');
+  });
+  it('confirms the lead that holds the token, keeps the first time on a second click, and knows no other token', async () => {
+    const store = new FileLeadStore(file);
+    await store.insert(lead('a@b.co'));
+    const first = new Date('2026-11-02T13:00:00Z');
+    expect(await store.confirm('h-a@b.co', first)).toBe(true);
+    expect(await store.confirm('h-a@b.co', new Date('2026-11-02T14:00:00Z'))).toBe(true);
+    expect(await store.confirm('h-nobody', first)).toBe(false);
+    expect((await store.list())[0]!.confirmedAt).toEqual(first);
   });
   it('keeps concurrent writes from losing any', async () => {
     const store = new FileLeadStore(file);
@@ -65,9 +74,10 @@ describe('FileLeadStore', () => {
     await store.setEmailStatus(newer, 'sent');
     const rows = await store.list();
     expect(rows.map(r => r.id)).toEqual([newer, older]);
-    expect(rows[0]).toEqual({ id: newer, email: 'b@b.co', source: 'gate', createdAt: new Date('2026-11-03T08:00:00Z'), consentVersion: 'v1', emailStatus: 'sent' });
+    expect(rows[0]).toEqual({ id: newer, email: 'b@b.co', source: 'sample', createdAt: new Date('2026-11-03T08:00:00Z'), consentVersion: 'v1', emailStatus: 'sent', confirmedAt: null });
     expect(rows[1]!.emailStatus).toBeNull();
     expect(rows[1]).not.toHaveProperty('consentText');
+    expect(rows[1]).not.toHaveProperty('confirmTokenHash');
   });
   it('lists nothing when there is no file yet', async () => {
     expect(await new FileLeadStore(file).list()).toEqual([]);

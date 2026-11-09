@@ -14,17 +14,17 @@ const post = (request: APIRequestContext, data: unknown, headers: Record<string,
 
 test('a valid address is stored once, lower-cased, with the consent text of the version named', async ({ request }) => {
   const email = fresh();
-  expect((await post(request, { email: email.toUpperCase(), consentVersion: 'v1' })).status()).toBe(200);
+  expect((await post(request, { email: email.toUpperCase(), consentVersion: 'v1', source: 'sample' })).status()).toBe(200);
   const saved = (await leads()).filter(l => l.email === email);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ consentVersion: 'v1' });
+  expect(saved[0]).toMatchObject({ consentVersion: 'v1', source: 'sample' });
   expect(saved[0]!.consentText).toContain('This form is not a key to the book.');
 });
 
 test('a repeat address looks the same to the sender and adds no second record', async ({ request }) => {
   const email = fresh();
-  const first = await post(request, { email, consentVersion: 'v1' });
-  const second = await post(request, { email, consentVersion: 'v1' });
+  const first = await post(request, { email, consentVersion: 'v1', source: 'sample' });
+  const second = await post(request, { email, consentVersion: 'v1', source: 'sample' });
   expect(second.status()).toBe(first.status());
   expect(await second.text()).toBe(await first.text());
   expect((await leads()).filter(l => l.email === email)).toHaveLength(1);
@@ -32,26 +32,26 @@ test('a repeat address looks the same to the sender and adds no second record', 
 
 test('the hidden field marks a bot: it sees success but nothing is stored', async ({ request }) => {
   const email = fresh();
-  expect((await post(request, { email, consentVersion: 'v1', _gotcha: 'http://spam.example' })).status()).toBe(200);
+  expect((await post(request, { email, consentVersion: 'v1', source: 'sample', _gotcha: 'http://spam.example' })).status()).toBe(200);
   expect((await leads().catch(() => [])).filter(l => l.email === email)).toHaveLength(0);
 });
 
 test('a malformed address is refused by name', async ({ request }) => {
-  const res = await post(request, { email: 'not an email', consentVersion: 'v1' });
+  const res = await post(request, { email: 'not an email', consentVersion: 'v1', source: 'sample' });
   expect(res.status()).toBe(400);
   expect(await res.json()).toMatchObject({ error: 'invalid_email' });
 });
 
 test('too many tries from one address are refused with a retry hint', async ({ request }) => {
   const same = { 'x-forwarded-for': '198.51.100.251' };
-  for (let i = 0; i < 6; i++) await post(request, { email: 'x', consentVersion: 'v1' }, same);
-  const limited = await post(request, { email: fresh(), consentVersion: 'v1' }, same);
+  for (let i = 0; i < 6; i++) await post(request, { email: 'x', consentVersion: 'v1', source: 'sample' }, same);
+  const limited = await post(request, { email: fresh(), consentVersion: 'v1', source: 'sample' }, same);
   expect(limited.status()).toBe(429);
   expect(limited.headers()['retry-after']).toMatch(/^\d+$/);
 });
 
 test('the route refuses another site, bad bodies and the wrong method', async ({ request }) => {
-  expect((await post(request, { email: 'a@b.co', consentVersion: 'v1' }, { Origin: 'https://evil.example' })).status()).toBe(403);
+  expect((await post(request, { email: 'a@b.co', consentVersion: 'v1', source: 'sample' }, { Origin: 'https://evil.example' })).status()).toBe(403);
   expect((await post(request, '{nope', { 'Content-Type': 'application/json' })).status()).toBe(400);
   expect((await request.get('/api/lead')).status()).toBe(405);
 });

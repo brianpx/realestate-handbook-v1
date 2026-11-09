@@ -19,7 +19,7 @@ export default async function AdminOverviewPage() {
     <AdminPage title="Overview" description="How the email form is doing.">
       <StatCards
         stats={[
-          { label: 'Total leads', value: stats.total, caption: 'Addresses on file' },
+          { label: 'Total leads', value: stats.total, caption: `${stats.confirmed} confirmed by link` },
           { label: 'Last 7 days', value: stats.last7Days, caption: 'New in the past week' },
           { label: 'Last 30 days', value: stats.last30Days, caption: 'New in the past month' },
           { label: 'Email failures', value: stats.emailFailed, caption: `${stats.byEmailStatus.pending} still pending, ${stats.byEmailStatus.skipped} skipped` },

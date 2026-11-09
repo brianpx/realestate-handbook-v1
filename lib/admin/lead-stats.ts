@@ -6,6 +6,8 @@ export type LeadStats = {
   last7Days: number;
   last30Days: number;
   emailFailed: number;
+  /** Addresses that opened their confirmation link: the ones the list may write to. */
+  confirmed: number;
   /** Largest first; `share` is a fraction of the total (0 when there are no leads). */
   bySource: SourceShare[];
   /** A lead whose follow-up has not been tried yet (null in the store) counts as pending. */
@@ -31,6 +33,7 @@ export function leadStats(rows: LeadRow[], now: Date): LeadStats {
     last7Days: rows.filter(r => r.createdAt.getTime() >= since(7)).length,
     last30Days: rows.filter(r => r.createdAt.getTime() >= since(30)).length,
     emailFailed: byEmailStatus.failed,
+    confirmed: rows.filter(r => r.confirmedAt !== null).length,
     bySource: [...bySource]
       .map(([source, count]) => ({ source, count, share: total ? count / total : 0 }))
       .sort((a, b) => b.count - a.count || a.source.localeCompare(b.source)),

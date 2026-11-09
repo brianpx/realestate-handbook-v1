@@ -14,7 +14,7 @@ run('NeonLeadStore against a real database', () => {
   const tag = randomUUID().slice(0, 8);
   const email = `it-${tag}@integration.test`;
   const ip = `it-${tag}`;
-  const lead = { email, source: 'gate', consentVersion: 'v1', consentText: 'text', at: new Date() };
+  const lead = { email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${tag}`, at: new Date() };
 
   afterAll(async () => {
     await sql`delete from leads where email = ${email}`;
@@ -27,7 +27,7 @@ run('NeonLeadStore against a real database', () => {
     expect(first.created).toBe(true);
     expect(again).toEqual({ created: false, id: first.id });
     const rows = await sql`select email, source, consent_version, email_status from leads where email = ${email}`;
-    expect(rows).toEqual([{ email, source: 'gate', consent_version: 'v1', email_status: null }]);
+    expect(rows).toEqual([{ email, source: 'sample', consent_version: 'v1', email_status: null }]);
   });
 
   it('records the email outcome, and the table refuses a value it does not know', async () => {

@@ -21,7 +21,7 @@ async function setup() {
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
-  await leads.insert({ email: EMAIL, source: 'hero', consentVersion: 'v1', consentText: 't', at: NOW });
+  await leads.insert({ email: EMAIL, source: 'signup', consentVersion: 'v1', consentText: 't', confirmTokenHash: 'c'.repeat(64), at: NOW });
   await auth.createToken({ tokenHash: 'h'.repeat(64), email: EMAIL, nextPath: null, termsVersion: 'v1', source: 'hero', expiresAt: NOW, createdIpHash: null, createdAt: NOW });
   const req = (body = '', extra: { origin?: string | null; sessionId?: string; url?: string } = {}) => ({
     url: extra.url ?? `${ORIGIN}/api/account/x`,

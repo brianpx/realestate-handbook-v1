@@ -27,8 +27,8 @@ import { pageItems } from '@/lib/admin/pagination';
 import type { LeadRow } from '@/lib/leads/store';
 import { cn } from '@/lib/utils';
 
-/** A LeadRow as it crosses from the server: the time as an ISO string, which also sorts correctly as text. */
-export type SerializedLead = Omit<LeadRow, 'createdAt'> & { createdAt: string };
+/** A LeadRow as it crosses from the server: the times as ISO strings, which also sort correctly as text. */
+export type SerializedLead = Omit<LeadRow, 'createdAt' | 'confirmedAt'> & { createdAt: string; confirmedAt: string | null };
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 const STATUS_LABEL: Record<NonNullable<LeadRow['emailStatus']> | 'pending', string> = { sent: 'sent', failed: 'failed', skipped: 'skipped', pending: 'pending' };
@@ -69,6 +69,13 @@ const columns: ColumnDef<SerializedLead>[] = [
       return <Badge variant={status === 'failed' ? 'destructive' : status === 'sent' ? 'secondary' : 'outline'}>{STATUS_LABEL[status]}</Badge>;
     },
   },
+  {
+    id: 'confirmed',
+    // a string, so the sort puts the unconfirmed together instead of comparing null to a date
+    accessorFn: lead => lead.confirmedAt ?? '',
+    header: sortHeader('Confirmed'),
+    cell: ({ row }) => (row.original.confirmedAt ? <span className="tabular-nums">{formatWhen(row.original.confirmedAt)}</span> : <Badge variant="outline">not yet</Badge>),
+  },
   { accessorKey: 'consentVersion', header: sortHeader('Consent version'), cell: ({ row }) => <span className="text-muted-foreground">{row.original.consentVersion}</span> },
 ];
 
@@ -77,8 +84,8 @@ const ariaSort = (sorted: false | 'asc' | 'desc') => (sorted === 'asc' ? 'ascend
 // Built in the browser from the rows the admin is looking at, so a search narrows the file too.
 function downloadCsv(rows: SerializedLead[]) {
   const csv = toCsv([
-    ['email', 'source', 'signed_up', 'email_status', 'consent_version'],
-    ...rows.map(r => [r.email, r.source, r.createdAt, statusOf(r), r.consentVersion]),
+    ['email', 'source', 'signed_up', 'email_status', 'confirmed', 'consent_version'],
+    ...rows.map(r => [r.email, r.source, r.createdAt, statusOf(r), r.confirmedAt ?? '', r.consentVersion]),
   ]);
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
