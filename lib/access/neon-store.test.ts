@@ -130,10 +130,11 @@ describe('NeonAccessStore', () => {
     const hold = { ...STUB, action: 'membership.suspend' as const, reason: 'Hold' };
     expect(await store.suspend('u', { at: NOW, by: 'admin', reason: 'Hold' }, hold)).toMatchObject({ status: 'suspended', suspendedAt: NOW, suspendReason: 'Hold' });
     expect(await store.suspend('u', { at: NOW, by: 'admin', reason: 'Hold' }, hold)).toBeNull();
-    expect(calls[0]!.text).toContain("on conflict (user_id) do update set status = 'suspended'");
-    expect(calls[0]!.text).toContain('where memberships.suspended_at is null returning');
+    expect(calls[0]!.text).toContain('where not exists (select 1 from before) returning');
+    expect(calls[0]!.text).toContain("update memberships m set status = 'suspended', suspended_at = ?, suspended_by = ?, suspend_reason = ?, updated_at = ? from before where m.user_id = before.user_id and before.suspended_at is null");
+    expect(calls[0]!.text).toContain('after as ( select * from inserted union all select * from updated )');
     expect(calls[0]!.text).toContain('(select to_jsonb(before) from before), to_jsonb(after)');
-    expect(calls[0]!.values).toEqual(['u', 'u', ISO, 'admin', 'Hold', ISO, ISO, 'admin', 'admin', 'membership.suspend', 'Hold', null]);
+    expect(calls[0]!.values).toEqual(['u', 'u', ISO, 'admin', 'Hold', ISO, ISO, 'admin', 'Hold', ISO, ISO, 'admin', 'admin', 'membership.suspend', 'Hold', null]);
     const lift = { ...STUB, action: 'membership.unsuspend' as const };
     expect(await store.unsuspend('u', NOW, lift)).toMatchObject({ status: 'none', suspendedAt: null });
     expect(await store.unsuspend('u', NOW, lift)).toBeNull();

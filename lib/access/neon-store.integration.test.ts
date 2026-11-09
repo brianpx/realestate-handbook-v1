@@ -141,4 +141,15 @@ run('the access store against a real database', () => {
     expect(listed.users.length).toBeLessThanOrEqual(5);
     expect((await users.findByIds([user.id, actor.id])).map(u => u.id).sort()).toEqual([user.id, actor.id].sort());
   });
+
+  it('suspending a member whose projection row exists logs that row as the before', async () => {
+    const user = await createUser(`it-${tag}-g@integration.test`);
+    const actor = await createUser(`it-${tag}-h@integration.test`);
+    await grantAccess(access, { userId: user.id, kind: 'complimentary', tier: 'pro', grantedBy: actor.id }, ADMIN, NOW);
+    const stub = { at: NOW, actorUserId: actor.id, actorKind: 'admin' as const, action: 'membership.suspend' as const, reason: 'hold', ipHash: null };
+    expect(await access.suspend(user.id, { at: NOW, by: actor.id, reason: 'hold' }, stub)).toMatchObject({ status: 'suspended', tier: 'pro' });
+    const [row] = await access.listAudit('memberships', user.id);
+    expect(row?.before).toMatchObject({ status: 'active', tier: 'pro', suspended_at: null });
+    expect(row?.after).toMatchObject({ status: 'suspended', suspend_reason: 'hold' });
+  });
 });

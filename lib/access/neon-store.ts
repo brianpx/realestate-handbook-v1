@@ -271,19 +271,24 @@ export class NeonAccessStore implements AccessStore {
 
   async suspend(userId: string, { at, by, reason }: Suspension, a: AuditStub) {
     const atIso = at.toISOString();
-    // a reader with no grants has no projection row yet, so this is an upsert; one already suspended matches the
-    // conflict clause's where and returns nothing
+    // a reader with no grants has no projection row yet, so one is inserted; an existing row is updated only while
+    // not suspended. Two branches rather than an upsert: `before` must be read by the write itself, or Postgres
+    // evaluates it after the update and the audit row's `before` comes out null.
     const rows = await this.sql`
       with before as (
         select user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
         from memberships where user_id = ${userId} for update
-      ), after as (
+      ), inserted as (
         insert into memberships (user_id, status, suspended_at, suspended_by, suspend_reason, updated_at)
-        values (${userId}, 'suspended', ${atIso}, ${by}, ${reason}, ${atIso})
-        on conflict (user_id) do update set status = 'suspended', suspended_at = excluded.suspended_at, suspended_by = excluded.suspended_by,
-          suspend_reason = excluded.suspend_reason, updated_at = excluded.updated_at
-        where memberships.suspended_at is null
+        select ${userId}, 'suspended', ${atIso}, ${by}, ${reason}, ${atIso}
+        where not exists (select 1 from before)
         returning user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
+      ), updated as (
+        update memberships m set status = 'suspended', suspended_at = ${atIso}, suspended_by = ${by}, suspend_reason = ${reason}, updated_at = ${atIso}
+        from before where m.user_id = before.user_id and before.suspended_at is null
+        returning m.user_id, m.status, m.tier, m.started_at, m.ends_at, m.current_grant_id, m.complimentary, m.suspended_at, m.suspended_by, m.suspend_reason, m.updated_at
+      ), after as (
+        select * from inserted union all select * from updated
       ), logged as (
         insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
         select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'memberships', after.user_id,
