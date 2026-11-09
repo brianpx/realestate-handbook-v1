@@ -46,3 +46,9 @@ export const neighbors = (id: PageId): { prev: PageEntry | null; next: PageEntry
   const i = PAGE_IDS.indexOf(id);
   return { prev: PAGES[i - 1] ?? null, next: PAGES[i + 1] ?? null };
 };
+
+// The pages a signed-in reader opens without a grant (decision OD-01): the title page, the overview and the two
+// chapters the public sample shows in full. Everything else shows the upsell card until a grant exists
+// (lib/access/entitlement.ts). Changing the set is this line plus the /signup copy.
+export const FREE_PAGE_IDS: readonly PageId[] = ['cover', 'pref', 'ch1', 'ch7'];
+export const isFreePage = (id: PageId): boolean => FREE_PAGE_IDS.includes(id);

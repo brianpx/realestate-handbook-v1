@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryAccessStore } from '@/lib/access/memory-store';
 import { MemoryUserStore } from '@/lib/users/store';
 import { REQUEST_LINK_LIMITS, TERMS_VERSION, VERIFY_LIMIT } from './config';
 import { handleRequestLink, handleSignOut, handleVerify, type AuthDeps } from './handler';
@@ -13,10 +14,11 @@ const body = (o: Record<string, unknown>) => JSON.stringify({ termsVersion: TERM
 function setup(over: Partial<AuthDeps> = {}) {
   const users = new MemoryUserStore();
   const auth = new MemoryAuthStore();
+  const access = new MemoryAccessStore({ users, auth });
   const fetchImpl = vi.fn<typeof fetch>(() => ok());
   let now = NOW;
   const deps: AuthDeps = {
-    stores: { users, auth },
+    stores: { users, auth, access },
     mail: { provider: 'sendgrid', apiKey: 'SG.x', from: 'me@example.test', fromName: 'Handbook', replyTo: 'me@example.test', mailingAddress: '' },
     allowedOrigins: [ORIGIN],
     ipSalt: 's',
@@ -34,7 +36,7 @@ function setup(over: Partial<AuthDeps> = {}) {
     return /https?:\/\/\S+/.exec(sent.content[0]!.value)![0];
   };
   const rawToken = (call = 0) => new URL(sentLink(call)).searchParams.get('token')!;
-  return { users, auth, fetchImpl, deps, request, verify, sentLink, rawToken, advance: (ms: number) => { now = new Date(now.getTime() + ms); } };
+  return { users, auth, access, fetchImpl, deps, request, verify, sentLink, rawToken, advance: (ms: number) => { now = new Date(now.getTime() + ms); } };
 }
 
 describe('request-link', () => {
@@ -184,6 +186,12 @@ describe('verify', () => {
     await t.request(body({ email: 'reader@example.com' }));
     await t.verify(t.rawToken(2));
     expect(t.users.users.map(u => [u.email, u.role])).toEqual([['owner@example.com', 'admin'], ['second@example.com', 'reader'], ['reader@example.com', 'reader']]);
+    // the owner reads through a grant like everyone else, and both steps are on the record; the second address got nothing
+    const owner = t.users.users[0]!;
+    expect(t.access.grants).toHaveLength(1);
+    expect(t.access.grants[0]).toMatchObject({ userId: owner.id, kind: 'complimentary', tier: 'pro', grantedBy: owner.id });
+    expect(t.access.audit.map(a => [a.action, a.actorKind, a.subjectId])).toEqual([['bootstrap_admin', 'system', owner.id], ['grant.create', 'system', t.access.grants[0]!.id]]);
+    expect(t.access.audit[0]).toMatchObject({ before: { role: 'reader' }, after: { role: 'admin' } });
   });
   it('is a 503 when the store is missing or fails', async () => {
     expect((await setup({ stores: null }).verify(newSecret())).status).toBe(503);

@@ -22,6 +22,7 @@ export class MemoryAuthStore implements AuthStore {
 
   async createSession(session: NewSession) { this.check(); this.sessions.push({ ...session, lastSeenAt: session.createdAt, revokedAt: null }); }
   async findSession(idHash: string) { this.check(); return this.sessions.find(s => s.idHash === idHash) ?? null; }
+  async listSessions(userId: string) { this.check(); return this.sessions.filter(s => s.userId === userId); }
   async renewSession(idHash: string, now: Date) {
     this.check();
     const session = this.sessions.find(s => s.idHash === idHash);
@@ -31,7 +32,12 @@ export class MemoryAuthStore implements AuthStore {
     return true;
   }
   async revokeSession(idHash: string, now: Date) { this.check(); const s = this.sessions.find(x => x.idHash === idHash); if (s && s.revokedAt === null) s.revokedAt = now; }
-  async revokeAllForUser(userId: string, now: Date) { this.check(); for (const s of this.sessions) if (s.userId === userId && s.revokedAt === null) s.revokedAt = now; }
+  async revokeAllForUser(userId: string, now: Date) {
+    this.check();
+    let n = 0;
+    for (const s of this.sessions) if (s.userId === userId && s.revokedAt === null) { s.revokedAt = now; n++; }
+    return n;
+  }
 
   async recordAndCount(scope: AttemptScope, keyHash: string, at: Date, since: Date) {
     this.check();

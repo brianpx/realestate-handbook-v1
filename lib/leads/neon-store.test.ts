@@ -1,15 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import { fakeSql as fake } from '@/lib/db/fake-sql';
 import { NeonLeadStore, type Sql } from './neon-store';
 
-// A fake of the tagged-template query function: it records each statement and answers from a queue.
-function fake(...answers: Record<string, unknown>[][]) {
-  const calls: { text: string; values: unknown[] }[] = [];
-  const sql: Sql = async (strings, ...values) => {
-    calls.push({ text: strings.join('?').replace(/\s+/g, ' ').trim(), values });
-    return answers.shift() ?? [];
-  };
-  return { sql, calls };
-}
 const lead = { email: 'a@b.co', source: 'gate', consentVersion: 'v1', consentText: 'text', at: new Date('2026-11-02T12:00:00Z') };
 
 describe('NeonLeadStore', () => {
@@ -45,10 +37,10 @@ describe('NeonLeadStore', () => {
     const { sql, calls } = fake([{ n: 4 }]);
     const cleanup = new Error('delete failed');
     cleanup.name = 'CleanupError';
-    const flaky: Sql = async (strings, ...values) => {
+    const flaky: Sql = Object.assign(async (strings: TemplateStringsArray, ...values: unknown[]) => {
       if (strings.join('').includes('delete')) throw cleanup;
       return sql(strings, ...values);
-    };
+    }, { transaction: sql.transaction });
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       const at = new Date('2026-11-02T12:00:00Z');
