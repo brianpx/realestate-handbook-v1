@@ -57,14 +57,16 @@ export class MemoryAccessStore implements AccessStore {
     this.check();
     const user = this.linked?.users.users.find(u => u.id === userId);
     if (!user || user.status === 'deleted') return false;
-    const before = { status: user.status };
+    const before = { status: user.status, role: user.role };
     user.status = 'deleted';
+    user.role = 'reader';
     user.email = `deleted+${userId}@invalid.local`;
+    this.memberships = this.memberships.filter(m => m.userId !== userId);
     if (this.linked) {
       this.linked.auth.sessions = this.linked.auth.sessions.filter(s => s.userId !== userId);
       this.linked.auth.tokens = this.linked.auth.tokens.filter(t => t.email !== email);
     }
-    this.log(audit, { table: 'users', id: userId }, before, { status: 'deleted' });
+    this.log(audit, { table: 'users', id: userId }, before, { status: 'deleted', role: 'reader' });
     return true;
   }
   async appendAudit(entry: AuditEntry) { this.check(); this.audit.push({ ...entry, id: randomUUID() }); }

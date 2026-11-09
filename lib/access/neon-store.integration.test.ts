@@ -22,16 +22,24 @@ run('the access store against a real database', () => {
   const email = `it-${tag}@integration.test`;
   const NOW = new Date();
   const ADMIN = { kind: 'admin' as const, userId: null };
+  // every user this run creates, so the cleanup touches nothing of another run's (an anonymised row no longer carries the tag)
+  const created: string[] = [];
+  const createUser = async (address: string) => {
+    const { user } = await users.upsertVerified({ email: address, termsVersion: 'v1', at: NOW });
+    created.push(user.id);
+    return user;
+  };
 
   afterAll(async () => {
-    await sql`delete from audit_log where subject_id in (select id from users where email like ${`it-${tag}%`} or email like ${`deleted+%`})`;
-    await sql`delete from memberships where user_id in (select id from users where email like ${`it-${tag}%`})`;
-    await sql`delete from access_grants where user_id in (select id from users where email like ${`it-${tag}%`})`;
-    await sql`delete from users where email like ${`it-${tag}%`}`;
+    if (created.length === 0) return;
+    await sql`delete from audit_log where subject_id = any(${created}::uuid[]) or subject_id in (select id from access_grants where user_id = any(${created}::uuid[]))`;
+    await sql`delete from memberships where user_id = any(${created}::uuid[])`;
+    await sql`delete from access_grants where user_id = any(${created}::uuid[])`;
+    await sql`delete from users where id = any(${created}::uuid[])`;
   });
 
   it('writes a grant with its audit row, revokes it exactly once under two concurrent attempts, and projects the membership', async () => {
-    const { user } = await users.upsertVerified({ email, termsVersion: 'v1', at: NOW });
+    const user = await createUser(email);
     const grant = await grantAccess(access, { userId: user.id, kind: 'complimentary', tier: 'pro', grantedBy: user.id, grantNote: 'integration' }, ADMIN, NOW);
     expect(grant.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(await access.listAudit('access_grants', grant.id)).toHaveLength(1);
@@ -47,7 +55,7 @@ run('the access store against a real database', () => {
   });
 
   it('enforces the check constraints the code relies on', async () => {
-    const { user } = await users.upsertVerified({ email: `it-${tag}-c@integration.test`, termsVersion: 'v1', at: NOW });
+    const user = await createUser(`it-${tag}-c@integration.test`);
     const stub = { at: NOW, actorUserId: null, actorKind: 'system' as const, action: 'grant.create' as const, reason: null, ipHash: null };
     // a complimentary grant needs a granter; a paid grant needs a billing record; the tier is basic or pro
     await expect(access.createGrant({ userId: user.id, kind: 'complimentary', tier: 'basic', startsAt: NOW, endsAt: null, billingRecordId: null, grantedBy: null, grantNote: null, createdAt: NOW }, stub)).rejects.toThrow();
@@ -58,7 +66,8 @@ run('the access store against a real database', () => {
 
   it('anonymises in one batch: the row is marked deleted, sessions and tokens go, grants and the audit stay', async () => {
     const victim = `it-${tag}-d@integration.test`;
-    const { user } = await users.upsertVerified({ email: victim, termsVersion: 'v1', at: NOW });
+    const user = await createUser(victim);
+    await users.setRole(user.id, 'admin', NOW);
     await bootstrapOwnerGrant(access, user.id, NOW);
     const raw = newSecret();
     await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
@@ -69,7 +78,8 @@ run('the access store against a real database', () => {
     expect(await access.anonymise({ userId: user.id, email: victim, emailHash: 'h', at: NOW }, stub)).toBe(false);
 
     const after = await users.findById(user.id);
-    expect(after).toMatchObject({ status: 'deleted', email: `deleted+${user.id}@invalid.local` });
+    expect(after).toMatchObject({ status: 'deleted', role: 'reader', email: `deleted+${user.id}@invalid.local` });
+    expect(await access.findMembership(user.id)).toBeNull();
     expect(await auth.findSession(hashSecret(raw))).toBeNull();
     expect(await sql`select 1 from auth_tokens where email = ${victim}`).toHaveLength(0);
     expect(await access.listGrants(user.id)).toHaveLength(1);

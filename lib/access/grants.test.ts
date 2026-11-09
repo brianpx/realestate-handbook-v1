@@ -46,6 +46,8 @@ describe('the input schemas', () => {
     expect(grantInputSchema.safeParse({ userId: USER, kind: 'complimentary', tier: 'basic', grantedBy: ADMIN }).success).toBe(true);
     expect(grantInputSchema.safeParse({ userId: USER, kind: 'purchase', tier: 'basic', grantedBy: ADMIN }).success).toBe(false);
     expect(grantInputSchema.safeParse({ userId: USER, kind: 'purchase', tier: 'basic', billingRecordId: ADMIN }).success).toBe(true);
+    expect(grantInputSchema.safeParse({ userId: USER, kind: 'purchase', tier: 'basic', billingRecordId: ADMIN, grantedBy: ADMIN }).success).toBe(false);
+    expect(grantInputSchema.safeParse({ userId: USER, kind: 'complimentary', tier: 'basic', grantedBy: ADMIN, billingRecordId: ADMIN }).success).toBe(false);
     expect(grantInputSchema.safeParse({ userId: USER, kind: 'promo', tier: 'gold', grantedBy: ADMIN }).success).toBe(false);
     expect(grantInputSchema.safeParse({ userId: 'not-a-uuid', kind: 'promo', tier: 'basic', grantedBy: ADMIN }).success).toBe(false);
     expect(grantInputSchema.safeParse({ userId: USER, kind: 'promo', tier: 'basic', grantedBy: ADMIN, startsAt: LATER, endsAt: NOW }).success).toBe(false);

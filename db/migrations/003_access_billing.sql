@@ -30,7 +30,8 @@ create table if not exists access_grants (
   created_at         timestamptz not null default now(),
   constraint access_grants_paid_have_billing check ((kind in ('purchase', 'subscription')) = (billing_record_id is not null)),
   constraint access_grants_hand_made_have_granter check ((kind in ('complimentary', 'promo')) = (granted_by is not null)),
-  constraint access_grants_revoke_fields check ((revoked_at is null) = (revoked_by is null) and (revoked_at is null) = (revoke_reason is null))
+  -- revoked_by is null when the system or a webhook revokes (a refund); an administrator's revoke names them
+  constraint access_grants_revoke_fields check ((revoked_at is null) = (revoke_reason is null) and (revoked_by is null or revoked_at is not null))
 );
 create index if not exists access_grants_live on access_grants (user_id) where revoked_at is null;
 
@@ -145,8 +146,10 @@ create index if not exists audit_log_actor on audit_log (actor_user_id, at desc)
 
 -- Account deletion (lib/access/neon-store.ts, anonymise): one batch, so the row and its audit entry land together:
 --   insert into audit_log (...) values (...);
---   update users set status = 'deleted', deleted_at = $2, email = 'deleted+' || id || '@invalid.local',
+--   update users set status = 'deleted', role = 'reader', deleted_at = $2, email = 'deleted+' || id || '@invalid.local',
 --     first_name = null, last_name = null, auth_provider_id = null, updated_at = $2 where id = $1 and status <> 'deleted';
+--     (role goes back to reader so a deleted administrator no longer counts for the bootstrap rule)
+--   delete from memberships where user_id = $1;   -- the projection; grants stay for the accounting record
 --   delete from sessions where user_id = $1;
 --   delete from auth_tokens where email = $3;
 --   update billing_customers set email_at_provider = $4 where user_id = $1 and email_at_provider is not null;

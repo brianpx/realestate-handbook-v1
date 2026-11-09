@@ -84,7 +84,8 @@ export function LockedWidget({ name, html }: { name: string; html?: string }) {
   return (
     <>
       {fallback && <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: fallback }} />}
-      <aside className="box tool-locked" data-locked-tool={name}>
+      {/* data-widget so a tool shortcut (DeepLinks) lands here, on the note, instead of reporting the tool missing */}
+      <aside className="box tool-locked" data-locked-tool={name} data-widget={name} tabIndex={-1}>
         <div className="box-title">Interactive tool: Pro</div>
         <p>This tool is built for Pro members. Your plan includes every chapter and the five essential tools. <Link href="/pricing">See plans</Link>.</p>
       </aside>

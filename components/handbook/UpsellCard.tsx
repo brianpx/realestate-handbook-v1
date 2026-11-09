@@ -78,8 +78,12 @@ export function UpsellCard(props: Props) {
         <section className="hb-upsell-free" aria-labelledby="upsellFreeTitle">
           <h2 className="hb-h2" id="upsellFreeTitle">What you can read now</h2>
           <ul>
-            {free.map(id => <li key={id}><Link href={pageHref(id)}>{pageById(id).label}</Link></li>)}
-            <li><Link href={HANDBOOK}>Handbook home</Link></li>
+            {basic
+              ? <li>Every chapter and appendix, from the <Link href={HANDBOOK}>handbook home</Link>, with the five essential tools.</li>
+              : <>
+                  {free.map(id => <li key={id}><Link href={pageHref(id)}>{pageById(id).label}</Link></li>)}
+                  <li><Link href={HANDBOOK}>Handbook home</Link></li>
+                </>}
           </ul>
         </section>
       </article>

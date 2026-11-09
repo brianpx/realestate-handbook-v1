@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { AccessStore, Anonymisation, NewGrant, Revocation } from '@/lib/access/store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from '@/lib/access/types';
@@ -23,6 +23,9 @@ type Shape = {
   audit: Iso<AuditRow>[];
 };
 const EMPTY: Shape = { users: [], tokens: [], sessions: [], attempts: [], grants: [], memberships: [], billing: [], audit: [] };
+const LOCK_RETRY_MS = 10;
+const LOCK_WAIT_MS = 5000;
+const LOCK_STALE_MS = 5000;
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 const date = (s: string | null): Date | null => (s ? new Date(s) : null);
@@ -63,16 +66,40 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
     return { users: list('users'), tokens: list('tokens'), sessions: list('sessions'), attempts: list('attempts'), grants: list('grants'), memberships: list('memberships'), billing: list('billing'), audit: list('audit') };
   }
 
+  // The queue serialises this process's writes; the lock directory serialises them against another process writing
+  // the same file (the e2e suite seeds readers from the test runner while the server handles requests). mkdir is
+  // atomic, so whoever creates the directory holds the lock; a lock older than LOCK_STALE_MS is a crashed holder's.
+  private async locked<T>(fn: () => Promise<T>): Promise<T> {
+    const lock = `${this.file}.lock`;
+    await mkdir(path.dirname(this.file), { recursive: true });
+    for (let waited = 0; ; waited += LOCK_RETRY_MS) {
+      try {
+        await mkdir(lock);
+        break;
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
+        const age = Date.now() - (await stat(lock).then(s => s.mtimeMs, () => Date.now()));
+        if (age > LOCK_STALE_MS) { await rm(lock, { recursive: true, force: true }); continue; }
+        if (waited > LOCK_WAIT_MS) throw new Error(`${lock}: still held after ${LOCK_WAIT_MS}ms`);
+        await new Promise(resolve => setTimeout(resolve, LOCK_RETRY_MS));
+      }
+    }
+    try {
+      return await fn();
+    } finally {
+      await rm(lock, { recursive: true, force: true });
+    }
+  }
+
   private change<T>(fn: (data: Shape) => T): Promise<T> {
-    const run = this.queue.then(async () => {
+    const run = this.queue.then(() => this.locked(async () => {
       const data = await this.read();
       const result = fn(data);
-      await mkdir(path.dirname(this.file), { recursive: true });
       const tmp = `${this.file}.${process.pid}.tmp`;
       await writeFile(tmp, JSON.stringify(data));
       await rename(tmp, this.file);
       return result;
-    });
+    }));
     this.queue = run.catch(() => undefined);
     return run;
   }
@@ -193,12 +220,14 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
     return this.change(d => {
       const user = d.users.find(u => u.id === userId);
       if (!user || user.status === 'deleted') return false;
-      const before = { status: user.status };
+      const before = { status: user.status, role: user.role };
       user.status = 'deleted';
+      user.role = 'reader';
       user.email = `deleted+${userId}@invalid.local`;
+      d.memberships = d.memberships.filter(m => m.userId !== userId);
       d.sessions = d.sessions.filter(s => s.userId !== userId);
       d.tokens = d.tokens.filter(t => t.email !== email);
-      FileAuthStore.log(d, audit, { table: 'users', id: userId }, before, { status: 'deleted' });
+      FileAuthStore.log(d, audit, { table: 'users', id: userId }, before, { status: 'deleted', role: 'reader' });
       return true;
     });
   }

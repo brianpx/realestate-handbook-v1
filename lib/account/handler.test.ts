@@ -74,14 +74,30 @@ describe('delete account', () => {
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/goodbye');
     expect(res.headers?.['Set-Cookie']).toContain('hb_session=;');
-    expect(users.users[0]).toMatchObject({ status: 'deleted', email: `deleted+${user.id}@invalid.local` });
+    expect(users.users[0]).toMatchObject({ status: 'deleted', role: 'reader', email: `deleted+${user.id}@invalid.local` });
     expect(auth.sessions).toHaveLength(0);
     expect(auth.tokens).toHaveLength(0);
     expect(await leads.list()).toHaveLength(0);
     expect(access.grants).toHaveLength(1);
+    expect(access.memberships).toHaveLength(0);
     const anonymised = access.audit.find(a => a.action === 'user.anonymize');
-    expect(anonymised).toMatchObject({ actorKind: 'user', actorUserId: user.id, subjectTable: 'users', subjectId: user.id, before: { status: 'active' }, after: { status: 'deleted' } });
+    expect(anonymised).toMatchObject({ actorKind: 'user', actorUserId: user.id, subjectTable: 'users', subjectId: user.id, before: { status: 'active', role: 'reader' }, after: { status: 'deleted', role: 'reader' } });
     expect(JSON.stringify(access.audit)).not.toContain(EMAIL);
+  });
+  it('a deleted administrator no longer counts as one, so the bootstrap rule can run again', async () => {
+    const { users, deps, user, req } = await setup();
+    await users.setRole(user.id, 'admin');
+    expect(await users.countAdmins()).toBe(1);
+    await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), deps);
+    expect(await users.countAdmins()).toBe(0);
+  });
+  it('sends a reader whose account was deleted a moment ago to sign in rather than to the goodbye page', async () => {
+    const { access, deps, req } = await setup();
+    vi.spyOn(access, 'anonymise').mockResolvedValue(false);
+    const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), deps);
+    expect(res.status).toBe(303);
+    expect(res.headers?.Location).toBe('/signup?next=%2Faccount');
+    expect(res.headers?.['Set-Cookie']).toContain('hb_session=;');
   });
   it('refuses a foreign origin and an oversized body, and sends a signed-out visitor to sign in', async () => {
     const { users, deps, req } = await setup();

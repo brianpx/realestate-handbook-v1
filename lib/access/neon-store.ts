@@ -140,16 +140,19 @@ export class NeonAccessStore implements AccessStore {
 
   async anonymise({ userId, email, emailHash, at }: Anonymisation, a: AuditStub) {
     const atIso = at.toISOString();
-    // the audit entry carries the status change only, never the address; `exists (select 1 from before)` keeps
-    // the deletes from running for an account that was already deleted
+    // the audit entry carries the status and role change only, never the address; `exists (select 1 from before)`
+    // keeps the deletes from running for an account that was already deleted. The role goes back to reader so a
+    // deleted administrator no longer counts for the bootstrap rule; the membership projection goes, the grants stay.
     const rows = await this.sql`
       with before as (
-        select id, status from users where id = ${userId} and status <> 'deleted'
+        select id, status, role from users where id = ${userId} and status <> 'deleted'
       ), changed as (
-        update users set status = 'deleted', deleted_at = ${atIso}, email = 'deleted+' || users.id || '@invalid.local',
+        update users set status = 'deleted', role = 'reader', deleted_at = ${atIso}, email = 'deleted+' || users.id || '@invalid.local',
           first_name = null, last_name = null, auth_provider_id = null, updated_at = ${atIso}
         from before where users.id = before.id
         returning users.id
+      ), membership_gone as (
+        delete from memberships where user_id = ${userId} and exists (select 1 from before)
       ), sessions_gone as (
         delete from sessions where user_id = ${userId} and exists (select 1 from before)
       ), tokens_gone as (
@@ -160,7 +163,7 @@ export class NeonAccessStore implements AccessStore {
       ), logged as (
         insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
         select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'users', before.id,
-          jsonb_build_object('status', before.status), jsonb_build_object('status', 'deleted'), ${a.reason}, ${a.ipHash}
+          jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader'), ${a.reason}, ${a.ipHash}
         from before
       )
       select id from changed`;
@@ -168,9 +171,11 @@ export class NeonAccessStore implements AccessStore {
   }
 
   async appendAudit(e: AuditEntry) {
+    // an absent before or after is SQL null, as in the statements above, not the JSON value null
+    const json = (value: unknown) => (value === null || value === undefined ? null : JSON.stringify(value));
     await this.sql`
       insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
-      values (${e.at.toISOString()}, ${e.actorUserId}, ${e.actorKind}, ${e.action}, ${e.subjectTable}, ${e.subjectId}, ${JSON.stringify(e.before ?? null)}::jsonb, ${JSON.stringify(e.after ?? null)}::jsonb, ${e.reason}, ${e.ipHash})`;
+      values (${e.at.toISOString()}, ${e.actorUserId}, ${e.actorKind}, ${e.action}, ${e.subjectTable}, ${e.subjectId}, ${json(e.before)}::jsonb, ${json(e.after)}::jsonb, ${e.reason}, ${e.ipHash})`;
   }
 
   async listAudit(subjectTable: string, subjectId: string) {

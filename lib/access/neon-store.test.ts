@@ -56,20 +56,22 @@ describe('NeonAccessStore', () => {
     expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBe(false);
     const { text, values } = calls[0]!;
     expect(text).toContain("where id = ? and status <> 'deleted'");
+    expect(text).toContain("set status = 'deleted', role = 'reader'");
     expect(text).toContain("email = 'deleted+' || users.id || '@invalid.local'");
+    expect(text).toContain('delete from memberships where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from sessions where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from auth_tokens where email = ? and exists (select 1 from before)');
     expect(text).toContain('update billing_customers set email_at_provider = ?');
-    expect(text).toContain("jsonb_build_object('status', before.status), jsonb_build_object('status', 'deleted')");
-    expect(values).toEqual(['u', ISO, ISO, 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
+    expect(text).toContain("jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader')");
+    expect(values).toEqual(['u', ISO, ISO, 'u', 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
   });
   it('appends and lists audit rows', async () => {
     const row = { id: 'a', at: ISO, actor_user_id: null, actor_kind: 'system', action: 'bootstrap_admin', subject_table: 'users', subject_id: 'u', before: { role: 'reader' }, after: { role: 'admin' }, reason: null, ip_hash: null };
     const { sql, calls } = fakeSql([], [row]);
     const store = new NeonAccessStore(sql);
-    await store.appendAudit({ at: NOW, actorUserId: null, actorKind: 'system', action: 'bootstrap_admin', subjectTable: 'users', subjectId: 'u', before: { role: 'reader' }, after: { role: 'admin' }, reason: null, ipHash: null });
+    await store.appendAudit({ at: NOW, actorUserId: null, actorKind: 'system', action: 'bootstrap_admin', subjectTable: 'users', subjectId: 'u', before: null, after: { role: 'admin' }, reason: null, ipHash: null });
     expect(calls[0]!.text).toContain('insert into audit_log');
-    expect(calls[0]!.values).toEqual([ISO, null, 'system', 'bootstrap_admin', 'users', 'u', '{"role":"reader"}', '{"role":"admin"}', null, null]);
+    expect(calls[0]!.values).toEqual([ISO, null, 'system', 'bootstrap_admin', 'users', 'u', null, '{"role":"admin"}', null, null]);
     expect(await store.listAudit('users', 'u')).toEqual([rowToAudit(row)]);
     expect(calls[1]!.values).toEqual(['users', 'u']);
   });

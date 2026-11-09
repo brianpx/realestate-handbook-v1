@@ -18,9 +18,12 @@ export const grantInputSchema = z.object({
   grantedBy: uuid.nullable().optional(),
   grantNote: z.string().trim().max(500).nullable().optional(),
 }).superRefine((g, ctx) => {
+  // the same exclusivity as the two check constraints in migration 003
   const paid = g.kind === 'purchase' || g.kind === 'subscription';
   if (paid && !g.billingRecordId) ctx.addIssue({ code: 'custom', path: ['billingRecordId'], message: 'a paid grant names its billing record' });
+  if (paid && g.grantedBy) ctx.addIssue({ code: 'custom', path: ['grantedBy'], message: 'a paid grant is made by the billing record, not a person' });
   if (!paid && !g.grantedBy) ctx.addIssue({ code: 'custom', path: ['grantedBy'], message: 'a hand-made grant names who made it' });
+  if (!paid && g.billingRecordId) ctx.addIssue({ code: 'custom', path: ['billingRecordId'], message: 'a hand-made grant has no billing record' });
   if (g.endsAt && g.startsAt && g.endsAt <= g.startsAt) ctx.addIssue({ code: 'custom', path: ['endsAt'], message: 'ends before it starts' });
 });
 export type GrantInput = z.infer<typeof grantInputSchema>;

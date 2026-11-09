@@ -15,8 +15,9 @@ import { ReadTracker } from './ReadTracker';
 // The page is already open to this reader (the route checked); the entitlement decides which tools are built.
 export async function ChapterView({ id, entitlement }: { id: PageId; entitlement: Entitlement }) {
   const html = await readPageHtml(id);
-  // The first use of each glossary term on the page gets a popover. Checkpoint boxes are tool markup and are skipped.
-  const defs = NO_GLOSSARY_PAGES.includes(id) ? null : await glossaryDefs();
+  // The first use of each glossary term on the page gets a popover, for members: the definitions are Appendix D, a
+  // member page, and the pricing table lists the pop-ups with the paid plans. Checkpoint boxes are tool markup and are skipped.
+  const defs = NO_GLOSSARY_PAGES.includes(id) || entitlement.level !== 'member' ? null : await glossaryDefs();
   const used = new Set<string>();
   const gloss = (raw: string) => (defs ? wrapGlossary(raw, defs, used) : raw);
   const render = (segments: Segment[]) => segments.map((s, i) => {

@@ -69,7 +69,8 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
 
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));
-    if (done && deps.leads) {
+    if (!done) return redirect(SIGN_IN, cleared); // deleted by a concurrent request a moment ago: nothing to say goodbye to
+    if (deps.leads) {
       try {
         await deps.leads.deleteByEmail(email);
       } catch (err) {
