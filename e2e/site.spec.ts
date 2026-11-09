@@ -17,6 +17,18 @@ test.describe('public pages', () => {
     });
   }
 
+  for (const path of ['/', '/pricing']) {
+    test(`${path} lists every tool from Appendix E as what is inside`, async ({ page }) => {
+      await page.goto(path);
+      const index = page.locator('.pub-tool-index');
+      await index.locator('summary').click();
+      await expect(index.locator('summary')).toHaveText(/^Every interactive tool \(\d+\)$/);
+      await expect(index.getByRole('rowheader', { name: 'Objection trainer' })).toBeVisible();
+      await expect(index.getByRole('cell', { name: 'Chapter 9', exact: true })).toHaveCount(2); // consultation lab and objection trainer
+      expect(await index.locator('tbody tr').count()).toBeGreaterThanOrEqual(18);
+    });
+  }
+
   test('the sales page has no purchase button until a price and checkout are configured', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'See pricing and availability' }).first()).toHaveAttribute('href', '/pricing');

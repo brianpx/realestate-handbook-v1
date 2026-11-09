@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HeroPlan } from '@/components/site/HeroPlan';
+import { ToolIndex } from '@/components/site/ToolIndex';
 import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
@@ -285,6 +286,7 @@ function Included() {
             <ol>{CHAPTER_NAV.map(p => <li key={p.id}>{p.label}</li>)}</ol>
           </div>
         </details>
+        <ToolIndex />
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHead } from '@/components/site/Draft';
+import { ToolIndex } from '@/components/site/ToolIndex';
 import { pricingFaqs } from '@/content/site/faq';
 import { OFFER, OWNER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
 
@@ -92,6 +93,7 @@ export default function PricingPage() {
               ))}
             </div>
             <p className="pub-small">Not included: coaching, continuing education credit, legal advice, or help with a specific transaction.</p>
+            <ToolIndex />
           </div>
         </div>
       </section>
