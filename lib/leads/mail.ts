@@ -7,6 +7,8 @@ export type MailConfig =
   | { provider: 'mailpit'; url: string; from: string; fromName: string; replyTo?: string; mailingAddress: string }
   | { provider: 'sendgrid'; apiKey: string; from: string; fromName: string; replyTo?: string; mailingAddress: string };
 
+export type Message = { subject: string; text: string };
+
 export function mailFromEnv(env: Record<string, string | undefined>): MailConfig {
   const from = env.LEAD_FROM_EMAIL;
   const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Keeping, and Nurturing Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
@@ -19,7 +21,7 @@ export function mailFromEnv(env: Record<string, string | undefined>): MailConfig
   return { provider: 'none' };
 }
 
-export function welcomeMessage(address: string): { subject: string; text: string } {
+export function welcomeMessage(address: string): Message {
   return {
     subject: 'Your handbook follow-up note',
     text: [
@@ -34,9 +36,12 @@ export function welcomeMessage(address: string): { subject: string; text: string
   };
 }
 
-export async function sendWelcome(cfg: MailConfig, to: string, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> {
+/**
+ * Sends one plain-text message through whichever provider is configured. Logs carry the provider, the status and
+ * the error name only, never the address. `label` names the caller in those logs.
+ */
+export async function deliver(cfg: MailConfig, to: string, { subject, text }: Message, fetchImpl: typeof fetch = fetch, label = 'email'): Promise<EmailStatus> {
   if (cfg.provider === 'none') return 'skipped';
-  const { subject, text } = welcomeMessage(cfg.mailingAddress);
   try {
     const res = cfg.provider === 'sendgrid'
       ? await fetchImpl('https://api.sendgrid.com/v3/mail/send', {
@@ -55,10 +60,15 @@ export async function sendWelcome(cfg: MailConfig, to: string, fetchImpl: typeof
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ From: { Email: cfg.from, Name: cfg.fromName }, To: [{ Email: to }], Subject: subject, Text: text }),
         });
-    if (!res.ok) { console.error(`lead email: ${cfg.provider} answered ${res.status}`); return 'failed'; }
+    if (!res.ok) { console.error(`${label}: ${cfg.provider} answered ${res.status}`); return 'failed'; }
     return 'sent';
   } catch (err) {
-    console.error(`lead email: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
+    console.error(`${label}: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
     return 'failed';
   }
+}
+
+export function sendWelcome(cfg: MailConfig, to: string, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> {
+  if (cfg.provider === 'none') return Promise.resolve('skipped');
+  return deliver(cfg, to, welcomeMessage(cfg.mailingAddress), fetchImpl, 'lead email');
 }
