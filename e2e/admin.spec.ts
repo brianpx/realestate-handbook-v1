@@ -41,8 +41,11 @@ test.describe('as an administrator', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Leads' })).toBeVisible();
     await expect(page.getByRole('cell', { name: email })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Export CSV' })).toBeEnabled();
-    await page.getByRole('textbox', { name: 'Search leads' }).fill(email);
-    await expect(page.getByRole('row')).toHaveCount(2); // the header and the one match
+    // the admin shell has no hydration mark, so a fill that lands before React mounts is retried (see e2e/fixtures.ts)
+    await expect(async () => {
+      await page.getByRole('textbox', { name: 'Search leads' }).fill(email);
+      await expect(page.getByRole('row')).toHaveCount(2, { timeout: 1000 }); // the header and the one match
+    }).toPass();
 
     await page.goto('/admin');
     const total = page.getByRole('group', { name: 'Total leads' });

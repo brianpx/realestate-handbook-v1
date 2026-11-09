@@ -22,10 +22,10 @@ import { AdminBreadcrumbPage, AdminNav } from './AdminNav';
 
 // The admin area's frame: a collapsible sidebar with the two sections, who is signed in, and a way back to the
 // handbook. Separate from the product shell on purpose: no chapter navigation, no email gate, no reader state.
-export function AdminShell({ viewerEmail, children }: { viewerEmail: string; children: ReactNode }) {
+export function AdminShell({ viewerEmail, sidebarOpen, children }: { viewerEmail: string; sidebarOpen: boolean; children: ReactNode }) {
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={sidebarOpen}>
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <SidebarMenu>

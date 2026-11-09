@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { ArrowDownIcon, ArrowUpIcon, ArrowUpDownIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, SearchIcon, UserSearchIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,11 +115,7 @@ export function LeadsTable({ leads }: { leads: SerializedLead[] }) {
   const lastRow = Math.min(totalRows, (pageIndex + 1) * pageSize);
   const pageCount = table.getPageCount();
   const rows = table.getRowModel().rows;
-
-  // a narrower search can leave the current page past the end
-  useEffect(() => {
-    if (pageIndex > 0 && pageIndex >= pageCount) setPagination(prev => ({ ...prev, pageIndex: Math.max(0, pageCount - 1) }));
-  }, [pageIndex, pageCount]);
+  // the page index never ends up past the end: a search or a page-size change puts it back to 0, and the rows are fixed
 
   return (
     <Card className="min-w-0 gap-0 py-0 shadow-none">

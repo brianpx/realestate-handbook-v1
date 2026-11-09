@@ -11,4 +11,7 @@ describe('toCsv', () => {
   it('leaves an empty field empty', () => {
     expect(toCsv([['', 'b']])).toBe(',b\r\n');
   });
+  it('keeps a field that looks like a formula as text', () => {
+    expect(toCsv([['=1+1', '+1@example.com', '-x', '@y', 'a-b']])).toBe(`"'=1+1","'+1@example.com","'-x","'@y",a-b\r\n`);
+  });
 });

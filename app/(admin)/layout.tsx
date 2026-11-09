@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { requireAdmin } from '@/lib/auth/dal';
@@ -10,5 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const viewer = await requireAdmin();
-  return <AdminShell viewerEmail={viewer.user.email}>{children}</AdminShell>;
+  // the sidebar primitive remembers its collapsed state in this cookie; reading it here keeps the choice across loads
+  const sidebarOpen = (await cookies()).get('sidebar_state')?.value !== 'false';
+  return <AdminShell viewerEmail={viewer.user.email} sidebarOpen={sidebarOpen}>{children}</AdminShell>;
 }
