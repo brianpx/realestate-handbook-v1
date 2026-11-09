@@ -443,8 +443,8 @@ html.dark {
             display: flex;
             align-items: center;
             gap: 6px}
-        /* Beats .chapter-body h3 and, in the demoted sample, .chapter-demoted h4. Color stays on the .box.* .box-title rules below. */
-        .box :is(h3, h4).box-title {
+        /* Beats the h2 rule (coach pages step h1 to h2), .chapter-body h3 and, in the demoted sample, .chapter-demoted h4. Color stays on the .box.* .box-title rules below. */
+        .box :is(h2, h3, h4).box-title {
             font-size: 0.75rem;
             margin: 0 0 8px;
             padding: 0;
