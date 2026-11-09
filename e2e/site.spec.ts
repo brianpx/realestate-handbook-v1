@@ -211,6 +211,17 @@ test.describe('public pages', () => {
     }
   });
 
+  // M7 step 7: the strictly necessary cookies are disclosed by name (lib/auth/cookie.ts), with no banner to go with them
+  test('the privacy policy names the session cookie and the sign-in flag', async ({ page }) => {
+    await page.goto('/privacy');
+    await expect(page.getByRole('heading', { name: 'Cookies', level: 2 })).toBeVisible();
+    await expect(page.locator('code', { hasText: /^hb_session$/ })).toBeVisible();
+    await expect(page.locator('code', { hasText: /^hb_signed_in$/ })).toBeVisible();
+    await expect(page.getByText('90 days from your last visit').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Accounts and sign-in', level: 2 })).toBeVisible();
+    await expect(page.getByText('It sets no cookies of its own.')).toHaveCount(0);
+  });
+
   test('the sitemap lists public pages only', async ({ request }) => {
     const text = await (await request.get('/sitemap.xml')).text();
     expect(text).toContain('/preview');

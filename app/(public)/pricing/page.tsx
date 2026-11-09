@@ -28,7 +28,7 @@ export default function PricingPage() {
       <section className="pub-section pub-tight" aria-labelledby="plansTitle">
         <div className="pub-wrap">
           <h2 id="plansTitle" className="pub-h2 text-2xl">Compare the plans</h2>
-          {!open && <p className="pub-small">Basic and Pro are not on sale yet: there is no price, checkout, access term or refund policy to show, so nothing here can be bought and nothing has been charged or promised. The free set needs no sign-up.</p>}
+          {!open && <p className="pub-small">Basic and Pro are not on sale yet: there is no price, checkout, access term or refund policy to show, so nothing here can be bought and nothing has been charged or promised. The free set opens with an emailed sign-in link; the sample lesson needs no sign-up at all.</p>}
           <PricingTable />
           <p className="pub-small mt-6">Not included in any plan: coaching calls, continuing education credit, legal advice, or help with a specific transaction.</p>
           <ToolIndex />
@@ -50,7 +50,7 @@ export default function PricingPage() {
             </div>
           </dl>
           <p className="pub-small">
-            The handbook has no accounts today. {open ? <>How access works is explained on <Link href="/updates">Access and updates</Link>.</> : <>When purchase opens, <Link href="/updates">Access and updates</Link> explains exactly how access works.</>}
+            You sign in with a link we email you, with no password, and a purchase will belong to the address you sign in with. {open ? <>How access works is explained on <Link href="/updates">Access and updates</Link>.</> : <><Link href="/updates">Access and updates</Link> explains how access works now and what a purchase will add.</>}
           </p>
         </div>
       </section>
