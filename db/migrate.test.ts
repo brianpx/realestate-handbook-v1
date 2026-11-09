@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { migrationFiles, MIGRATIONS_DIR, pending, splitStatements } from './migrate';
+import { migrationFiles, MIGRATIONS_DIR, pending, refusalReason, splitStatements } from './migrate';
 
 describe('splitStatements', () => {
   it('drops comment lines and trailing comments, and keeps one statement per semicolon', () => {
@@ -29,5 +29,22 @@ describe('the migration list', () => {
         expect((s.match(/'/g) ?? []).length % 2, `${file}: ${s.slice(0, 40)}`).toBe(0); // an odd quote count means a split inside a literal
       }
     }
+  });
+});
+
+describe('refusalReason', () => {
+  const prod = 'postgres://u:p@ep-prod-1234.c-1.us-east-1.aws.neon.tech/db';
+  const pooled = 'postgres://u:p@ep-prod-1234-pooler.c-1.us-east-1.aws.neon.tech/db';
+  const branch = 'postgres://u:p@ep-prod-12345.c-1.us-east-1.aws.neon.tech/db';
+  it('refuses a preview deployment that points at the production host, pooled or not', () => {
+    const env = { VERCEL_ENV: 'preview', PRODUCTION_DB_HOST: 'ep-prod-1234' };
+    expect(refusalReason(env, prod)).toMatch(/preview deployment points at the production database/);
+    expect(refusalReason(env, pooled)).not.toBeNull();
+  });
+  it('lets a preview migrate its own branch, and never blocks production or a local run', () => {
+    expect(refusalReason({ VERCEL_ENV: 'preview', PRODUCTION_DB_HOST: 'ep-prod-1234' }, branch)).toBeNull();
+    expect(refusalReason({ VERCEL_ENV: 'production', PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toBeNull();
+    expect(refusalReason({ PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toBeNull();
+    expect(refusalReason({ VERCEL_ENV: 'preview' }, prod)).toBeNull();
   });
 });
