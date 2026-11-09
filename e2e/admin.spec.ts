@@ -30,6 +30,8 @@ test.describe('as an administrator', () => {
     await expect(page.getByRole('link', { name: 'Leads' })).toHaveAttribute('href', '/admin/leads');
     await expect(page.getByRole('link', { name: 'Back to the handbook' })).toHaveAttribute('href', '/handbook');
     await expect(page.getByText('admin@e2e.test')).toBeVisible();
+    // the seeded readers never requested a link, so the placement table may be empty; the card itself is there
+    await expect(page.getByText('Sign-in placements')).toBeVisible();
   });
 
   test('a lead posted through the route shows up in the table and the count', async ({ page, request }) => {

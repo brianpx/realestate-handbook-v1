@@ -1,6 +1,6 @@
 import { toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
 import { SESSION_CAP_SECONDS, SESSION_MAX_AGE_SECONDS, SESSION_RENEW_AFTER_SECONDS, type Source } from './config';
-import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken } from './store';
+import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken, PlacementStat } from './store';
 import type { AuthToken, Session } from './types';
 
 const text = (value: unknown): string | null => (value === null || value === undefined ? null : String(value));
@@ -116,5 +116,13 @@ export class NeonAuthStore implements AuthStore {
       console.error('auth: attempt cleanup failed', err instanceof Error ? err.name : 'error');
     }
     return Number(rows[0]?.n ?? 0);
+  }
+
+  async placementStats(): Promise<PlacementStat[]> {
+    // consumed_at is null for a link never opened, so count() over it is the sign-ins
+    const rows = await this.sql`
+      select source, count(*)::int as requested, count(consumed_at)::int as signed_in
+      from auth_tokens group by source order by requested desc, source`;
+    return rows.map(r => ({ source: text(r.source) as Source | null, requested: Number(r.requested), signedIn: Number(r.signed_in) }));
   }
 }

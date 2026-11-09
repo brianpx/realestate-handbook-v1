@@ -1,3 +1,4 @@
+import { placementStatsFrom } from './placements';
 import { sessionDueForRenewal, sessionExpiry, tokenUsable } from './session';
 import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken } from './store';
 import type { AuthToken, Session } from './types';
@@ -44,4 +45,6 @@ export class MemoryAuthStore implements AuthStore {
     this.attempts.push({ scope, keyHash, at });
     return this.attempts.filter(a => a.scope === scope && a.keyHash === keyHash && a.at >= since).length;
   }
+
+  async placementStats() { this.check(); return placementStatsFrom(this.tokens); }
 }

@@ -13,6 +13,8 @@ export type NewToken = { tokenHash: string; email: string; nextPath: string | nu
 export type NewSession = { idHash: string; userId: string; createdAt: Date; expiresAt: Date };
 export type ConsumedToken = { email: string; nextPath: string | null; termsVersion: string; source: Source | null };
 export type AttemptScope = 'ip' | 'email';
+/** One placement's link requests against the sign-ins they led to (a consumed token), for the admin overview. */
+export type PlacementStat = { source: Source | null; requested: number; signedIn: number };
 
 /**
  * Where sign-in tokens, sessions and the rate-limit counters live. Production uses the database so every server
@@ -37,6 +39,8 @@ export interface AuthStore {
   revokeAllForUser(userId: string, now: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
   recordAndCount(scope: AttemptScope, keyHash: string, at: Date, since: Date): Promise<number>;
+  /** Link requests and completed sign-ins per placement, most requested first: the measurement without a tracker. */
+  placementStats(): Promise<PlacementStat[]>;
 }
 
 export type AuthStores = { users: UserStore; auth: AuthStore; access: AccessStore };
