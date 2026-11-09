@@ -199,7 +199,7 @@ describe('rate limit', () => {
 });
 
 describe('send ceiling', () => {
-  it('refuses every caller alike with the per-address 429 once the window is full, stores nothing and sends nothing', async () => {
+  it('refuses every caller alike with the per-connection 429 (rate_limited, Retry-After) once the window is full, stores nothing and sends nothing', async () => {
     const { post, store, fetchImpl } = setup({ sendCeiling: 2 });
     expect((await post(body({ email: 'a@b.co' }), { ip: '198.51.100.1' })).status).toBe(200);
     expect((await post(body({ email: 'b@b.co' }), { ip: '198.51.100.2' })).status).toBe(200);

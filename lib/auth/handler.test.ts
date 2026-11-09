@@ -118,7 +118,7 @@ describe('request-link', () => {
     expect(auth.tokens).toHaveLength(2);
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect((await request('{nope', { ip: '198.51.100.5' })).status).toBe(400); // nothing to send: no slot taken
-    expect(auth.sends.size).toBe(1);
+    expect(auth.sends.get(NOW.toISOString())).toBe(4); // the four well-formed requests, the refused two included
     advance(SEND_CEILING_WINDOW_SECONDS * 1000);
     expect((await request(body({ email: 'c@b.co' }), { ip: '198.51.100.3' })).status).toBe(200);
   });

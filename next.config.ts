@@ -11,9 +11,9 @@ const config: NextConfig = {
   async redirects() {
     return LEGACY_PAGE_SLUGS.map(slug => ({ source: `/${slug}`, destination: `${HANDBOOK}/${slug}`, permanent: true }));
   },
-  // Every response, the API and static files included (lib/security-headers.ts).
+  // Every response, the API and static files included (lib/security-headers.ts). Both flags are read at build time.
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV === 'development') }];
+    return [{ source: '/:path*', headers: securityHeaders({ dev: process.env.NODE_ENV === 'development', preview: process.env.VERCEL_ENV === 'preview' }) }];
   },
 };
 

@@ -11,7 +11,7 @@ const EXPECTED = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
   'permissions-policy': PERMISSIONS_POLICY,
-  'content-security-policy': contentSecurityPolicy(false),
+  'content-security-policy': contentSecurityPolicy(), // the strict policy: the suite runs against a local build
 };
 
 declare global {

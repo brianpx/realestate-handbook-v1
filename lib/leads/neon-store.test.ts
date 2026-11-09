@@ -70,7 +70,7 @@ describe('NeonLeadStore', () => {
       spy.mockRestore();
     }
   });
-  it('counts a send in one upsert on the lead channel and window, and still answers when cleanup throws', async () => {
+  it('counts a send in one upsert on the lead channel and window, still answers when cleanup throws, and fails closed on no row', async () => {
     const { sql, calls } = fake([{ n: 7 }]);
     const cleanup = new Error('delete failed');
     cleanup.name = 'CleanupError';
@@ -89,7 +89,7 @@ describe('NeonLeadStore', () => {
     } finally {
       spy.mockRestore();
     }
-    expect(await new NeonLeadStore(fake([]).sql).countSend(new Date())).toBe(0);
+    await expect(new NeonLeadStore(fake([]).sql).countSend(new Date())).rejects.toThrow('no count returned');
   });
   it('lists leads newest first from one capped statement, with dates and a missing status mapped', async () => {
     const { sql, calls } = fake([
