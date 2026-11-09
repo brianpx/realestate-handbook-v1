@@ -1,8 +1,10 @@
 // The handbook's shared rules, stated once. The four sentences are the canonical phrasing the owner signed on
-// 9 November 2026 (docs/plans/MASTER-PROMPT.md, section 4, row OD-09), copied verbatim. Chapter text, widgets, the
-// coach and the consistency tests read them from here so that no page, answer key or widget keeps its own version;
-// the numbers are the values those sentences and Table 8.2 state. Change a value here and the tests name every file
-// that still disagrees.
+// 9 November 2026 (docs/plans/MASTER-PROMPT.md, section 4, row OD-09), copied verbatim; the numbers are the values
+// those sentences and Table 8.2 state. The consistency tests, the scorecard rows and the speed-to-lead stopwatch read
+// them from here; the chapter text and answer keys still restate them in their own words until M4 steps 3 to 5 point
+// them at this module. Change a value here and the tests name every file that still disagrees.
+// `chapter` and `anchor` are the page and heading id where the handbook defines the rule (the coach's review links
+// deep-link there); `concepts` are the coach concepts that test it.
 
 export const RULES = {
   consent: {
@@ -30,11 +32,6 @@ export const RULES = {
     concepts: ['ch12.pipeline-milestone'],
   },
 } as const;
-
-export type RuleId = keyof typeof RULES;
-/** `chapter` and `anchor` are the page and heading id where the handbook defines the rule (the coach's review links
- *  deep-link there); `concepts` are the coach concepts that test it. */
-export type Rule = (typeof RULES)[RuleId];
 
 /** The speed-to-lead standard: a live call within this many minutes when you can, and always the same day. */
 export const LIVE_CALL_MINUTES = 5;
