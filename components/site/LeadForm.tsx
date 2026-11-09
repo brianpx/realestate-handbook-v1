@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { CONSENT_TEXTS, CONSENT_VERSION, OPT_IN_OFFER, type LeadSource } from '@/lib/leads/config';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again in a moment.';
@@ -20,11 +20,13 @@ type Props = {
 // link is opened. A repeat address looks the same as a new one, so the form cannot be used to find out who is on it.
 export function LeadForm({ source, offer, buttonClassName = 'pub-btn pub-btn-primary', inputClassName = 'calc-input' }: Props) {
   const [state, setState] = useState<State>({ kind: 'idle' });
+  const [ready, setReady] = useState(false); // set after mount: the e2e suite waits for it before it types
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
   const busy = useRef(false);
   const copy = OPT_IN_OFFER[offer];
   const id = `lead-${source}`;
+  useEffect(() => setReady(true), []);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,7 +69,7 @@ export function LeadForm({ source, offer, buttonClassName = 'pub-btn pub-btn-pri
   const sending = state.kind === 'sending';
   const error = state.kind === 'error' ? state.message : '';
   return (
-    <form className="lead-form" noValidate onSubmit={submit} data-source={source} aria-labelledby={`${id}-title`}>
+    <form className="lead-form" noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined} aria-labelledby={`${id}-title`}>
       <p className="lead-title" id={`${id}-title`}><strong>{copy.title}</strong></p>
       <p className="lead-text">{copy.text}</p>
       <div className="pub-field lead-field">

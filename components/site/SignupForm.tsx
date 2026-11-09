@@ -23,10 +23,13 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [optIn, setOptIn] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [ready, setReady] = useState(false); // set after mount: the e2e suite waits for it before it types
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
   const busy = useRef(false);
   const id = `signup-${source}`;
+
+  useEffect(() => setReady(true), []);
 
   // counts the seconds down to "Send again"
   useEffect(() => {
@@ -100,7 +103,7 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
   const sending = state.kind === 'sending';
   const error = state.kind === 'error' ? state.message : '';
   return (
-    <form className={`signup-form signup-${variant}`} noValidate onSubmit={submit} data-source={source}>
+    <form className={`signup-form signup-${variant}`} noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined}>
       <div className="signup-row">
         <div className="pub-field">
           <label htmlFor={`${id}-email`} className={variant === 'card' ? undefined : 'visually-hidden'}>Email address</label>
