@@ -4,6 +4,9 @@ import { OFFER } from '@/lib/offer';
 
 export const metadata = policyMetadata('updates', 'Access and updates', 'How access to the handbook works and what updates include.', '/updates');
 
+// Both terms are set in lib/offer.ts; a null there (an open decision) is said plainly, as on /pricing.
+const NOT_PUBLISHED = 'Not published yet';
+
 export default function UpdatesPage() {
   return (
     <>
@@ -20,7 +23,7 @@ export default function UpdatesPage() {
         </p>
 
         <h2>Access after purchase</h2>
-        <p>{OFFER.accessTerm}</p>
+        <p>{OFFER.accessTerm ?? NOT_PUBLISHED}</p>
         <p>
           A purchase belongs to the email address you sign in with. Basic opens every chapter and appendix with the essential tools; Pro opens every tool, the reading-plan
           coach and the PDF edition. Each is a one-time purchase with nothing to renew. The same address signs you in on any device; each sign-in gets its own emailed link.
@@ -28,7 +31,7 @@ export default function UpdatesPage() {
 
         <h2>Updates</h2>
         <p>The current edition is version 1.0, October 2026. Corrections and improvements to the chapters and tools appear in the handbook when you next open it. A change to how progress is stored is migrated automatically, and the previous copy is kept as a backup in your browser.</p>
-        <p>{OFFER.updatesTerm}</p>
+        <p>{OFFER.updatesTerm ?? NOT_PUBLISHED}</p>
 
         <h2>Support</h2>
         <p>Self-help is on the <Link href="/support">support page</Link>.</p>

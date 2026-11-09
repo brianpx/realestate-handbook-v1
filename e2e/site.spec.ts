@@ -83,7 +83,8 @@ test.describe('public pages', () => {
     await expect(table.getByText('Not published yet')).toHaveCount(0);
     await expect(table.getByText('Corrections and updates to this edition').first()).toBeVisible();
     await expect(table.getByText('This edition and the next')).toHaveCount(0);
-    await expect(table.getByText('Priority').first()).toBeVisible();
+    // email support is the same plain cell on both paid plans: no priority tier was decided (decision log, 9 Nov)
+    await expect(table.getByText('Priority')).toHaveCount(0);
     const terms = page.locator('section[aria-labelledby="termsTitle"]');
     await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, not transferable.');
     await expect(terms.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');

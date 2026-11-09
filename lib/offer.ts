@@ -26,9 +26,9 @@ export const OWNER: {
 
 // Prices and checkout links live with their tiers in lib/tiers.ts.
 export const OFFER: {
-  /** One sentence on how long access lasts, for example "Access to this edition, with its updates." */
+  /** One sentence on how long access lasts (OD-23), shown on the pricing and updates pages. */
   accessTerm: string | null;
-  /** One sentence on what updates are included. */
+  /** One sentence on what updates are included (OD-20), shown beside it. */
   updatesTerm: string | null;
 } = {
   accessTerm: 'Lifetime access to edition 1.0 for one person, not transferable.',

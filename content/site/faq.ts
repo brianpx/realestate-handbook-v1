@@ -1,14 +1,17 @@
-import { OFFER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
+import { OFFER, OWNER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 
 export type Faq = { q: string; a: string };
 
-// Answers describe what the product does today. The two that depend on the owner's decisions (support, updates)
-// say what is published and otherwise point to the pages that will carry the approved terms.
+// Answers describe what the product does today. The one that depends on the owner's decisions (support, updates) says
+// what is published, otherwise points to the pages that will carry the terms, and keeps the price caveat while purchase is closed.
 export function faqs(): Faq[] {
-  const terms = purchaseOpen() && OFFER.updatesTerm
+  const updates = OFFER.updatesTerm
     ? `${OFFER.updatesTerm} The full policy is on the Access and updates page.`
-    : 'The support and update terms are not published yet. They will be on the pricing and access pages before purchase opens, and nothing is promised until then.';
+    : 'The update terms are not published yet; they will be on the pricing and access pages before purchase opens.';
+  const support = OWNER.supportEmail ? `Both paid plans include email support at ${OWNER.supportEmail}.` : 'The support address is not published yet.';
+  const price = purchaseOpen() ? '' : ' Purchase is not open yet and no price is published, so nothing can be bought until it is.';
+  const terms = `${updates} ${support}${price}`;
   return [
     {
       q: 'Does this replace my brokerage’s training?',

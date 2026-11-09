@@ -17,6 +17,11 @@ describe('tiers', () => {
   it('ships the paid tiers without a price or a checkout link', () => {
     for (const t of paidTiers()) expect(t, t.id).toMatchObject({ priceDisplay: null, checkoutUrl: null });
   });
+  it('gives both paid tiers the same plain email-support cell: no priority tier was decided', () => {
+    const support = FEATURES.find(f => f.label === 'Email support');
+    expect(support).toBeDefined();
+    expect(support?.values).toEqual({ free: false, basic: true, pro: true });
+  });
   // OD-20: a future edition is a separate purchase, so no tier can promise "this edition and the next"
   it('promises both paid tiers the same updates', () => {
     const updates = FEATURES.find(f => f.label === 'Updates');
