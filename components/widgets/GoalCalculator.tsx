@@ -115,7 +115,7 @@ export function GoalCalculator() {
         <div className="note-dialog-body">
         <p className="note-dialog-lede">Each row feeds the next. Using the example goal of $80,000:</p>
         <h5 className="note-dialog-section">Derivation</h5>
-        <ol>
+        <ol role="list">
           <li><strong>Closings:</strong> $80,000 ÷ $6,500 = 12.3, rounded <em>up</em> to 13, because you cannot close part of a sale.</li>
           <li><strong>Appointments:</strong> 13 closings × 3 appointments per closing = 39.</li>
           <li><strong>Conversations:</strong> 39 appointments × 20 conversations per appointment = 780.</li>

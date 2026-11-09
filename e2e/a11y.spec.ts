@@ -133,6 +133,18 @@ test('Settings stays open on a wheel-up while one of its controls has focus', as
   await expect(details).not.toHaveAttribute('open', '');
 });
 
+// M6 step 14: the sidebar names the product, and lists drawn without bullets keep their list role (Safari and
+// VoiceOver drop it from a list-style: none list unless role="list" says otherwise).
+test('the sidebar is the Handbook navigation and its bullet-less lists keep the list role', async ({ page }) => {
+  await page.goto('/handbook/ch1');
+  const sidebar = page.getByRole('navigation', { name: 'Handbook' });
+  await expect(sidebar).toHaveCount(1);
+  await expect(sidebar).toHaveId('sidebar');
+  await expect(sidebar.locator('#navList')).toHaveAttribute('role', 'list');
+  await expect(sidebar.locator('#searchResults')).toHaveAttribute('role', 'list');
+  await expect(page.getByRole('navigation', { name: 'On this page' }).locator('ul')).toHaveAttribute('role', 'list');
+});
+
 test('the coach pages step from h1 to h2', async ({ page }) => {
   await page.goto('/handbook/plan');
   await expect(page.getByRole('heading', { level: 1, name: 'My reading plan' })).toBeVisible();

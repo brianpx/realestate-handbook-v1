@@ -37,7 +37,7 @@ export function PostCloseCard({ rows }: { rows: PostCloseRows }) {
           <p className="calc-empty">Enter a closing date to see your schedule.</p>
         ) : (
           <>
-            <ol className="postclose-list">
+            <ol className="postclose-list" role="list">
               {plan.map(p => (
                 <li key={p.label} className="postclose-item">
                   <div className="postclose-head"><strong>{fmtDate(p.date)}</strong><span className="nurture-tag">{p.label}</span></div>

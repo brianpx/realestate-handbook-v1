@@ -162,7 +162,7 @@ function FirstSession() {
           <p>The guided setup walks you through the first hour. It uses the same tools as the chapters, and your answers are saved on your device so you can come back and change them.</p>
         </div>
         <div className="pub-result">
-          <ul className="pub-checks">
+          <ul className="pub-checks" role="list">
             <li><strong>A daily conversation target</strong>Your income goal and average commission, run through ratios you can edit, down to a number for a single day.</li>
             <li><strong>Two lead sources to start with</strong>Chosen on what each costs in time and money and what you can realistically follow up on this month, with the target split between them.</li>
             <li><strong>A scheduled first week</strong>Protected blocks for your CRM, follow-up and prospecting, ready to add to your calendar.</li>
@@ -218,7 +218,7 @@ function Tools() {
             <h3 className="pub-h3">Protect your mornings</h3>
             <p>The weekly planner lays out your day and tells you whether lead generation lands before noon. Export it to your calendar.</p>
             <div className="pub-tool-visual">
-              <ul className="pub-blocks" aria-label="Default day from the planner">
+              <ul className="pub-blocks" role="list" aria-label="Default day from the planner">
                 {DEFAULT_BLOCKS.slice(0, 4).map(b => <li key={b.cls}><time>{fmtClock(b.from)}</time>{b.name}</li>)}
               </ul>
             </div>
@@ -293,7 +293,7 @@ function Included() {
         <div className="pub-grid four pub-included">
           <div>
             <h3 className="pub-h3">Read</h3>
-            <ul>
+            <ul role="list">
               <li>13 chapters in a fixed order, each ending with an exercise and a short checkpoint</li>
               <li>An overview and a 90-day plan</li>
               <li>Six appendices: scorecard, follow-up starter kit, CRM checklist, glossary, tools index and links</li>
@@ -301,7 +301,7 @@ function Included() {
           </div>
           <div>
             <h3 className="pub-h3">Do</h3>
-            <ul>
+            <ul role="list">
               <li>Income goal calculator and lead source comparison</li>
               <li>Weekly time-block planner with calendar export</li>
               <li>CRM setup checklists and a weekly activity scorecard</li>
@@ -310,7 +310,7 @@ function Included() {
           </div>
           <div>
             <h3 className="pub-h3">Practice</h3>
-            <ul>
+            <ul role="list">
               <li>More than 20 word-for-word scripts with a practice mode</li>
               <li>An objection trainer and a consultation lab</li>
               <li>Qualifying and Fair Housing drills</li>
@@ -319,7 +319,7 @@ function Included() {
           </div>
           <div>
             <h3 className="pub-h3">Keep track</h3>
-            <ul>
+            <ul role="list">
               <li>Chapters read and checklist progress, saved on your device</li>
               <li>Search, a glossary and print-friendly pages</li>
               <li>Download a progress file to back up or move devices</li>

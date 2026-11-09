@@ -12,13 +12,15 @@ export const OPEN_MARKER = new RegExp(`<!--widget:(${NAME})(?:#(${SLUG}))?-->`, 
 export const CLOSE_MARKER = new RegExp(`<!--/widget:(${NAME})(?:#(${SLUG}))?-->`, 'g');
 export const ANY_MARKER = /<!--\s*\/?\s*widget\b[^>]*-->/gi;
 
-/** Every widget name a page may reference, including ones not ported yet. Add the name here when adding a marker. */
-export const WIDGET_NAMES: readonly string[] = [
+/** Every widget name a page may reference. Add the name here when adding a marker; the registry must then supply it. */
+export const WIDGET_NAMES = [
   'crm-checklists', 'scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'response-timer', 'nurture-timeline',
   'script-practice', 'objection-trainer', 'qualifying-drill', 'pitfall-cycle', 'error-self-score', 'consultation-lab', 'fair-housing-drill',
   'checkpoints', 'knowledge-check', 'lead-sources', 'pipeline-calculator',
   'timeblock-planner', 'postclose-scheduler', 'data-table',
-];
+] as const;
+export type WidgetName = (typeof WIDGET_NAMES)[number];
+export const isWidgetName = (name: string): name is WidgetName => (WIDGET_NAMES as readonly string[]).includes(name);
 
 const keyOf = (name: string, slug?: string) => (slug ? `${name}#${slug}` : name);
 

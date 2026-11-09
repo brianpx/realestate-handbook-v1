@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { BOOK_TITLE } from '@/lib/pages';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/lib/offer';
+import { TEXT_SIZES } from '@/lib/state/schema';
 import './globals.css';
 
 import { SITE_URL } from '@/lib/site';
@@ -28,8 +29,10 @@ export const viewport: Viewport = {
   ],
 };
 
-// Runs before first paint so dark mode does not flash light. Same keys as the static site.
-const THEME_SCRIPT = `try{var s=JSON.parse(localStorage.getItem('handbookSettings')||'{}')||{};if(s.dark!==undefined?s.dark:matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark');if(s.fullWidth===true)document.documentElement.classList.add('wide');if(s.hideQuizzes===true)document.documentElement.classList.add('hide-quizzes');if(s.textSize==='small'||s.textSize==='large')document.documentElement.classList.add('text-'+s.textSize)}catch(e){}`;
+// Runs before first paint so dark mode does not flash light. Same keys as the static site. Built once at module load
+// from the settings schema, so the size classes cannot drift from it; medium is the default and carries no class.
+const SIZE_CLASSES = JSON.stringify(TEXT_SIZES.filter(size => size !== 'medium'));
+const THEME_SCRIPT = `try{var s=JSON.parse(localStorage.getItem('handbookSettings')||'{}')||{};if(s.dark!==undefined?s.dark:matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark');if(s.fullWidth===true)document.documentElement.classList.add('wide');if(s.hideQuizzes===true)document.documentElement.classList.add('hide-quizzes');if(${SIZE_CLASSES}.indexOf(s.textSize)>-1)document.documentElement.classList.add('text-'+s.textSize)}catch(e){}`;
 
 // Old shared links look like /#ch5 (the handbook used to be the home page). Hashes never reach the server, so
 // redirect on the client. In-page anchors on the sales page (#pricing, #faq) do not match and are left alone.

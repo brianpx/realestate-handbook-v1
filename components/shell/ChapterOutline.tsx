@@ -76,7 +76,7 @@ export function ChapterOutline({ pageId, items, before, intro, rest }: {
   const list = (className: string) => (
     <nav className={className} aria-label="On this page">
       <p className="outline-label">On this page</p>
-      <ul>
+      <ul role="list">
         {items.map(item => (
           <li key={item.id}>
             <a href={`#${item.id}`} aria-current={current === item.id ? 'location' : undefined} onClick={onJump}>{item.text}</a>

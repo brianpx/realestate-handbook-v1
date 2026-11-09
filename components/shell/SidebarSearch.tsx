@@ -117,6 +117,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
       <ul
         ref={listRef}
         className="search-results"
+        role="list"
         id="searchResults"
         aria-label="Search results"
         hidden={!searching}
