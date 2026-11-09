@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { FileLeadStore, storeFromEnv } from './store';
+import { FileLeadStore, MemoryLeadStore, storeFromEnv } from './store';
 
 let dir: string;
 let file: string;
@@ -57,6 +57,29 @@ describe('FileLeadStore', () => {
     const since = new Date('2026-11-02T11:50:00Z');
     const counts = await Promise.all([store.recordAndCount('ip1', at, since), store.recordAndCount('ip1', at, since)]);
     expect(counts).toEqual([1, 2]);
+  });
+  it('lists leads newest first with the stored time as a Date, the consent text left out', async () => {
+    const store = new FileLeadStore(file);
+    const { id: older } = await store.insert({ ...lead('a@b.co'), at: new Date('2026-11-01T08:00:00Z') });
+    const { id: newer } = await store.insert({ ...lead('b@b.co'), at: new Date('2026-11-03T08:00:00Z') });
+    await store.setEmailStatus(newer, 'sent');
+    const rows = await store.list();
+    expect(rows.map(r => r.id)).toEqual([newer, older]);
+    expect(rows[0]).toEqual({ id: newer, email: 'b@b.co', source: 'gate', createdAt: new Date('2026-11-03T08:00:00Z'), consentVersion: 'v1', emailStatus: 'sent' });
+    expect(rows[1]!.emailStatus).toBeNull();
+    expect(rows[1]).not.toHaveProperty('consentText');
+  });
+  it('lists nothing when there is no file yet', async () => {
+    expect(await new FileLeadStore(file).list()).toEqual([]);
+  });
+});
+
+describe('MemoryLeadStore', () => {
+  it('lists leads newest first', async () => {
+    const store = new MemoryLeadStore();
+    const { id: older } = await store.insert({ ...lead('a@b.co'), at: new Date('2026-11-01T08:00:00Z') });
+    const { id: newer } = await store.insert({ ...lead('b@b.co'), at: new Date('2026-11-03T08:00:00Z') });
+    expect((await store.list()).map(r => r.id)).toEqual([newer, older]);
   });
 });
 

@@ -64,4 +64,18 @@ describe('NeonLeadStore', () => {
       spy.mockRestore();
     }
   });
+  it('lists leads newest first from one capped statement, with dates and a missing status mapped', async () => {
+    const { sql, calls } = fake([
+      { id: 'u-2', email: 'b@b.co', source: 'gate', created_at: '2026-11-03T09:00:00Z', consent_version: 'v1', email_status: 'sent' },
+      { id: 'u-1', email: 'a@b.co', source: 'gate', created_at: new Date('2026-11-02T12:00:00Z'), consent_version: 'v1', email_status: null },
+    ]);
+    const rows = await new NeonLeadStore(sql).list();
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.text).toBe('select id, email, source, created_at, consent_version, email_status from leads order by created_at desc limit ?');
+    expect(calls[0]!.values).toEqual([5000]);
+    expect(rows).toEqual([
+      { id: 'u-2', email: 'b@b.co', source: 'gate', createdAt: new Date('2026-11-03T09:00:00Z'), consentVersion: 'v1', emailStatus: 'sent' },
+      { id: 'u-1', email: 'a@b.co', source: 'gate', createdAt: new Date('2026-11-02T12:00:00Z'), consentVersion: 'v1', emailStatus: null },
+    ]);
+  });
 });

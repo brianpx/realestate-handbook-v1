@@ -3,6 +3,8 @@ import type { PageId } from './pages';
 // Where the paid product lives. Chapters keep their page ids as slugs (/handbook/ch5), so every old
 // /ch5 link maps one to one and saved progress, which is keyed by page id, is untouched.
 export const HANDBOOK = '/handbook';
+// The owner's pages: lead counts and the list. Gated by proxy.ts and requireAdmin(); never indexed (app/robots.ts).
+export const ADMIN = '/admin';
 
 export const pageHref = (id: PageId): string => `${HANDBOOK}/${id}`;
 

@@ -1,9 +1,12 @@
-import { sqlFromUrl, type Sql } from '@/lib/db/sql';
-import type { EmailStatus, LeadStore, NewLead } from './store';
+import { sqlFromUrl, toDate, type Sql } from '@/lib/db/sql';
+import { LEAD_LIST_CAP, type EmailStatus, type LeadRow, type LeadStore, type NewLead } from './store';
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql.
 export type { Sql };
+
+// The column is checked in the database, so anything else can only be a null.
+const emailStatus = (value: unknown): EmailStatus | null => (value === 'sent' || value === 'failed' || value === 'skipped' ? value : null);
 
 export class NeonLeadStore implements LeadStore {
   constructor(private readonly sql: Sql) {}
@@ -59,5 +62,19 @@ export class NeonLeadStore implements LeadStore {
       console.error('lead: attempt cleanup failed', err instanceof Error ? err.name : 'error');
     }
     return Number(rows[0]?.n ?? 0);
+  }
+
+  async list(): Promise<LeadRow[]> {
+    const rows = await this.sql`
+      select id, email, source, created_at, consent_version, email_status from leads
+      order by created_at desc limit ${LEAD_LIST_CAP}`;
+    return rows.map(r => ({
+      id: String(r.id),
+      email: String(r.email),
+      source: String(r.source),
+      createdAt: toDate(r.created_at),
+      consentVersion: String(r.consent_version),
+      emailStatus: emailStatus(r.email_status),
+    }));
   }
 }
