@@ -241,20 +241,20 @@ Branch: `fix/preview-sample`.
 
 Steps:
 
-- [ ] 1. **Pitfall-cycle dark mode** [CR-H2]. `app/globals.css:959` `.cycle-node.is-broken`: use theme tokens (`background: var(--color-brand-tint); border-color: var(--color-brand-soft)`, the pair `.setup-source.on` uses) and `.cycle-badge { color: var(--color-success) }`. Verify on `/handbook/ch7` and `/preview` in dark mode after clicking "CRM": node title and body at least 4.5:1.
-- [ ] 2. **Callout text on `/preview` dark mode** [CR-H3]. `app/(public)/site.css:53`: lower the public base rules' specificity to `.pub :where(p)`, `.pub :where(a)` so `.box p` from `globals.css:1214` wins. Verify: `.pub-sample .box p` computed colour in dark mode is `#334155`.
-- [ ] 3. **Finish the `/preview` commit** [CR-M6, L12, L13, L14, L15, OD-28]:
+- [x] 1. **Pitfall-cycle dark mode** [CR-H2]. `app/globals.css:959` `.cycle-node.is-broken`: use theme tokens (`background: var(--color-brand-tint); border-color: var(--color-brand-soft)`, the pair `.setup-source.on` uses) and `.cycle-badge { color: var(--color-success) }`. Verify on `/handbook/ch7` and `/preview` in dark mode after clicking "CRM": node title and body at least 4.5:1.
+- [x] 2. **Callout text on `/preview` dark mode** [CR-H3]. `app/(public)/site.css:53`: lower the public base rules' specificity to `.pub :where(p)`, `.pub :where(a)` so `.box p` from `globals.css:1214` wins. Verify: `.pub-sample .box p` computed colour in dark mode is `#334155`.
+- [x] 3. **Finish the `/preview` commit** [CR-M6, L12, L13, L14, L15, OD-28]:
   - `components/site/Excerpt.tsx:47`: when rendering a whole page, demote every heading one level (h1 to h2, h2 to h3, h3 to h4), match `<h1\b[^>]*>` not only a bare `<h1>`, and throw when a whole-page render finds no h1. Drop or merge the `<h2>Chapter N</h2>` wrappers in `app/(public)/preview/page.tsx:41-50`. Keep `lib/outline.ts` ids so `/preview#…` anchors work.
   - Move content typography from `.chapter-section …` (`globals.css:356-362,383-396`) to a `.chapter-body` scope that both `ChapterView` and `Excerpt` emit. This is also the start of CR-L25; finish L25 in M6.
   - Scope the `hide-quizzes` rule at `globals.css:1124` to `.shell-handbook` so a reader who hid quizzes still sees them on `/preview`.
   - `PREVIEW_WIDGETS` in `Excerpt.tsx:24`: register plain `KnowledgeCheck`, not `KnowledgeCheckEntry`, so the sample never switches to `CoachCheck` when Chapter 1 or 7 questions gain concept tags (precondition for M4 step 9).
   - Copy: `app/(public)/refunds/page.tsx:21` ("a full section"), `app/(public)/page.tsx:362` ("a full sample lesson"), the "exactly as they appear" claims on `preview/page.tsx:20` and `pricing/page.tsx:122`. Say what the sample omits (glossary popovers, outline, read tracking, next-chapter link).
   - `e2e/site.spec.ts:46-55`: assert visibility, exactly one `h1`, no duplicate ids, and the outline h1 to h2 (chapter) to h3 (section) to h4 (box).
-- [ ] 4. **Consent-version check** [CR-M7]. `lib/leads/validate.ts:7`: `z.enum([CONSENT_VERSION])` or `Object.hasOwn`; type `CONSENT_TEXTS` as `Record<typeof CONSENT_VERSION, string>` and remove the `!` in `handler.ts:45`. Add the `'constructor'` case to `lib/leads/handler.test.ts` expecting `invalid_request` and no stored lead.
-- [ ] 5. **Legacy link** [CR-L11]. `components/widgets/ErrorScoreCard.tsx:50` links `/chN`; use `pageHref`.
-- [ ] 6. **Public live region** [CR-L16]. Add the `#pageStatus` region to `app/(public)/layout.tsx` so `announce()` works and "Copy script" on `/preview` is announced.
-- [ ] 7. **Appendix E tool table on the sales page** [FS-D1, "not done yet"]. Render the tool list as "what is inside" on `/pricing` or `/`. It is a feature list, not teaching.
-- [ ] 8. **FS status check** [FS]. Confirm `e2e/site.spec.ts` still checks both chapters, both checkpoint boxes, both quizzes and the two Chapter 7 tools after step 3.
+- [x] 4. **Consent-version check** [CR-M7]. `lib/leads/validate.ts:7`: `z.enum([CONSENT_VERSION])` or `Object.hasOwn`; type `CONSENT_TEXTS` as `Record<typeof CONSENT_VERSION, string>` and remove the `!` in `handler.ts:45`. Add the `'constructor'` case to `lib/leads/handler.test.ts` expecting `invalid_request` and no stored lead.
+- [x] 5. **Legacy link** [CR-L11]. `components/widgets/ErrorScoreCard.tsx:50` links `/chN`; use `pageHref`.
+- [x] 6. **Public live region** [CR-L16]. Add the `#pageStatus` region to `app/(public)/layout.tsx` so `announce()` works and "Copy script" on `/preview` is announced.
+- [x] 7. **Appendix E tool table on the sales page** [FS-D1, "not done yet"]. Render the tool list as "what is inside" on `/pricing` or `/`. It is a feature list, not teaching.
+- [x] 8. **FS status check** [FS]. Confirm `e2e/site.spec.ts` still checks both chapters, both checkpoint boxes, both quizzes and the two Chapter 7 tools after step 3.
 
 Verification: dark-mode screenshots of ch7 and `/preview`; the heading outline; `pnpm typecheck`, `pnpm test`, `pnpm e2e` green.
 
