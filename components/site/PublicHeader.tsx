@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { BOOK_TITLE } from '@/lib/pages';
+import { ArrowRightIcon, MenuIcon, XIcon } from 'lucide-react';
 import { useSignedIn } from './useSignedIn';
 
 // Header links: preview, what is included, pricing, and the way into the handbook: "Sign in" for a visitor,
-// "Open the handbook" once the browser reports the sign-in flag (useSignedIn, after mount).
+// "Open handbook" once the browser reports the sign-in flag (useSignedIn, after mount).
 const LINKS = [
   { href: '/preview', label: 'Sample lesson' },
   { href: '/#how-it-works', label: 'How it works' },
@@ -50,22 +50,23 @@ export function PublicHeader() {
 
   return (
     <header className="pub-header">
-      <div className="pub-wrap pub-header-row">
+      <div className="pub-header-row">
         <Link href="/" className="pub-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo3-sidebar-transparent.png" width={36} height={36} alt="" />
-          <span>{BOOK_TITLE}</span>
+          <img src="/images/logo3-sidebar-transparent.png" width={44} height={44} alt="" />
+          {/* the title always breaks after "Nurturing,"; the space between the spans keeps the link's name one sentence */}
+          <span className="pub-brand-title"><span>Finding, Nurturing,</span> <span>and Keeping Clients</span></span>
         </Link>
-        <button ref={buttonRef} type="button" className="pub-menu-btn" aria-expanded={open} aria-controls="pubNav" onClick={() => setOpen(o => !o)}>
-          {open ? 'Close' : 'Menu'}
+        <button ref={buttonRef} type="button" className="pub-menu-btn" aria-label="Menu" aria-expanded={open} aria-controls="pubNav" onClick={() => setOpen(o => !o)}>
+          {open ? <XIcon aria-hidden="true" /> : <MenuIcon aria-hidden="true" />}
         </button>
         <nav id="pubNav" ref={navRef} className={`pub-nav${open ? ' open' : ''}`} aria-label="Main" onClick={onNavClick}>
           {LINKS.map(l => (
             <Link key={l.href} href={l.href} aria-current={currentFor(l.href, pathname)}>{l.label}</Link>
           ))}
           {signedIn
-            ? <Link href="/handbook" className="pub-nav-cta">Open the handbook</Link>
-            : <Link href="/signin" className="pub-nav-cta">Sign in</Link>}
+            ? <Link href="/handbook" className="pub-nav-cta">Open handbook<ArrowRightIcon aria-hidden="true" /></Link>
+            : <Link href="/signin" className="pub-nav-cta">Sign in<ArrowRightIcon aria-hidden="true" /></Link>}
         </nav>
       </div>
     </header>

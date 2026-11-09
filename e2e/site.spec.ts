@@ -37,7 +37,7 @@ test.describe('public pages', () => {
     // the suite runs signed in: the hero welcomes the reader back instead of asking for the address again
     await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
     await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
-    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open handbook' })).toHaveAttribute('href', '/handbook');
   });
 
   test.describe('signed out', () => {
@@ -198,6 +198,33 @@ test.describe('public pages', () => {
     await expect(nav.getByRole('link', { name: 'Sample lesson' })).toHaveAttribute('aria-current', 'page');
     await expect(nav.getByRole('link', { name: 'How it works' })).not.toHaveAttribute('aria-current', /.+/);
   });
+
+  test('a section link scrolls its heading clear of the sticky header', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'How it works' }).click();
+    const headerBottom = await page.locator('.pub-header').evaluate(el => el.getBoundingClientRect().bottom);
+    await expect.poll(() => page.locator('#how-it-works').evaluate(el => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
+  });
+
+  // 1101 is the narrowest width that shows the desktop links; none of them may wrap there
+  for (const width of [1101, 1440]) {
+    test(`the desktop header keeps every link on one line at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+      const nav = page.getByRole('navigation', { name: 'Main' });
+      await expect(nav.getByRole('link', { name: 'Open handbook' })).toBeVisible();
+      for (const link of await nav.getByRole('link').all()) {
+        expect((await link.boundingBox())?.height).toBe(44); // a wrapped label would grow past the 44px target
+        expect(await link.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      }
+      const brandRight = await page.locator('.pub-brand').evaluate(el => el.getBoundingClientRect().right);
+      expect(brandRight).toBeLessThanOrEqual(await nav.evaluate(el => el.getBoundingClientRect().left));
+      await expect(page.locator('.pub-header')).toHaveCSS('height', '89px'); // 88px row plus the 1px border
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+    });
+  }
 
   // 320 is the smallest phone the site supports and 360 the common Android width. The hero's stat tiles were
   // the one thing that could not shrink that far.
