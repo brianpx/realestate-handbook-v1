@@ -9,6 +9,7 @@ export default function ComingSoonPage() {
   return (
     <main className="grid min-h-dvh place-items-center bg-background px-4 text-center text-foreground">
       <div>
+        <img className="mx-auto mb-6 rounded-md" src="/images/apple-touch-icon.png" width={96} height={96} alt="" />
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{BOOK_TITLE}</h1>
         <p className="mt-3 text-lg text-muted-foreground">Coming soon</p>
       </div>
