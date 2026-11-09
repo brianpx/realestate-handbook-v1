@@ -165,7 +165,12 @@ test.describe('the account actions', () => {
     await page.getByRole('button', { name: 'Delete my account' }).click();
     await expect(page).toHaveURL(`${BASE_URL}/goodbye`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Your account has been deleted.');
+    // the jar is read once nothing is in flight: a sidebar prefetch that left /account before the delete answered
+    // must not be able to put a cookie back (the proxy no longer slides on prefetches); /goodbye is public, so
+    // there is no hydration mark to wait for instead
+    await page.waitForLoadState('networkidle');
     expect((await context.cookies()).find(c => c.name === 'hb_session')).toBeUndefined();
+    expect((await context.cookies()).find(c => c.name === 'hb_signed_in')).toBeUndefined();
     await page.goto('/account');
     await expect(page).toHaveURL(`${BASE_URL}/signup?next=%2Faccount`);
 
