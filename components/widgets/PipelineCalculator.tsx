@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { fmtMoney, fmtNum } from '@/lib/format';
 import { callFlag, PIPELINE_TYPES, pipelineStats, QUIET_DAYS, type PipelineRow } from '@/lib/pipeline';
 import { updatePipelineRows, useHandbookState, widgetOf } from '@/lib/state';
@@ -19,8 +18,6 @@ export function PipelineCalculator() {
     days: num(r.days),
     next: r.next === true,
   }));
-  // removing a contact shifts the rows after it, so the row inputs remount to drop any text typed into them
-  const [generation, setGeneration] = useState(0);
   const { value, active, calls } = pipelineStats(rows);
 
   const patch = (i: number, p: Record<string, unknown>) => updatePipelineRows(list => {
@@ -43,7 +40,7 @@ export function PipelineCalculator() {
       </div>
       <div className="pipe-rows">
         {rows.map((row, i) => (
-          <fieldset key={`${generation}-${i}`} className="pipe-row">
+          <fieldset key={i} className="pipe-row">
             <legend>Contact {i + 1}</legend>
             <label className="cost-field">
               Contact (initials ok)
@@ -72,7 +69,7 @@ export function PipelineCalculator() {
               type="button"
               className="btn-mini"
               aria-label={`Remove contact ${i + 1}`}
-              onClick={() => { updatePipelineRows(list => { list.splice(i, 1); }); setGeneration(g => g + 1); }}
+              onClick={() => updatePipelineRows(list => { list.splice(i, 1); })}
             >
               Remove
             </button>
