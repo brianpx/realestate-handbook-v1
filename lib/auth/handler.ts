@@ -8,7 +8,7 @@ import { hashKey, hashSecret, isSecretShape, newSecret } from './token';
 import { requestLinkSchema, safeNextPath } from './validate';
 
 export type AuthRequest = {
-  /** The request URL: decides the cookie's Secure attribute and the origin of the emailed link. */
+  /** The request URL: decides the cookie's Secure attribute. */
   url: string;
   origin: string | null;
   ip: string;
@@ -44,7 +44,8 @@ const originRefused = (req: AuthRequest, deps: AuthDeps) => !req.origin || !deps
  * honest error, and the error says nothing about the address.
  */
 export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
-  if (originRefused(req, deps)) return reply(403, 'forbidden');
+  const origin = req.origin;
+  if (!origin || !deps.allowedOrigins.includes(origin)) return reply(403, 'forbidden');
   if (!deps.stores) return reply(503, 'unavailable');
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
   const { auth } = deps.stores;
@@ -67,7 +68,8 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
 
     const raw = newSecret();
     await auth.createToken({ tokenHash: hashSecret(raw), email, nextPath: safeNextPath(next), termsVersion, source, expiresAt: tokenExpiry(now), createdIpHash: ipHash, createdAt: now });
-    const link = `${new URL(req.url).origin}${VERIFY_PATH}?token=${raw}`;
+    // the link is built on the allow-listed Origin, never on the Host header, which a proxy may let a sender choose
+    const link = `${origin}${VERIFY_PATH}?token=${raw}`;
     if ((await sendSignInLink(deps.mail, email, link, deps.fetchImpl)) !== 'sent') return reply(503, 'unavailable');
     return OK;
   } catch (err) {

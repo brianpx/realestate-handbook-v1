@@ -27,3 +27,5 @@ export const MAX_BODY_BYTES = 4096;
 export const DEFAULT_NEXT_PATH = '/handbook';
 export const SIGN_IN_PATH = '/signup';
 export const VERIFY_PATH = '/auth/verify';
+/** Set by proxy.ts on every gated request: the path and query asked for, so sign-in can come back to it. */
+export const PATH_HEADER = 'x-hb-path';

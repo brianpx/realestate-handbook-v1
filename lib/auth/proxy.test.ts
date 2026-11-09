@@ -1,7 +1,8 @@
 import { getRedirectUrl, unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
-import { config, PATH_HEADER, proxy } from '@/proxy';
+import { config, proxy } from '@/proxy';
+import { PATH_HEADER } from './config';
 import { newSecret } from './token';
 
 const run = (url: string, cookie?: string) => proxy(new NextRequest(url, cookie ? { headers: { cookie } } : undefined));

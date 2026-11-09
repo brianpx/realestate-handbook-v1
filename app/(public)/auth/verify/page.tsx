@@ -9,9 +9,10 @@ import { hashSecret, isSecretShape } from '@/lib/auth/token';
 
 export const metadata: Metadata = { title: 'Signing you in', robots: { index: false, follow: false } };
 
-type Props = { searchParams: Promise<{ token?: string | string[]; error?: string | string[] }> };
+type Props = { searchParams: Promise<{ token?: string | string[] }> };
 
-// Where the emailed link lands. This page only looks: a usable token gets the one-button form that consumes it
+// Where the emailed link lands (and where a failed POST comes back to, with ?error=1 so the address bar says so).
+// This page only looks: a usable token gets the one-button form that consumes it
 // (components/auth/AutoSubmit.tsx), anything else gets the same card with a fresh form. Fetching this URL, as mail
 // scanners and link previews do, changes nothing.
 export default async function VerifyPage({ searchParams }: Props) {

@@ -7,10 +7,12 @@ import { useEffect, useRef, useState } from 'react';
 // button is there for anyone whose JavaScript did not run.
 export function AutoSubmit({ action, token }: { action: string; token: string }) {
   const ref = useRef<HTMLFormElement>(null);
+  const fired = useRef(false); // development runs effects twice; the token is single-use, so submit once
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     const form = ref.current;
-    if (!form) return;
+    if (!form || fired.current) return;
+    fired.current = true;
     setSubmitted(true);
     form.requestSubmit();
   }, []);

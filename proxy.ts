@@ -1,10 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { SIGN_IN_PATH } from '@/lib/auth/config';
+import { PATH_HEADER, SIGN_IN_PATH } from '@/lib/auth/config';
 import { COOKIE_NAMES, cookieOptions, isSecureRequest } from '@/lib/auth/cookie';
 import { isSecretShape } from '@/lib/auth/token';
-
-/** The header the data-access layer reads to send a reader back to the page they wanted after signing in. */
-export const PATH_HEADER = 'x-hb-path';
 
 // The gate's first layer. It only checks that a session cookie of the right shape is present: no database, no
 // decision about preview versus member. Anything without one goes to the sign-in page with the path to come back

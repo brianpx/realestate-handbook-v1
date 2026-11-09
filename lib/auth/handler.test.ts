@@ -213,3 +213,11 @@ describe('sign-out', () => {
     expect((await handleSignOut({ url: `${ORIGIN}/api/auth/sign-out`, origin: 'https://evil.example', ip: 'x', body: '' }, t.deps)).status).toBe(403);
   });
 });
+
+describe('the emailed link', () => {
+  it('is built on the allow-listed Origin, never on the request host', async () => {
+    const { request, sentLink } = setup();
+    await request(body({ email: 'a@b.co' }), { url: 'https://attacker.example/api/auth/request-link' });
+    expect(sentLink().startsWith(`${ORIGIN}/auth/verify?token=`)).toBe(true);
+  });
+});
