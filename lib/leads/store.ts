@@ -28,11 +28,14 @@ export class FileLeadStore implements LeadStore {
   constructor(private readonly file: string) {}
 
   private async read(): Promise<Shape> {
+    let data: Partial<Shape> | null;
     try {
-      return JSON.parse(await readFile(this.file, 'utf8')) as Shape;
+      data = JSON.parse(await readFile(this.file, 'utf8')) as Partial<Shape> | null;
     } catch {
       return { leads: [], attempts: [] };
     }
+    // a hand-edited or truncated file must not break every later request: a missing or non-array field starts empty
+    return { leads: Array.isArray(data?.leads) ? data.leads : [], attempts: Array.isArray(data?.attempts) ? data.attempts : [] };
   }
 
   // one change at a time, written to a temp file then renamed, so a crash never leaves half a file
@@ -114,10 +117,12 @@ export class MemoryLeadStore implements LeadStore {
 
 /**
  * Picks the store from the environment: a database when DATABASE_URL is set, the throwaway file store only when
- * asked for by name, otherwise none (the route then refuses with 503).
+ * asked for by name, otherwise none (the route then refuses with 503). A hosted deployment (VERCEL_ENV is set) never
+ * gets the file store, whatever LEAD_STORE says: its disk is ephemeral and the leads would vanish with the instance.
+ * A local production build (the e2e suite) may still use it.
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
-  if (env.LEAD_STORE === 'file') return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
+  if (env.LEAD_STORE === 'file' && !env.VERCEL_ENV) return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);
   return null;
 }
