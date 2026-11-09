@@ -1060,8 +1060,10 @@ html.dark {
             #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100}
             #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible}
             #main-content { min-height: 0; overflow: visible}
-            /* anchored jumps (search, tool links) must land below the sticky search row */
-            h1, h2, h3, h4, [data-widget] { scroll-margin-top: 72px}
+            /* The document is the scroll root here, so anything brought into view (anchored jumps, search hits,
+               focused inputs and buttons) must land below the sticky search row. The public site has the same rule
+               for its own header (site.css). */
+            html:has(.shell-handbook) { scroll-padding-top: 72px}
             .chapter-section + .chapter-section {
                 margin-top: 40px;
                 padding-top: 40px;
