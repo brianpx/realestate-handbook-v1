@@ -13,10 +13,11 @@ import { isComingSoon } from '@/lib/site';
 // prefetches and RSC fetches do not: they leave the page without waiting for a sign-out or delete to answer, and
 // one that answers afterwards would put the cookie the sign-out had just cleared straight back. The server-side
 // session slides on its own schedule in the DAL (at most once a day), so a page load is all the cookie needs.
-// Every page, because the coming-soon switch covers the public site too; API routes, framework files, public
+//
+// The matcher takes every page, because the coming-soon switch covers the public site too; API routes, framework files, public
 // assets and the metadata routes never come through here.
 export const config = {
-  matcher: ['/((?!api/|_next/|images/|robots\\.txt|sitemap\\.xml|coming-soon).*)'],
+  matcher: ['/((?!api/|_next/|images/|robots\\.txt|sitemap\\.xml|coming-soon(?:/|$)).*)'],
 };
 
 const GATED = /^\/(handbook|account|admin)(\/|$)|^\/search-index\.json$/;
