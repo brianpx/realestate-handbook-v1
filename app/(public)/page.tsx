@@ -5,6 +5,7 @@ import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
 import { OFFER, OWNER, primaryAction, purchaseOpen } from '@/lib/offer';
+import { paidTiers } from '@/lib/tiers';
 import { NAV } from '@/lib/pages';
 import { fmtClock, planBlocks, ROADMAP_PHASES, TIMEBLOCK_DEFAULTS } from '@/lib/plan';
 import { roundPerDay } from '@/lib/goal';
@@ -33,9 +34,7 @@ export default function SalesPage() {
 type Action = ReturnType<typeof primaryAction>;
 
 function ActionLink({ action, className }: { action: Action; className: string }) {
-  return action.external
-    ? <a className={className} href={action.href} rel="noopener">{action.label}</a>
-    : <Link className={className} href={action.href}>{action.label}</Link>;
+  return <Link className={className} href={action.href}>{action.label}</Link>;
 }
 
 /* 1. Who is this for, and what will it help me do */
@@ -349,21 +348,22 @@ function Offer({ open }: { open: boolean }) {
         <div className="pub-card pub-offer">
           {open ? (
             <>
-              <p className="pub-h3" style={{ fontSize: '2rem', margin: 0 }}>{OFFER.priceDisplay}</p>
+              <p className="pub-h3" style={{ fontSize: '2rem', margin: 0 }}>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}</p>
               <dl>
+                <dt>Plans</dt><dd>Two one-time purchases, Basic and Pro; everything in Basic is in Pro. The free set stays free.</dd>
                 <dt>Access</dt><dd>{OFFER.accessTerm}</dd>
                 <dt>Updates</dt><dd>{OFFER.updatesTerm}</dd>
                 <dt>Refunds</dt><dd><Link href="/refunds">Read the refund policy</Link> before you buy.</dd>
               </dl>
-              <a className="pub-btn pub-btn-primary" href={OFFER.checkoutUrl ?? '/pricing'} rel="noopener">{`Get the handbook, ${OFFER.priceDisplay}`}</a>
+              <Link className="pub-btn pub-btn-primary" href="/pricing">Compare the plans and buy</Link>
             </>
           ) : (
             <>
               <span className="pub-status">Purchase is not open yet</span>
-              <p>No price, access term or refund policy has been published, so there is nothing to buy today. When that changes, the price and every term will be on the pricing page before you are asked for anything.</p>
+              <p>No price, access term or refund policy has been published, so there is nothing to buy today. When that changes, the prices and every term will be on the pricing page before you are asked for anything.</p>
               <p>Until then you can read two full chapters and use their tools, with no sign-up.</p>
               <div className="pub-actions">
-                <Link className="pub-btn pub-btn-primary" href="/pricing">See pricing and availability</Link>
+                <Link className="pub-btn pub-btn-primary" href="/pricing">See plans and pricing</Link>
                 <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
               </div>
             </>
@@ -394,15 +394,16 @@ function Faq() {
 }
 
 function Final({ action }: { action: Action }) {
-  // Once purchase is open the buyer's next step is the purchase; until then it is the free sample.
-  const preview = <Link className={`pub-btn ${action.external ? 'pub-btn-secondary' : 'pub-btn-primary'}`} href="/preview">Try a sample lesson</Link>;
+  // The sample comes first; checkout, when it opens, is on the pricing page, so the plans link stays secondary.
+  const preview = <Link className="pub-btn pub-btn-primary" href="/preview">Try a sample lesson</Link>;
   return (
     <section className="pub-section pub-final" aria-labelledby="finalTitle">
       <div className="pub-wrap pub-narrow">
         <h2 id="finalTitle" className="pub-h2">Start with tomorrow morning.</h2>
         <p className="pub-lede" style={{ margin: '0 auto 24px' }}>Try the sample lesson, set your daily number, and see whether this is the routine you want to follow for the next 90 days.</p>
         <div className="pub-actions">
-          {action.external ? <><ActionLink action={action} className="pub-btn pub-btn-primary" />{preview}</> : <>{preview}<ActionLink action={action} className="pub-btn pub-btn-secondary" /></>}
+          {preview}
+          <ActionLink action={action} className="pub-btn pub-btn-secondary" />
         </div>
         <p className="pub-fineprint">Pricing and purchase status are on the <Link href="/pricing">pricing page</Link>.</p>
       </div>

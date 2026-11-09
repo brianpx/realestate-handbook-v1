@@ -31,9 +31,35 @@ test.describe('public pages', () => {
 
   test('the sales page has no purchase button until a price and checkout are configured', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'See pricing and availability' }).first()).toHaveAttribute('href', '/pricing');
+    await expect(page.getByRole('link', { name: 'See plans and pricing' }).first()).toHaveAttribute('href', '/pricing');
     await expect(page.getByRole('link', { name: 'Try a sample lesson' }).first()).toHaveAttribute('href', '/preview');
     await expect(page.getByText('Purchase is not open yet').first()).toBeVisible();
+  });
+
+  // The comparison grid is shown from 768px up and the per-plan tabs below it; both come from lib/tiers.ts.
+  test('the pricing page compares Free, Basic and Pro and sells nothing while purchase is closed', async ({ page }) => {
+    await page.goto('/pricing');
+    const table = page.locator('section[aria-labelledby="plansTitle"]');
+    await expect(table.getByRole('heading', { name: 'Free', level: 3 })).toBeVisible();
+    await expect(table.getByRole('heading', { name: 'Basic', level: 3 })).toBeVisible();
+    await expect(table.getByRole('heading', { name: 'Pro', level: 3 })).toBeVisible();
+    await expect(table.getByText('Not on sale yet').first()).toBeVisible();
+    await expect(table.getByRole('button', { name: 'Not on sale yet' })).toHaveCount(2);
+    await expect(table.locator('a[href^="https://"]')).toHaveCount(0);
+    await expect(table.getByRole('link', { name: 'Try the sample lesson' })).toHaveAttribute('href', '/preview');
+    // the update and support rows promise nothing until the owner publishes those terms (lib/offer.ts): two rows
+    // for two paid plans in the grid, and again in whichever plan tab is mounted
+    await expect(table.getByText('Not published yet').first()).toBeVisible();
+    expect(await table.getByText('Not published yet').count()).toBeGreaterThanOrEqual(4);
+    await expect(table.getByText('This edition and the next')).toHaveCount(0);
+
+    await page.setViewportSize({ width: 390, height: 800 });
+    await expect(table.getByRole('tab', { name: 'Basic' })).toHaveAttribute('aria-selected', 'true');
+    await table.getByRole('tab', { name: 'Pro' }).click();
+    const pro = table.getByRole('tabpanel', { name: 'Pro' }); // the Basic panel stays mounted, inert, while it animates out
+    await expect(pro).toContainText('Every tool');
+    await expect(pro.getByRole('button', { name: 'Not on sale yet' })).toBeDisabled();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
   });
 
   test('the hero calculator uses the Chapter 1 arithmetic and flags bad input', async ({ page }) => {

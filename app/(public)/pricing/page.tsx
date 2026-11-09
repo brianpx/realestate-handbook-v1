@@ -1,100 +1,37 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHead } from '@/components/site/Draft';
+import { PricingTable } from '@/components/site/PricingTable';
 import { ToolIndex } from '@/components/site/ToolIndex';
 import { pricingFaqs } from '@/content/site/faq';
 import { OFFER, OWNER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
+import { paidTiers } from '@/lib/tiers';
 
 export const metadata: Metadata = {
   title: 'Pricing and availability',
-  description: 'What the handbook includes, what it costs, and how access, updates and support work.',
+  description: 'What each plan includes, what it costs, and how access, updates and support work.',
   alternates: { canonical: '/pricing' },
 };
 
 const NOT_PUBLISHED = 'Not published yet';
 
-const INCLUDED = [
-  {
-    title: 'Read',
-    items: [
-      '13 chapters in a fixed order, each with an exercise and a short checkpoint',
-      'An overview and a 90-day plan',
-      'Six appendices: scorecard, follow-up starter kit, CRM checklist, glossary, tools index and links',
-    ],
-  },
-  {
-    title: 'Do',
-    items: [
-      'Income goal calculator and lead source comparison',
-      'Weekly planner with calendar export',
-      'CRM setup checklists and a weekly activity scorecard',
-      'Pipeline value calculator and post-close scheduler',
-    ],
-  },
-  {
-    title: 'Practice',
-    items: [
-      'More than 20 word-for-word scripts with a practice mode',
-      'An objection trainer and a consultation lab',
-      'Qualifying and Fair Housing drills',
-    ],
-  },
-  {
-    title: 'Keep track',
-    items: [
-      'A guided first-session setup',
-      'Search, a glossary and print-friendly pages',
-      'Progress saved on your device, with a downloadable backup file',
-    ],
-  },
-];
-
 export default function PricingPage() {
   const open = purchaseOpen();
   return (
     <>
-      <PageHead eyebrow="Pricing" title={open ? 'One handbook, one price.' : 'Pricing and availability'}>
+      <PageHead eyebrow="Pricing" title={open ? 'Three plans, one handbook.' : 'Pricing and availability'}>
         {open
-          ? 'Everything below is included. There are no tiers and no add-ons.'
-          : 'Purchase is not open yet. This page shows exactly what is included now, and it will carry the price and every term before you are asked to pay.'}
+          ? 'Three plans; everything in Basic is in Pro. Each paid plan is a one-time purchase, and the free set stays free.'
+          : 'Purchase is not open yet. This page shows exactly what each plan includes now, and it will carry the prices and every term before you are asked to pay.'}
       </PageHead>
 
-      <section className="pub-section pub-tight" aria-labelledby="offerTitle">
-        <div className="pub-wrap pub-pricing-grid">
-          <div className="pub-card pub-buy">
-            <h2 id="offerTitle" className="pub-buy-label">The 90-day handbook</h2>
-            {open ? (
-              <>
-                <p className="pub-price">{OFFER.priceDisplay}</p>
-                <p className="pub-buy-note">{OFFER.accessTerm}</p>
-                <a className="pub-btn pub-btn-primary pub-btn-block" href={OFFER.checkoutUrl ?? '#'} rel="noopener">{`Get the handbook, ${OFFER.priceDisplay}`}</a>
-                <p className="pub-small">
-                  Checkout opens on the payment provider’s own page. Read the <Link href="/terms">terms</Link>, <Link href="/refunds">refund policy</Link> and <Link href="/privacy">privacy policy</Link> first.
-                </p>
-              </>
-            ) : (
-              <>
-                <span className="pub-status">Purchase is not open yet</span>
-                <p className="pub-buy-note">There is no price, checkout, access term or refund policy to show, so nothing here can be bought and nothing has been charged or promised.</p>
-                <Link className="pub-btn pub-btn-primary pub-btn-block" href="/preview">Try a sample lesson</Link>
-                <p className="pub-small">Free, with its working calculator and no sign-up.</p>
-              </>
-            )}
-          </div>
-
-          <div>
-            <h2 className="pub-h2 text-2xl">Everything in one handbook</h2>
-            <div className="pub-grid two pub-included">
-              {INCLUDED.map(g => (
-                <div key={g.title}>
-                  <h3 className="pub-h3">{g.title}</h3>
-                  <ul>{g.items.map(i => <li key={i}>{i}</li>)}</ul>
-                </div>
-              ))}
-            </div>
-            <p className="pub-small">Not included: coaching, continuing education credit, legal advice, or help with a specific transaction.</p>
-            <ToolIndex />
-          </div>
+      <section className="pub-section pub-tight" aria-labelledby="plansTitle">
+        <div className="pub-wrap">
+          <h2 id="plansTitle" className="pub-h2 text-2xl">Compare the plans</h2>
+          {!open && <p className="pub-small">Basic and Pro are not on sale yet: there is no price, checkout, access term or refund policy to show, so nothing here can be bought and nothing has been charged or promised. The free set needs no sign-up.</p>}
+          <PricingTable />
+          <p className="pub-small mt-6">Not included in any plan: coaching calls, continuing education credit, legal advice, or help with a specific transaction.</p>
+          <ToolIndex />
         </div>
       </section>
 
@@ -102,7 +39,7 @@ export default function PricingPage() {
         <div className="pub-wrap pub-narrow">
           <h2 id="termsTitle" className="pub-h2">Terms at a glance</h2>
           <dl className="pub-terms">
-            <div><dt>Price</dt><dd>{open ? OFFER.priceDisplay : NOT_PUBLISHED}</dd></div>
+            <div><dt>Price</dt><dd>{open ? paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join('; ') : NOT_PUBLISHED}</dd></div>
             <div><dt>Access</dt><dd>{OFFER.accessTerm ?? NOT_PUBLISHED}</dd></div>
             <div><dt>Updates</dt><dd>{OFFER.updatesTerm ?? NOT_PUBLISHED}</dd></div>
             <div><dt>Refunds</dt><dd>{POLICY_STATUS.refunds === 'approved' ? <Link href="/refunds">Read the refund policy</Link> : NOT_PUBLISHED}</dd></div>

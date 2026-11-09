@@ -169,6 +169,7 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 | OD-28 | Public site dark mode follows the OS or the handbook setting with no toggle: intentional? | CR open 6 | Keep, but stop handbook-only state (`hide-quizzes`) reaching public pages (CR-L13) | M2 step 3 | |
 | OD-29 | Spend Management on `meded`: enable "pause production deployments when the limit is reached" (the live site goes down at $20 of usage) | VM Decision 5 | Leave off (notify only) unless the owner says yes after the warning | M3 step 2 | |
 | OD-30 | Reviewer for coach questions: someone who has worked as an agent, to clear `draft` on new items | CC-§5, CC Phase 4 | Owner names the reviewer | M4 step 9 | |
+| OD-31 | Tiers: the free set, Basic and Pro, each paid tier a one-time purchase; Phase 2's access_grants gains a tier and entitlement() becomes tier-aware (Basic: chapters, appendices, essential tools, search; Pro: every tool, the coach, the PDF) | FS, UD-§7 | Three tiers as stated | M7 (pricing now, entitlement in M5 Phase 2, billing in M7 Phase 5) | Yes (owner, 8 Nov 2026) |
 
 VM Decisions 1 to 4 (Path A new Neon resource, local then preview then production, best-practice env scoping, CLI upgrade) are already made and are not re-asked.
 

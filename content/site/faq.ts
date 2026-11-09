@@ -1,4 +1,5 @@
 import { OFFER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
+import { paidTiers } from '@/lib/tiers';
 
 export type Faq = { q: string; a: string };
 
@@ -41,15 +42,15 @@ export function faqs(): Faq[] {
   ];
 }
 
-// Buying questions for /pricing. Each answer states only what is published in lib/offer.ts and otherwise says it is not.
+// Buying questions for /pricing. Each answer states only what is published in lib/offer.ts and lib/tiers.ts and otherwise says it is not.
 export function pricingFaqs(): Faq[] {
   const open = purchaseOpen();
   return [
     {
       q: 'How much does it cost?',
       a: open
-        ? `${OFFER.priceDisplay}. ${OFFER.accessTerm} There are no tiers or add-ons.`
-        : 'No price has been published, so nothing can be bought yet. The price and every term will be on this page before you are asked to pay.',
+        ? `Two plans, each a one-time purchase: ${paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(', ')}. The free set stays free. ${OFFER.accessTerm}`
+        : 'No price has been published, so nothing can be bought yet. There will be two plans, Basic and Pro, each a one-time purchase; the free set stays free. The prices and every term will be on this page before you are asked to pay.',
     },
     {
       q: 'What happens when I pay?',
