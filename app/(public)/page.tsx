@@ -5,6 +5,7 @@ import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
 import { OFFER, OWNER, primaryAction, purchaseOpen } from '@/lib/offer';
+import { paidTiers } from '@/lib/tiers';
 import { NAV } from '@/lib/pages';
 import { fmtClock, planBlocks, ROADMAP_PHASES, TIMEBLOCK_DEFAULTS } from '@/lib/plan';
 import { roundPerDay } from '@/lib/goal';
@@ -349,21 +350,22 @@ function Offer({ open }: { open: boolean }) {
         <div className="pub-card pub-offer">
           {open ? (
             <>
-              <p className="pub-h3" style={{ fontSize: '2rem', margin: 0 }}>{OFFER.priceDisplay}</p>
+              <p className="pub-h3" style={{ fontSize: '2rem', margin: 0 }}>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}</p>
               <dl>
+                <dt>Plans</dt><dd>Two one-time purchases, Basic and Pro; everything in Basic is in Pro. The free set stays free.</dd>
                 <dt>Access</dt><dd>{OFFER.accessTerm}</dd>
                 <dt>Updates</dt><dd>{OFFER.updatesTerm}</dd>
                 <dt>Refunds</dt><dd><Link href="/refunds">Read the refund policy</Link> before you buy.</dd>
               </dl>
-              <a className="pub-btn pub-btn-primary" href={OFFER.checkoutUrl ?? '/pricing'} rel="noopener">{`Get the handbook, ${OFFER.priceDisplay}`}</a>
+              <Link className="pub-btn pub-btn-primary" href="/pricing">Compare the plans and buy</Link>
             </>
           ) : (
             <>
               <span className="pub-status">Purchase is not open yet</span>
-              <p>No price, access term or refund policy has been published, so there is nothing to buy today. When that changes, the price and every term will be on the pricing page before you are asked for anything.</p>
+              <p>No price, access term or refund policy has been published, so there is nothing to buy today. When that changes, the prices and every term will be on the pricing page before you are asked for anything.</p>
               <p>Until then you can read two full chapters and use their tools, with no sign-up.</p>
               <div className="pub-actions">
-                <Link className="pub-btn pub-btn-primary" href="/pricing">See pricing and availability</Link>
+                <Link className="pub-btn pub-btn-primary" href="/pricing">See plans and pricing</Link>
                 <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
               </div>
             </>

@@ -1,7 +1,9 @@
 // Everything the public site needs from the owner, in one place. A null is an open decision: the site then says
-// so plainly instead of showing an invented value. Nothing here switches on payments by itself: `checkoutUrl` is a
-// link to a hosted checkout the owner creates, and the site has no payment code. See docs/launch-handoff.md.
+// so plainly instead of showing an invented value. Nothing here switches on payments by itself: each paid tier's
+// `checkoutUrl` in lib/tiers.ts is a link to a hosted checkout the owner creates, and the site has no payment code.
+// See docs/launch-handoff.md.
 import { BOOK_TITLE } from './pages';
+import { paidTiers, tierById, type TierId } from './tiers';
 
 export const SITE_TITLE = `${BOOK_TITLE}: a 90-day handbook for new real estate agents`;
 export const SITE_DESCRIPTION =
@@ -22,18 +24,13 @@ export const OWNER: {
   postalAddress: null,
 };
 
+// Prices and checkout links live with their tiers in lib/tiers.ts.
 export const OFFER: {
-  /** What the buyer sees, for example "$49". Not set: the owner has not chosen a price. */
-  priceDisplay: string | null;
-  /** A hosted-checkout link (https). Not set: nothing can be bought. */
-  checkoutUrl: string | null;
   /** One sentence on how long access lasts, for example "Access to this edition, with its updates." */
   accessTerm: string | null;
   /** One sentence on what updates are included. */
   updatesTerm: string | null;
 } = {
-  priceDisplay: null,
-  checkoutUrl: null,
   accessTerm: null,
   updatesTerm: null,
 };
@@ -47,19 +44,21 @@ export const POLICY_STATUS: Record<'privacy' | 'terms' | 'refunds' | 'updates', 
   updates: 'draft',
 };
 
-const CHECKOUT = OFFER.checkoutUrl && /^https:\/\//.test(OFFER.checkoutUrl) ? OFFER.checkoutUrl : null;
+const checkout = (id: TierId): string | null => {
+  const url = tierById(id).checkoutUrl;
+  return url && /^https:\/\//.test(url) ? url : null;
+};
 
-/** True only when a price, a checkout link, the access and update terms and approved terms and refund policies all exist. */
+/** True only when every paid tier has a price and a checkout link, the access and update terms exist, and the terms, refund and update policies are approved. */
 export const purchaseOpen = (): boolean =>
-  Boolean(OFFER.priceDisplay && CHECKOUT && OFFER.accessTerm && OFFER.updatesTerm)
+  paidTiers().every(t => t.priceDisplay && checkout(t.id))
+  && Boolean(OFFER.accessTerm && OFFER.updatesTerm)
   && POLICY_STATUS.terms === 'approved' && POLICY_STATUS.refunds === 'approved' && POLICY_STATUS.updates === 'approved';
 
-export const checkoutUrl = (): string | null => (purchaseOpen() ? CHECKOUT : null);
+/** A paid tier's checkout link; null while purchase is closed and for the free tier. */
+export const checkoutUrlFor = (id: TierId): string | null => (purchaseOpen() ? checkout(id) : null);
 
-/** The one purchase-oriented action. Until purchase is open it leads to the pricing page, which says where things stand. */
+/** The one purchase-oriented action. Checkout happens from the pricing page, which also says where things stand until purchase is open. */
 export function primaryAction(): { label: string; href: string; external: boolean } {
-  const url = checkoutUrl();
-  return url
-    ? { label: `Get the handbook, ${OFFER.priceDisplay}`, href: url, external: true }
-    : { label: 'See pricing and availability', href: '/pricing', external: false };
+  return { label: 'See plans and pricing', href: '/pricing', external: false };
 }
