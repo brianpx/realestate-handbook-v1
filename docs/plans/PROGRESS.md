@@ -15,14 +15,14 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 ## Where things stand
 
-*Updated 8 November 2026, evening.* The planning phase is merged to `main` (`cc6b822`). M1 (green baseline) has landed on `fix/e2e-green` (`e5fb824` to `23a9410` plus this docs commit), worked in the git worktree `.claude/worktrees/fix-e2e-green` so the content session's uncommitted files were never touched: `pnpm e2e` passed 229 of 229 in three consecutive runs, `pnpm typecheck` now runs `next typegen` first and passes on a clean export, and `pnpm test` is 369 passed, 4 skipped. The branch is not merged or pushed; M1 step 4 (CI) waits on OD-24. Another session still has content-review Phase 2 work uncommitted in the main checkout (see M4 and the collision note); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts`, `components/widgets/LeadSources.tsx` or `e2e/parity/practice.spec.ts`. Next unblocked work: merge `fix/e2e-green` (owner's call), then M2 on `fix/preview-sample`, which proceeds on the OD-01 and OD-28 defaults. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are all unanswered; OD-26 was decided by the M1 session from the Next.js source.
+*Updated 8 November 2026, late evening.* M1 is complete in code: steps 1, 2, 3 and 5 are merged to `main` and pushed (`fd923c9`), and step 4, the CI workflow, is committed on `chore/ci` (`a3fdf42`) and fast-forwarded into local `main`. The push of that commit was rejected because the stored GitHub token has no `workflow` scope; once the owner refreshes it (`gh auth refresh -h github.com -s workflow`), `main` is pushed and the first Actions run is the remaining M1 evidence. Another session still has content-review Phase 2 work uncommitted in the main checkout (see M4 and the collision note); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts`, `components/widgets/LeadSources.tsx` or `e2e/parity/practice.spec.ts`. Next unblocked work: M2 on `fix/preview-sample`, which proceeds on the OD-01 and OD-28 defaults. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are unanswered apart from OD-24 (yes) and OD-26 (keep).
 
 ## Milestone status
 
 | Milestone | Status | Branch | Started | Finished | Notes |
 |---|---|---|---|---|---|
 | M0 Housekeeping | in progress | `docs/plans-master` (merged, deleted) | 2026-11-08 | | Steps 1 to 3 done; step 4 waits on the content session's commit; step 5 waits on OD-17 |
-| M1 Green baseline | in progress | `fix/e2e-green` (unmerged) | 2026-11-08 | | Steps 1, 2, 3, 5 done (`e5fb824`, `1bc6acf`, `6f91612`, `23a9410`); step 4 (CI) waits on OD-24; two L27 waits deferred, see step log |
+| M1 Green baseline | in progress | `fix/e2e-green` (merged, `fd923c9`), `chore/ci` (`a3fdf42`, in local `main`, push pending) | 2026-11-08 | | Steps 1 to 5 done; waits only for the `workflow`-scoped push and a green first Actions run; two L27 waits deferred, see step log |
 | M2 Sample and preview fixes | not started | `fix/preview-sample` | | | Needs M1 green to verify |
 | M3 Vercel Pro migration | not started | none (no commits; result file after) | | | Owner checklist at the top of M3 must be complete first |
 | M4 Content revision | in progress | content session's branch (Phase 2); Phase 1 not started | 2026-11-08 | | Phase 2 landing before Phase 1; Phase 0 decisions OD-03 to OD-09 unanswered |
@@ -42,7 +42,8 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 | Blocker | Blocks | Owner action |
 |---|---|---|
-| OD-01, OD-03 to OD-09, OD-10, OD-11, OD-17, OD-23 (from-address and postal address), OD-24 unanswered | M2 step 3 copy (default assumed), M4 Phase 0, M5, M1 step 4 | Answer in `MASTER-PROMPT.md` section 4; log below |
+| OD-01, OD-03 to OD-09, OD-10, OD-11, OD-17, OD-23 (from-address and postal address) unanswered | M2 step 3 copy (default assumed), M4 Phase 0, M5 | Answer in `MASTER-PROMPT.md` section 4; log below |
+| GitHub token without `workflow` scope | pushing `a3fdf42` (CI) to `origin/main` | `gh auth refresh -h github.com -s workflow`, then push `main` |
 | `meded` GitHub app access and Pro plan unconfirmed | M3 | Owner checklist at the top of M3 |
 | Content Phase 2 branch uncommitted | M4 Phase 1, M6 steps 10 and 11 | Content session commits on its branch after typecheck, test and e2e |
 
@@ -51,6 +52,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | Date | Decision | Answer | Logged by |
 |---|---|---|---|
 | 2026-11-08 | OD-26 keep `.next/dev/types/**` in `tsconfig.json` include | Keep. `next dev` re-adds both type globs (`node_modules/next/dist/lib/typescript/type-paths.js`, `writeConfigurationDefaults.js`), so removing the line only churns the file; `next typegen` writes `.next/types` only, so the stale `.next/dev/types` recovery note stays. Decided by the M1 session from the installed Next.js source, as M1 step 3 instructs; the owner may overrule | M1 session |
+| 2026-11-08 | OD-24 add CI | Yes, said by the owner in the M1 session ("merge fix/e2e-green into main, push, and add CI") | M1 session |
 
 ## Step log (append-only)
 
@@ -66,6 +68,8 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | 2026-11-08 | M1.3 typecheck runs `next typegen` first (CR-M10); OD-26 decided | `fix/e2e-green` | `6f91612` | `pnpm typecheck` in the worktree, and in a clean `git archive` export after a fresh `pnpm install --frozen-lockfile`: both pass | `AGENTS.md` Commands carries the stale-dev-types recovery note; the managed Next.js block is untouched |
 | 2026-11-08 | M1.5 routes doc comment (CR-L26) | `fix/e2e-green` | `23a9410` | n/a (comment only) | |
 | 2026-11-08 | M1 verification at `23a9410` | `fix/e2e-green` | | `pnpm test`: 369 passed, 4 skipped; `pnpm e2e` three consecutive runs: 229 passed each, 0 failed | Run with `/opt/homebrew/bin` first on PATH because the Playwright webServer command calls `pnpm` and the first `pnpm` on PATH is the broken shim. Step 4 (CI) not started: OD-24 unanswered. Branch not merged or pushed |
+| 2026-11-08 | M1 merged: `fix/e2e-green` fast-forwarded into `main` and pushed | `main` | `fd923c9` | n/a (fast-forward of verified commits) | Done with `git fetch . fix/e2e-green:main` because the main checkout was on another session's branch |
+| 2026-11-08 | M1.4 CI workflow (CR-H1, OD-24) | `chore/ci` | `a3fdf42` | YAML parses (ruby `YAML.load_file`); `playwright test --list --reporter=line,html` accepted. Not yet run on GitHub: push rejected, token lacks `workflow` scope | `.github/workflows/ci.yml`: push to `main` and pull requests; Node 22, pnpm 12, `--frozen-lockfile`, typecheck, test, Chromium install, e2e; `.next/cache` cached; HTML report uploaded on failure. Local `main` is at `a3fdf42`, one ahead of origin |
 
 ## Session hand-off notes (append-only)
 
@@ -73,3 +77,4 @@ One short paragraph per session: what it did, what it left unverified, what the 
 
 - **2026-11-08, planning session.** Wrote the master plan from the five source plans, revised it into `MASTER-PROMPT.md` after a critique, archived the originals, created this file. All of it is committed and merged to `main` (`6d63992`), not yet pushed. Nothing engineering-side was run. Next session: push `main` if the owner wants, then start M1 on `fix/e2e-green`.
 - **2026-11-08, M1 session.** Landed M1 steps 1, 2, 3 and 5 on `fix/e2e-green` in a git worktree (`.claude/worktrees/fix-e2e-green`): four code commits plus this docs commit. Typecheck, unit tests and three full e2e runs are green (step log). Not done: step 4 (CI) pending OD-24; two `networkidle` waits in `practice.spec.ts` left until the content session commits; `cutover-stub.spec.ts:43` kept on purpose. The branch is not merged into `main` or pushed; the owner decides. Next session: merge `fix/e2e-green` if approved, then start M2 on `fix/preview-sample` from the merged `main`, verifying against the now-green suite.
+- **2026-11-08, M1 session, continued.** Owner approved merge, push and CI. `fix/e2e-green` is merged to `main` and pushed (`fd923c9`). CI workflow committed on `chore/ci` (`a3fdf42`) and fast-forwarded into local `main`; the push failed on the token's missing `workflow` scope. Next: owner runs `gh auth refresh -h github.com -s workflow`; then push `main`, watch the first run with `gh run watch`, and log its result here. After that, M2 on `fix/preview-sample`.
