@@ -70,6 +70,27 @@ describe('NeonLeadStore', () => {
       spy.mockRestore();
     }
   });
+  it('counts a send in one upsert on the lead channel and window, and still answers when cleanup throws', async () => {
+    const { sql, calls } = fake([{ n: 7 }]);
+    const cleanup = new Error('delete failed');
+    cleanup.name = 'CleanupError';
+    const flaky: Sql = Object.assign(async (strings: TemplateStringsArray, ...values: unknown[]) => {
+      if (strings.join('').includes('delete')) throw cleanup;
+      return sql(strings, ...values);
+    }, { transaction: sql.transaction });
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const window = new Date('2026-11-02T12:00:00Z');
+      await expect(new NeonLeadStore(flaky).countSend(window)).resolves.toBe(7);
+      expect(calls).toHaveLength(1);
+      expect(calls[0]!.text).toBe('insert into send_counts (channel, window_start, n) values (?, ?, 1) on conflict (channel, window_start) do update set n = send_counts.n + 1 returning n');
+      expect(calls[0]!.values).toEqual(['lead', '2026-11-02T12:00:00.000Z']);
+      expect(spy).toHaveBeenCalledWith('lead: send count cleanup failed', 'CleanupError');
+    } finally {
+      spy.mockRestore();
+    }
+    expect(await new NeonLeadStore(fake([]).sql).countSend(new Date())).toBe(0);
+  });
   it('lists leads newest first from one capped statement, with dates and a missing status mapped', async () => {
     const { sql, calls } = fake([
       { id: 'u-2', email: 'b@b.co', source: 'gate', created_at: '2026-11-03T09:00:00Z', consent_version: 'v1', email_status: 'sent', confirmed_at: '2026-11-03T09:05:00Z' },

@@ -29,6 +29,8 @@ export interface LeadStore {
   countAttempts(ipHash: string, since: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
   recordAndCount(ipHash: string, at: Date, since: Date): Promise<number>;
+  /** Counts one send for the window starting then, over all callers, and answers the new total (lib/send-ceiling.ts). */
+  countSend(windowStart: Date): Promise<number>;
   /** Newest first, at most LEAD_LIST_CAP rows. */
   list(): Promise<LeadRow[]>;
   /** Account deletion removes the marketing row for the same address (user-database plan, section 12.4). */
@@ -37,7 +39,7 @@ export interface LeadStore {
 
 // Rows written before confirmation existed have no `confirmedAt`; they read as unconfirmed, like the database's null.
 type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmedAt?: Date | string | null };
-type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[] };
+type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[]; sends: { windowStart: string; n: number }[] };
 
 // `at` is a Date in memory but a string once it has been through JSON, so both are accepted here.
 const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus, confirmedAt: r.confirmedAt ? new Date(r.confirmedAt) : null });
@@ -55,10 +57,10 @@ export class FileLeadStore implements LeadStore {
     try {
       data = JSON.parse(await readFile(this.file, 'utf8')) as Partial<Shape> | null;
     } catch {
-      return { leads: [], attempts: [] };
+      return { leads: [], attempts: [], sends: [] };
     }
     // a hand-edited or truncated file must not break every later request: a missing or non-array field starts empty
-    return { leads: Array.isArray(data?.leads) ? data.leads : [], attempts: Array.isArray(data?.attempts) ? data.attempts : [] };
+    return { leads: Array.isArray(data?.leads) ? data.leads : [], attempts: Array.isArray(data?.attempts) ? data.attempts : [], sends: Array.isArray(data?.sends) ? data.sends : [] };
   }
 
   // one change at a time, written to a temp file then renamed, so a crash never leaves half a file
@@ -125,6 +127,17 @@ export class FileLeadStore implements LeadStore {
     });
   }
 
+  countSend(windowStart: Date) {
+    return this.change(data => {
+      const cutoff = windowStart.getTime() - 24 * 3600 * 1000;
+      data.sends = data.sends.filter(s => Date.parse(s.windowStart) >= cutoff); // keep the file small
+      const key = windowStart.toISOString();
+      let row = data.sends.find(s => s.windowStart === key);
+      if (!row) data.sends.push((row = { windowStart: key, n: 0 }));
+      return ++row.n;
+    });
+  }
+
   async list() {
     await this.queue;
     return newestFirst((await this.read()).leads);
@@ -139,6 +152,7 @@ export class FileLeadStore implements LeadStore {
 export class MemoryLeadStore implements LeadStore {
   leads: Row[] = [];
   attempts: { ipHash: string; at: Date }[] = [];
+  sends = new Map<string, number>();
   failWith: Error | null = null;
   private check() { if (this.failWith) throw this.failWith; }
 
@@ -165,6 +179,12 @@ export class MemoryLeadStore implements LeadStore {
     this.check();
     this.attempts.push({ ipHash, at });
     return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length;
+  }
+  async countSend(windowStart: Date) {
+    this.check();
+    const n = (this.sends.get(windowStart.toISOString()) ?? 0) + 1;
+    this.sends.set(windowStart.toISOString(), n);
+    return n;
   }
   async list() { this.check(); return newestFirst(this.leads); }
   async deleteByEmail(email: string) { this.check(); this.leads = this.leads.filter(l => l.email !== email); }

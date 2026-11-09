@@ -18,11 +18,14 @@ run('the auth and user stores against a real database', () => {
   const tag = randomUUID().slice(0, 8);
   const email = `it-${tag}@integration.test`;
   const NOW = new Date();
+  // a window of its own, far enough ahead that the request-path cleanup (a day back) never removes it mid-test
+  const sendWindow = new Date(NOW.getTime() + 3600 * 1000 + (parseInt(tag, 16) % 3_600_000));
 
   afterAll(async () => {
     await sql`delete from auth_tokens where email like ${`it-${tag}%`}`;
     await sql`delete from users where email like ${`it-${tag}%`}`; // sessions cascade
     await sql`delete from auth_attempts where key_hash like ${`it-${tag}%`}`;
+    await sql`delete from send_counts where channel = 'auth' and window_start = ${sendWindow.toISOString()}`;
   });
 
   it('creates a user once, fills only empty fields on a repeat, and refuses an un-normalised address', async () => {
@@ -73,6 +76,13 @@ run('the auth and user stores against a real database', () => {
     expect(await auth.recordAndCount('ip', key, NOW, since)).toBe(2);
     expect(await auth.recordAndCount('email', key, NOW, since)).toBe(1);
     await expect(sql`insert into auth_attempts (scope, key_hash) values ('bogus', ${key})`).rejects.toThrow();
+  });
+
+  it('counts sign-in emails per window in one row, two at once included, apart from the lead channel', async () => {
+    const both = await Promise.all([auth.countSend(sendWindow), auth.countSend(sendWindow)]);
+    expect(both.sort((a, b) => a - b)).toEqual([1, 2]);
+    expect(await auth.countSend(sendWindow)).toBe(3);
+    expect(await sql`select channel, n from send_counts where window_start = ${sendWindow.toISOString()}`).toEqual([{ channel: 'auth', n: 3 }]);
   });
 
   it('bootstraps one admin from two listed addresses verifying in sequence', async () => {

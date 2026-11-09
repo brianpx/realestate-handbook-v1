@@ -1,3 +1,4 @@
+import { sendCeilingFromEnv } from '@/lib/send-ceiling';
 import { allowedOrigins, SITE_URL } from '@/lib/site';
 import type { LeadDeps, LeadReply, LeadRequest } from './handler';
 import { mailFromEnv } from './mail';
@@ -24,6 +25,7 @@ export function leadDepsFromEnv(env: Record<string, string | undefined>): LeadDe
     allowedOrigins: allowedOrigins(env),
     siteUrl: SITE_URL,
     ipSalt: env.LEAD_IP_SALT ?? 'dev-only-salt',
+    sendCeiling: sendCeilingFromEnv(env),
     now: () => new Date(),
   };
 }

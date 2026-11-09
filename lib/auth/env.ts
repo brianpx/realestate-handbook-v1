@@ -1,3 +1,4 @@
+import { sendCeilingFromEnv } from '@/lib/send-ceiling';
 import { allowedOrigins } from '@/lib/site';
 import { COOKIE_NAMES } from './cookie';
 import type { AuthDeps, AuthReply, AuthRequest } from './handler';
@@ -29,6 +30,7 @@ export function authDepsFromEnv(env: Record<string, string | undefined>): AuthDe
     mail: authMailFromEnv(env),
     allowedOrigins: allowedOrigins(env),
     ipSalt: ipSalt ?? 'dev-only-salt',
+    sendCeiling: sendCeilingFromEnv(env),
     bootstrapEmails: env.ADMIN_BOOTSTRAP_EMAILS?.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) ?? [],
     now: () => new Date(),
   };

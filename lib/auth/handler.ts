@@ -1,6 +1,7 @@
 import { bootstrapOwnerGrant } from '@/lib/access/grants';
 import { audit } from '@/lib/audit';
 import type { MailConfig } from '@/lib/leads/mail';
+import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
 import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, REQUEST_LINK_LIMITS, VERIFY_PATH, VERIFY_LIMIT } from './config';
 import { clearedCookieHeaders, isSecureRequest, sessionCookieHeaders } from './cookie';
 import { sendSignInLink } from './mail';
@@ -25,6 +26,8 @@ export type AuthDeps = {
   mail: MailConfig;
   allowedOrigins: readonly string[];
   ipSalt: string;
+  /** Sign-in emails allowed per window over all callers (lib/send-ceiling.ts). */
+  sendCeiling: number;
   /** Addresses that become the first administrator on sign-in, only while no administrator exists. */
   bootstrapEmails: readonly string[];
   now: () => Date;
@@ -68,6 +71,8 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
     const emailWindow = REQUEST_LINK_LIMITS.email;
     const emailHash = hashKey(email, deps.ipSalt);
     if ((await auth.recordAndCount('email', emailHash, now, new Date(now.getTime() - emailWindow.windowSeconds * 1000))) > emailWindow.attempts) return limited(emailWindow.windowSeconds);
+    // the ceiling over all callers: every request past this point sends one email
+    if ((await auth.countSend(sendWindowStart(now))) > deps.sendCeiling) return limited(SEND_CEILING_WINDOW_SECONDS);
 
     const raw = newSecret();
     await auth.createToken({ tokenHash: hashSecret(raw), email, nextPath: safeNextPath(next), termsVersion, source, expiresAt: tokenExpiry(now), createdIpHash: ipHash, createdAt: now });

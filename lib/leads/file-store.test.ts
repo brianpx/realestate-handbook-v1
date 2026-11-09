@@ -81,6 +81,17 @@ describe('FileLeadStore', () => {
     const counts = await Promise.all([store.recordAndCount('ip1', at, since), store.recordAndCount('ip1', at, since)]);
     expect(counts).toEqual([1, 2]);
   });
+  it('counts sends per window, overlapping calls included, and forgets windows a day old', async () => {
+    const store = new FileLeadStore(file);
+    const w1 = new Date('2026-11-02T12:00:00Z');
+    const w2 = new Date('2026-11-02T12:10:00Z');
+    const counts = await Promise.all([store.countSend(w1), store.countSend(w1), store.countSend(w1)]);
+    expect(counts.sort((a, b) => a - b)).toEqual([1, 2, 3]);
+    expect(await store.countSend(w2)).toBe(1);
+    expect(await store.countSend(w1)).toBe(4);
+    expect(await store.countSend(new Date('2026-11-04T12:00:00Z'))).toBe(1); // two days later: the earlier windows are dropped
+    expect(JSON.parse(await readFile(file, 'utf8')).sends).toEqual([{ windowStart: '2026-11-04T12:00:00.000Z', n: 1 }]);
+  });
   it('lists leads newest first with the stored time as a Date, the consent text left out', async () => {
     const store = new FileLeadStore(file);
     const { id: older } = await store.insert({ ...lead('a@b.co'), at: new Date('2026-11-01T08:00:00Z') });
@@ -104,6 +115,13 @@ describe('MemoryLeadStore', () => {
     const { id: older } = await store.insert({ ...lead('a@b.co'), at: new Date('2026-11-01T08:00:00Z') });
     const { id: newer } = await store.insert({ ...lead('b@b.co'), at: new Date('2026-11-03T08:00:00Z') });
     expect((await store.list()).map(r => r.id)).toEqual([newer, older]);
+  });
+  it('counts sends per window', async () => {
+    const store = new MemoryLeadStore();
+    const w1 = new Date('2026-11-02T12:00:00Z');
+    expect(await store.countSend(w1)).toBe(1);
+    expect(await store.countSend(w1)).toBe(2);
+    expect(await store.countSend(new Date('2026-11-02T12:10:00Z'))).toBe(1);
   });
 });
 

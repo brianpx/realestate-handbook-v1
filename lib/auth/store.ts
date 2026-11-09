@@ -39,6 +39,8 @@ export interface AuthStore {
   revokeAllForUser(userId: string, now: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
   recordAndCount(scope: AttemptScope, keyHash: string, at: Date, since: Date): Promise<number>;
+  /** Counts one sign-in email for the window starting then, over all callers, and answers the new total (lib/send-ceiling.ts). */
+  countSend(windowStart: Date): Promise<number>;
   /** Link requests and completed sign-ins per placement, most requested first: the measurement without a tracker. */
   placementStats(): Promise<PlacementStat[]>;
 }

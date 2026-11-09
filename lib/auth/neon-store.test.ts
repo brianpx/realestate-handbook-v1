@@ -76,4 +76,12 @@ describe('NeonAuthStore', () => {
       spy.mockRestore();
     }
   });
+  it('counts a send in one upsert on the auth channel and window, then cleans up in its own statement', async () => {
+    const { sql, calls } = fakeSql([{ n: 3 }], []);
+    expect(await new NeonAuthStore(sql).countSend(NOW)).toBe(3);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]!.text).toBe('insert into send_counts (channel, window_start, n) values (?, ?, 1) on conflict (channel, window_start) do update set n = send_counts.n + 1 returning n');
+    expect(calls[0]!.values).toEqual(['auth', ISO]);
+    expect(calls[1]).toEqual({ text: "delete from send_counts where window_start < now() - interval '1 day'", values: [] });
+  });
 });

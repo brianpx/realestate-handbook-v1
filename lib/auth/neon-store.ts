@@ -1,3 +1,4 @@
+import { countSend } from '@/lib/db/send-counts';
 import { toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
 import { SESSION_CAP_SECONDS, SESSION_MAX_AGE_SECONDS, SESSION_RENEW_AFTER_SECONDS, SOURCES, type Source } from './config';
 import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken, PlacementStat } from './store';
@@ -118,6 +119,10 @@ export class NeonAuthStore implements AuthStore {
       console.error('auth: attempt cleanup failed', err instanceof Error ? err.name : 'error');
     }
     return Number(rows[0]?.n ?? 0);
+  }
+
+  countSend(windowStart: Date) {
+    return countSend(this.sql, 'auth', windowStart);
   }
 
   async placementStats(): Promise<PlacementStat[]> {

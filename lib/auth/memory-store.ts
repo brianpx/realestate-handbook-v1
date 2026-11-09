@@ -8,6 +8,7 @@ export class MemoryAuthStore implements AuthStore {
   tokens: AuthToken[] = [];
   sessions: Session[] = [];
   attempts: { scope: AttemptScope; keyHash: string; at: Date }[] = [];
+  sends = new Map<string, number>();
   failWith: Error | null = null;
   private check() { if (this.failWith) throw this.failWith; }
 
@@ -44,6 +45,13 @@ export class MemoryAuthStore implements AuthStore {
     this.check();
     this.attempts.push({ scope, keyHash, at });
     return this.attempts.filter(a => a.scope === scope && a.keyHash === keyHash && a.at >= since).length;
+  }
+
+  async countSend(windowStart: Date) {
+    this.check();
+    const n = (this.sends.get(windowStart.toISOString()) ?? 0) + 1;
+    this.sends.set(windowStart.toISOString(), n);
+    return n;
   }
 
   async placementStats() { this.check(); return placementStatsFrom(this.tokens); }

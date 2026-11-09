@@ -15,10 +15,13 @@ run('NeonLeadStore against a real database', () => {
   const email = `it-${tag}@integration.test`;
   const ip = `it-${tag}`;
   const lead = { email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${tag}`, confirmExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000), at: new Date() };
+  // a window of its own, far enough ahead that the request-path cleanup (a day back) never removes it mid-test
+  const sendWindow = new Date(Date.now() + 3600 * 1000 + (parseInt(tag, 16) % 3_600_000));
 
   afterAll(async () => {
     await sql`delete from leads where email = ${email}`;
     await sql`delete from lead_attempts where ip_hash = ${ip}`;
+    await sql`delete from send_counts where channel = 'lead' and window_start >= ${sendWindow.toISOString()} and window_start <= ${new Date(sendWindow.getTime() + 600_000).toISOString()}`;
   });
 
   it('stores an address once and reports a repeat as not created, with the same id', async () => {
@@ -63,5 +66,15 @@ run('NeonLeadStore against a real database', () => {
     expect(await store.countAttempts(ip, new Date(t - 10 * 60_000))).toBe(2);
     expect(await store.countAttempts(ip, new Date(t - 60 * 60_000))).toBe(3);
     expect(await store.countAttempts(`${ip}-other`, new Date(t - 60 * 60_000))).toBe(0);
+  });
+
+  it('counts sends per window in one row, two at once included, and the table refuses an unknown channel', async () => {
+    const next = new Date(sendWindow.getTime() + 600_000);
+    const both = await Promise.all([store.countSend(sendWindow), store.countSend(sendWindow)]);
+    expect(both.sort((a, b) => a - b)).toEqual([1, 2]);
+    expect(await store.countSend(sendWindow)).toBe(3);
+    expect(await store.countSend(next)).toBe(1);
+    expect(await sql`select n from send_counts where channel = 'lead' and window_start = ${sendWindow.toISOString()}`).toEqual([{ n: 3 }]);
+    await expect(sql`insert into send_counts (channel, window_start, n) values ('bogus', ${sendWindow.toISOString()}, 1)`).rejects.toThrow();
   });
 });

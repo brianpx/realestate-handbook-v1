@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FileAuthStore } from './file-store';
+import { MemoryAuthStore } from './memory-store';
 import { sessionExpiry, tokenExpiry } from './session';
 import { authStoresFromEnv } from './store';
 
@@ -55,6 +56,17 @@ describe('FileAuthStore', () => {
     const counts = await Promise.all(Array.from({ length: 12 }, () => store.recordAndCount('ip', 'k', NOW, hours(-1))));
     expect(counts.sort((a, b) => a - b)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
     expect(await store.recordAndCount('email', 'k', NOW, hours(-1))).toBe(1);
+  });
+  it('counts sends per window, overlapping calls included, and forgets windows a day old', async () => {
+    const store = new FileAuthStore(file);
+    const counts = await Promise.all(Array.from({ length: 5 }, () => store.countSend(NOW)));
+    expect(counts.sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5]);
+    expect(await store.countSend(hours(1))).toBe(1);
+    expect(await store.countSend(NOW)).toBe(6);
+    expect(await store.countSend(hours(48))).toBe(1);
+    expect(JSON.parse(await readFile(file, 'utf8')).sends).toEqual([{ windowStart: hours(48).toISOString(), n: 1 }]);
+    const memory = new MemoryAuthStore();
+    expect([await memory.countSend(NOW), await memory.countSend(NOW), await memory.countSend(hours(1))]).toEqual([1, 2, 1]);
   });
   it('promotes a role and records a sign-in', async () => {
     const store = new FileAuthStore(file);

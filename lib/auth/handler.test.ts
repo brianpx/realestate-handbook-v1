@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { MemoryAccessStore } from '@/lib/access/memory-store';
+import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ceiling';
 import { MemoryUserStore } from '@/lib/users/store';
 import { REQUEST_LINK_LIMITS, TERMS_VERSION, VERIFY_LIMIT } from './config';
 import { handleRequestLink, handleSignOut, handleVerify, type AuthDeps } from './handler';
@@ -22,6 +23,7 @@ function setup(over: Partial<AuthDeps> = {}) {
     mail: { provider: 'sendgrid', apiKey: 'SG.x', from: 'me@example.test', fromName: 'Handbook', replyTo: 'me@example.test', mailingAddress: '' },
     allowedOrigins: [ORIGIN],
     ipSalt: 's',
+    sendCeiling: DEFAULT_SEND_CEILING,
     bootstrapEmails: [],
     now: () => now,
     fetchImpl,
@@ -105,6 +107,20 @@ describe('request-link', () => {
     expect(fourth.status).toBe(429);
     expect(fourth.headers).toEqual({ 'Retry-After': '3600' });
     expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+  it('refuses every caller alike with the per-connection 429 once the window is full, and opens again in the next', async () => {
+    const { auth, fetchImpl, request, advance } = setup({ sendCeiling: 2 });
+    expect((await request(body({ email: 'a@b.co' }), { ip: '198.51.100.1' })).status).toBe(200);
+    expect((await request(body({ email: 'b@b.co' }), { ip: '198.51.100.2' })).status).toBe(200);
+    const over = await request(body({ email: 'c@b.co' }), { ip: '198.51.100.3' });
+    expect(over).toEqual({ status: 429, body: { ok: false, error: 'rate_limited', retryAfterSeconds: SEND_CEILING_WINDOW_SECONDS }, headers: { 'Retry-After': String(SEND_CEILING_WINDOW_SECONDS) } });
+    expect(await request(body({ email: 'a@b.co' }), { ip: '198.51.100.4' })).toEqual(over); // a known address: the same
+    expect(auth.tokens).toHaveLength(2);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect((await request('{nope', { ip: '198.51.100.5' })).status).toBe(400); // nothing to send: no slot taken
+    expect(auth.sends.size).toBe(1);
+    advance(SEND_CEILING_WINDOW_SECONDS * 1000);
+    expect((await request(body({ email: 'c@b.co' }), { ip: '198.51.100.3' })).status).toBe(200);
   });
   it('is a 503 for everyone when there is no store, no sender, or the send fails', async () => {
     expect((await setup({ stores: null }).request(body({ email: 'a@b.co' }))).status).toBe(503);
