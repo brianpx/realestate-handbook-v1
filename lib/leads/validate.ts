@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { emailSchema } from '@/lib/validate/email';
 import { CONSENT_VERSION, LEAD_SOURCES } from './config';
 

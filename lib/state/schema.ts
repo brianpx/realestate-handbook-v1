@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 
 // Shapes match what the static site wrote under `handbookState` and `handbookSettings`, so a reader's
 // existing progress carries over. Widget payloads stay loosely typed here; each widget validates its own slice.
