@@ -139,7 +139,7 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 
 | ID | Decision | Source | Recommended default | Blocks | Answer |
 |---|---|---|---|---|---|
-| OD-01 | The free set. Confirm `/preview` = Chapter 1 and Chapter 7 in full plus the two teasers, and the signed-in free set `FREE_PAGE_IDS = cover, pref, ch1, ch7` | FS-D1, FS open 1, UD-D1, CR-L15 | Yes to both as stated | M2 step 3 (copy), M5 UD-P2 | |
+| OD-01 | The free set. Confirm `/preview` = Chapter 1 and Chapter 7 in full plus the two teasers, and the signed-in free set `FREE_PAGE_IDS = cover, pref, ch1, ch7` | FS-D1, FS open 1, UD-D1, CR-L15 | Yes to both as stated | M2 step 3 (copy), M5 UD-P2 | Yes to both (owner, 8 Nov 2026, M5 session) |
 | OD-02 | Post-sample email offer wording: "Tell me when purchase opens" or "Email me my daily number and the Chapter 1 card" | FS-D3, FS open 2 | Purchase notice while `purchaseOpen()` is false; switch copy when it opens | M5 UD-P3 | |
 | OD-03 | Reading plan order vs. book order; add a quick start | CC-A | Plan follows book order; `content/data/plan.ts` updated; short self-contained quick start | M4 Phase 0 | |
 | OD-04 | Early safeguards: minimum "before your first outreach" checklist in the quick start | CC-B | Yes; Chapter 11 stays the full treatment | M4 Phase 0 | |
@@ -148,15 +148,15 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 | OD-07 | Post-close plan timing: when the template is created, personalised, activated | CC-E | State the three moments once in Chapter 4 and apply everywhere | M4 Phase 1 | |
 | OD-08 | Table 5.1's four undetailed plans: drop or give each a sequence in Appendix B | CC-F | Give Monthly Neighborhood Nurture and the two Long-Term Nurtures a short sequence; point Home Anniversary at Table 10.1 | M4 Phase 2 | |
 | OD-09 | Canonical phrasing sign-off for the consent rule, speed-to-lead and the 9 p.m. test, and the post-close milestone; name one canonical-phrasing owner | CC-G, CC-H, CC Phase 0 | Owner signs the exact sentences once; they go into `content/data/rules.ts` | M4 Phase 0 (blocking) | |
-| OD-10 | Build the magic link here or adopt Neon Auth | UD-D2 | Build here | M5 UD-P1 | |
-| OD-11 | Gate all of `/handbook` behind sign-in; `/preview` stays anonymous | UD-D3, CR open 1 | Yes | M5 UD-P2 | |
+| OD-10 | Build the magic link here or adopt Neon Auth | UD-D2 | Build here | M5 UD-P1 | Build here (owner, 8 Nov 2026, M5 session) |
+| OD-11 | Gate all of `/handbook` behind sign-in; `/preview` stays anonymous | UD-D3, CR open 1 | Yes | M5 UD-P2 | Yes (owner, 8 Nov 2026, M5 session) |
 | OD-12 | Session length and cap | UD-D4 | 90 days sliding, one-year cap | M5 UD-P1 | |
 | OD-13 | Admin role never grants content; bootstrap inserts an owner grant | UD-D5 | Yes | M5 UD-P2 | |
 | OD-14 | One-time edition-scoped purchase first | UD-D6 | Yes | M7 UD-P5 | |
 | OD-15 | Grace after failed payment (subscriptions only) | UD-D7 | 7 days | M7 UD-P5 (only if recurring) | |
 | OD-16 | Refund window | UD-D8 | 14 days, no usage condition | M7 UD-P5 copy | |
-| OD-17 | Are `public/downloads` and `public/audio` member-only? Also: what is the untracked root `downloads/` folder (a PDF, `audio/`, `downloads/`, `images/`) for, and should it be committed, ignored or moved | UD-D9 (Phase 0 **launch blocker**), repo state | If member-only, a viewer-checked `app/api/media/[...path]/route.ts` in UD-P2. Root `downloads/` should not stay untracked | M5 UD-P2; M0 step 4 | |
-| OD-18 | Retire the first-visit `Gate.tsx` dialog for signed-in readers | UD-D10, FS open 3 | Yes | M5 UD-P2 | |
+| OD-17 | Are `public/downloads` and `public/audio` member-only? Also: what is the untracked root `downloads/` folder (a PDF, `audio/`, `downloads/`, `images/`) for, and should it be committed, ignored or moved | UD-D9 (Phase 0 **launch blocker**), repo state | If member-only, a viewer-checked `app/api/media/[...path]/route.ts` in UD-P2. Root `downloads/` should not stay untracked | M5 UD-P2; M0 step 4 | Member-only: both move behind the viewer-checked media route in UD-P2 (owner, 8 Nov 2026, M5 session). Fate of the root `downloads/` folder still to decide |
+| OD-18 | Retire the first-visit `Gate.tsx` dialog for signed-in readers | UD-D10, FS open 3 | Yes | M5 UD-P2 | Yes (owner, 8 Nov 2026, M5 session) |
 | OD-19 | Billing record retention after account deletion | UD-D11 | 7 years, anonymised; confirm with an accountant | M7 UD-P5 | |
 | OD-20 | What "updates" covers; is a future edition sold separately | UD-D12 | Corrections included; one `product_key` for edition 1.0 | M7 UD-P5 copy | |
 | OD-21 | Delete-account confirmation | UD-D13 | Typed email, no re-authentication in v1 | M5 UD-P2 | |

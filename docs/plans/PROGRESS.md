@@ -26,7 +26,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | M2 Sample and preview fixes | done | `fix/preview-sample` (merged, `main` at `1ce9f95`) | 2026-11-08 | 2026-11-08 | Steps 1 to 8 done; CR H2, H3, M6, M7, L11 to L16 closed; L25 started (`.chapter-body` scope) and finishes in M6 |
 | M3 Vercel Pro migration | in progress (transfer done outside the plan) | none (no commits; result file after) | before 2026-11-09 | | Project found under team `meded` (slug `brian-pitts`, Pro) on 9 November; steps 2 and 3 at least partly done by another session; steps 0, 1, 4 to 7 unrecorded. Redo VM step 1 read-only first |
 | M4 Content revision | in progress | content session's branch (Phase 2); Phase 1 not started | 2026-11-08 | | Phase 2 landing before Phase 1; Phase 0 decisions OD-03 to OD-09 unanswered |
-| M5 Accounts, sign-in, gate | not started | `feat/auth-core`, `feat/access-gate`, `feat/signup-home` | | | Blocked on M3 for any hosted migration and on the sender (OD-23) for any real send |
+| M5 Accounts, sign-in, gate | in progress | `feat/auth-core` (Phase 1); `feat/access-gate`, `feat/signup-home` later | 2026-11-08 | | Phase 1 built against the memory and file stores. Blocked on M3 for any hosted migration and on the sender (OD-23) for any real send |
 | M6 Hardening and a11y | in progress | `fix/m6` (merged, `main` at `b3d0926`) | 2026-11-08 | | Steps 1 to 5, 7 to 9, 12 done; 10 and 11 partly (L6, L19, L21 wait for the content commit; L22 for OD-18); 6 belongs to M5 step 18; 13 waits for OD-27; 14 optional, not started |
 | M7 Admin, billing, copy, profile | not started | `feat/admin`, `feat/billing`, `docs(site)/policies-copy`, `feat/profile` | | | Blocked on M5 and the billing provider choice |
 | M8 Launch readiness | not started | | | | Blocked on M5 and M7 |
@@ -42,7 +42,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 | Blocker | Blocks | Owner action |
 |---|---|---|
-| OD-01, OD-03 to OD-09, OD-10, OD-11, OD-17, OD-23 (from-address and postal address) unanswered | M4 Phase 0, M5 | Answer in `MASTER-PROMPT.md` section 4; log below |
+| OD-03 to OD-09 and OD-23 (from-address and postal address) unanswered; OD-01, OD-10, OD-11, OD-17, OD-18 answered 8 Nov (see the decision log) | M4 Phase 0, M5 step 1 (sender) | Answer in `MASTER-PROMPT.md` section 4; log below |
 | OD-27 (`happy-dom` bump, lockfile change) unanswered | M6 step 13 | Say yes or no |
 | M3 state unrecorded: who transferred the project, whether Spend Management, the new Neon resource, variable scoping and the Git link were done; GitHub app access for `meded` unconfirmed (Pro plan is confirmed by `vercel teams ls`) | M3 | Owner says what was done; a session runs VM step 1 read-only under scope `brian-pitts` and logs it here |
 | Content Phase 2 branch uncommitted | M4 Phase 1, M6 steps 10 and 11 | Content session commits on its branch after typecheck, test and e2e |
@@ -53,6 +53,11 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 |---|---|---|---|
 | 2026-11-08 | OD-26 keep `.next/dev/types/**` in `tsconfig.json` include | Keep. `next dev` re-adds both type globs (`node_modules/next/dist/lib/typescript/type-paths.js`, `writeConfigurationDefaults.js`), so removing the line only churns the file; `next typegen` writes `.next/types` only, so the stale `.next/dev/types` recovery note stays. Decided by the M1 session from the installed Next.js source, as M1 step 3 instructs; the owner may overrule | M1 session |
 | 2026-11-08 | OD-24 add CI | Yes, said by the owner in the M1 session ("merge fix/e2e-green into main, push, and add CI") | M1 session |
+| 2026-11-08 | OD-10 build the magic link here or adopt Neon Auth | Build here (owner, in the M5 session) | M5 session |
+| 2026-11-08 | OD-11 gate all of `/handbook`; OD-18 retire the first-visit dialog for signed-in readers | Yes to both (owner) | M5 session |
+| 2026-11-08 | OD-01 the free set | Yes as stated: `/preview` = Chapters 1 and 7 plus the two teasers; `FREE_PAGE_IDS = cover, pref, ch1, ch7` (owner) | M5 session |
+| 2026-11-08 | OD-17 member-only media | Yes: `public/downloads` and `public/audio` are member assets and move behind a viewer-checked route in UD-P2 (owner). What to do with the untracked root `downloads/` folder was not decided | M5 session |
+| 2026-11-08 | M1 before M5 | Owner chose to land M1 first; it was already merged by another session, so the M5 session went straight to Phase 1 | M5 session |
 
 ## Step log (append-only)
 
