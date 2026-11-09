@@ -14,7 +14,7 @@ Status: **drafted, not rehearsed.** Nothing here has been run against Vercel, DN
 | Lighthouse and axe on every route | Needs `@axe-core/playwright` and a Lighthouse run | **Not done** (new dependency or tool: needs your go-ahead) |
 | Progress moves | Static site's "Download my progress" (`cutover-static-site-export.patch`, for `main`) and the Pages stub (`docs/cutover/pages-stub-index.html`), both round-tripped into Settings > Restore from a file | Built and tested here; **not yet on `main`** |
 | Lead capture works for real | A production store and SendGrid with an authenticated sending domain | Database done and tested; **SendGrid key, sending domain and postal address still missing** |
-| Content answers reviewed | Checkpoint key points marked as drafted in `../../content/data/checkpoints.ts`, the gate's "How your email is used" text, and the welcome email | **Author review pending** |
+| Content answers reviewed | Checkpoint key points marked as drafted in `../../content/data/checkpoints.ts`, the sign-in and notes consent texts (`../../lib/auth/config.ts`, `../../lib/leads/config.ts`), and the confirmation and sign-in emails (the first-visit gate and its welcome email are gone) | **Author review pending** |
 
 ## Order of work
 
@@ -41,4 +41,4 @@ Source recovery (`git checkout main`, or the `static-v1` tag) does **not** chang
 - `/#ch5` style links on the old address reach `/ch5` on the new one (`../../e2e/cutover-stub.spec.ts` covers all 21).
 - A reader with saved progress is offered the file before being redirected.
 - The sitemap and canonical tags show the new address; `curl -I` on a chapter returns 200.
-- Submit the gate form once with your own address; confirm the row exists and the email arrives with the postal address.
+- Submit the notes form once with your own address; confirm the row exists and the confirmation email arrives with the postal address. Request a sign-in link once and open it.
