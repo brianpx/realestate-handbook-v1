@@ -15,14 +15,14 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 ## Where things stand
 
-*Updated 8 November 2026.* The planning phase is complete and merged to `main` (`6d63992`): the five source plans live in `docs/_archive/`, `AGENTS.md` carries the project instructions, and `MASTER-PROMPT.md` is the live plan. No engineering milestone has started. Another session has content-review Phase 2 work uncommitted in the tree (see M4 and the collision note below); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts` or `components/widgets/LeadSources.tsx`. The next unblocked work is M1 (green e2e baseline), which needs no owner decision. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are all unanswered.
+*Updated 8 November 2026, evening.* The planning phase is merged to `main` (`cc6b822`). M1 (green baseline) has landed on `fix/e2e-green` (`e5fb824` to `23a9410` plus this docs commit), worked in the git worktree `.claude/worktrees/fix-e2e-green` so the content session's uncommitted files were never touched: `pnpm e2e` passed 229 of 229 in three consecutive runs, `pnpm typecheck` now runs `next typegen` first and passes on a clean export, and `pnpm test` is 369 passed, 4 skipped. The branch is not merged or pushed; M1 step 4 (CI) waits on OD-24. Another session still has content-review Phase 2 work uncommitted in the main checkout (see M4 and the collision note); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts`, `components/widgets/LeadSources.tsx` or `e2e/parity/practice.spec.ts`. Next unblocked work: merge `fix/e2e-green` (owner's call), then M2 on `fix/preview-sample`, which proceeds on the OD-01 and OD-28 defaults. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are all unanswered; OD-26 was decided by the M1 session from the Next.js source.
 
 ## Milestone status
 
 | Milestone | Status | Branch | Started | Finished | Notes |
 |---|---|---|---|---|---|
 | M0 Housekeeping | in progress | `docs/plans-master` (merged, deleted) | 2026-11-08 | | Steps 1 to 3 done; step 4 waits on the content session's commit; step 5 waits on OD-17 |
-| M1 Green baseline | not started | `fix/e2e-green` | | | No decision needed. OD-24 only affects step 4 (CI) |
+| M1 Green baseline | in progress | `fix/e2e-green` (unmerged) | 2026-11-08 | | Steps 1, 2, 3, 5 done (`e5fb824`, `1bc6acf`, `6f91612`, `23a9410`); step 4 (CI) waits on OD-24; two L27 waits deferred, see step log |
 | M2 Sample and preview fixes | not started | `fix/preview-sample` | | | Needs M1 green to verify |
 | M3 Vercel Pro migration | not started | none (no commits; result file after) | | | Owner checklist at the top of M3 must be complete first |
 | M4 Content revision | in progress | content session's branch (Phase 2); Phase 1 not started | 2026-11-08 | | Phase 2 landing before Phase 1; Phase 0 decisions OD-03 to OD-09 unanswered |
@@ -35,7 +35,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 | Files | Who has them | Since | Blocks | Clears when |
 |---|---|---|---|---|
-| `content/pages/{ch1,ch2,ch3,ch5,ch6,ch8,ch9,ch10,ch11,ch12,ch13,app-d,app-e}.html`, `content/data/{checkpoints,qualify}.ts`, `components/widgets/LeadSources.tsx`, `lib/{sources,glossary}.ts`, `lib/state/index.ts`, `lib/{checkpoints,sources-pipeline}.test.ts`, `e2e/parity/{checkpoints,practice}.spec.ts` | content session, uncommitted (M4 Phase 2 items 9c, 9d, 9e) | 2026-11-08 | M4 Phase 1, M6 steps 10 and 11 | the content branch is committed and merged; then run M4 step 1b |
+| `content/pages/{ch1,ch2,ch3,ch5,ch6,ch8,ch9,ch10,ch11,ch12,ch13,app-d,app-e}.html`, `content/data/{checkpoints,qualify}.ts`, `components/widgets/LeadSources.tsx`, `lib/{sources,glossary}.ts`, `lib/state/index.ts`, `lib/{checkpoints,sources-pipeline}.test.ts`, `e2e/parity/{checkpoints,practice}.spec.ts` | content session, uncommitted (M4 Phase 2 items 9c, 9d, 9e) | 2026-11-08 | M4 Phase 1, M6 steps 10 and 11, M1 step 2 remainder (`practice.spec.ts` networkidle waits) | the content branch is committed and merged; then run M4 step 1b |
 | root `downloads/` (untracked) | nobody | 2026-11-08 | M0 step 5 | OD-17 is answered |
 
 ## Open blockers
@@ -50,7 +50,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 | Date | Decision | Answer | Logged by |
 |---|---|---|---|
-| | | | |
+| 2026-11-08 | OD-26 keep `.next/dev/types/**` in `tsconfig.json` include | Keep. `next dev` re-adds both type globs (`node_modules/next/dist/lib/typescript/type-paths.js`, `writeConfigurationDefaults.js`), so removing the line only churns the file; `next typegen` writes `.next/types` only, so the stale `.next/dev/types` recovery note stays. Decided by the M1 session from the installed Next.js source, as M1 step 3 instructs; the owner may overrule | M1 session |
 
 ## Step log (append-only)
 
@@ -61,9 +61,15 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | 2026-11-08 | M0.3 AGENTS.md project instructions committed | `docs/plans-master` | `7a650a1` | n/a | Managed Next.js block unchanged |
 | 2026-11-08 | Plans moved to `docs/_archive/`; master plan the only file under `docs/plans/` | `docs/plans-master` | `d751dce`, `d706a3b` | n/a | Cross-references repointed; fast-forwarded into `main` and pushed |
 | 2026-11-08 | `MASTER-PROMPT.md` written from an external critique; `master-plan.md` archived; this file created | `docs/master-prompt` | `6d63992` | n/a (docs only) | Revision log in `MASTER-PROMPT.md` section 12; fast-forwarded into `main` |
+| 2026-11-08 | M1.1 calculator locators (CR-H1) | `fix/e2e-green` | `e5fb824` | `pnpm exec playwright test e2e/parity/calculators.spec.ts`: 14 passed | Worked in git worktree `.claude/worktrees/fix-e2e-green`, branched from `main` at `cc6b822`, so the content session's tree was untouched |
+| 2026-11-08 | M1.2 hydration mark replaces networkidle (CR-H1, CR-L27) | `fix/e2e-green` | `1bc6acf` | `search.spec.ts --repeat-each 10`: 110 passed; `glossary-tools.spec.ts` and `settings.spec.ts`: 19 passed | New `components/shell/HydrationMark.tsx` (sets `<html data-hydrated="true">` after mount, rendered last in the product layout) and `e2e/hydration.ts` (`waitForHydration`). Not changed: `practice.spec.ts` (in the content session's uncommitted set) and `cutover-stub.spec.ts:43` (a negative wait on the static stub page, not a hydration proxy) |
+| 2026-11-08 | M1.3 typecheck runs `next typegen` first (CR-M10); OD-26 decided | `fix/e2e-green` | `6f91612` | `pnpm typecheck` in the worktree, and in a clean `git archive` export after a fresh `pnpm install --frozen-lockfile`: both pass | `AGENTS.md` Commands carries the stale-dev-types recovery note; the managed Next.js block is untouched |
+| 2026-11-08 | M1.5 routes doc comment (CR-L26) | `fix/e2e-green` | `23a9410` | n/a (comment only) | |
+| 2026-11-08 | M1 verification at `23a9410` | `fix/e2e-green` | | `pnpm test`: 369 passed, 4 skipped; `pnpm e2e` three consecutive runs: 229 passed each, 0 failed | Run with `/opt/homebrew/bin` first on PATH because the Playwright webServer command calls `pnpm` and the first `pnpm` on PATH is the broken shim. Step 4 (CI) not started: OD-24 unanswered. Branch not merged or pushed |
 
 ## Session hand-off notes (append-only)
 
 One short paragraph per session: what it did, what it left unverified, what the next session should start with.
 
 - **2026-11-08, planning session.** Wrote the master plan from the five source plans, revised it into `MASTER-PROMPT.md` after a critique, archived the originals, created this file. All of it is committed and merged to `main` (`6d63992`), not yet pushed. Nothing engineering-side was run. Next session: push `main` if the owner wants, then start M1 on `fix/e2e-green`.
+- **2026-11-08, M1 session.** Landed M1 steps 1, 2, 3 and 5 on `fix/e2e-green` in a git worktree (`.claude/worktrees/fix-e2e-green`): four code commits plus this docs commit. Typecheck, unit tests and three full e2e runs are green (step log). Not done: step 4 (CI) pending OD-24; two `networkidle` waits in `practice.spec.ts` left until the content session commits; `cutover-stub.spec.ts:43` kept on purpose. The branch is not merged into `main` or pushed; the owner decides. Next session: merge `fix/e2e-green` if approved, then start M2 on `fix/preview-sample` from the merged `main`, verifying against the now-green suite.
