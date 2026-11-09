@@ -104,8 +104,6 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         className="nav-search-input"
         placeholder="Search the handbook"
         aria-keyshortcuts="Control+K Meta+K"
-        aria-controls="searchResults"
-        aria-expanded={searching}
         autoComplete="off"
         spellCheck={false}
         value={query}
