@@ -176,7 +176,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
 
   return (
     <>
-      <nav id="sidebar" ref={sidebarRef} className={classes} aria-label="Table of contents">
+      <nav id="sidebar" ref={sidebarRef} className={classes} aria-label="Handbook">
         <div className="sidebar-header" ref={headerRef}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
@@ -199,7 +199,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
             {open ? '✕' : '☰'}
           </button>
         </SidebarSearch>
-        <ul className="nav-list" id="navList">
+        <ul className="nav-list" id="navList" role="list">
           <ProgressItem />
           <ProductLinks current={current} locked={locked} />
           {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}

@@ -25,8 +25,15 @@ export function Settings() {
 
   // Mirror theme choices onto <html>; the inline script in layout.tsx did the first paint.
   // systemDark stays null until mounted so server and first client render agree and the class set before paint is kept.
+  // It then tracks the system scheme, so a reader who never chose a theme follows a change without reloading.
   const [systemDark, setSystemDark] = useState<boolean | null>(null);
-  useEffect(() => { setSystemDark(window.matchMedia('(prefers-color-scheme: dark)').matches); }, []);
+  useEffect(() => {
+    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    setSystemDark(scheme.matches);
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    scheme.addEventListener('change', onChange);
+    return () => scheme.removeEventListener('change', onChange);
+  }, []);
   const dark = settings.dark ?? systemDark ?? false;
   useEffect(() => {
     if (systemDark !== null) document.documentElement.classList.toggle('dark', dark);

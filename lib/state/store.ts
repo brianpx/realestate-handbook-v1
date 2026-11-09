@@ -51,20 +51,22 @@ export function createStore<S extends z.ZodType>({ key, schema, migrate }: Optio
 
   const emit = () => listeners.forEach(l => l());
 
+  // Another tab wrote this key (or cleared storage): one window listener for the store, held while anyone subscribes.
+  const onStorage = (e: StorageEvent) => {
+    if (e.key !== key && e.key !== null) return;
+    cache = null;
+    emit();
+  };
+
   return {
     get: () => (cache ??= read()),
     getServerSnapshot: () => defaults,
     subscribe(listener) {
+      if (listeners.size === 0) window.addEventListener('storage', onStorage);
       listeners.add(listener);
-      const onStorage = (e: StorageEvent) => {
-        if (e.key !== key && e.key !== null) return;
-        cache = null;
-        emit();
-      };
-      window.addEventListener('storage', onStorage);
       return () => {
         listeners.delete(listener);
-        window.removeEventListener('storage', onStorage);
+        if (listeners.size === 0) window.removeEventListener('storage', onStorage);
       };
     },
     update(recipe) {

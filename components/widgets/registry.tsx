@@ -23,15 +23,14 @@ import { TimeBlockPlanner } from './TimeBlockPlanner';
 import { ToolGate } from './ToolGate';
 import { NURTURE_STATIC_HTML } from '@/content/data/nurture-static';
 import { PITFALL_STATIC_HTML } from '@/content/data/pitfall-static';
+import { isWidgetName, type WidgetName } from '@/lib/widget-markers';
 
 // Widget name -> component. Filled in as each widget is ported (phase 3). Unknown names render nothing,
 // so the static chapter markup around the marker is what a reader sees until the port lands.
 // Components are server-rendered too, so their first HTML is the no-JavaScript version of the tool.
 // `html` is the page HTML a wrapping marker encloses (undefined for stand-alone widgets).
 type WidgetProps = { page: string; id: string; html?: string };
-// Some entries are async server components (they read page tables); React renders those, the cast only keeps
-// TypeScript's ComponentType, which predates async components, from rejecting them.
-const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
+const WIDGETS: Record<WidgetName, ComponentType<WidgetProps>> = {
   'crm-checklists': Checklists,
   scorecard: Scorecard,
   'scorecard-change': ScoreChange,
@@ -41,9 +40,9 @@ const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   'nurture-timeline': NurtureTimeline,
   'script-practice': ScriptPractice,
   'objection-trainer': ObjectionTrainer,
-  'qualifying-drill': QualifyingDrill as unknown as ComponentType<WidgetProps>,
+  'qualifying-drill': QualifyingDrill,
   'pitfall-cycle': PitfallCycle,
-  'error-self-score': ErrorSelfScore as unknown as ComponentType<WidgetProps>,
+  'error-self-score': ErrorSelfScore,
   'consultation-lab': ConsultationLab,
   'fair-housing-drill': FairHousingDrill,
   checkpoints: Checkpoints,
@@ -52,15 +51,15 @@ const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   'data-table': PageDataTable,
   'pipeline-calculator': PipelineCalculator,
   'timeblock-planner': TimeBlockPlanner,
-  'postclose-scheduler': PostCloseScheduler as unknown as ComponentType<WidgetProps>,
+  'postclose-scheduler': PostCloseScheduler,
 };
 
 // The five tools "Essential tools only" keeps (ESSENTIAL_WIDGETS in the static site), plus the pieces that belong
 // to them or switch themselves (checklists show as plain boxes, the response timer hides itself). Sortable reference
 // tables are page content, not tools, so the setting leaves them alone too.
-const ALWAYS_BUILT = new Set(['scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'crm-checklists', 'response-timer', 'data-table']);
+const ALWAYS_BUILT = new Set<WidgetName>(['scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'crm-checklists', 'response-timer', 'data-table']);
 // Original markup that a gated tool replaces, put back when the tool is not built.
-function gatedFallback(name: string, html?: string): string | undefined {
+function gatedFallback(name: WidgetName, html?: string): string | undefined {
   if (name === 'nurture-timeline') return NURTURE_STATIC_HTML;
   if (name === 'pitfall-cycle') return PITFALL_STATIC_HTML;
   if (name === 'checkpoints' && html !== undefined) return `<aside class="box checkpoint">${html}</aside>`; // the marker replaced this box's outer element
@@ -69,8 +68,8 @@ function gatedFallback(name: string, html?: string): string | undefined {
 
 // `id` is the stable instance id (page:name) widgets use as their persistence key and deep-link anchor.
 export function Widget({ id, name, html }: { id: string; name: string; html?: string }) {
+  if (!isWidgetName(name)) return null;
   const Component = WIDGETS[name];
-  if (!Component) return null;
   const tool = <Component page={id.split(':')[0]!} id={id} html={html} />;
   return ALWAYS_BUILT.has(name) ? tool : <ToolGate fallbackHtml={gatedFallback(name, html)}>{tool}</ToolGate>;
 }
@@ -79,7 +78,7 @@ export function Widget({ id, name, html }: { id: string; name: string; html?: st
 // the tool replaced some, and one line saying which plan builds it. Decided on the server, so the tool's code and
 // data never reach the browser.
 export function LockedWidget({ name, html }: { name: string; html?: string }) {
-  if (!WIDGETS[name]) return null;
+  if (!isWidgetName(name)) return null;
   const fallback = gatedFallback(name, html);
   return (
     <>

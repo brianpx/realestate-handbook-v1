@@ -16,7 +16,7 @@ export default function SupportPage() {
         Most questions are about where progress is saved. Start here; the answers describe how the handbook works today.
       </PageHead>
       <div className="pub-wrap pub-narrow pub-prose">
-        <ul className="pub-toc">
+        <ul className="pub-toc" role="list">
           <li><a href="#navigating">Finding your way</a></li>
           <li><a href="#saving">Saving progress</a></li>
           <li><a href="#backup">Backup and restore</a></li>

@@ -25,7 +25,7 @@ export function PitfallCycle() {
             <button key={tool.name} type="button" className="btn-mini" aria-pressed={active.has(i)} onClick={() => toggle(i)}>{tool.name}</button>
           ))}
         </div>
-        <ol className="cycle-list">
+        <ol className="cycle-list" role="list">
           {CYCLE_NODES.map((node, n) => (
             <li key={node.name} className={`cycle-node${broken[n]!.length ? ' is-broken' : ''}`}>
               <strong>{node.name}</strong>
