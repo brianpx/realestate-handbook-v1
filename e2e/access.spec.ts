@@ -1,5 +1,4 @@
-import { readFile } from 'node:fs/promises';
-import { AUTH_FILE, extraReader, extraSessionFor, PREVIEW_SESSION_ID, revokeGrant, signedInState } from './auth';
+import { extraReader, extraSessionFor, PREVIEW_SESSION_ID, revokeGrant, signedInState, stores } from './auth';
 import { expect, test } from './fixtures';
 import { BASE_URL } from './target';
 
@@ -145,8 +144,8 @@ test.describe('the account actions', () => {
 
     await pageTwo.goto('/handbook/ch2');
     await expect(pageTwo).toHaveURL(`${BASE_URL}/signup?next=%2Fhandbook%2Fch2`);
-    const file = JSON.parse(await readFile(AUTH_FILE, 'utf8')) as { audit: { action: string; subjectId: string }[] };
-    expect(file.audit.filter(a => a.action === 'session.revoke_all' && a.subjectId === reader.userId)).toHaveLength(1);
+    const logged = await stores().access.listAudit('sessions', reader.userId);
+    expect(logged.filter(a => a.action === 'session.revoke_all')).toHaveLength(1);
     await one.close();
     await two.close();
   });
@@ -169,12 +168,12 @@ test.describe('the account actions', () => {
     await page.goto('/account');
     await expect(page).toHaveURL(`${BASE_URL}/signup?next=%2Faccount`);
 
-    const file = JSON.parse(await readFile(AUTH_FILE, 'utf8')) as { users: { id: string; email: string; status: string }[]; sessions: { userId: string }[]; grants: { userId: string }[] };
-    const user = file.users.find(u => u.id === reader.userId)!;
-    expect(user).toMatchObject({ status: 'deleted', email: `deleted+${reader.userId}@invalid.local` });
-    expect(file.sessions.filter(s => s.userId === reader.userId)).toHaveLength(0);
-    expect(file.grants.filter(g => g.userId === reader.userId)).toHaveLength(1);
-    expect(JSON.stringify(file)).not.toContain(reader.email);
+    const s = stores();
+    expect(await s.users.findById(reader.userId)).toMatchObject({ status: 'deleted', role: 'reader', email: `deleted+${reader.userId}@invalid.local` });
+    expect(await s.auth.listSessions(reader.userId)).toHaveLength(0);
+    expect(await s.access.listGrants(reader.userId)).toHaveLength(1);
+    expect(await s.access.findMembership(reader.userId)).toBeNull();
+    expect(JSON.stringify(await s.access.listAudit('users', reader.userId))).not.toContain(reader.email);
     await context.close();
   });
 });

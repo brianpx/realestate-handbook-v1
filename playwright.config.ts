@@ -1,13 +1,13 @@
 import { defineConfig } from '@playwright/test';
 import { AUTH_FILE, signedInState } from './e2e/auth';
-import { BASE_URL as ORIGIN, BYPASS_HEADERS, IS_REMOTE, LOCAL_ONLY_SPECS } from './e2e/target';
+import { BASE_URL as ORIGIN, BYPASS_HEADERS, IS_REMOTE, LOCAL_ONLY_SPECS, SEED_DATABASE_URL, SEEDING_SPECS } from './e2e/target';
 
 const MAILPIT_URL = 'http://localhost:8025';
 
 export default defineConfig({
   testDir: 'e2e',
   globalSetup: './e2e/global-setup.ts',
-  testIgnore: IS_REMOTE ? LOCAL_ONLY_SPECS : undefined,
+  testIgnore: IS_REMOTE ? [...LOCAL_ONLY_SPECS, ...(SEED_DATABASE_URL ? [] : SEEDING_SPECS)] : undefined,
   webServer: IS_REMOTE ? undefined : [
     {
       command: 'pnpm build && pnpm start -p 3187',
