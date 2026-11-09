@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { DeepLinks } from '@/components/shell/DeepLinks';
 import { Gate } from '@/components/shell/Gate';
+import { HydrationMark } from '@/components/shell/HydrationMark';
 import { Sidebar } from '@/components/shell/Sidebar';
 import { TermPopover } from '@/components/shell/TermPopover';
 
@@ -19,6 +20,7 @@ export default function ProductLayout({ children }: { children: ReactNode }) {
         <DeepLinks />
         <TermPopover />
         <main id="main-content" tabIndex={-1}>{children}</main>
+        <HydrationMark />
       </div>
       <Gate enabled={process.env.LEAD_CAPTURE_ENABLED === 'true'} />
     </>

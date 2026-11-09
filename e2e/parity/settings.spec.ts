@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { waitForHydration } from '../hydration';
 
 // Parity checks for the settings panel, progress reset and chapter end. Each assertion was read off
 // legacy/js/interactive.js (setupSettingsUi, setupProgressUi, setupChapterEnd), not observed by running the
@@ -7,7 +8,7 @@ import { expect, test, type Page } from '@playwright/test';
 // until the locators are scoped to the current section.
 const open = async (page: Page, id: string) => {
   await page.goto(`/${id}`);
-  await page.locator('details.settings summary').waitFor();
+  await waitForHydration(page); // the controls answer only once React has mounted
 };
 const openSettings = (page: Page) => page.locator('details.settings summary').click();
 const settings = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem('handbookSettings') ?? '{}'));
