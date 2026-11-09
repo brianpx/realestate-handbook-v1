@@ -21,7 +21,14 @@ type Props = AmountBounds & {
 export function AmountInput({ id, label, value, onValue, className = 'calc-input', placeholder, format, ...bounds }: Props) {
   const [text, setText] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const [current, setCurrent] = useState<number | undefined>(undefined);
+  // The number this input last reported, or was last given. A `value` that differs came from somewhere else (a
+  // preset, a clear, a removed row), so what was typed here no longer describes it and the new value is shown.
+  const [expected, setExpected] = useState(value);
+  if (value !== expected) {
+    setExpected(value);
+    setText(null);
+    setMessage('');
+  }
   const errorId = useId();
   const shown = (n: number) => (format ? format(n) : String(n));
   return (
@@ -41,10 +48,10 @@ export function AmountInput({ id, label, value, onValue, className = 'calc-input
           const next = checkAmount(e.target.value, bounds);
           setText(e.target.value);
           setMessage(next.message);
-          setCurrent(next.value);
+          setExpected(next.value);
           onValue(next.value);
         }}
-        onBlur={() => { if (format && current !== undefined) setText(format(current)); }}
+        onBlur={() => { if (format && text !== null && expected !== undefined) setText(format(expected)); }}
       />
       <div className="calc-error" id={errorId}>{message}</div>
     </>

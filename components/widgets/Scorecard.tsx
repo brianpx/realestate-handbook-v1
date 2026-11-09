@@ -32,7 +32,9 @@ const numberAt = (data: Record<string, unknown>, key: string): number | undefine
 
 export function Scorecard() {
   const { scorecard } = useHandbookState();
-  const [clearCount, setClearCount] = useState(0); // remounts the inputs so text left in an invalid cell is dropped
+  // AmountInput shows a changed value on its own, but an invalid cell's stored value is undefined before and after
+  // Clear, so only a remount drops the text typed there.
+  const [clearCount, setClearCount] = useState(0);
   const [confirming, setConfirming] = useState(false);
   const [summary, setSummary] = useState('');
   const resetRef = useRef<HTMLButtonElement>(null);
