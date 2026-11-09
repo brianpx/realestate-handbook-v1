@@ -31,7 +31,7 @@ export function faqs(): Faq[] {
     },
     {
       q: 'How is my progress saved?',
-      a: 'In your own browser, on the device you are using. Checked-off items, calculator entries, script practice and quiz answers are stored there and are not sent to a server. There is no account. If you clear site data or use a private window you can lose them, so download a backup file from the Account page now and then.',
+      a: 'In your own browser, on the device you are using. Checked-off items, calculator entries, script practice and quiz answers are stored there and are not sent to a server; your account only signs you in and keeps no copy. If you clear site data or use a private window you can lose them, so download a backup file from the Account page now and then.',
     },
     {
       q: 'Does it work across my devices?',
@@ -73,7 +73,7 @@ export function pricingFaqs(): Faq[] {
     },
     {
       q: 'Will I lose my progress if I buy later or change devices?',
-      a: 'Progress is saved in your browser on the device you use, and the handbook has no accounts or sync. To move to another phone or computer, download a progress file on the old one and restore it on the new one. The Support page walks through it.',
+      a: 'Progress is saved in your browser on the device you use, and your account does not sync it between devices. To move to another phone or computer, download a progress file on the old one and restore it on the new one. The Support page walks through it.',
     },
   ];
 }
