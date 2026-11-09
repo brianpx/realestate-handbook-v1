@@ -1,8 +1,8 @@
 # Master plan: realestate-handbook-v1
 
-Written 8 November 2026 from the five documents in `docs/plans/`, from `AGENTS.md`, and from the repository at commit `6652f83` plus three kinds of uncommitted work: the staged move of older docs into `docs/_archive/`, the project-instructions half of `AGENTS.md` (only the managed Next.js block is committed), and content edits in progress by another session that already execute part of the content review (listed under M4, "Status at 8 November"). Nothing in this document changes what the source plans decided. It decides **order, ownership, dependencies, and which overlapping steps are done once**, and it carries every step from the source plans so a session can work from this file alone and open a source plan only for verbatim detail (SQL column lists, command transcripts, finding evidence).
+Written 8 November 2026 from five planning documents (now in `docs/_archive/`; this file is the only plan kept under `docs/plans/`), from `AGENTS.md`, and from the repository at commit `6652f83` plus three kinds of uncommitted work: the staged move of older docs into `docs/_archive/`, the project-instructions half of `AGENTS.md` (only the managed Next.js block is committed), and content edits in progress by another session that already execute part of the content review (listed under M4, "Status at 8 November"). Nothing in this document changes what the source plans decided. It decides **order, ownership, dependencies, and which overlapping steps are done once**, and it carries every step from the source plans so a session can work from this file alone and open a source plan only for verbatim detail (SQL column lists, command transcripts, finding evidence).
 
-Source plans and the tags used to cite them:
+Source plans, all under `docs/_archive/`, and the tags used to cite them:
 
 | Tag | Document | What it is |
 |---|---|---|
@@ -20,7 +20,7 @@ Citations look like `[CR-H1]` (finding), `[CC-§2]` (section), `[CC-A]` (decisio
 - **Section 4 (decision register)** is the only list of owner decisions. When the owner answers, record the answer there with the date, then tick the steps it unblocks.
 - **Section 7 (file collision map)** says which files more than one workstream edits. Partition agents by it so no two agents touch the same file (AGENTS.md, Parallelism).
 - When a step lands, tick it here and add the commit hash. When a source plan is fully executed, move it to `docs/_archive/` and note that in section 10.
-- This file does not replace the Vercel migration prompt. For that work, hand `vercel-pro-migration-meded.md` to the session verbatim; section 6, milestone M3 says when and what must be true first.
+- This file does not replace the Vercel migration prompt. For that work, hand `docs/_archive/vercel-pro-migration-meded.md` to the session verbatim; section 6, milestone M3 says when and what must be true first.
 
 ## 1. The five plans in one sentence each
 
@@ -184,7 +184,7 @@ Branch: `docs/plans-master` for steps 1 to 3; the content session uses its own b
 Steps:
 
 - [ ] 1. Stage by path and commit the docs reorganisation (the archive renames, `free-sample-decision.md`, the three new plans, this file): `docs(plans): archive superseded docs and add the master plan`. Nothing under `content/`, `components/`, `lib/` or `e2e/` goes into this commit.
-- [ ] 2. Fix the stale line in `docs/plans/free-sample-decision.md:27` (the recommended set lists the Preface; resolution #1): the Preface belongs to the signed-in free set, not to `/preview` [CR-L15]. Include in the same commit.
+- [x] 2. Fix the stale line in `free-sample-decision.md:30` (now `docs/_archive/free-sample-decision.md`) (the recommended set lists the Preface; resolution #1): the Preface belongs to the signed-in free set, not to `/preview` [CR-L15]. Include in the same commit.
 - [ ] 3. Commit `AGENTS.md` on its own: `docs(agents): add project instructions`. Keep the managed Next.js block byte for byte.
 - [ ] 4. The content session finishes its Phase 2 work, runs `pnpm typecheck`, `pnpm test` and `pnpm e2e` (its own spec changes expect 16 scripts and 9 objections), and commits on its branch with Conventional Commits, one commit per logical change where practical. Tick the matching M4 steps here with the hashes.
 - [ ] 5. Decide the untracked root `downloads/` folder (OD-17). Until answered, leave it untracked and do not add it to `.gitignore`.
@@ -238,7 +238,7 @@ Exit: CR items H2, H3, M6, M7, L11, L12, L13, L14, L15, L16 closed; FS Appendix 
 
 ### M3. Vercel Pro migration (lane D)
 
-Goal: the project lives under `meded` with a new Neon resource, per-environment branches, scoped and Sensitive variables, and the public alias never stopped returning 200. **Hand `docs/plans/vercel-pro-migration-meded.md` to the session verbatim**; this section is the checklist and the stop points.
+Goal: the project lives under `meded` with a new Neon resource, per-environment branches, scoped and Sensitive variables, and the public alias never stopped returning 200. **Hand `docs/_archive/vercel-pro-migration-meded.md` to the session verbatim**; this section is the checklist and the stop points.
 
 Branch: none for code (VM says no commits or pushes). The result file is committed afterwards on `docs/vercel-migration-result`.
 
@@ -257,7 +257,7 @@ Steps (the full detail, including every command, is in VM):
 - [ ] 4. **New Neon resource, Path A** [VM-4]: if counts were non-zero, `pg_dump --data-only -t leads -t lead_attempts` to `/tmp/leads.sql` (never echo the URL); confirm provisioning is possible (`vercel integration add --help`, `vercel integration list` under `meded`, payment method, offered plans) before removing anything; **one ask** covers deleting the 18 copied variables and running `vercel integration add neon --name realestate-handbook` immediately after, in the same sitting; choose the lowest Neon plan with branching (stop and report the price if only paid plans are offered); confirm the resource is connected for Production, Preview and Development; then make sure Preview and Development never hold the production `DATABASE_URL` (per-preview branching if offered, otherwise `preview` and `development` branches created with permission and `DATABASE_URL` re-scoped per environment); `vercel env ls` must show `DATABASE_URL` scoped separately for all three and the session states which branch each points at (names only); apply `db/migrations/001_leads.sql` to main (ask first) and to the other branches if they pre-date it; restore the dump if any and show before and after counts and `min/max(created_at)` only; do not remove the old resource yet.
 - [ ] 5. **Environment variables** [VM-5, VM Decision 3]: diff `vercel env ls` against step 1; recreate only variables that existed or that `.env.example` marks required; ask for every value not in hand; mark `SENDGRID_API_KEY`, `LEAD_IP_SALT`, `VERCEL_AUTOMATION_BYPASS_SECRET` and all Neon credentials Sensitive; Preview gets `SITE_INDEXABLE` unset and `NEXT_PUBLIC_SITE_URL` unset or the preview pattern; Preview never gets production SendGrid credentials unless told; note build-time variables (`NEXT_PUBLIC_SITE_URL`, `LEAD_CAPTURE_ENABLED`, `NEXT_PUBLIC_COACH_ENABLED`) need a redeploy; `vercel env pull .env.local --environment development` after confirming `.env.local` is ignored; never pull Production locally unless a check requires it, and delete the file after.
 - [ ] 6. **Release** [VM-6, VM Decision 2]: **6a local**: `pnpm install`, `pnpm typecheck`, `pnpm test`, `TEST_DATABASE_URL=<development branch> pnpm vitest run lib/leads/neon-store.integration.test.ts`, `pnpm dev`, `curl -sI http://localhost:3000/api/lead` gives 405. **6b preview**: `vercel` (no `--prod`); record URL and id; 200 (or 401 then bypass header); `/api/lead` 405 on GET; preview `DATABASE_URL` is a non-production branch; `PLAYWRIGHT_BASE_URL=<preview> pnpm e2e` with the bypass secret; `vercel logs <preview> --level error`; **stop and wait for the yes**. **6c production**: `vercel --prod`; record the id; 200 on the alias; `/robots.txt` and `/sitemap.xml` unchanged (indexing off unless `SITE_INDEXABLE=true`); `/api/lead` 405; if lead capture is on, one test lead with the owner's address lands in the new database and the old count is unchanged; `PLAYWRIGHT_BASE_URL=https://realestate-handbook.vercel.app pnpm e2e`; `vercel logs --level error` for the first minutes; Usage shows the project under Pro.
-- [ ] 7. **Cleanup and record** [VM-7]: only after 6c is green, ask, then remove the old Neon resource from `brianpxs-projects`; delete scratch files and `/tmp/leads.sql`; write `docs/plans/vercel-pro-migration-meded-result.md` with everything VM lists (ids before and after, branch per environment, bypass secret fate, CLI versions, `--help` transcripts, spend settings, env list with Sensitive flags, the dialog text, row counts, what was verified, every **unchecked** item), ending with the sequencing note that UD's variables and migrations `002+` apply only to the new `meded` resource; add a dated note to `docs/_archive/vercel-preview-plan.md`.
+- [ ] 7. **Cleanup and record** [VM-7]: only after 6c is green, ask, then remove the old Neon resource from `brianpxs-projects`; delete scratch files and `/tmp/leads.sql`; write `docs/_archive/vercel-pro-migration-meded-result.md` (beside the prompt) with everything VM lists (ids before and after, branch per environment, bypass secret fate, CLI versions, `--help` transcripts, spend settings, env list with Sensitive flags, the dialog text, row counts, what was verified, every **unchecked** item), ending with the sequencing note that UD's variables and migrations `002+` apply only to the new `meded` resource; add a dated note to `docs/_archive/vercel-preview-plan.md`.
 
 Exit (VM "Done when"): alias 200 from a `meded` build; no variable points at `morning-credit-15469990`; Preview and Development on non-production branches with `DATABASE_URL` scoped three ways; Git link authorised; bypass secret exists and Playwright used it; $10 alert and $20 limit; nothing left in the personal scope except what the owner kept; result file lists every unchecked item.
 
@@ -504,11 +504,12 @@ Everything is run with `/opt/homebrew/bin/pnpm` or `PATH=/opt/homebrew/bin:$PATH
 
 ## 10. Document status and maintenance
 
-- `docs/plans/master-plan.md` (this file): the sequencing authority. Update ticks, decision answers and commit hashes as work lands.
-- `docs/plans/2026-11-08-code-review.md`: authority for finding evidence and verification steps. Archive when CR items are all closed or explicitly deferred.
-- `docs/plans/2026-11-08-course-content-review.md`: authority for content detail. Archive after M4 Phase 3; keep Phase 4 tracked here.
-- `docs/plans/free-sample-decision.md`: decided; its open items are OD-01, OD-02 and OD-18. Archive after M5.
-- `docs/plans/user-database-plan.md`: authority for schema, flows and tests. Keep until M7 is complete.
-- `docs/plans/vercel-pro-migration-meded.md`: the executable prompt for M3. Archive with its result file after M3.
-- `docs/_archive/`: superseded documents; `launch-handoff.md` and `cutover-runbook.md` are still updated in M7 step 8 and consulted in M8 step 6.
+- `docs/plans/master-plan.md` (this file): the sequencing authority and the only document under `docs/plans/`. Update ticks, decision answers and commit hashes as work lands.
+- The five source plans were moved to `docs/_archive/` on 8 November so that this file is the single live plan. They remain the authority for their own detail and are cited by tag throughout:
+  - `docs/_archive/2026-11-08-code-review.md`: finding evidence and verification steps.
+  - `docs/_archive/2026-11-08-course-content-review.md`: content detail; Phase 4 is tracked here.
+  - `docs/_archive/free-sample-decision.md`: decided; its open items are OD-01, OD-02 and OD-18.
+  - `docs/_archive/user-database-plan.md`: schema, flows and tests, through M7.
+  - `docs/_archive/vercel-pro-migration-meded.md`: the executable prompt for M3; its result file goes beside it.
+- Also in `docs/_archive/`: the older superseded documents; `launch-handoff.md` and `cutover-runbook.md` are still updated in M7 step 8 and consulted in M8 step 6.
 - `docs/chapter-reviews/`: the October chapter review, mostly landed per CC; reference only.

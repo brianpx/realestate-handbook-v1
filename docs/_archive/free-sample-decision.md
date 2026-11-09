@@ -27,7 +27,7 @@ The free sample, in full, with every tool, checkpoint and quiz working:
 
 | Chapter | Why it is the sample | Words | Tools |
 |---|---|---|---|
-| Preface | Who the book is for, the reading plan, the box legend. It is sales copy already. Not on `/preview`: it belongs to the signed-in free set (`FREE_PAGE_IDS` in `docs/plans/user-database-plan.md`, D1), where a reader needs the reading plan and legend to navigate | 691 | Script practice sample |
+| Preface | Who the book is for, the reading plan, the box legend. It is sales copy already. Not on `/preview`: it belongs to the signed-in free set (`FREE_PAGE_IDS` in `docs/_archive/user-database-plan.md`, D1), where a reader needs the reading plan and legend to navigate | 691 | Script practice sample |
 | Chapter 1, Mindset and business foundations | The thesis of the course: leading indicators, income goal to daily conversation number, CRM as headquarters. The reader leaves with a real number on a card. Names the system without describing it; every forward reference points at paid chapters | 1,184 | Income goal calculator, checkpoint, quiz |
 | Chapter 7, Common errors and pitfalls | A diagnostic. The six-error table names the pain, the Sam case makes it concrete, and the self-score ends by pointing the reader at the paid chapter that fixes their worst habit (the Fix column names Chapters 2, 4, 8, 11, 12). Short and self-contained, and a different lesson type from Chapter 1 | 944 | Pitfall cycle explorer, six-errors self-score, checkpoint, quiz |
 
@@ -84,7 +84,7 @@ What to do with email instead:
 - Use confirmed opt-in for that list: send a confirmation link and store the address as subscribed only after it is clicked. CAN-SPAM does not require it, but it keeps the list clean, protects the sending domain's reputation, and is the expected standard for a marketing list. This is a confirmation for the list, never a condition for reading.
 - Rewrite the welcome email in `lib/leads/mail.ts` before any real send. "The book stays free to read" is no longer true once the handbook is sold.
 
-The sign-in and lead-capture design in `docs/plans/user-database-plan.md` is where this form should be built, so the sample stays ungated while the list gets a real back end.
+The sign-in and lead-capture design in `docs/_archive/user-database-plan.md` is where this form should be built, so the sample stays ungated while the list gets a real back end.
 
 ## Open decisions for the owner
 

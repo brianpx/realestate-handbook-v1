@@ -1,6 +1,6 @@
 # Prompt: move `realestate-handbook` to the Vercel Pro team `meded`
 
-Drafted 8 November 2026, revised the same day against the current Vercel docs, then tightened after review (Git access as a hard pre-condition, a stop rule if the alias drops after transfer, explicit Neon branching fallback, and sequencing with the user-database plan). This is a prompt to hand to an agent session (or to follow by hand). Companion to `../_archive/vercel-preview-plan.md` (what was true on 20 October) and `../_archive/cutover-runbook.md`.
+Drafted 8 November 2026, revised the same day against the current Vercel docs, then tightened after review (Git access as a hard pre-condition, a stop rule if the alias drops after transfer, explicit Neon branching fallback, and sequencing with the user-database plan). This is a prompt to hand to an agent session (or to follow by hand). Companion to `vercel-preview-plan.md` (same folder) (what was true on 20 October) and `../_archive/cutover-runbook.md`.
 
 Facts below were read from the repo on 8 November 2026 or from Vercel's documentation the same day. Anything the agent cannot confirm live must be marked **unchecked**, not assumed. Items tagged **(docs)** come from Vercel's documentation and should be re-read against the live dialog or `--help` output before acting.
 
@@ -154,9 +154,9 @@ The alias must still return 200 from the **same** deployment id as step 1. Do no
 
 - Only after 6c is green: ask me, then remove the old Neon resource from `brianpxs-projects` (`vercel integration resource remove <name>` / `vercel ir rm <name>` under that scope, or the dashboard). Ask before deleting anything else. Nothing for this project should remain in the personal scope except what I choose to keep.
 - Delete scratch files holding pulled env values and `/tmp/leads.sql`.
-- Write `docs/plans/vercel-pro-migration-meded-result.md` with: new team, `orgId`/`projectId` before and after, production deployment id before and after, preview deployment id used for testing, new Neon project id and branch names, which branch each environment's `DATABASE_URL` points at, whether the Protection Bypass secret survived or was re-created, CLI version before and after, the `--help` output of any command you were unsure about, Spend Management settings as saved, the final env var list per environment (names only, with Sensitive flags), what the transfer dialog actually listed, the before/after row counts and timestamps if data was copied, what was verified, and everything left **unchecked**.
-- End the result file with this sequencing note for later sessions: *"The user-database plan (`docs/plans/user-database-plan.md`) — its Phase 0/5 environment variables (`AUTH_IP_SALT`, `BILLING_*`, `CRON_SECRET`, etc.) and migrations `002+` — applies only to the new Neon resource under `meded`, following the same environment-scoping rules as this migration. Nothing new goes on Neon project `morning-credit-15469990`."*
-- Update the "What is true today" table in `../_archive/vercel-preview-plan.md` with a dated note that the project now lives under `meded`.
+- Write `docs/_archive/vercel-pro-migration-meded-result.md` with: new team, `orgId`/`projectId` before and after, production deployment id before and after, preview deployment id used for testing, new Neon project id and branch names, which branch each environment's `DATABASE_URL` points at, whether the Protection Bypass secret survived or was re-created, CLI version before and after, the `--help` output of any command you were unsure about, Spend Management settings as saved, the final env var list per environment (names only, with Sensitive flags), what the transfer dialog actually listed, the before/after row counts and timestamps if data was copied, what was verified, and everything left **unchecked**.
+- End the result file with this sequencing note for later sessions: *"The user-database plan (`docs/_archive/user-database-plan.md`) — its Phase 0/5 environment variables (`AUTH_IP_SALT`, `BILLING_*`, `CRON_SECRET`, etc.) and migrations `002+` — applies only to the new Neon resource under `meded`, following the same environment-scoping rules as this migration. Nothing new goes on Neon project `morning-credit-15469990`."*
+- Update the "What is true today" table in `vercel-preview-plan.md` (same folder) with a dated note that the project now lives under `meded`.
 
 ## Done when
 
@@ -171,7 +171,7 @@ The alias must still return 200 from the **same** deployment id as step 1. Do no
 
 ## Relationship to the other plans
 
-- This migration moves only the existing `leads` / `lead_attempts` tables. The users/auth/billing schema in `docs/plans/user-database-plan.md` (migrations `002+`) does not exist yet and is **not** part of this work. Once this migration is complete, that plan's environment variables and migrations target the new `meded` Neon resource only.
+- This migration moves only the existing `leads` / `lead_attempts` tables. The users/auth/billing schema in `docs/_archive/user-database-plan.md` (migrations `002+`) does not exist yet and is **not** part of this work. Once this migration is complete, that plan's environment variables and migrations target the new `meded` Neon resource only.
 - The content-revision, free-sample and quick-start plans are unaffected by where the project is hosted.
 
 Proceed step by step and stop for confirmation at every point marked above.
