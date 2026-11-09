@@ -2,20 +2,23 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
-import { NAV, type PageId } from '@/lib/pages';
+import { NAV, isPageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
 import { searchEntries, type SearchEntry } from '@/lib/search-query';
 import { findSearchTarget, revealSearchTarget } from '@/lib/search-jump';
 
 const labelOf = (page: string) => NAV.flatMap(g => g.pages).find(p => p.id === page)?.label ?? page;
 
-// The index is fetched once, the first time the box gets focus, and shared by every later search.
+// The index is fetched once, the first time the box gets focus, and shared by every later search. Its page ids are
+// plain strings until checked, so an entry for a page this build does not know is dropped rather than linked.
+type RawEntry = Omit<SearchEntry, 'pageId'> & { pageId: string };
 let indexPromise: Promise<SearchEntry[]> | null = null;
 const loadIndex = (): Promise<SearchEntry[]> => {
   indexPromise ??= fetch('/search-index.json').then(r => {
     if (!r.ok) throw new Error(`search index ${r.status}`);
-    return r.json() as Promise<SearchEntry[]>;
-  }).catch(err => { indexPromise = null; throw err; });
+    return r.json() as Promise<RawEntry[]>;
+  }).then(entries => entries.filter((e): e is SearchEntry => isPageId(e.pageId)))
+    .catch(err => { indexPromise = null; throw err; });
   return indexPromise;
 };
 
@@ -82,7 +85,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   const choose = (entry: SearchEntry) => {
     setQuery('');
     onNavigate();
-    const path = pageHref(entry.pageId as PageId);
+    const path = pageHref(entry.pageId);
     if (path === pathname) setTimeout(() => land(entry), 0);
     else { pendingJump.current = entry; router.push(path); }
   };
@@ -134,7 +137,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         {searching && index && results.length === 0 && <li className="search-empty">No matches.</li>}
         {results.map((entry, n) => (
           <li key={`${entry.pageId}-${entry.text}-${entry.occurrence}-${n}`}>
-            <a className="search-result" href={pageHref(entry.pageId as PageId)} onClick={e => {
+            <a className="search-result" href={pageHref(entry.pageId)} onClick={e => {
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
               e.preventDefault();
               choose(entry);
