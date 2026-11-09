@@ -15,7 +15,7 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 
 ## Where things stand
 
-*Updated 8 November 2026.* The planning phase is complete and merged to `main` (`d706a3b`): the five source plans live in `docs/_archive/`, `AGENTS.md` carries the project instructions, and `MASTER-PROMPT.md` is the live plan. No engineering milestone has started. Another session has content-review Phase 2 work uncommitted in the tree (see M4 and the collision note below); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts` or `components/widgets/LeadSources.tsx`. The next unblocked work is M1 (green e2e baseline), which needs no owner decision. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are all unanswered.
+*Updated 8 November 2026.* The planning phase is complete and merged to `main` (`6d63992`): the five source plans live in `docs/_archive/`, `AGENTS.md` carries the project instructions, and `MASTER-PROMPT.md` is the live plan. No engineering milestone has started. Another session has content-review Phase 2 work uncommitted in the tree (see M4 and the collision note below); until it is committed, no other lane touches `content/`, `lib/sources.ts`, `lib/glossary.ts`, `lib/state/index.ts` or `components/widgets/LeadSources.tsx`. The next unblocked work is M1 (green e2e baseline), which needs no owner decision. The "Answer first" decisions in `MASTER-PROMPT.md` section 4 are all unanswered.
 
 ## Milestone status
 
@@ -60,10 +60,10 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | 2026-11-08 | M0.2 Preface line in free-sample decision | `docs/plans-master` | `4450278` | n/a | Preface belongs to the signed-in free set, not `/preview` |
 | 2026-11-08 | M0.3 AGENTS.md project instructions committed | `docs/plans-master` | `7a650a1` | n/a | Managed Next.js block unchanged |
 | 2026-11-08 | Plans moved to `docs/_archive/`; master plan the only file under `docs/plans/` | `docs/plans-master` | `d751dce`, `d706a3b` | n/a | Cross-references repointed; fast-forwarded into `main` and pushed |
-| 2026-11-08 | `MASTER-PROMPT.md` written from an external critique; `master-plan.md` archived; this file created | `main` (staged, uncommitted) | | n/a | Revision log in `MASTER-PROMPT.md` section 12 |
+| 2026-11-08 | `MASTER-PROMPT.md` written from an external critique; `master-plan.md` archived; this file created | `docs/master-prompt` | `6d63992` | n/a (docs only) | Revision log in `MASTER-PROMPT.md` section 12; fast-forwarded into `main` |
 
 ## Session hand-off notes (append-only)
 
 One short paragraph per session: what it did, what it left unverified, what the next session should start with.
 
-- **2026-11-08, planning session.** Wrote the master plan from the five source plans, revised it into `MASTER-PROMPT.md` after a critique, archived the originals, created this file. Left staged and uncommitted: the `master-plan.md` move to `docs/_archive/`, `MASTER-PROMPT.md`, `PROGRESS.md`. Nothing engineering-side was run. Next session: commit the staged docs on a `docs/` branch, then start M1 on `fix/e2e-green`.
+- **2026-11-08, planning session.** Wrote the master plan from the five source plans, revised it into `MASTER-PROMPT.md` after a critique, archived the originals, created this file. All of it is committed and merged to `main` (`6d63992`), not yet pushed. Nothing engineering-side was run. Next session: push `main` if the owner wants, then start M1 on `fix/e2e-green`.
