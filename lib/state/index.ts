@@ -7,7 +7,8 @@ import { createStore } from './store';
 import { buildExport, type ImportResult } from './transfer';
 
 export const stateStore = createStore({ key: STATE_KEY, schema: handbookStateSchema, migrate });
-export const settingsStore = createStore({ key: SETTINGS_KEY, schema: settingsSchema, migrate });
+// settings have no stored-shape history, so no migration: the handbook-state chain would stamp and back them up (CR-L6)
+export const settingsStore = createStore({ key: SETTINGS_KEY, schema: settingsSchema });
 
 export const useHandbookState = (): HandbookState =>
   useSyncExternalStore(stateStore.subscribe, stateStore.get, stateStore.getServerSnapshot);
