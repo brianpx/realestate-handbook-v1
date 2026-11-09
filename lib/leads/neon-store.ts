@@ -77,4 +77,8 @@ export class NeonLeadStore implements LeadStore {
       emailStatus: emailStatus(r.email_status),
     }));
   }
+
+  async deleteByEmail(email: string) {
+    await this.sql`delete from leads where email = ${email}`;
+  }
 }

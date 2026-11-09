@@ -24,6 +24,8 @@ export interface LeadStore {
   recordAndCount(ipHash: string, at: Date, since: Date): Promise<number>;
   /** Newest first, at most LEAD_LIST_CAP rows. */
   list(): Promise<LeadRow[]>;
+  /** Account deletion removes the marketing row for the same address (user-database plan, section 12.4). */
+  deleteByEmail(email: string): Promise<void>;
 }
 
 type Row = NewLead & { id: string; emailStatus: EmailStatus | null };
@@ -103,6 +105,10 @@ export class FileLeadStore implements LeadStore {
     await this.queue;
     return newestFirst((await this.read()).leads);
   }
+
+  deleteByEmail(email: string) {
+    return this.change(data => { data.leads = data.leads.filter(l => l.email !== email); });
+  }
 }
 
 /** In-memory store for unit tests. */
@@ -129,6 +135,7 @@ export class MemoryLeadStore implements LeadStore {
     return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length;
   }
   async list() { this.check(); return newestFirst(this.leads); }
+  async deleteByEmail(email: string) { this.check(); this.leads = this.leads.filter(l => l.email !== email); }
 }
 
 /**
