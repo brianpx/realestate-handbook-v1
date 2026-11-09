@@ -28,7 +28,7 @@ export function TodayCard({ plan, completions, today, dueForReview, onEdit }: {
       <aside className="box try-it" aria-live="polite">
         {next ? <NextSession next={next} status={sessionStatus(completions[next.session.id])} /> : (
           <>
-            <h3 className="box-title">● PLAN COMPLETE</h3>
+            <h2 className="box-title">● PLAN COMPLETE</h2>
             <p>You have finished every session. Keep the ideas fresh with your review deck.</p>
           </>
         )}
@@ -86,7 +86,7 @@ function NextSession({ next, status }: { next: NonNullable<ReturnType<typeof nex
   const heading = when === 'today' ? 'TODAY' : when === 'later' ? `NEXT · ${formatDay(session.date).toUpperCase()}` : 'NEXT UP';
   return (
     <>
-      <h3 className="box-title">● {heading}</h3>
+      <h2 className="box-title">● {heading}</h2>
       <p><strong>{label(chapter)}</strong></p>
       {when === 'behind' && <p>This was planned for {formatDay(session.date)}. Start it whenever you are ready, or move the schedule.</p>}
       <ul>
