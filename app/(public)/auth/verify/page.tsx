@@ -29,10 +29,11 @@ export default async function VerifyPage({ searchParams }: Props) {
   if (usable && raw) {
     return (
       <>
-        <PageHead eyebrow="Sign in" title="One more step." />
+        <PageHead eyebrow="Sign in" title="Signing you in…" />
         <div className="pub-wrap pub-narrow pub-prose">
           <div className="pub-card signup-card">
-            <p>Press the button to finish signing in. It happens on its own when JavaScript is on.</p>
+            {/* With JavaScript the form submits itself, so this reads as a loading state; the instruction is only for the fallback. */}
+            <noscript><p>Press the button to finish signing in.</p></noscript>
             <AutoSubmit action="/api/auth/verify" token={raw} />
           </div>
         </div>
