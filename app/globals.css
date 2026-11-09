@@ -167,8 +167,7 @@ html.dark {
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
             font-size: 1.1rem;
             color: var(--color-muted);
-            margin: 4px 0 8px;
-            white-space: nowrap}
+            margin: 4px 0 8px}
 
         .nav-list {
             list-style: none;
@@ -744,7 +743,7 @@ html.dark {
         .settings-sub { margin-top: 8px}
         .settings-sub[hidden] { display: none}
         .settings-reset { display: block; width: 100%; text-align: center}
-        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; white-space: nowrap; text-align: center; color: var(--color-muted)}
+        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-muted)}
         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-muted)}
         .settings-transfer-title { font-size: 0.9rem; font-weight: 600}
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
