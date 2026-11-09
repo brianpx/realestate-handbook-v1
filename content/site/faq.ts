@@ -31,7 +31,7 @@ export function faqs(): Faq[] {
     },
     {
       q: 'How is my progress saved?',
-      a: 'In your own browser, on the device you are using. Checked-off items, calculator entries, script practice and quiz answers are stored there and are not sent to a server; your account only signs you in and keeps no copy. If you clear site data or use a private window you can lose them, so download a backup file from the Account page now and then.',
+      a: 'In your own browser, on the device you are using. Checked-off items, calculator entries, script practice and quiz answers are stored there and are not sent to a server; your account signs you in and keeps no copy of them. If you clear site data or use a private window you can lose them, so download a backup file from the Account page now and then.',
     },
     {
       q: 'Does it work across my devices?',
