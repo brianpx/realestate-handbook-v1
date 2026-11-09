@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { Role, User } from './types';
 
 export type VerifiedSignIn = { email: string; termsVersion: string; at: Date };
+/** One page of a listing, zero-based offset; the admin tables page through every row this way. */
+export type Page = { offset: number; limit: number };
 
 /**
  * Where users live. Production uses the database; the memory store is for unit tests and the file store in
@@ -16,6 +18,10 @@ export interface UserStore {
   countAdmins(): Promise<number>;
   setRole(id: string, role: Role, at: Date): Promise<void>;
   touchSignIn(id: string, at: Date): Promise<void>;
+  /** Newest first, with the count over every row, for the admin list. */
+  list(page: Page): Promise<{ users: User[]; total: number }>;
+  /** The rows for a set of ids, in no particular order; unknown ids are simply absent (the audit list resolves actors). */
+  findByIds(ids: string[]): Promise<User[]>;
 }
 
 export const newUser = (input: VerifiedSignIn): User => ({
@@ -61,4 +67,10 @@ export class MemoryUserStore implements UserStore {
   async countAdmins() { this.check(); return this.users.filter(u => u.role === 'admin').length; }
   async setRole(id: string, role: Role) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.role = role; }
   async touchSignIn(id: string, at: Date) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.lastSignInAt = at; }
+  async list({ offset, limit }: Page) {
+    this.check();
+    const sorted = [...this.users].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return { users: sorted.slice(offset, offset + limit), total: this.users.length };
+  }
+  async findByIds(ids: string[]) { this.check(); return this.users.filter(u => ids.includes(u.id)); }
 }

@@ -41,4 +41,19 @@ describe('NeonUserStore', () => {
     expect(calls[1]).toEqual({ text: 'update users set role = ?, updated_at = ? where id = ?', values: ['admin', AT.toISOString(), 'u-1'] });
     expect(calls[2]!.values).toEqual([AT.toISOString(), AT.toISOString(), 'u-1']);
   });
+  it('lists a page with its total in one round trip, and finds a set of ids without a query for none', async () => {
+    const { sql, calls, transactions } = fakeSql([{ n: 7 }], [row], [row]);
+    const store = new NeonUserStore(sql);
+    const page = await store.list({ offset: 25, limit: 25 });
+    expect(transactions).toEqual([2]);
+    expect(page.total).toBe(7);
+    expect(page.users[0]!.id).toBe('u-1');
+    expect(calls[1]!.text).toContain('from users order by created_at desc, id desc limit ? offset ?');
+    expect(calls[1]!.values).toEqual([25, 25]);
+    expect(await store.findByIds([])).toEqual([]);
+    expect(calls).toHaveLength(2);
+    expect((await store.findByIds(['u-1']))[0]!.id).toBe('u-1');
+    expect(calls[2]!.text).toContain('from users where id = any(?::uuid[])');
+    expect(calls[2]!.values).toEqual([['u-1']]);
+  });
 });

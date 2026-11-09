@@ -1,6 +1,8 @@
 import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
 import { toDate, toDateOrNull, toText, type Row, type Sql } from '@/lib/db/sql';
-import type { AccessStore, Anonymisation, NewGrant, Revocation } from './store';
+import type { Page } from '@/lib/users/store';
+import type { Role } from '@/lib/users/types';
+import type { AccessStore, AccessSummary, Anonymisation, NewGrant, Revocation, Suspension } from './store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from './types';
 
 export const rowToGrant = (row: Row): Grant => ({
@@ -183,5 +185,156 @@ export class NeonAccessStore implements AccessStore {
       select id, at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash
       from audit_log where subject_table = ${subjectTable} and subject_id = ${subjectId} order by at`;
     return rows.map(rowToAudit);
+  }
+
+  async listAuditLog({ offset, limit }: Page) {
+    const [counted, rows] = await this.sql.transaction([
+      this.sql`select count(*)::int as n from audit_log`,
+      this.sql`
+        select id, at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash
+        from audit_log order by at desc, id desc limit ${limit} offset ${offset}`,
+    ]);
+    return { rows: rows!.map(rowToAudit), total: Number(counted![0]?.n ?? 0) };
+  }
+
+  async accessSummaries(userIds: string[]): Promise<AccessSummary[]> {
+    if (userIds.length === 0) return [];
+    const [memberships, counts] = await this.sql.transaction([
+      this.sql`
+        select user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
+        from memberships where user_id = any(${userIds}::uuid[])`,
+      this.sql`select user_id, count(*)::int as n from billing_records where user_id = any(${userIds}::uuid[]) group by user_id`,
+    ]);
+    const byUser = new Map(memberships!.map(row => [String(row.user_id), rowToMembership(row)]));
+    const billing = new Map(counts!.map(row => [String(row.user_id), Number(row.n)]));
+    return userIds.map(userId => ({ userId, membership: byUser.get(userId) ?? null, billingRecords: billing.get(userId) ?? 0 }));
+  }
+
+  // The admin state-setters. `before` selects only a row in the state being left, so a repeat matches nothing,
+  // changes nothing and logs nothing; the audit entry is built from `before` and the changed row together.
+  async setUserRole(userId: string, role: Role, at: Date, a: AuditStub) {
+    const rows = await this.sql`
+      with before as (
+        select id, role from users where id = ${userId} and role <> ${role} and status <> 'deleted' for update
+      ), changed as (
+        update users set role = ${role}, updated_at = ${at.toISOString()} from before where users.id = before.id
+        returning users.id, users.role
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'users', changed.id,
+          jsonb_build_object('role', before.role), jsonb_build_object('role', changed.role), ${a.reason}, ${a.ipHash}
+        from before join changed on changed.id = before.id
+      )
+      select id from changed`;
+    return rows.length > 0;
+  }
+
+  async disableUser(userId: string, { at, by, reason }: Suspension, a: AuditStub) {
+    const atIso = at.toISOString();
+    // sign-in stops at once: the sessions go in the same statement, as they do for a deletion
+    const rows = await this.sql`
+      with before as (
+        select id from users where id = ${userId} and status = 'active' for update
+      ), changed as (
+        update users set status = 'disabled', disabled_at = ${atIso}, disabled_by = ${by}, disable_reason = ${reason}, updated_at = ${atIso}
+        from before where users.id = before.id
+        returning users.id
+      ), sessions_gone as (
+        delete from sessions where user_id = ${userId} and exists (select 1 from before)
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'users', changed.id,
+          jsonb_build_object('status', 'active'), jsonb_build_object('status', 'disabled'), ${a.reason}, ${a.ipHash}
+        from changed
+      )
+      select id from changed`;
+    return rows.length > 0;
+  }
+
+  async enableUser(userId: string, at: Date, a: AuditStub) {
+    const rows = await this.sql`
+      with before as (
+        select id from users where id = ${userId} and status = 'disabled' for update
+      ), changed as (
+        update users set status = 'active', disabled_at = null, disabled_by = null, disable_reason = null, updated_at = ${at.toISOString()}
+        from before where users.id = before.id
+        returning users.id
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'users', changed.id,
+          jsonb_build_object('status', 'disabled'), jsonb_build_object('status', 'active'), ${a.reason}, ${a.ipHash}
+        from changed
+      )
+      select id from changed`;
+    return rows.length > 0;
+  }
+
+  async suspend(userId: string, { at, by, reason }: Suspension, a: AuditStub) {
+    const atIso = at.toISOString();
+    // a reader with no grants has no projection row yet, so this is an upsert; one already suspended matches the
+    // conflict clause's where and returns nothing
+    const rows = await this.sql`
+      with before as (
+        select user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
+        from memberships where user_id = ${userId} for update
+      ), after as (
+        insert into memberships (user_id, status, suspended_at, suspended_by, suspend_reason, updated_at)
+        values (${userId}, 'suspended', ${atIso}, ${by}, ${reason}, ${atIso})
+        on conflict (user_id) do update set status = 'suspended', suspended_at = excluded.suspended_at, suspended_by = excluded.suspended_by,
+          suspend_reason = excluded.suspend_reason, updated_at = excluded.updated_at
+        where memberships.suspended_at is null
+        returning user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'memberships', after.user_id,
+          (select to_jsonb(before) from before), to_jsonb(after), ${a.reason}, ${a.ipHash}
+        from after
+      )
+      select * from after`;
+    return rows[0] ? rowToMembership(rows[0]) : null;
+  }
+
+  async unsuspend(userId: string, at: Date, a: AuditStub) {
+    const atIso = at.toISOString();
+    // the status goes back to what the grants say (projectMembership's rule) in the same statement, because the
+    // schema ties 'suspended' to suspended_at; the projection's other columns were kept current while suspended
+    const rows = await this.sql`
+      with before as (
+        select user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at
+        from memberships where user_id = ${userId} and suspended_at is not null for update
+      ), after as (
+        update memberships m set suspended_at = null, suspended_by = null, suspend_reason = null, updated_at = ${atIso},
+          status = case
+            when exists (select 1 from access_grants g where g.user_id = m.user_id and g.revoked_at is null and g.starts_at <= ${atIso} and (g.ends_at is null or g.ends_at > ${atIso})) then 'active'
+            when exists (select 1 from access_grants g where g.user_id = m.user_id) then 'lapsed'
+            else 'none' end
+        from before where m.user_id = before.user_id
+        returning m.user_id, m.status, m.tier, m.started_at, m.ends_at, m.current_grant_id, m.complimentary, m.suspended_at, m.suspended_by, m.suspend_reason, m.updated_at
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'memberships', after.user_id, to_jsonb(before), to_jsonb(after), ${a.reason}, ${a.ipHash}
+        from before join after on after.user_id = before.user_id
+      )
+      select * from after`;
+    return rows[0] ? rowToMembership(rows[0]) : null;
+  }
+
+  async linkBilling(recordId: string, userId: string, at: Date, a: AuditStub) {
+    // `found` answers whether the record exists at all; `changed` only when it pointed elsewhere (or nowhere)
+    const rows = await this.sql`
+      with found as (
+        select id, user_id from billing_records where id = ${recordId} for update
+      ), changed as (
+        update billing_records b set user_id = ${userId}, updated_at = ${at.toISOString()}
+        from found where b.id = found.id and found.user_id is distinct from ${userId}::uuid
+        returning b.id
+      ), logged as (
+        insert into audit_log (at, actor_user_id, actor_kind, action, subject_table, subject_id, before, after, reason, ip_hash)
+        select ${a.at.toISOString()}, ${a.actorUserId}, ${a.actorKind}, ${a.action}, 'billing_records', changed.id,
+          jsonb_build_object('userId', found.user_id::text), jsonb_build_object('userId', ${userId}::text), ${a.reason}, ${a.ipHash}
+        from found join changed on changed.id = found.id
+      )
+      select found.id, (changed.id is not null) as changed from found left join changed on changed.id = found.id`;
+    return rows[0] ? { changed: Boolean(rows[0].changed) } : null;
   }
 }

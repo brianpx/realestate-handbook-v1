@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { AccessStore, Anonymisation, NewGrant, Revocation } from '@/lib/access/store';
+import { projectMembership } from '@/lib/access/membership';
+import type { AccessStore, Anonymisation, NewGrant, Revocation, Suspension } from '@/lib/access/store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from '@/lib/access/types';
 import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
-import { fillVerified, newUser, type UserStore, type VerifiedSignIn } from '@/lib/users/store';
+import { fillVerified, newUser, type Page, type UserStore, type VerifiedSignIn } from '@/lib/users/store';
 import type { Role, User } from '@/lib/users/types';
 import { placementStatsFrom } from './placements';
 import { sessionDueForRenewal, sessionExpiry, tokenUsable } from './session';
@@ -21,7 +22,7 @@ type Shape = {
   sends: { windowStart: string; n: number }[];
   grants: Iso<Grant>[];
   memberships: Iso<Membership>[];
-  billing: (Iso<BillingAccess> & { userId: string })[];
+  billing: (Iso<BillingAccess> & { userId: string | null })[];
   audit: Iso<AuditRow>[];
 };
 const EMPTY: Shape = { users: [], tokens: [], sessions: [], attempts: [], sends: [], grants: [], memberships: [], billing: [], audit: [] };
@@ -39,7 +40,7 @@ const grantOut = (g: Iso<Grant>): Grant => ({ ...g, startsAt: new Date(g.startsA
 const grantIn = (g: Grant): Iso<Grant> => ({ ...g, startsAt: g.startsAt.toISOString(), endsAt: iso(g.endsAt), revokedAt: iso(g.revokedAt), createdAt: g.createdAt.toISOString() });
 const membershipOut = (m: Iso<Membership>): Membership => ({ ...m, startedAt: date(m.startedAt), endsAt: date(m.endsAt), suspendedAt: date(m.suspendedAt), updatedAt: new Date(m.updatedAt) });
 const membershipIn = (m: Membership): Iso<Membership> => ({ ...m, startedAt: iso(m.startedAt), endsAt: iso(m.endsAt), suspendedAt: iso(m.suspendedAt), updatedAt: m.updatedAt.toISOString() });
-const billingOut = ({ userId: _, ...b }: Iso<BillingAccess> & { userId: string }): BillingAccess =>
+const billingOut = ({ userId: _, ...b }: Iso<BillingAccess> & { userId: string | null }): BillingAccess =>
   (b.kind === 'purchase'
     ? { ...b, accessEndsAt: date(b.accessEndsAt), currentPeriodEnd: null }
     : { ...b, accessEndsAt: date(b.accessEndsAt), currentPeriodEnd: date(b.currentPeriodEnd) });
@@ -134,6 +135,13 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   countAdmins() { return this.view(d => d.users.filter(u => u.role === 'admin').length); }
   setRole(id: string, role: Role) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.role = role; }); }
   touchSignIn(id: string, at: Date) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.lastSignInAt = at.toISOString(); }); }
+  list({ offset, limit }: Page) {
+    return this.view(d => {
+      const sorted = [...d.users].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+      return { users: sorted.slice(offset, offset + limit).map(userOut), total: d.users.length };
+    });
+  }
+  findByIds(ids: string[]) { return this.view(d => d.users.filter(u => ids.includes(u.id)).map(userOut)); }
 
   // tokens
   createToken(t: NewToken) {
@@ -247,4 +255,83 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   }
   appendAudit(entry: AuditEntry) { return this.change(d => { d.audit.push(auditIn({ ...entry, id: randomUUID() })); }); }
   listAudit(subjectTable: string, subjectId: string) { return this.view(d => d.audit.filter(a => a.subjectTable === subjectTable && a.subjectId === subjectId).map(auditOut)); }
+  listAuditLog({ offset, limit }: Page) {
+    return this.view(d => {
+      // reversed before the (stable) sort, so rows written at the same instant come newest first too
+      const rows = [...d.audit].reverse().sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+      return { rows: rows.slice(offset, offset + limit).map(auditOut), total: d.audit.length };
+    });
+  }
+  accessSummaries(userIds: string[]) {
+    return this.view(d => userIds.map(userId => ({
+      userId,
+      membership: (m => (m ? membershipOut(m) : null))(d.memberships.find(x => x.userId === userId)),
+      billingRecords: d.billing.filter(b => b.userId === userId).length,
+    })));
+  }
+
+  // the admin state-setters, each one change of the file (the row and its audit entry land together or not at all)
+  setUserRole(userId: string, role: Role, _at: Date, audit: AuditStub) {
+    return this.change(d => {
+      const user = d.users.find(u => u.id === userId);
+      if (!user || user.status === 'deleted' || user.role === role) return false;
+      const before = { role: user.role };
+      user.role = role;
+      FileAuthStore.log(d, audit, { table: 'users', id: userId }, before, { role });
+      return true;
+    });
+  }
+  disableUser(userId: string, _disablement: Suspension, audit: AuditStub) {
+    return this.change(d => {
+      const user = d.users.find(u => u.id === userId);
+      if (!user || user.status !== 'active') return false;
+      user.status = 'disabled';
+      d.sessions = d.sessions.filter(s => s.userId !== userId);
+      FileAuthStore.log(d, audit, { table: 'users', id: userId }, { status: 'active' }, { status: 'disabled' });
+      return true;
+    });
+  }
+  enableUser(userId: string, _at: Date, audit: AuditStub) {
+    return this.change(d => {
+      const user = d.users.find(u => u.id === userId);
+      if (!user || user.status !== 'disabled') return false;
+      user.status = 'active';
+      FileAuthStore.log(d, audit, { table: 'users', id: userId }, { status: 'disabled' }, { status: 'active' });
+      return true;
+    });
+  }
+  suspend(userId: string, { at, by, reason }: Suspension, audit: AuditStub) {
+    return this.change(d => {
+      const i = d.memberships.findIndex(m => m.userId === userId);
+      const existing = i >= 0 ? membershipOut(d.memberships[i]!) : null;
+      if (existing?.suspendedAt) return null;
+      const base: Membership = existing ?? { userId, status: 'none', tier: null, startedAt: null, endsAt: null, currentGrantId: null, complimentary: false, suspendedAt: null, suspendedBy: null, suspendReason: null, updatedAt: at };
+      const next = projectMembership(userId, d.grants.filter(g => g.userId === userId).map(grantOut), { ...base, suspendedAt: at, suspendedBy: by, suspendReason: reason }, at);
+      if (i >= 0) d.memberships[i] = membershipIn(next); else d.memberships.push(membershipIn(next));
+      FileAuthStore.log(d, audit, { table: 'memberships', id: userId }, existing, next);
+      return next;
+    });
+  }
+  unsuspend(userId: string, at: Date, audit: AuditStub) {
+    return this.change(d => {
+      const i = d.memberships.findIndex(m => m.userId === userId);
+      const existing = i >= 0 ? membershipOut(d.memberships[i]!) : null;
+      if (!existing?.suspendedAt) return null;
+      const next = projectMembership(userId, d.grants.filter(g => g.userId === userId).map(grantOut), { ...existing, suspendedAt: null, suspendedBy: null, suspendReason: null }, at);
+      d.memberships[i] = membershipIn(next);
+      FileAuthStore.log(d, audit, { table: 'memberships', id: userId }, existing, next);
+      return next;
+    });
+  }
+  linkBilling(recordId: string, userId: string, _at: Date, audit: AuditStub) {
+    return this.change(d => {
+      const record = d.billing.find(b => b.id === recordId);
+      if (!record) return null;
+      if (record.userId === userId) return { changed: false };
+      const before = { userId: record.userId };
+      record.userId = userId;
+      FileAuthStore.log(d, audit, { table: 'billing_records', id: recordId }, before, { userId });
+      return { changed: true };
+    });
+  }
 }

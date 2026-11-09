@@ -1,10 +1,16 @@
 import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
+import type { Page } from '@/lib/users/store';
+import type { Role } from '@/lib/users/types';
 import type { AccessSnapshot, Grant, Membership, RevokeReason } from './types';
 
 export type NewGrant = Pick<Grant, 'userId' | 'kind' | 'tier' | 'startsAt' | 'endsAt' | 'billingRecordId' | 'grantedBy' | 'grantNote'> & { createdAt: Date };
 export type Revocation = { at: Date; by: string | null; reason: RevokeReason };
 /** The address is needed to delete its tokens; its hash replaces the copy a billing provider was given. */
 export type Anonymisation = { userId: string; email: string; emailHash: string; at: Date };
+/** An administrator pausing paid content (memberships) or sign-in itself (users): who, when and why, all three required by the schema. */
+export type Suspension = { at: Date; by: string; reason: string };
+/** What the admin user list shows beside each row: the cached projection and how many billing records exist. */
+export type AccessSummary = { userId: string; membership: Membership | null; billingRecords: number };
 
 /**
  * Where grants, the membership projection, the billing slice entitlement reads, and the audit log live. The
@@ -30,4 +36,22 @@ export interface AccessStore {
   anonymise(input: Anonymisation, audit: AuditStub): Promise<boolean>;
   appendAudit(entry: AuditEntry): Promise<void>;
   listAudit(subjectTable: string, subjectId: string): Promise<AuditRow[]>;
+  /** The whole log newest first, paged, for the admin audit list. */
+  listAuditLog(page: Page): Promise<{ rows: AuditRow[]; total: number }>;
+  accessSummaries(userIds: string[]): Promise<AccessSummary[]>;
+  // The admin state-setters (user-database plan, section 9): each is one conditional write that matches no row
+  // when the state is already what was asked for, so a repeat changes nothing and writes no audit row. The
+  // handler has already refused a self-change and loaded the user; the store only has to be exact.
+  /** False when the role was already that, or the account is deleted (its role is fixed at reader). */
+  setUserRole(userId: string, role: Role, at: Date, audit: AuditStub): Promise<boolean>;
+  /** active -> disabled (plan 7.1): the disabled triple, every session gone; false unless the account was active. */
+  disableUser(userId: string, disablement: Suspension, audit: AuditStub): Promise<boolean>;
+  /** disabled -> active: the triple cleared; false unless the account was disabled. */
+  enableUser(userId: string, at: Date, audit: AuditStub): Promise<boolean>;
+  /** Pauses paid content: the suspension triple and status on the projection; null when already suspended. */
+  suspend(userId: string, suspension: Suspension, audit: AuditStub): Promise<Membership | null>;
+  /** Clears the suspension; the status goes back to what the grants say. Null when not suspended. */
+  unsuspend(userId: string, at: Date, audit: AuditStub): Promise<Membership | null>;
+  /** Points a billing record at a user (plan 10.2). Null when the record is unknown; `changed` false when it already was. */
+  linkBilling(recordId: string, userId: string, at: Date, audit: AuditStub): Promise<{ changed: boolean } | null>;
 }
