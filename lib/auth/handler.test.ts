@@ -128,10 +128,10 @@ describe('verify', () => {
     const reply = await t.verify(t.rawToken());
     expect(reply.status).toBe(303);
     expect(reply.headers?.Location).toBe('/handbook/ch2');
-    expect(reply.headers?.['Set-Cookie']).toMatch(/^__Host-hb_session=[A-Za-z0-9_-]{43}; Path=\/; Max-Age=7776000; HttpOnly; SameSite=Lax; Secure$/);
+    expect(reply.headers?.['Set-Cookie']).toEqual([expect.stringMatching(/^__Host-hb_session=[A-Za-z0-9_-]{43}; Path=\/; Max-Age=7776000; HttpOnly; SameSite=Lax; Secure$/), 'hb_signed_in=1; Path=/; Max-Age=7776000; SameSite=Lax; Secure']);
     expect(t.users.users).toHaveLength(1);
     expect(t.users.users[0]).toMatchObject({ email: 'reader@example.com', role: 'reader', status: 'active', emailVerifiedAt: NOW, acceptedTermsVersion: 'v1', acceptedTermsAt: NOW, lastSignInAt: NOW });
-    const rawId = /hb_session=([^;]+)/.exec(reply.headers!['Set-Cookie']!)![1]!;
+    const rawId = /hb_session=([^;]+)/.exec(String(reply.headers!['Set-Cookie']))![1]!;
     expect(t.auth.sessions).toHaveLength(1);
     expect(t.auth.sessions[0]).toMatchObject({ idHash: hashSecret(rawId), userId: t.users.users[0]!.id, createdAt: NOW, expiresAt: new Date('2027-02-06T12:00:00Z') });
     expect(t.auth.tokens[0]!.consumedAt).toEqual(NOW);
@@ -140,7 +140,7 @@ describe('verify', () => {
     const t = setup({ allowedOrigins: ['http://localhost:3187'] });
     await t.request(body({ email: 'a@b.co' }), { origin: 'http://localhost:3187', url: 'http://localhost:3187/api/auth/request-link' });
     const reply = await t.verify(t.rawToken(), { origin: 'http://localhost:3187', url: 'http://localhost:3187/api/auth/verify' });
-    expect(reply.headers?.['Set-Cookie']).toMatch(/^hb_session=[A-Za-z0-9_-]{43}; Path=\/; Max-Age=7776000; HttpOnly; SameSite=Lax$/);
+    expect(reply.headers?.['Set-Cookie']).toEqual([expect.stringMatching(/^hb_session=[A-Za-z0-9_-]{43}; Path=\/; Max-Age=7776000; HttpOnly; SameSite=Lax$/), 'hb_signed_in=1; Path=/; Max-Age=7776000; SameSite=Lax']);
     expect(reply.headers?.Location).toBe('/handbook');
   });
   it('fails the same way for a second use, an expired link, an unknown token and a disabled account', async () => {
@@ -212,7 +212,7 @@ describe('sign-out', () => {
     const rawId = newSecret();
     await t.auth.createSession({ idHash: hashSecret(rawId), userId: 'u', createdAt: NOW, expiresAt: new Date('2027-02-06T12:00:00Z') });
     const reply = await handleSignOut({ url: `${ORIGIN}/api/auth/sign-out`, origin: ORIGIN, ip: 'x', body: '', sessionId: rawId }, t.deps);
-    expect(reply).toEqual({ status: 303, headers: { Location: '/', 'Set-Cookie': '__Host-hb_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure' } });
+    expect(reply).toEqual({ status: 303, headers: { Location: '/', 'Set-Cookie': ['__Host-hb_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure', 'hb_signed_in=; Path=/; Max-Age=0; SameSite=Lax; Secure'] } });
     expect(t.auth.sessions[0]!.revokedAt).toEqual(NOW);
   });
   it('still clears and redirects without a cookie, and refuses a foreign Origin', async () => {

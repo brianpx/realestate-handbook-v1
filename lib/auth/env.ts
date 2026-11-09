@@ -35,6 +35,7 @@ export function authDepsFromEnv(env: Record<string, string | undefined>): AuthDe
 }
 
 export function toResponse(reply: AuthReply): Response {
-  const headers = { 'Cache-Control': 'no-store', ...reply.headers };
+  const headers = new Headers({ 'Cache-Control': 'no-store' });
+  for (const [name, value] of Object.entries(reply.headers ?? {})) for (const v of Array.isArray(value) ? value : [value]) headers.append(name, v);
   return reply.body ? Response.json(reply.body, { status: reply.status, headers }) : new Response(null, { status: reply.status, headers });
 }

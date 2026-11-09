@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { BOOK_TITLE } from '@/lib/pages';
+import { useSignedIn } from './useSignedIn';
 
 // Header links: preview, what is included, pricing, and the way into the handbook: "Sign in" for a visitor,
-// "Open the handbook" once a session cookie is present (the layout decides).
+// "Open the handbook" once the browser reports the sign-in flag (useSignedIn, after mount).
 const LINKS = [
   { href: '/preview', label: 'Sample lesson' },
   { href: '/#how-it-works', label: 'How it works' },
@@ -20,8 +21,9 @@ const currentFor = (href: string, pathname: string): 'page' | 'location' | undef
   return hash ? 'location' : 'page';
 };
 
-export function PublicHeader({ signedIn = false }: { signedIn?: boolean }) {
+export function PublicHeader() {
   const pathname = usePathname();
+  const signedIn = useSignedIn();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);

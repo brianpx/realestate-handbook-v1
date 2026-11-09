@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { PATH_HEADER, SIGN_IN_PATH } from '@/lib/auth/config';
-import { COOKIE_NAMES, cookieOptions, isSecureRequest } from '@/lib/auth/cookie';
+import { COOKIE_NAMES, cookieOptions, flagOptions, isSecureRequest, SIGNED_IN_COOKIE } from '@/lib/auth/cookie';
 import { isSecretShape } from '@/lib/auth/token';
 
 // The gate's first layer. It only checks that a session cookie of the right shape is present: no database, no
@@ -22,6 +22,8 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set(PATH_HEADER, `${pathname}${search}`);
   const response = NextResponse.next({ request: { headers } });
-  response.cookies.set(present.name, present.value, cookieOptions(isSecureRequest(request.url)));
+  const secure = isSecureRequest(request.url);
+  response.cookies.set(present.name, present.value, cookieOptions(secure));
+  response.cookies.set(SIGNED_IN_COOKIE, '1', flagOptions(secure)); // the readable flag slides with the session
   return response;
 }

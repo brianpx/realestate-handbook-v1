@@ -5,12 +5,14 @@ import { useState } from 'react';
 import { AmountInput } from '@/components/widgets/AmountInput';
 import { CALC_DEFAULTS, fmtNum, roundPerDay, goalPlan } from '@/lib/goal';
 import { SignupForm } from './SignupForm';
+import { useSignedIn } from './useSignedIn';
 
 // The hero's live preview: the same arithmetic as the handbook's income goal calculator (lib/goal.ts), with the
 // handbook's own example numbers. It keeps its state in the page only, so nothing is saved from the sales page.
 // Once a visitor has typed a number of their own, the card offers the next step: the sign-in form for a visitor
 // (the strongest moment on the page to ask), Chapter 1 for a reader who is already signed in.
-export function HeroPlan({ signedIn = false }: { signedIn?: boolean }) {
+export function HeroPlan() {
+  const signedIn = useSignedIn();
   const [goal, setGoal] = useState<number | undefined>(80000);
   const [commission, setCommission] = useState<number | undefined>(6500);
   const [touched, setTouched] = useState(false);
