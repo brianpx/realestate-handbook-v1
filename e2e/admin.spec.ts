@@ -34,7 +34,7 @@ test.describe('as an administrator', () => {
 
   test('a lead posted through the route shows up in the table and the count', async ({ page, request }) => {
     const email = fresh();
-    const posted = await request.post('/api/lead', { data: { email, consentVersion: 'v1', source: 'sample' }, headers: { Origin: BASE_URL, 'x-forwarded-for': '192.0.2.78' } });
+    const posted = await request.post('/api/lead', { data: { email, consentVersion: 'v2', source: 'sample' }, headers: { Origin: BASE_URL, 'x-forwarded-for': '192.0.2.78' } });
     expect(posted.status()).toBe(200);
 
     await page.goto('/admin/leads');

@@ -1,9 +1,10 @@
 // The lead form's shared constants. The consent text is what the reader was shown when they submitted; the
-// server stores the text for the version they name, never text the browser sends.
-export const CONSENT_VERSION = 'v1';
-export const CONSENT_PURPOSE = 'Leave your email for a follow-up note about the handbook. This form is not a key to the book.';
+// server stores the text for the version they name, never text the browser sends. Version 1 was the retired
+// first-visit dialog's wording; its rows keep that text with them.
+export const CONSENT_VERSION = 'v2';
+export const CONSENT_PURPOSE = 'Occasional notes about the handbook by email: when purchase opens, and what has changed. Signing in does not add you to this list.';
 export const CONSENT_DETAILS =
-  'Your address is stored by the author and sent through SendGrid, the email service. It is used only to send follow-up notes about this handbook. Reply "unsubscribe" to any note and they stop. It is not sold, and it is not an account. If you continue without email, nothing is sent.';
+  'Your address is stored by the author and sent through SendGrid, the email service, only for these notes, and only once you confirm it through the link we email. Reply "unsubscribe" to any note and they stop. It is not sold, and it is not an account.';
 export const CONSENT_TEXTS: Record<typeof CONSENT_VERSION, string> = { [CONSENT_VERSION]: `${CONSENT_PURPOSE} ${CONSENT_DETAILS}` };
 
 // Which form the address came through: the optional checkbox under a sign-in form, the offer after the sample

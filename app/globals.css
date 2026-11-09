@@ -1185,6 +1185,17 @@ html.dark {
         .hb-upsell-status p { margin-bottom: 10px}
         .hb-upsell-free ul { padding-left: 20px}
         .hb-upsell-free li { margin-bottom: 6px}
+        /* The notes form on the card (components/site/LeadForm.tsx), in the account page's input style */
+        .hb-upsell .lead-form { display: grid; gap: 10px; justify-items: start; max-width: 440px; margin: 4px 0 8px}
+        .hb-upsell .lead-form p { margin: 0}
+        .hb-upsell .lead-field { width: 100%}
+        .hb-upsell .lead-field label { display: block; font-weight: 600; margin-bottom: 6px}
+        .hb-upsell .lead-trap { position: absolute; left: -9999px}
+        .hb-upsell .lead-error { color: var(--color-danger)}
+        .hb-upsell .lead-error[hidden] { display: none}
+        .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
+        .hb-upsell .lead-sent p { margin-bottom: 8px}
+        .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}
         .box.tool-locked { border-style: dashed}
         /* The account page: facts, and the two forms that post without JavaScript */
         .account-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; margin: 0 0 16px}

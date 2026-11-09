@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CHAPTER_BLURBS } from '@/content/site/chapter-blurbs';
 import { Breadcrumbs } from '@/components/shell/Breadcrumbs';
+import { LeadForm } from '@/components/site/LeadForm';
 import type { Entitlement } from '@/lib/access/entitlement';
 import { partLabel } from '@/lib/breadcrumbs';
 import { OWNER, purchaseOpen } from '@/lib/offer';
@@ -64,13 +65,21 @@ export function UpsellCard(props: Props) {
                 {basic ? 'Your plan is Basic, which includes every chapter and the essential tools.' : 'You are signed in with the free set: the overview, Chapter 1 and Chapter 7.'}
               </p>
               {open ? (
-                <p>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}, each a one-time purchase.</p>
+                <>
+                  <p>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}, each a one-time purchase.</p>
+                  <div className="hb-actions">
+                    <Link className="btn-nav hb-primary" href="/pricing">See plans and buy</Link>
+                  </div>
+                </>
               ) : (
-                <p>The handbook is not on sale yet. The pricing page says where things stand and what each plan includes.</p>
+                <>
+                  <p>The handbook is not on sale yet. Leave your address and one email tells you when it is; the <Link href="/pricing">pricing page</Link> says where things stand and what each plan includes.</p>
+                  <LeadForm source="upsell" offer="closed" buttonClassName="btn-nav hb-primary" inputClassName="account-input" />
+                  <div className="hb-actions">
+                    <Link className="btn-mini" href="/pricing">Pricing and availability</Link>
+                  </div>
+                </>
               )}
-              <div className="hb-actions">
-                <Link className="btn-nav hb-primary" href="/pricing">{open ? 'See plans and buy' : 'Pricing and availability'}</Link>
-              </div>
             </>
           )}
         </section>

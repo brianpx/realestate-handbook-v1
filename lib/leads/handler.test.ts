@@ -32,7 +32,7 @@ describe('a new address', () => {
     const r = await post(body({ email: '  Sam@Example.COM ', source: 'signup' }));
     expect(r).toEqual({ status: 200, body: { ok: true } });
     expect(store.leads).toHaveLength(1);
-    expect(store.leads[0]).toMatchObject({ email: 'sam@example.com', source: 'signup', consentVersion: 'v1', consentText: CONSENT_TEXTS.v1, emailStatus: 'sent', confirmedAt: null });
+    expect(store.leads[0]).toMatchObject({ email: 'sam@example.com', source: 'signup', consentVersion: CONSENT_VERSION, consentText: CONSENT_TEXTS[CONSENT_VERSION], emailStatus: 'sent', confirmedAt: null });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const sent = JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string);
     expect(sent.personalizations[0].to[0].email).toBe('sam@example.com');
