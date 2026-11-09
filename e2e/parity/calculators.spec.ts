@@ -8,7 +8,7 @@ const calc = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem
 const goal = (page: Page) => page.getByLabel('Income goal for the year');
 const commission = (page: Page) => page.getByLabel('Average commission per closed side after splits');
 const weeks = (page: Page) => page.getByLabel('Working weeks');
-const outputCell = (page: Page, step: string) => page.locator('tr', { hasText: step }).locator('td').nth(2);
+const outputCell = (page: Page, step: string) => page.locator('tr', { hasText: step }).locator('td').nth(1);
 
 test.describe('goal calculator', () => {
   test('starts with the default ratios filled in and waits for a goal', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe('goal calculator', () => {
     const context = await browser.newContext({ javaScriptEnabled: false, baseURL, extraHTTPHeaders: BYPASS_HEADERS });
     const page = await context.newPage();
     await page.goto('/handbook/ch1');
-    await expect(page.locator('tr', { hasText: 'Income goal for the year' }).locator('td').nth(1)).toHaveText('$80,000');
+    await expect(page.locator('tr', { hasText: 'Income goal for the year' }).locator('td').nth(0)).toHaveText('$80,000');
     await context.close();
   });
 });
