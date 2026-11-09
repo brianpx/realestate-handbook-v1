@@ -56,13 +56,15 @@ export function Sidebar() {
     };
   }, []);
 
-  // On phones an open menu pins the page behind it: body fixed at the current offset (the method iOS Safari honours).
+  // On phones an open menu (or open search results) pins the page behind it: body fixed at the current offset (the
+  // method iOS Safari honours), and the page is inert so Tab cannot reach what the backdrop covers (as Gate.tsx does).
   const syncScrollLock = useCallback((open: boolean) => {
     const sidebar = sidebarRef.current;
     if (!sidebar) return;
     const root = document.documentElement;
     const locked = root.classList.contains('scroll-locked');
     const lock = open && window.matchMedia(PHONE_QUERY).matches;
+    const behind = document.querySelectorAll<HTMLElement>('.skip-link, #main-content');
     if (lock && !locked) {
       lockedScrollY.current = window.scrollY;
       const rect = sidebar.getBoundingClientRect();
@@ -70,11 +72,13 @@ export function Sidebar() {
       document.body.style.paddingTop = `${rect.height}px`; // fractional on purpose: rounding shifts the page 1px
       document.body.style.top = `-${lockedScrollY.current}px`;
       root.classList.add('scroll-locked');
+      behind.forEach(node => { node.inert = true; });
     } else if (!lock && locked) {
       root.classList.remove('scroll-locked');
       sidebar.style.top = '';
       document.body.style.paddingTop = '';
       document.body.style.top = '';
+      behind.forEach(node => { node.inert = false; });
       window.scrollTo(0, lockedScrollY.current);
     }
   }, []);
