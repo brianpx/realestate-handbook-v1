@@ -9,6 +9,7 @@ export const rowToToken = (row: Record<string, unknown>): AuthToken => ({
   tokenHash: String(row.token_hash),
   email: String(row.email),
   nextPath: text(row.next_path),
+  termsVersion: String(row.terms_version),
   source: text(row.source) as Source | null,
   expiresAt: toDate(row.expires_at),
   consumedAt: toDateOrNull(row.consumed_at),
@@ -32,13 +33,13 @@ export class NeonAuthStore implements AuthStore {
 
   async createToken(t: NewToken) {
     await this.sql`
-      insert into auth_tokens (token_hash, email, next_path, source, expires_at, created_ip_hash, created_at)
-      values (${t.tokenHash}, ${t.email}, ${t.nextPath}, ${t.source}, ${t.expiresAt.toISOString()}, ${t.createdIpHash}, ${t.createdAt.toISOString()})`;
+      insert into auth_tokens (token_hash, email, next_path, terms_version, source, expires_at, created_ip_hash, created_at)
+      values (${t.tokenHash}, ${t.email}, ${t.nextPath}, ${t.termsVersion}, ${t.source}, ${t.expiresAt.toISOString()}, ${t.createdIpHash}, ${t.createdAt.toISOString()})`;
   }
 
   async peekToken(tokenHash: string) {
     const rows = await this.sql`
-      select token_hash, email, next_path, source, expires_at, consumed_at, created_ip_hash, created_at
+      select token_hash, email, next_path, terms_version, source, expires_at, consumed_at, created_ip_hash, created_at
       from auth_tokens where token_hash = ${tokenHash}`;
     return rows[0] ? rowToToken(rows[0]) : null;
   }
@@ -49,9 +50,9 @@ export class NeonAuthStore implements AuthStore {
     const rows = await this.sql`
       update auth_tokens set consumed_at = ${nowIso}
       where token_hash = ${tokenHash} and consumed_at is null and expires_at > ${nowIso}
-      returning email, next_path, source`;
+      returning email, next_path, terms_version, source`;
     const row = rows[0];
-    return row ? { email: String(row.email), nextPath: text(row.next_path), source: text(row.source) as Source | null } : null;
+    return row ? { email: String(row.email), nextPath: text(row.next_path), termsVersion: String(row.terms_version), source: text(row.source) as Source | null } : null;
   }
 
   async createSession(s: NewSession) {

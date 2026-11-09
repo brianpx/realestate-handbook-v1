@@ -24,7 +24,7 @@ describe('secrets', () => {
 describe('token rules', () => {
   it('expires fifteen minutes after issue and is usable until then, once', () => {
     expect(tokenExpiry(NOW).toISOString()).toBe('2026-11-08T12:15:00.000Z');
-    const token = { tokenHash: 'h', email: 'a@b.co', nextPath: null, source: null, expiresAt: tokenExpiry(NOW), consumedAt: null, createdIpHash: null, createdAt: NOW };
+    const token = { tokenHash: 'h', email: 'a@b.co', nextPath: null, termsVersion: 'v1', source: null, expiresAt: tokenExpiry(NOW), consumedAt: null, createdIpHash: null, createdAt: NOW };
     expect(tokenUsable(token, NOW)).toBe(true);
     expect(tokenUsable(token, new Date('2026-11-08T12:15:00Z'))).toBe(false);
     expect(tokenUsable({ ...token, consumedAt: NOW }, NOW)).toBe(false);
@@ -53,10 +53,10 @@ describe('session rules', () => {
 describe('MemoryAuthStore', () => {
   it('consumes a token once; the second call and an expired token answer null alike', async () => {
     const store = new MemoryAuthStore();
-    await store.createToken({ tokenHash: 't', email: 'a@b.co', nextPath: '/handbook/ch2', source: 'hero', expiresAt: tokenExpiry(NOW), createdIpHash: null, createdAt: NOW });
-    expect(await store.consumeToken('t', NOW)).toEqual({ email: 'a@b.co', nextPath: '/handbook/ch2', source: 'hero' });
+    await store.createToken({ tokenHash: 't', email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero', expiresAt: tokenExpiry(NOW), createdIpHash: null, createdAt: NOW });
+    expect(await store.consumeToken('t', NOW)).toEqual({ email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero' });
     expect(await store.consumeToken('t', NOW)).toBeNull();
-    await store.createToken({ tokenHash: 'old', email: 'a@b.co', nextPath: null, source: null, expiresAt: hours(-1), createdIpHash: null, createdAt: hours(-2) });
+    await store.createToken({ tokenHash: 'old', email: 'a@b.co', nextPath: null, termsVersion: 'v1', source: null, expiresAt: hours(-1), createdIpHash: null, createdAt: hours(-2) });
     expect(await store.consumeToken('old', NOW)).toBeNull();
     expect(await store.consumeToken('unknown', NOW)).toBeNull();
     expect((await store.peekToken('t'))?.consumedAt).toEqual(NOW);

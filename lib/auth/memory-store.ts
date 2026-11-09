@@ -17,7 +17,7 @@ export class MemoryAuthStore implements AuthStore {
     const token = this.tokens.find(t => t.tokenHash === tokenHash);
     if (!token || !tokenUsable(token, now)) return null;
     token.consumedAt = now;
-    return { email: token.email, nextPath: token.nextPath, source: token.source };
+    return { email: token.email, nextPath: token.nextPath, termsVersion: token.termsVersion, source: token.source };
   }
 
   async createSession(session: NewSession) { this.check(); this.sessions.push({ ...session, lastSeenAt: session.createdAt, revokedAt: null }); }

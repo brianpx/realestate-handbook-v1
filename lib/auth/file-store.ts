@@ -92,7 +92,7 @@ export class FileAuthStore implements UserStore, AuthStore {
       const t = d.tokens.find(x => x.tokenHash === tokenHash);
       if (!t || !tokenUsable(tokenOut(t), now)) return null;
       t.consumedAt = now.toISOString();
-      return { email: t.email, nextPath: t.nextPath, source: t.source };
+      return { email: t.email, nextPath: t.nextPath, termsVersion: t.termsVersion, source: t.source };
     });
   }
 

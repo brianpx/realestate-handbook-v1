@@ -266,4 +266,15 @@
 @media (prefers-reduced-motion: reduce) { .pub * { transition: none !important; scroll-behavior: auto !important} }
 .pub { scroll-padding-top: 84px}
 html:has(.pub) { scroll-padding-top: 84px}
+
+/* Sign-in form (components/site/SignupForm.tsx): on /signup, the verify page and, later, the home page. */
+.pub .signup-card { padding: 28px; margin: 0 0 20px}
+.pub .signup-form .pub-field { margin-bottom: 14px}
+.pub .signup-trap { position: absolute; left: -9999px}
+.pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
+.pub .signup-error[hidden] { display: none}
+.pub .signup-terms { margin: 14px 0 0; color: var(--pub-muted)}
+.pub .signup-sent p { margin: 0 0 14px}
+.pub .signup-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center}
+.pub .pub-link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer}
 }

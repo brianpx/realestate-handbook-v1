@@ -6,6 +6,7 @@ export type AuthToken = {
   tokenHash: string;
   email: string;
   nextPath: string | null;
+  termsVersion: string;
   source: Source | null;
   expiresAt: Date;
   consumedAt: Date | null;

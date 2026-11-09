@@ -9,24 +9,24 @@ const ISO = NOW.toISOString();
 describe('NeonAuthStore', () => {
   it('stores a token with every value bound, never spliced in', async () => {
     const { sql, calls } = fakeSql([]);
-    await new NeonAuthStore(sql).createToken({ tokenHash: 'h'.repeat(64), email: 'a@b.co', nextPath: '/handbook/ch2', source: 'hero', expiresAt: NOW, createdIpHash: 'ip', createdAt: NOW });
-    expect(calls[0]!.text).toBe('insert into auth_tokens (token_hash, email, next_path, source, expires_at, created_ip_hash, created_at) values (?, ?, ?, ?, ?, ?, ?)');
-    expect(calls[0]!.values).toEqual(['h'.repeat(64), 'a@b.co', '/handbook/ch2', 'hero', ISO, 'ip', ISO]);
+    await new NeonAuthStore(sql).createToken({ tokenHash: 'h'.repeat(64), email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero', expiresAt: NOW, createdIpHash: 'ip', createdAt: NOW });
+    expect(calls[0]!.text).toBe('insert into auth_tokens (token_hash, email, next_path, terms_version, source, expires_at, created_ip_hash, created_at) values (?, ?, ?, ?, ?, ?, ?, ?)');
+    expect(calls[0]!.values).toEqual(['h'.repeat(64), 'a@b.co', '/handbook/ch2', 'v1', 'hero', ISO, 'ip', ISO]);
   });
   it('consumes in one statement that refuses used and expired tokens, and answers null for no row', async () => {
-    const { sql, calls } = fakeSql([{ email: 'a@b.co', next_path: null, source: 'signin' }], []);
+    const { sql, calls } = fakeSql([{ email: 'a@b.co', next_path: null, terms_version: 'v1', source: 'signin' }], []);
     const store = new NeonAuthStore(sql);
-    expect(await store.consumeToken('t', NOW)).toEqual({ email: 'a@b.co', nextPath: null, source: 'signin' });
+    expect(await store.consumeToken('t', NOW)).toEqual({ email: 'a@b.co', nextPath: null, termsVersion: 'v1', source: 'signin' });
     expect(await store.consumeToken('t', NOW)).toBeNull();
     expect(calls[0]!.text).toContain('update auth_tokens set consumed_at = ?');
     expect(calls[0]!.text).toContain('consumed_at is null and expires_at > ?');
     expect(calls[0]!.values).toEqual([ISO, 't', ISO]);
   });
   it('peeks without writing', async () => {
-    const { sql, calls } = fakeSql([{ token_hash: 't', email: 'a@b.co', next_path: '/x', source: null, expires_at: ISO, consumed_at: null, created_ip_hash: null, created_at: NOW }]);
+    const { sql, calls } = fakeSql([{ token_hash: 't', email: 'a@b.co', next_path: '/x', terms_version: 'v1', source: null, expires_at: ISO, consumed_at: null, created_ip_hash: null, created_at: NOW }]);
     const token = await new NeonAuthStore(sql).peekToken('t');
     expect(calls[0]!.text.startsWith('select')).toBe(true);
-    expect(token).toEqual(rowToToken({ token_hash: 't', email: 'a@b.co', next_path: '/x', source: null, expires_at: ISO, consumed_at: null, created_ip_hash: null, created_at: NOW }));
+    expect(token).toEqual(rowToToken({ token_hash: 't', email: 'a@b.co', next_path: '/x', terms_version: 'v1', source: null, expires_at: ISO, consumed_at: null, created_ip_hash: null, created_at: NOW }));
     expect(token?.expiresAt).toEqual(NOW);
   });
   it('renews with the single conditional update, bound to the configured intervals, and reports whether a row changed', async () => {

@@ -34,9 +34,9 @@ describe('FileAuthStore', () => {
   });
   it('stores only hashes and round-trips dates for tokens and sessions', async () => {
     const store = new FileAuthStore(file);
-    await store.createToken({ tokenHash: 'th', email: 'a@b.co', nextPath: '/handbook/ch2', source: 'hero', expiresAt: tokenExpiry(NOW), createdIpHash: 'ip', createdAt: NOW });
+    await store.createToken({ tokenHash: 'th', email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero', expiresAt: tokenExpiry(NOW), createdIpHash: 'ip', createdAt: NOW });
     expect((await store.peekToken('th'))?.expiresAt).toEqual(tokenExpiry(NOW));
-    expect(await store.consumeToken('th', NOW)).toEqual({ email: 'a@b.co', nextPath: '/handbook/ch2', source: 'hero' });
+    expect(await store.consumeToken('th', NOW)).toEqual({ email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero' });
     expect(await store.consumeToken('th', NOW)).toBeNull();
     await store.createSession({ idHash: 'sh', userId: 'u', createdAt: hours(-48), expiresAt: hours(24 * 30) });
     expect(await store.renewSession('sh', NOW)).toBe(true);

@@ -7,9 +7,9 @@ import { FileAuthStore } from './file-store';
 import { NeonAuthStore } from './neon-store';
 import type { AuthToken, Session } from './types';
 
-export type NewToken = { tokenHash: string; email: string; nextPath: string | null; source: Source | null; expiresAt: Date; createdIpHash: string | null; createdAt: Date };
+export type NewToken = { tokenHash: string; email: string; nextPath: string | null; termsVersion: string; source: Source | null; expiresAt: Date; createdIpHash: string | null; createdAt: Date };
 export type NewSession = { idHash: string; userId: string; createdAt: Date; expiresAt: Date };
-export type ConsumedToken = { email: string; nextPath: string | null; source: Source | null };
+export type ConsumedToken = { email: string; nextPath: string | null; termsVersion: string; source: Source | null };
 export type AttemptScope = 'ip' | 'email';
 
 /**

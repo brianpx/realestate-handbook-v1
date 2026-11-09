@@ -49,6 +49,7 @@ create table if not exists auth_tokens (
   token_hash       text primary key,                              -- SHA-256 hex of 32 random bytes
   email            text not null check (email = lower(btrim(email))),
   purpose          text not null default 'sign_in' check (purpose in ('sign_in')),
+  terms_version    text not null,                                 -- the terms sentence shown with the form that asked
   next_path        text,                                          -- validated by the app: starts with '/', not '//', no scheme
   source           text check (source in ('hero', 'calculator', 'final', 'signup-page', 'signin', 'account')),
   expires_at       timestamptz not null,
@@ -61,7 +62,7 @@ create index if not exists auth_tokens_expires_at on auth_tokens (expires_at);
 -- The one statement that consumes a link; no row back means expired, used or unknown, all reported alike:
 --   update auth_tokens set consumed_at = $2
 --   where token_hash = $1 and consumed_at is null and expires_at > $2
---   returning email, next_path, source;
+--   returning email, next_path, source, terms_version;
 
 create table if not exists sessions (
   id_hash       text primary key,                                 -- SHA-256 hex of the cookie value
