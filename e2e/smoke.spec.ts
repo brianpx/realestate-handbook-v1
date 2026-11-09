@@ -18,6 +18,10 @@ test('old hash links redirect to the chapter route', async ({ page }) => {
   await expect(page).toHaveURL(/\/handbook\/ch5$/);
 });
 
-test('unknown route is a 404', async ({ page }) => {
+test('unknown route is a 404 inside the public chrome', async ({ page }) => {
   expect((await page.goto('/nope'))?.status()).toBe(404);
+  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open the handbook' }).first()).toHaveAttribute('href', '/handbook');
 });
