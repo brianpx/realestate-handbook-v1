@@ -39,6 +39,7 @@ async function finishFirstSession(page: Page) {
 async function answer(question: Locator, confidence: 'Guessing' | 'Think so' | 'Sure', option: number) {
   await question.getByRole('button', { name: confidence }).click();
   await question.getByRole('radio').nth(option).check();
+  await question.getByRole('button', { name: 'Check answer' }).click(); // a pick commits only on Check answer (CR-M2)
 }
 
 async function missDailyRhythm(page: Page) {
