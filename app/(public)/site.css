@@ -274,9 +274,9 @@ html:has(.pub) { scroll-padding-top: 84px}
 .pub .signup-form .pub-field { margin-bottom: 14px}
 .pub .signup-trap { position: absolute; left: -9999px}
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
-.pub .signup-error[hidden] { display: none}
 .pub .signup-terms { margin: 14px 0 0; color: var(--pub-muted)}
 .pub .signup-sent p { margin: 0 0 14px}
+.pub .signup-sent p:focus-visible, .pub .lead-sent p:focus-visible { outline-offset: 6px}
 .pub .signup-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center}
 .pub .pub-link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer}
 /* Variants: the hero and inline forms put the field and the button in one row and speak the label only; the card
@@ -306,7 +306,6 @@ html:has(.pub) { scroll-padding-top: 84px}
 .pub .lead-form .pub-btn { justify-self: start}
 .pub .lead-trap { position: absolute; left: -9999px}
 .pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
-.pub .lead-error[hidden] { display: none}
 .pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
 .pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
 .pub .pub-final-form { display: flex; justify-content: center}

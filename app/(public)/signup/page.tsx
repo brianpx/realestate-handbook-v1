@@ -6,7 +6,7 @@ import { safeNextPath } from '@/lib/auth/validate';
 
 // Out of search results and out of the sitemap until the sender is verified and the form sends for real (UD-D15).
 export const metadata: Metadata = {
-  title: 'Sign in',
+  title: 'Open the handbook',
   description: 'Sign in with an emailed link to read the free chapters and, once you have bought it, the whole handbook.',
   alternates: { canonical: '/signup' },
   robots: { index: false, follow: true },

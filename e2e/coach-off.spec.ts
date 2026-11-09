@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 // The coach-off branch: /handbook/plan and /handbook/review call notFound() unless NEXT_PUBLIC_COACH_ENABLED is 'true'
 // at BUILD time (lib/coach/enabled.ts), and the chapter check then records nothing. The suite's one webServer is
 // built with the flag on, so this spec needs a second build on its own port and is skipped unless pointed at it:
-//   env LEAD_CAPTURE_ENABLED=true LEAD_STORE=file LEAD_STORE_PATH=.data/e2e-leads.json LEAD_IP_SALT=e2e-only-salt \
+//   env LEAD_STORE=file LEAD_STORE_PATH=.data/e2e-leads.json LEAD_IP_SALT=e2e-only-salt \
 //     NEXT_PUBLIC_SITE_URL=http://localhost:3206 pnpm build && pnpm start -p 3206
 //   COACH_OFF_BASE_URL=http://localhost:3206 PLAYWRIGHT_BASE_URL=http://localhost:3206 pnpm exec playwright test e2e/coach-off.spec.ts
 // (PLAYWRIGHT_BASE_URL only keeps the config from building and starting the coach-on server; every URL here is absolute.)

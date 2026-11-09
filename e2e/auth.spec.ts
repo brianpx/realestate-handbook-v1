@@ -69,7 +69,7 @@ test.describe('signed out', () => {
     await hero.getByRole('button', { name: 'Send me the free chapters' }).click();
     const sent = page.locator('.signup-sent[data-source="hero"]');
     await expect(sent).toContainText('Check your inbox.');
-    await expect(sent).toContainText('A second email asks you to confirm the notes.');
+    await expect(sent).toContainText('a second email asks you to confirm it');
     await expect(sent.getByRole('button', { name: /Send again in \d+s/ })).toBeDisabled();
 
     // stored at once, subscribed to nothing yet

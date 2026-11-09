@@ -1192,7 +1192,6 @@ html.dark {
         .hb-upsell .lead-field label { display: block; font-weight: 600; margin-bottom: 6px}
         .hb-upsell .lead-trap { position: absolute; left: -9999px}
         .hb-upsell .lead-error { color: var(--color-danger)}
-        .hb-upsell .lead-error[hidden] { display: none}
         .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
         .hb-upsell .lead-sent p { margin-bottom: 8px}
         .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}

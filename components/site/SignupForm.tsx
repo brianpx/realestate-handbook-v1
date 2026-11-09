@@ -6,6 +6,7 @@ import { CONSENT_TEXTS, CONSENT_VERSION } from '@/lib/leads/config';
 
 const RESEND_AFTER_SECONDS = 30;
 const GENERIC_ERROR = 'Something went wrong. Please try again in a moment.';
+const INVALID_EMAIL = 'Please enter a valid email address.';
 
 /** `hero`: a field and a button in one row, the label spoken only; `card`: the stacked form on its own page; `inline`: the row inside another card. */
 export type SignupVariant = 'hero' | 'card' | 'inline';
@@ -26,10 +27,14 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
   const [ready, setReady] = useState(false); // set after mount: the e2e suite waits for it before it types
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
+  const sentRef = useRef<HTMLParagraphElement>(null);
   const busy = useRef(false);
   const id = `signup-${source}`;
 
   useEffect(() => setReady(true), []);
+
+  // the form unmounts on success, so focus moves to the confirmation it is replaced by
+  useEffect(() => { if (state.kind === 'sent') sentRef.current?.focus(); }, [state.kind]);
 
   // counts the seconds down to "Send again"
   useEffect(() => {
@@ -37,6 +42,11 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [state.kind]);
+
+  const fail = (message: string) => {
+    setState({ kind: 'error', message });
+    inputRef.current?.focus();
+  };
 
   const subscribe = async (email: string): Promise<Notes> => {
     try {
@@ -54,12 +64,10 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (busy.current) return;
-    const input = inputRef.current!;
+    const input = inputRef.current;
+    if (!input) return;
     const email = input.value.trim();
-    if (!input.checkValidity() || !email) {
-      setState({ kind: 'error', message: 'Please enter a valid email address.' });
-      return;
-    }
+    if (!input.checkValidity() || !email) return fail(INVALID_EMAIL);
     busy.current = true;
     setState({ kind: 'sending' });
     try {
@@ -74,51 +82,56 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { error?: string };
-      if (body.error === 'invalid_email') setState({ kind: 'error', message: 'Please enter a valid email address.' });
-      else if (res.status === 429) setState({ kind: 'error', message: 'Too many tries. Please wait a few minutes and try again.' });
-      else if (res.status === 503) setState({ kind: 'error', message: 'Sign-in email is not available right now. Please try again later.' });
-      else setState({ kind: 'error', message: GENERIC_ERROR });
+      if (body.error === 'invalid_email') fail(INVALID_EMAIL);
+      else if (res.status === 429) fail('Too many tries. Please wait a few minutes and try again.');
+      else if (res.status === 503) fail('Sign-in email is not available right now. Please try again later.');
+      else fail(GENERIC_ERROR);
     } catch {
-      setState({ kind: 'error', message: GENERIC_ERROR });
+      fail(GENERIC_ERROR);
     } finally {
       busy.current = false;
     }
   };
 
-  if (state.kind === 'sent') {
-    const wait = Math.max(0, RESEND_AFTER_SECONDS - Math.floor((now - state.at) / 1000));
-    return (
-      <div className={`signup-sent signup-${variant}`} role="status" data-source={source}>
-        <p><strong>Check your inbox.</strong> If {state.email} can receive mail, a sign-in link is on its way. It works once and expires in 15 minutes. Look in spam if it has not arrived in a minute.</p>
-        {state.notes === 'sent' && <p>A second email asks you to confirm the notes. Nothing is sent until you open that link.</p>}
-        {state.notes === 'failed' && <p>The notes sign-up did not go through. You can try again from the form after the sample lesson.</p>}
-        <p className="signup-actions">
-          <button type="button" className="pub-btn" disabled={wait > 0} onClick={() => setState({ kind: 'idle' })}>{wait > 0 ? `Send again in ${wait}s` : 'Send again'}</button>
-          <button type="button" className="pub-link-btn" onClick={() => { setState({ kind: 'idle' }); queueMicrotask(() => inputRef.current?.focus()); }}>Use a different email</button>
-        </p>
-      </div>
-    );
-  }
-
+  const sent = state.kind === 'sent' ? state : null;
+  const wait = sent ? Math.max(0, RESEND_AFTER_SECONDS - Math.floor((now - sent.at) / 1000)) : 0;
   const sending = state.kind === 'sending';
   const error = state.kind === 'error' ? state.message : '';
   return (
-    <form className={`signup-form signup-${variant}`} noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined}>
-      <div className="signup-row">
-        <div className="pub-field">
-          <label htmlFor={`${id}-email`} className={variant === 'card' ? undefined : 'visually-hidden'}>Email address</label>
-          <input ref={inputRef} className="calc-input" type="email" id={`${id}-email`} name="email" autoComplete="email" inputMode="email" placeholder="you@example.com" required />
+    <div className={`signup signup-${variant}`}>
+      {/* always mounted, so a screen reader hears the outcome that replaces the form */}
+      <p className="visually-hidden" role="status" aria-live="polite">{sent ? `Check your inbox at ${sent.email}.` : ''}</p>
+      {sent ? (
+        <div className="signup-sent" data-source={source}>
+          <p ref={sentRef} tabIndex={-1}><strong>Check your inbox.</strong> If {sent.email} can receive mail, a sign-in link is on its way. It works once and expires in 15 minutes. Look in spam if it has not arrived in a minute.</p>
+          {sent.notes === 'sent' && <p>If this address is not already on the notes list, a second email asks you to confirm it. Nothing is sent until you open that link.</p>}
+          {sent.notes === 'failed' && <p>The notes sign-up did not go through. You can try again from the form after the sample lesson.</p>}
+          <p className="signup-actions">
+            <button type="button" className="pub-btn" disabled={wait > 0} onClick={() => setState({ kind: 'idle' })}>{wait > 0 ? `Send again in ${wait}s` : 'Send again'}</button>
+            <button type="button" className="pub-link-btn" onClick={() => { setState({ kind: 'idle' }); queueMicrotask(() => inputRef.current?.focus()); }}>Use a different email</button>
+          </p>
         </div>
-        <button type="submit" className="pub-btn pub-btn-primary" disabled={sending}>{sending ? 'Sending…' : buttonLabel}</button>
-      </div>
-      <input ref={trapRef} type="text" name="_gotcha" tabIndex={-1} autoComplete="off" className="signup-trap" aria-hidden="true" />
-      <p className="signup-error" role="alert" hidden={!error}>{error}</p>
-      <label className="signup-optin" htmlFor={`${id}-notes`}>
-        <input type="checkbox" id={`${id}-notes`} name="notes" checked={optIn} onChange={e => setOptIn(e.target.checked)} />
-        <span>Also email me occasional notes about the handbook. A confirmation link comes first.</span>
-      </label>
-      <p className="pub-small signup-terms">{TERMS_TEXT}</p>
-      {optIn && <p className="pub-small signup-terms">{CONSENT_TEXTS[CONSENT_VERSION]}</p>}
-    </form>
+      ) : (
+        // method and action are for the moment before hydration: Enter then posts to the route instead of putting
+        // the address in this page's URL
+        <form className="signup-form" method="post" action="/api/auth/request-link" noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined}>
+          <div className="signup-row">
+            <div className="pub-field">
+              <label htmlFor={`${id}-email`} className={variant === 'card' ? undefined : 'visually-hidden'}>Email address</label>
+              <input ref={inputRef} className="calc-input" type="email" id={`${id}-email`} name="email" autoComplete="email" inputMode="email" placeholder="you@example.com" required aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
+            </div>
+            <button type="submit" className="pub-btn pub-btn-primary" disabled={sending}>{sending ? 'Sending…' : buttonLabel}</button>
+          </div>
+          <input ref={trapRef} type="text" name="_gotcha" tabIndex={-1} autoComplete="off" className="signup-trap" aria-hidden="true" />
+          {error && <p className="signup-error" id={`${id}-error`} role="alert">{error}</p>}
+          <label className="signup-optin" htmlFor={`${id}-notes`}>
+            <input type="checkbox" id={`${id}-notes`} name="notes" checked={optIn} onChange={e => setOptIn(e.target.checked)} />
+            <span>Also email me occasional notes about the handbook. A confirmation link comes first.</span>
+          </label>
+          <p className="pub-small signup-terms">{TERMS_TEXT}</p>
+          {optIn && <p className="pub-small signup-terms">{CONSENT_TEXTS[CONSENT_VERSION]}</p>}
+        </form>
+      )}
+    </div>
   );
 }
