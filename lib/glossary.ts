@@ -6,7 +6,7 @@ import { htmlText } from './html-text';
 type Term = { term: string; exact?: boolean; plural?: boolean; alt?: string };
 
 export const GLOSSARY_TERMS: Term[] = [
-  { term: '8x8', exact: true }, { term: 'Agency disclosure' }, { term: 'Client App' }, { term: 'Cost per closed deal' },
+  { term: '8x8', exact: true }, { term: 'Agency disclosure' }, { term: 'Client App' }, { term: 'Cost per appointment' }, { term: 'Cost per closed deal' },
   { term: 'CRM', exact: true }, { term: 'Expired listing', plural: true }, { term: 'Fair Housing' }, { term: 'Farming' },
   { term: 'Follow-up plan', plural: true }, { term: 'FSBO', exact: true }, { term: 'IDX', exact: true },
   { term: 'Lagging indicator', plural: true }, { term: 'Lead routing' }, { term: 'Leading indicator', plural: true },
