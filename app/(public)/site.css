@@ -28,23 +28,34 @@
 .pub-narrow { max-width: 760px}
 
 /* ---- header ---- */
-.pub-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--color-surface) 96%, transparent); border-bottom: 1px solid var(--pub-line); backdrop-filter: blur(6px)}
-.pub-header-row { display: flex; align-items: center; gap: 24px; min-height: 68px}
-.pub-brand { display: flex; align-items: center; gap: 10px; color: var(--pub-ink) !important; font-weight: 700; text-decoration: none; line-height: 1.2; font-size: 0.98rem}
-.pub-brand img { width: 36px; height: 36px; flex: none}
-.pub-brand span { max-width: 15rem}
-.pub-nav { display: flex; align-items: center; gap: 4px; margin-left: auto}
-.pub-nav a { color: var(--pub-body); text-decoration: none; font-weight: 600; font-size: 0.93rem; padding: 10px 12px; border-radius: 8px}
-.pub-nav a:hover, .pub-nav a[aria-current="page"] { background: var(--pub-tint); color: var(--pub-ink)}
-.pub-nav a.pub-nav-cta { color: var(--color-link); border: 1.5px solid var(--color-line-strong); margin-left: 6px}
-.pub-nav a.pub-nav-cta:hover { background: var(--color-brand); color: var(--color-on-brand); border-color: var(--color-brand)}
-.pub-menu-btn { display: none; margin-left: auto; min-height: 44px; padding: 0 14px; background: var(--color-surface); color: var(--pub-ink); border: 1.5px solid var(--color-line-strong); border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer}
-@media (width <= 900px) {
-  .pub-menu-btn { display: inline-flex; align-items: center}
-  .pub-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: 8px 16px 16px; background: var(--color-surface); border-bottom: 1px solid var(--pub-line); box-shadow: 0 12px 24px rgba(15,23,42,0.12)}
+/* Flat and fixed-height: 88px on a desktop, 72px once the links fold into the menu. scroll-padding-top at the end of
+   this file clears it, so keep the two in step. */
+.pub-header { --pub-header-h: 88px; position: sticky; top: 0; z-index: 50; background: var(--color-surface); border-bottom: 1px solid var(--color-subtle)}
+.pub-header-row { display: flex; align-items: center; gap: 24px; height: var(--pub-header-h); max-width: 1440px; margin: 0 auto; padding: 0 32px}
+.pub-brand { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--pub-ink) !important; font-weight: 700; text-decoration: none; font-size: 18px; line-height: 22px}
+.pub-brand img { width: 44px; height: 44px; flex: none}
+.pub-brand-title > span { display: block; white-space: nowrap}
+.pub-nav { display: flex; align-items: center; gap: 28px; margin-left: auto}
+.pub-nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--pub-body); text-decoration: none; font-weight: 500; font-size: 15px; white-space: nowrap; transition: color 0.15s}
+.pub-nav a:hover, .pub-nav a[aria-current="page"] { color: var(--pub-green)}
+.pub-nav a.pub-nav-cta { justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 8px; background: var(--pub-green); color: var(--color-on-brand-soft); font-weight: 600; transition: background 0.15s}
+.pub-nav a.pub-nav-cta:hover { background: color-mix(in srgb, var(--pub-green) 85%, #000); color: var(--color-on-brand-soft)}
+.pub-nav-cta svg { width: 18px; height: 18px; flex: none}
+.pub-menu-btn { display: none; margin-left: auto; flex: none; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; background: var(--color-surface); color: var(--pub-ink); border: 1px solid var(--color-subtle); border-radius: 8px; cursor: pointer}
+.pub-menu-btn svg { width: 22px; height: 22px}
+/* 1100px, not the shared 900px: below it the four links and the button no longer fit beside the two-line title */
+@media (width <= 1100px) {
+  .pub-header { --pub-header-h: 72px}
+  .pub-header-row { padding: 0 16px; gap: 12px}
+  .pub-menu-btn { display: inline-flex}
+  .pub-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: 8px 16px 16px; max-height: calc(100dvh - var(--pub-header-h)); overflow-y: auto; overscroll-behavior: contain; background: var(--color-surface); border-bottom: 1px solid var(--color-subtle)}
   .pub-nav.open { display: flex}
-  .pub-nav a { padding: 14px 12px}
-  .pub-nav a.pub-nav-cta { margin: 8px 0 0; text-align: center}
+  .pub-nav a { min-height: 48px; padding: 0 4px}
+  .pub-nav a.pub-nav-cta { margin-top: 8px; padding: 0 20px}
+}
+@media (width <= 420px) {
+  .pub-brand { gap: 10px; font-size: 14px; line-height: 18px}
+  .pub-brand img { width: 32px; height: 32px}
 }
 
 /* ---- type ---- */
@@ -266,8 +277,9 @@
 .pub-legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--pub-line); font-size: 0.85rem; color: var(--pub-muted)}
 
 @media (prefers-reduced-motion: reduce) { .pub * { transition: none !important; scroll-behavior: auto !important} }
-.pub { scroll-padding-top: 84px}
-html:has(.pub) { scroll-padding-top: 84px}
+.pub { scroll-padding-top: 104px}
+html:has(.pub) { scroll-padding-top: 104px}
+@media (width <= 1100px) { .pub, html:has(.pub) { scroll-padding-top: 88px} }
 
 /* Sign-in form (components/site/SignupForm.tsx): on /signup, the verify page and, later, the home page. */
 .pub .signup-card { padding: 28px; margin: 0 0 20px}

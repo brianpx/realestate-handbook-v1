@@ -116,8 +116,9 @@
 
 /* Viewport breakpoints, shared with app/(public)/site.css. Range syntax, so no width (fractional ones at zoom) falls
    between the two sides of a breakpoint. Container queries for the chapter column are separate (.chapter-slot).
+     1100px  header: the public nav becomes a menu button
      1000px  wide:   the public hero and four-column grids collapse
-      900px  shell:  the handbook's phone layout (sticky sidebar, dropdown menu); the public nav becomes a menu button
+      900px  shell:  the handbook's phone layout (sticky sidebar, dropdown menu)
       700px  narrow: public sections, grids, the tool index and the sample lose their side room
       600px  phone:  teaching widgets stack, controls grow to 44px, dialog footers stack
       420px  small:  the hero's fields and stat tiles become single rows */
