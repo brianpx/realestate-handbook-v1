@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import type { Attempt } from './types';
 
 // Coach progress lives under its own key so the static site's `handbookState` payload stays untouched.

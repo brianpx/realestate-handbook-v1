@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { emailSchema } from '@/lib/validate/email';
 
 // Inputs to the grant and account mutations. Ids are re-read from the database by the code that uses them; the

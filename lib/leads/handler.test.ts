@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { hashSecret } from '@/lib/auth/token';
+import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ceiling';
 import { CONFIRM_PATH, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
 import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, hashIp, type LeadDeps } from './handler';
 import { confirmationMessage, mailFromEnv, sendConfirmation, type MailConfig } from './mail';
@@ -14,7 +15,7 @@ function setup(over: Partial<LeadDeps> & { fetchImpl?: Mock<typeof fetch> } = {}
   const store = new MemoryLeadStore();
   const fetchImpl = over.fetchImpl ?? vi.fn<typeof fetch>(() => ok()); // the one sentLink() reads from
   const mail: MailConfig = { provider: 'sendgrid', apiKey: 'SG.x', from: 'me@example.test', fromName: 'Handbook', replyTo: 'me@example.test', mailingAddress: '1 Main St' };
-  const deps: LeadDeps = { store, mail, allowedOrigins: [SITE], siteUrl: SITE, ipSalt: 's', now: () => NOW, fetchImpl, ...over };
+  const deps: LeadDeps = { store, mail, allowedOrigins: [SITE], siteUrl: SITE, ipSalt: 's', sendCeiling: DEFAULT_SEND_CEILING, now: () => NOW, fetchImpl, ...over };
   const post = (b: string, extra: { origin?: string | null; ip?: string } = {}) =>
     handleLead({ origin: extra.origin === undefined ? SITE : extra.origin, ip: extra.ip ?? '203.0.113.9', body: b }, deps);
   const confirm = (token: string, extra: { origin?: string | null; ip?: string } = {}) =>
@@ -194,6 +195,36 @@ describe('rate limit', () => {
   it('never keeps the raw address, only a salted hash', () => {
     expect(hashIp('203.0.113.9', 's')).toMatch(/^[0-9a-f]{32}$/);
     expect(hashIp('203.0.113.9', 's')).not.toBe(hashIp('203.0.113.9', 'other'));
+  });
+});
+
+describe('send ceiling', () => {
+  it('refuses every caller alike with the per-connection 429 (rate_limited, Retry-After) once the window is full, stores nothing and sends nothing', async () => {
+    const { post, store, fetchImpl } = setup({ sendCeiling: 2 });
+    expect((await post(body({ email: 'a@b.co' }), { ip: '198.51.100.1' })).status).toBe(200);
+    expect((await post(body({ email: 'b@b.co' }), { ip: '198.51.100.2' })).status).toBe(200);
+    const over = await post(body({ email: 'c@b.co' }), { ip: '198.51.100.3' });
+    expect(over).toEqual({ status: 429, body: { ok: false, error: 'rate_limited', retryAfterSeconds: SEND_CEILING_WINDOW_SECONDS }, headers: { 'Retry-After': String(SEND_CEILING_WINDOW_SECONDS) } });
+    // a repeat address gets the same answer as a new one, so the full window tells nothing about who is on the list
+    expect(await post(body({ email: 'a@b.co' }), { ip: '198.51.100.4' })).toEqual(over);
+    expect(store.leads.map(l => l.email)).toEqual(['a@b.co', 'b@b.co']);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+  it('counts only requests that were about to send: bad bodies, bad addresses and bots take no slot', async () => {
+    const { post, store } = setup({ sendCeiling: 1 });
+    expect((await post('{bad', { ip: '198.51.100.1' })).status).toBe(400);
+    expect((await post(body({ email: 'nope' }), { ip: '198.51.100.2' })).status).toBe(400);
+    expect((await post(body({ email: 'bot@b.co', _gotcha: 'x' }), { ip: '198.51.100.3' })).status).toBe(200);
+    expect(store.sends.size).toBe(0);
+    expect((await post(body({ email: 'a@b.co' }), { ip: '198.51.100.4' })).status).toBe(200);
+    expect((await post(body({ email: 'b@b.co' }), { ip: '198.51.100.5' })).status).toBe(429);
+  });
+  it('opens again in the next window', async () => {
+    const { post, deps } = setup({ sendCeiling: 1 });
+    expect((await post(body({ email: 'a@b.co' }), { ip: '198.51.100.1' })).status).toBe(200);
+    expect((await post(body({ email: 'b@b.co' }), { ip: '198.51.100.2' })).status).toBe(429);
+    const later = new Date(NOW.getTime() + SEND_CEILING_WINDOW_SECONDS * 1000);
+    expect((await handleLead({ origin: SITE, ip: '198.51.100.2', body: body({ email: 'b@b.co' }) }, { ...deps, now: () => later })).status).toBe(200);
   });
 });
 

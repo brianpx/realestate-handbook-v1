@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { coachSchema, type CoachState } from '../coach/schema';
 import { handbookStateSchema, migrate, settingsSchema, type HandbookState, type Settings } from './schema';
 

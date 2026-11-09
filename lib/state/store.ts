@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from '@/lib/zod';
 
 export type Store<T> = {
   get: () => T;

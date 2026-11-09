@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { hashSecret, isSecretShape, newSecret } from '@/lib/auth/token';
+import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
 import { CONFIRM_PATH, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
 import { sendConfirmation, type MailConfig } from './mail';
 import type { LeadStore } from './store';
@@ -14,11 +15,14 @@ export type LeadDeps = {
   /** The public origin the confirmation link is built on; the form may post without an Origin header. */
   siteUrl: string;
   ipSalt: string;
+  /** Confirmation emails allowed per window over all callers (lib/send-ceiling.ts). */
+  sendCeiling: number;
   now: () => Date;
   fetchImpl?: typeof fetch;
 };
 
 const reply = (status: number, error: string, extra: Record<string, unknown> = {}, headers?: Record<string, string>): LeadReply => ({ status, body: { ok: false, error, ...extra }, headers });
+const rateLimited = (windowSeconds: number): LeadReply => reply(429, 'rate_limited', { retryAfterSeconds: windowSeconds }, { 'Retry-After': String(windowSeconds) });
 const OK: LeadReply = { status: 200, body: { ok: true } };
 const redirect = (location: string): LeadReply => ({ status: 303, headers: { Location: location } });
 export const CONFIRMED = `${CONFIRM_PATH}?done=1`;
@@ -30,7 +34,7 @@ export const hashIp = (ip: string, salt: string): string => createHash('sha256')
 async function overLimit(store: LeadStore, req: LeadRequest, deps: LeadDeps, now: Date): Promise<LeadReply | null> {
   const since = new Date(now.getTime() - RATE_LIMIT.windowSeconds * 1000);
   if ((await store.recordAndCount(hashIp(req.ip, deps.ipSalt), now, since)) <= RATE_LIMIT.attempts) return null;
-  return reply(429, 'rate_limited', { retryAfterSeconds: RATE_LIMIT.windowSeconds }, { 'Retry-After': String(RATE_LIMIT.windowSeconds) });
+  return rateLimited(RATE_LIMIT.windowSeconds);
 }
 
 /**
@@ -60,6 +64,9 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
     }
     const { email, consentVersion, source, _gotcha } = parsed.data;
     if (_gotcha) return OK; // a bot filled the hidden field: look successful, store nothing
+    // The ceiling over all callers is checked before the address is looked up, so a repeat and a new address get the
+    // same answer when it is hit. A send-eligible request counts whether or not an email goes out for it.
+    if ((await deps.store.countSend(sendWindowStart(now))) > deps.sendCeiling) return rateLimited(SEND_CEILING_WINDOW_SECONDS);
 
     const raw = newSecret();
     const expiresAt = new Date(now.getTime() + CONFIRM_TTL_SECONDS * 1000);

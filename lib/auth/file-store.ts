@@ -18,12 +18,13 @@ type Shape = {
   tokens: Iso<AuthToken>[];
   sessions: Iso<Session>[];
   attempts: { scope: AttemptScope; keyHash: string; at: string }[];
+  sends: { windowStart: string; n: number }[];
   grants: Iso<Grant>[];
   memberships: Iso<Membership>[];
   billing: (Iso<BillingAccess> & { userId: string })[];
   audit: Iso<AuditRow>[];
 };
-const EMPTY: Shape = { users: [], tokens: [], sessions: [], attempts: [], grants: [], memberships: [], billing: [], audit: [] };
+const EMPTY: Shape = { users: [], tokens: [], sessions: [], attempts: [], sends: [], grants: [], memberships: [], billing: [], audit: [] };
 const LOCK_RETRY_MS = 10;
 const LOCK_WAIT_MS = 5000;
 const LOCK_STALE_MS = 5000;
@@ -64,7 +65,7 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
     }
     // a hand-edited or truncated file must not break every later request: a missing or non-array field starts empty
     const list = <K extends keyof Shape>(key: K): Shape[K] => (Array.isArray(data?.[key]) ? (data[key] as Shape[K]) : []);
-    return { users: list('users'), tokens: list('tokens'), sessions: list('sessions'), attempts: list('attempts'), grants: list('grants'), memberships: list('memberships'), billing: list('billing'), audit: list('audit') };
+    return { users: list('users'), tokens: list('tokens'), sessions: list('sessions'), attempts: list('attempts'), sends: list('sends'), grants: list('grants'), memberships: list('memberships'), billing: list('billing'), audit: list('audit') };
   }
 
   // The queue serialises this process's writes; the lock directory serialises them against another process writing
@@ -180,6 +181,17 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
       d.attempts = d.attempts.filter(a => Date.parse(a.at) >= cutoff); // keep the file small
       d.attempts.push({ scope, keyHash, at: at.toISOString() });
       return d.attempts.filter(a => a.scope === scope && a.keyHash === keyHash && Date.parse(a.at) >= since.getTime()).length;
+    });
+  }
+
+  countSend(windowStart: Date) {
+    return this.change(d => {
+      const cutoff = windowStart.getTime() - 24 * 3600 * 1000;
+      d.sends = d.sends.filter(s => Date.parse(s.windowStart) >= cutoff); // keep the file small
+      const key = windowStart.toISOString();
+      let row = d.sends.find(s => s.windowStart === key);
+      if (!row) d.sends.push((row = { windowStart: key, n: 0 }));
+      return ++row.n;
     });
   }
 

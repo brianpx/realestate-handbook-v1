@@ -1,3 +1,4 @@
+import { countSend } from '@/lib/db/send-counts';
 import { sqlFromUrl, toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
 import { LEAD_LIST_CAP, type EmailStatus, type Inserted, type LeadRow, type LeadStore, type NewLead } from './store';
 
@@ -77,6 +78,10 @@ export class NeonLeadStore implements LeadStore {
       console.error('lead: attempt cleanup failed', err instanceof Error ? err.name : 'error');
     }
     return Number(rows[0]?.n ?? 0);
+  }
+
+  countSend(windowStart: Date) {
+    return countSend(this.sql, 'lead', windowStart);
   }
 
   async list(): Promise<LeadRow[]> {
