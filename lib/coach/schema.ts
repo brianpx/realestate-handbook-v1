@@ -32,14 +32,18 @@ export const sessionSchema = z.object({
   week: z.number().int().positive(),
 });
 
+/**
+ * One bad field falls back on its own rather than dropping the plan, as the other stored shapes do. Only
+ * `startDate` has no stand-in: without it the sessions cannot be laid out, so the plan as a whole is dropped.
+ */
 export const planPrefsSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  pace: z.enum(['sprint', 'default', 'relaxed']),
-  studyDays: z.array(z.number().int().min(0).max(6)).min(1),
-  time: z.string().regex(/^\d{2}:\d{2}$/),
-  tz: z.string().min(1),
-  /** Client clock; the server assigns its own on sync and decides conflicts per field. */
-  updatedAt: timestamp,
+  pace: z.enum(['sprint', 'default', 'relaxed']).catch('default'),
+  studyDays: z.array(z.number().int().min(0).max(6)).min(1).catch([1, 2, 3, 4, 5]),
+  time: z.string().regex(/^\d{2}:\d{2}$/).catch('08:00'),
+  tz: z.string().min(1).catch(() => Intl.DateTimeFormat().resolvedOptions().timeZone),
+  /** Client clock; the server assigns its own on sync and decides conflicts per field. An unreadable one loses. */
+  updatedAt: timestamp.catch('1970-01-01T00:00:00.000Z'),
   /**
    * The last laid-out schedule. Stored, not re-derived, because a reflow depends on what was done when: sessions
    * that are complete or partly done keep the dates they had.

@@ -101,6 +101,17 @@ describe('savePlan and deriveConceptStates', () => {
     expect(make().get().plan).toEqual(plan);
   });
 
+  it('keeps a stored plan whose fields went bad one at a time, and drops it only without a start date', () => {
+    const sessions = [{ id: 'ch1', chapter: 'ch1', unit: 1, date: '2026-10-19', week: 1 }];
+    const stored = { startDate: '2026-10-19', pace: 'fast', studyDays: 'weekdays', time: '8am', tz: '', updatedAt: 'yesterday', sessions };
+    window.localStorage.setItem(COACH_KEY, JSON.stringify({ plan: stored }));
+    const plan = make().get().plan!;
+    expect(plan).toMatchObject({ startDate: '2026-10-19', pace: 'default', studyDays: [1, 2, 3, 4, 5], time: '08:00', updatedAt: '1970-01-01T00:00:00.000Z', sessions });
+    expect(plan.tz).not.toBe('');
+    window.localStorage.setItem(COACH_KEY, JSON.stringify({ plan: { ...stored, startDate: 'soon' } }));
+    expect(make().get().plan).toBeUndefined();
+  });
+
   it('derives concept state from stored attempts, using current concept versions only', () => {
     const store = make();
     recordAttempt(store, input, deps('2026-10-19T14:00:00Z'));
