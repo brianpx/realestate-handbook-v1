@@ -5,6 +5,8 @@ import { MemoryAuthStore } from '@/lib/auth/memory-store';
 import { sessionExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryLeadStore } from '@/lib/leads/store';
+import { EMPTY_PROFILE } from '@/lib/users/profile';
+import { MemoryProfileStore } from '@/lib/users/profile-store';
 import { MemoryUserStore } from '@/lib/users/store';
 import { handleDeleteAccount, handleSignOutAll, type AccountDeps } from './handler';
 
@@ -17,8 +19,10 @@ async function setup() {
   const auth = new MemoryAuthStore();
   const access = new MemoryAccessStore({ users, auth });
   const leads = new MemoryLeadStore();
-  const deps: AccountDeps = { stores: { users, auth, access }, leads, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
+  const profiles = new MemoryProfileStore();
+  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
+  await profiles.save(user.id, { ...EMPTY_PROFILE, brokerageName: 'Example Realty' }, 'user', NOW);
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
   await leads.insert({ email: EMAIL, source: 'signup', consentVersion: 'v1', consentText: 't', confirmTokenHash: 'c'.repeat(64), confirmExpiresAt: NOW, at: NOW });
@@ -30,7 +34,7 @@ async function setup() {
     body,
     sessionId: 'sessionId' in extra ? extra.sessionId : sessions[0],
   });
-  return { users, auth, access, leads, deps, user, sessions, req };
+  return { users, auth, access, leads, profiles, deps, user, sessions, req };
 }
 
 describe('sign out everywhere', () => {
@@ -62,13 +66,14 @@ describe('sign out everywhere', () => {
 });
 
 describe('delete account', () => {
-  it('needs the typed address to match, then anonymises, keeps the grants, drops the lead row and clears the cookie', async () => {
-    const { users, auth, access, leads, deps, user, req } = await setup();
+  it('needs the typed address to match, then anonymises, keeps the grants, drops the profile and the lead row and clears the cookie', async () => {
+    const { users, auth, access, leads, profiles, deps, user, req } = await setup();
     await grantAccess(access, { userId: user.id, kind: 'complimentary', tier: 'basic', grantedBy: user.id }, { kind: 'system', userId: null }, NOW);
     const wrong = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: 'other@example.com' }).toString()), deps);
     expect(wrong.status).toBe(303);
     expect(wrong.headers?.Location).toBe('/account?error=confirm');
     expect(users.users[0]!.status).toBe('active');
+    expect(profiles.profiles).toHaveLength(1);
 
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: ' Reader@Example.com ' }).toString()), deps);
     expect(res.status).toBe(303);
@@ -78,6 +83,7 @@ describe('delete account', () => {
     expect(auth.sessions).toHaveLength(0);
     expect(auth.tokens).toHaveLength(0);
     expect(await leads.list()).toHaveLength(0);
+    expect(profiles.profiles).toHaveLength(0);
     expect(access.grants).toHaveLength(1);
     expect(access.memberships).toHaveLength(0);
     const anonymised = access.audit.find(a => a.action === 'user.anonymize');
@@ -109,8 +115,8 @@ describe('delete account', () => {
     expect(out.headers?.Location).toBe('/signup?next=%2Faccount');
     expect(users.users[0]!.status).toBe('active');
   });
-  it('is a 503 when the store fails, and the lead store failing does not fail the deletion', async () => {
-    const { auth, leads, deps, req, users } = await setup();
+  it('is a 503 when the store fails, and the lead or profile store failing does not fail the deletion', async () => {
+    const { auth, leads, profiles, deps, req, users } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
@@ -120,10 +126,12 @@ describe('delete account', () => {
       expect(users.users[0]!.status).toBe('active');
       auth.failWith = null;
       leads.failWith = new Error('leads down');
+      profiles.failWith = new Error('profiles down');
       const res = await handleDeleteAccount(req(body), deps);
       expect(res.status).toBe(303);
       expect(res.headers?.Location).toBe('/goodbye');
       expect(users.users[0]!.status).toBe('deleted');
+      expect(profiles.profiles).toHaveLength(1); // the step failed and was logged; the deletion still went through
     } finally {
       spy.mockRestore();
     }
