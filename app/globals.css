@@ -398,8 +398,7 @@ html.dark {
             padding-bottom: 12px}
         .chapter-body h1.visually-hidden { margin: -1px; border: 0; padding: 0}
 
-        /* .chapter-body p outranks the public site's .pub :where(p), so sample paragraphs match the handbook */
-        p, .chapter-body p {
+        p {
             margin-bottom: 16px;
             font-size: 0.98rem;
             color: var(--color-body)}

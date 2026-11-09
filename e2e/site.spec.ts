@@ -94,6 +94,14 @@ test.describe('public pages', () => {
     await expect(broken.locator('.cycle-badge')).toHaveCSS('color', 'rgb(134, 239, 172)'); // --color-success, dark
   });
 
+  test('single-class paragraph rules survive the chapter typography scope on both surfaces', async ({ page }) => {
+    for (const path of ['/handbook/ch1', '/preview']) {
+      await page.goto(path);
+      await expect(page.locator('.calc-note').first(), path).toHaveCSS('font-size', '13.6px'); // 0.85rem, not the bare p rule
+      await expect(page.locator('p.part-intro').first(), path).toHaveCSS('margin-bottom', '8px');
+    }
+  });
+
   test('the header menu opens by keyboard on a phone and closes with Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/');

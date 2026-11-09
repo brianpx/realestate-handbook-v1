@@ -50,8 +50,9 @@
 .pub-h2 { font-family: var(--pub-serif); font-size: clamp(1.65rem, 3vw, 2.3rem); line-height: 1.18; letter-spacing: -0.01em; color: var(--pub-ink); margin: 0 0 14px; border: 0; padding: 0}
 .pub-h3 { font-size: 1.12rem; line-height: 1.3; color: var(--pub-ink); margin: 0 0 8px}
 .pub .pub-lede { font-size: 1.18rem; line-height: 1.6; color: var(--pub-body); margin: 0 0 24px; max-width: 40rem}
-/* :where keeps these at class specificity so component rules such as .box p in globals.css win inside the sample */
-.pub :where(p) { font-size: 1.02rem; line-height: 1.65; color: var(--pub-body); margin: 0 0 14px}
+/* :where keeps this at class specificity so component rules such as .box p in globals.css win; chapter text in the
+   sample is left to the handbook's own paragraph rules entirely */
+.pub :where(p:not(.chapter-body *)) { font-size: 1.02rem; line-height: 1.65; color: var(--pub-body); margin: 0 0 14px}
 .pub .pub-small { font-size: 0.9rem; color: var(--pub-muted)}
 .pub ul.pub-list, .pub ol.pub-list { padding-left: 22px; margin: 0 0 18px}
 .pub .pub-list li { font-size: 1.02rem; line-height: 1.6; margin-bottom: 8px; color: var(--pub-body)}
@@ -169,7 +170,12 @@
 .pub-tool-index th, .pub-tool-index td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--pub-line); color: var(--pub-body)}
 .pub-tool-index th { color: var(--pub-ink); font-weight: 600}
 .pub-tool-index thead th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--pub-muted)}
-@media (max-width: 700px) { .pub-tool-index thead { display: none} .pub-tool-index tr { display: grid; padding: 8px 0; border-bottom: 1px solid var(--pub-line)} .pub-tool-index th, .pub-tool-index td { padding: 2px 0; border: 0} }
+/* On a phone each row stacks; the header row stays in the accessibility tree (clipped, not display: none) */
+@media (max-width: 700px) {
+  .pub-tool-index .visually-hidden-phone { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0}
+  .pub-tool-index tr { display: grid; padding: 8px 0; border-bottom: 1px solid var(--pub-line)}
+  .pub-tool-index th, .pub-tool-index td { padding: 2px 0; border: 0}
+}
 
 /* ---- fit ---- */
 .pub-fit h3 { display: flex; align-items: center; gap: 8px}

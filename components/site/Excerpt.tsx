@@ -52,8 +52,8 @@ export async function Excerpt({ page, from, to }: { page: PageId } & Range) {
   } else if (!/<h1\b/i.test(html)) {
     throw new Error(`Excerpt of ${page}: a whole chapter needs an h1 to become the sample's chapter heading`);
   }
-  // A slice with no heading of its own sits directly under the page's h2, so its tool box stays an h3.
-  const demoted = /<h[123]\b/i.test(slice);
+  // A slice with no section heading of its own sits directly under the page's h2, so its boxes stay h3.
+  const demoted = /<h[12]\b/i.test(slice);
   const segments = splitSegments(page, demoted ? demoteHeadings(slice) : slice);
   const body = segments.map((s, i) => {
     if (s.kind === 'html') return <div key={i} style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: s.html }} />;
