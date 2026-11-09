@@ -86,56 +86,31 @@
   --sidebar-ring: var(--color-focus);
 }
 
-html.dark {
-  color-scheme: dark;
-  --color-ink: #f8fafc;
-  --color-body: #cbd5e1;
-  --color-ink-muted: #94a3b8;
-  --color-canvas: #020617;
-  --color-surface: #0f172a;
-  --color-subtle: #1e293b;
-  --color-tint: #1e293b;
-  --color-accent-tint: #172554;
-  --color-line: #64748b;
-  --color-line-strong: #94a3b8;
-  --color-brand: #245e8a;
-  --color-brand-hover: #2c7ab0;
-  --color-brand-soft: #4ade80;
-  --color-brand-tint: #052e16;
-  --color-on-brand: #ffffff;
-  --color-on-brand-soft: #052e16;
-  --color-link: #93c5fd;
-  --color-focus: #a5b4fc;
-  --color-success: #86efac;
-  --color-warning: #fde047;
-  --color-danger: #fca5a5;
-}
-
-/* Print stays ink on paper even when the screen is dark. */
-@media print {
+/* Screen only: print stays ink on paper even when the screen is dark, with the light tokens above. */
+@media screen {
   html.dark {
-    color-scheme: light;
-    --color-ink: #0f172a;
-    --color-body: #334155;
-    --color-ink-muted: #475569;
-    --color-canvas: #f8fafc;
-    --color-surface: #ffffff;
-    --color-subtle: #e2e8f0;
-    --color-tint: #f1f5f9;
-    --color-accent-tint: #eff6ff;
-    --color-line: #cbd5e1;
-    --color-line-strong: #64748b;
-    --color-brand: #12304a;
-    --color-brand-hover: #0b2033;
-    --color-brand-soft: #15803d;
-    --color-brand-tint: #f3f8f4;
+    color-scheme: dark;
+    --color-ink: #f8fafc;
+    --color-body: #cbd5e1;
+    --color-ink-muted: #94a3b8;
+    --color-canvas: #020617;
+    --color-surface: #0f172a;
+    --color-subtle: #1e293b;
+    --color-tint: #1e293b;
+    --color-accent-tint: #172554;
+    --color-line: #64748b;
+    --color-line-strong: #94a3b8;
+    --color-brand: #245e8a;
+    --color-brand-hover: #2c7ab0;
+    --color-brand-soft: #4ade80;
+    --color-brand-tint: #052e16;
     --color-on-brand: #ffffff;
-    --color-on-brand-soft: #ffffff;
-    --color-link: #1d4ed8;
-    --color-focus: #4338ca;
-    --color-success: #166534;
-    --color-warning: #854d0e;
-    --color-danger: #b91c1c;
+    --color-on-brand-soft: #052e16;
+    --color-link: #93c5fd;
+    --color-focus: #a5b4fc;
+    --color-success: #86efac;
+    --color-warning: #fde047;
+    --color-danger: #fca5a5;
   }
 }
 
@@ -148,13 +123,8 @@ html.dark {
       420px  small:  the hero's fields and stat tiles become single rows */
 @layer components {
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0}
-
+        /* box-sizing, zero margins and the font stack come from Tailwind's preflight and --font-sans above */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6}
