@@ -65,7 +65,7 @@ export default function SupportPage() {
         ) : (
           <p>
             There is no password to recover: you sign in from the <Link href="/signin">sign-in page</Link> with a link we email to your address, and a sign-in lasts 90 days
-            from your last visit. The <Link href="/account">Account page</Link> shows where you are signed in and can end every sign-in at once. If you lose your place, restore
+            from your last visit. The <Link href="/account">Account page</Link> shows how many browsers or devices are signed in and can end every sign-in at once. If you lose your place, restore
             a progress file. How a purchase will add access is on <Link href="/updates">Access and updates</Link>; nothing is sold yet.
           </p>
         )}

@@ -32,13 +32,14 @@ export default function PrivacyPage() {
         <h2>Cookies</h2>
         <p>
           Signing in sets two cookies. Both are strictly necessary to keep you signed in, so there is no cookie banner: neither one tracks you, measures you or is read by
-          anyone but this site. Nothing else on the site sets a cookie.
+          anyone but this site. The only other cookie, <code>sidebar_state</code>, is set in the admin area alone and remembers whether the administrator’s menu is open
+          for seven days; readers never receive it.
         </p>
         <ul>
           <li>
             <code>hb_session</code> (named <code>__Host-hb_session</code> over https) holds a random session id, which the server matches against its record of your sign-in.
-            Scripts on the page cannot read it. It lasts 90 days from your last visit, extended at most once a day, and never more than one year from the sign-in itself;
-            signing out removes it.
+            Scripts on the page cannot read it. It lasts 90 days from your last visit, refreshed on visits to the handbook, account or admin pages (public pages do not extend
+            it) and at most once a day, and never more than one year from the sign-in itself; signing out removes it.
           </li>
           <li>
             <code>hb_signed_in</code> is set beside it with the fixed value <code>1</code> and the same lifetime. It holds no personal data: the public pages read it to show
@@ -53,19 +54,21 @@ export default function PrivacyPage() {
           exists.
         </p>
         <p>
-          Each sign-in link is stored as a one-way hash, with the address it went to, the page you were heading for and a salted hash of your network address; it works once
-          and expires after 15 minutes. Each sign-in is a session record: when it began, when it was last used, when it expires and whether you ended it. The{' '}
+          Each sign-in link is stored as a one-way hash, with the address it went to, the page you were heading for, the version of the terms shown with the form, which form
+          asked (used only to count placements in the admin) and a salted hash of your network address; it works once and expires after 15 minutes. Each sign-in is a session
+          record: when it began, when it was last renewed (at most once a day), when it expires and whether you ended it. The{' '}
           <Link href="/account">Account page</Link> shows how many are live and can end all of them at once. Ended and expired records stay until you delete the account.
         </p>
         <p>The only email an account sends you is the sign-in link you asked for. Signing in does not add you to the notes list below.</p>
         <p>
           To limit abuse, requests for a sign-in link are counted against a salted one-way hash of your network address and of the address you typed; the counts are deleted
-          after a day. Changes to an account (ending every sign-in, a deletion, a change to what you may read) are logged with the date, the account id and a salted hash
-          of the network address the change was made from, never the address itself.
+          after a day. Changes to an account (ending every sign-in, a deletion, a change to what you may read) are logged with the date, who acted (you, an
+          administrator or the system), the action, the values before and after (status, role, plan), a reason where one was given, the account id and a salted hash of the
+          network address the change was made from, never the address itself.
         </p>
         <p>
           To delete your account, type your address on the <Link href="/account">Account page</Link>. That replaces your address in the account record with a placeholder,
-          deletes every session and sign-in link, and removes your address from the notes list. What stays: the anonymised account record, the record of any access you were
+          deletes every session and sign-in link, and then removes your address from the notes list (that last step is a separate one; if it fails, write to us). What stays: the anonymised account record, the record of any access you were
           granted, and any purchase record, kept with no address on it for seven years for accounting. What you saved while reading is only in your browser, so clear this
           site’s data there as well if you want it gone.
         </p>
@@ -74,8 +77,8 @@ export default function PrivacyPage() {
         <p>
           You may leave an email address for occasional notes about the handbook: with the separate checkbox under a sign-in form (unticked unless you tick it), after the
           sample lesson, or from the card on a chapter outside your plan. We keep the address, the date, which form it came through and the exact consent text you were
-          shown, in the same database, and email you a link to confirm. The address counts as subscribed only once you open that link, which expires after seven days; until
-          then nothing else is sent to it. {CONSENT_DETAILS}
+          shown, in the same database, and email you a link to confirm. The address counts as subscribed only once you open that link and press the button on the page it leads
+          to; the link expires after seven days, and until then nothing else is sent to the address. {CONSENT_DETAILS}
         </p>
         <p>
           To limit abuse of the form, a salted one-way hash of your network address (not the address itself) is kept for a day to count attempts. Declining the form
@@ -93,7 +96,7 @@ export default function PrivacyPage() {
         <h2>Payments</h2>
         <p>
           Purchase is not open, and the site has no payment code. When it opens, checkout will be on the page of Lemon Squeezy, the merchant of record, which takes the
-          payment and handles card details; this site never sees your card. The site will keep a record of each purchase (the plan, the order reference, the dates and the
+          payment and handles card details; this site never sees your card. The site will keep a record of each purchase (the plan, the order reference, the amount and currency, the dates and the
           address used at checkout) to grant access and for accounting, for seven years; deleting your account replaces the address on it with a hash.
         </p>
         <Decision>the seven-year retention of purchase records is the owner’s choice and still needs an accountant’s confirmation.</Decision>

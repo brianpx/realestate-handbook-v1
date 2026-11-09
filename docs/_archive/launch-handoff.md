@@ -14,7 +14,7 @@ Written 21 October 2026. Covers the sales site, the `/handbook` move, the guided
 
 ## Launch blockers (owner or infrastructure)
 
-1. **The gate exists; a purchase cannot yet open it.** Superseded 9 November 2026 (M5 of `../plans/MASTER-PROMPT.md`): magic-link sign-in, a session cookie checked in `proxy.ts` and a grant-based entitlement check now gate `/handbook/*` and the search index. Grants are created by hand in the admin until the billing webhook (M7 Phase 5) exists.
+1. **The gate exists; a purchase cannot yet open it.** Superseded 9 November 2026 (M5 of `../plans/MASTER-PROMPT.md`): magic-link sign-in, a session cookie checked in `proxy.ts` and a grant-based entitlement check now gate `/handbook/*` and the search index. Until the billing webhook (M7 Phase 5) exists, grants will be created by hand in the admin (M7 step 1, not built yet; today only the bootstrap grant for the first administrator exists).
 2. **No checkout.** The site contains no payment code. Each paid tier in `../../lib/tiers.ts` takes a hosted-checkout URL; until price, checkout, access term, update term and approved terms/refund/updates policies are all set, every purchase button degrades to "See pricing and availability".
 3. **The handbook is currently advertised as free.** `handbook-webpage-review.md` records the public promise as free, and the live GitHub Pages copy is free. (The welcome email that said "The book stays free to read" is gone: the notes list now sends only a confirmation link, `../../lib/leads/mail.ts`.) Charging for it, or for part of it, is a decision to make and announce.
 4. **Pricing is decided, not entered.** Basic $79 and Pro $149, one-time (OD-23, 9 November 2026); neither is in `../../lib/tiers.ts` yet, and no copy invents one.

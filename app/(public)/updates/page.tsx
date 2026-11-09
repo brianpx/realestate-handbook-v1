@@ -19,7 +19,7 @@ export default function UpdatesPage() {
         <h2>How access works today</h2>
         <p>
           The handbook opens in a web browser. You sign in with a link we email to your address; there is no password. A sign-in lasts 90 days from your last visit and
-          at most a year, and the <Link href="/account">Account page</Link> can end every sign-in at once. Signed in, the free set (the overview, Chapter 1 and Chapter 7)
+          at most a year, and the <Link href="/account">Account page</Link> can end every sign-in at once. Signed in, the free set (the cover, the preface, Chapter 1 and Chapter 7)
           is open to you; the other chapters and appendices open with a purchase, which is not on sale yet. Your progress is saved in your browser on your device, not in
           the account (see <Link href="/support#saving">Support</Link>).
         </p>
