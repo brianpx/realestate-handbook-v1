@@ -15,10 +15,10 @@ describe('robots', () => {
     expect(robots()).toEqual({ rules: { userAgent: '*', disallow: '/' } });
   });
 
-  it('disallows the search index with the handbook, account, sign-in and API once indexing is on', () => {
+  it('disallows the search index with the handbook, account, admin, sign-in and API once indexing is on', () => {
     process.env.SITE_INDEXABLE = 'true';
     expect(robots()).toEqual({
-      rules: { userAgent: '*', allow: '/', disallow: ['/handbook', '/account', '/auth', '/api/', '/search-index.json'] },
+      rules: { userAgent: '*', allow: '/', disallow: ['/handbook', '/account', '/admin', '/auth', '/api/', '/search-index.json'] },
       sitemap: `${SITE_URL}/sitemap.xml`,
     });
   });
