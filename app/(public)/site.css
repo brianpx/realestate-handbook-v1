@@ -308,4 +308,8 @@ html:has(.pub) { scroll-padding-top: 84px}
 .pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
 .pub .lead-error[hidden] { display: none}
 .pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
+.pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
+.pub .pub-final-form { display: flex; justify-content: center}
+.pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
+.pub .pub-final .pub-trust, .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}
 }

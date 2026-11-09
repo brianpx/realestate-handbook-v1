@@ -53,3 +53,13 @@ export async function requireAdmin(): Promise<Viewer> {
   if (viewer.role !== 'admin') redirect(DEFAULT_NEXT_PATH);
   return viewer;
 }
+
+/**
+ * Whether the request carries a well-formed session cookie: the public site's hint for "Welcome back" and the
+ * header's "Open the handbook", with no database access. A stale cookie shows the hint once; the handbook link
+ * then lands on sign-in, as every gated page does.
+ */
+export async function hasSessionCookie(): Promise<boolean> {
+  const jar = await cookies();
+  return isSecretShape(sessionIdFrom(name => jar.get(name)?.value));
+}

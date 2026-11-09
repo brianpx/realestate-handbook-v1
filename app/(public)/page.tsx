@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { HeroPlan } from '@/components/site/HeroPlan';
+import { SignupForm } from '@/components/site/SignupForm';
 import { ToolIndex } from '@/components/site/ToolIndex';
 import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
+import { hasSessionCookie } from '@/lib/auth/dal';
 import { bookJsonLd } from '@/lib/jsonld';
 import { OFFER, OWNER, primaryAction, purchaseOpen } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
@@ -11,13 +13,17 @@ import { fmtClock, planBlocks, ROADMAP_PHASES, TIMEBLOCK_DEFAULTS } from '@/lib/
 import { roundPerDay } from '@/lib/goal';
 import { readSetup, sourceName, summarize } from '@/lib/setup';
 
-export default function SalesPage() {
+// Until purchase opens, the only conversion on this page is an email address, so the sign-in form is the primary
+// action in the hero, after the calculator and at the end (user-database plan, section 2). A visitor with a session
+// cookie is offered the handbook instead of a form they have already filled in.
+export default async function SalesPage() {
   const action = primaryAction();
   const open = purchaseOpen();
+  const signedIn = await hasSessionCookie();
   return (
     <>
       <JsonLd data={bookJsonLd()} />
-      <Hero action={action} open={open} />
+      <Hero action={action} open={open} signedIn={signedIn} />
       <Problems />
       <FirstSession />
       <Tools />
@@ -26,7 +32,7 @@ export default function SalesPage() {
       <Fit />
       <Offer open={open} />
       <Faq />
-      <Final action={action} />
+      <Final action={action} signedIn={signedIn} />
     </>
   );
 }
@@ -37,8 +43,23 @@ function ActionLink({ action, className }: { action: Action; className: string }
   return <Link className={className} href={action.href}>{action.label}</Link>;
 }
 
+/** The hero for a reader who already has a session cookie: no form, the way in. */
+function WelcomeBack() {
+  return (
+    <div className="pub-welcome" data-welcome-back>
+      <p><strong>Welcome back.</strong> The free chapters, and whatever you have bought, are where you left them.</p>
+      <div className="pub-actions" style={{ margin: 0 }}>
+        <Link className="pub-btn pub-btn-primary" href="/handbook">Open the handbook</Link>
+        <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
+      </div>
+    </div>
+  );
+}
+
+const TRUST_LINE = 'No password, no card. The link we email also signs you in next time.';
+
 /* 1. Who is this for, and what will it help me do */
-function Hero({ action, open }: { action: Action; open: boolean }) {
+function Hero({ action, open, signedIn }: { action: Action; open: boolean; signedIn: boolean }) {
   return (
     <section className="pub-hero" aria-labelledby="heroTitle">
       <div className="pub-wrap pub-hero-grid">
@@ -50,17 +71,40 @@ function Hero({ action, open }: { action: Action; open: boolean }) {
             implementation handbook with interactive tools: it turns your income goal into a daily conversation target, helps you
             set up your CRM and follow-up, and gives you scripts to practice and a weekly review so you keep staying in touch.
           </p>
-          <div className="pub-actions">
-            <ActionLink action={action} className="pub-btn pub-btn-primary" />
-            <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
-          </div>
-          <p className="pub-fineprint">
-            {open
-              ? `${OFFER.accessTerm} The sample lesson is free and needs no sign-up.`
-              : 'Purchase is not open yet. The sample lesson is free and needs no sign-up, and the pricing page says where things stand.'}
-          </p>
+          {signedIn ? (
+            <WelcomeBack />
+          ) : open ? (
+            <>
+              <div className="pub-actions">
+                <ActionLink action={action} className="pub-btn pub-btn-primary" />
+                <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
+              </div>
+              <p className="pub-fineprint">{OFFER.accessTerm} The sample lesson is free and needs no sign-up.</p>
+            </>
+          ) : (
+            <>
+              <div className="pub-hero-form">
+                <SignupForm variant="hero" source="hero" buttonLabel="Send me the free chapters" />
+              </div>
+              <p className="pub-trust">{TRUST_LINE}</p>
+              <p className="pub-hero-links">
+                <Link href="/preview">Try the sample lesson without an email</Link>
+                <Link href="/pricing">Pricing and availability</Link>
+              </p>
+            </>
+          )}
         </div>
-        <HeroPlan />
+        <div className="pub-hero-side">
+          {/* once something is for sale the buy button takes the hero and the form moves beside the calculator */}
+          {open && !signedIn && (
+            <div className="pub-card signup-card">
+              <p className="pub-h3" style={{ margin: '0 0 6px' }}>Read the free chapters first.</p>
+              <p className="pub-trust">{TRUST_LINE}</p>
+              <SignupForm variant="card" source="hero" />
+            </div>
+          )}
+          <HeroPlan signedIn={signedIn} />
+        </div>
       </div>
     </section>
   );
@@ -393,18 +437,31 @@ function Faq() {
   );
 }
 
-function Final({ action }: { action: Action }) {
-  // The sample comes first; checkout, when it opens, is on the pricing page, so the plans link stays secondary.
-  const preview = <Link className="pub-btn pub-btn-primary" href="/preview">Try a sample lesson</Link>;
+function Final({ action, signedIn }: { action: Action; signedIn: boolean }) {
+  // The form again for a visitor who read this far; checkout, when it opens, is on the pricing page, so the plans
+  // link stays secondary.
   return (
     <section className="pub-section pub-final" aria-labelledby="finalTitle">
       <div className="pub-wrap pub-narrow">
         <h2 id="finalTitle" className="pub-h2">Start with tomorrow morning.</h2>
-        <p className="pub-lede" style={{ margin: '0 auto 24px' }}>Try the sample lesson, set your daily number, and see whether this is the routine you want to follow for the next 90 days.</p>
-        <div className="pub-actions">
-          {preview}
-          <ActionLink action={action} className="pub-btn pub-btn-secondary" />
-        </div>
+        <p className="pub-lede" style={{ margin: '0 auto 24px' }}>Open the free chapters, set your daily number, and see whether this is the routine you want to follow for the next 90 days.</p>
+        {signedIn ? (
+          <div className="pub-actions">
+            <Link className="pub-btn pub-btn-primary" href="/handbook">Open the handbook</Link>
+            <ActionLink action={action} className="pub-btn pub-btn-secondary" />
+          </div>
+        ) : (
+          <>
+            <div className="pub-hero-form pub-final-form">
+              <SignupForm variant="hero" source="final" buttonLabel="Send me the free chapters" />
+            </div>
+            <p className="pub-trust">{TRUST_LINE}</p>
+            <p className="pub-hero-links">
+              <Link href="/preview">Try the sample lesson without an email</Link>
+              <ActionLink action={action} className="" />
+            </p>
+          </>
+        )}
         <p className="pub-fineprint">Pricing and purchase status are on the <Link href="/pricing">pricing page</Link>.</p>
       </div>
     </section>
