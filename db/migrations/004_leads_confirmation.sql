@@ -8,16 +8,21 @@
 --     the raw token exists only in the emailed link
 --   * the address counts as subscribed only once `confirmed_at` is set, by the one statement below, when the
 --     reader opens the link and presses the button; the sign-in form never sets it
+--   * an expired link confirms nothing; a confirmed row answers its link again whatever the expiry
+--   * a first send that failed gets a fresh token and another email on the next submit (the reply is the same 200)
 --   * rows from before this file (the retired first-visit dialog) stay unconfirmed: they never clicked a link
 
 alter table leads add column if not exists confirm_token_hash text;
+alter table leads add column if not exists confirm_token_expires_at timestamptz;  -- a week from the send (lib/leads/config.ts)
 alter table leads add column if not exists confirmed_at timestamptz;
 create unique index if not exists leads_confirm_token_key on leads (confirm_token_hash) where confirm_token_hash is not null;
 
--- Confirms once and tolerates a second click; no row back means the token is unknown:
---   update leads set confirmed_at = coalesce(confirmed_at, $2) where confirm_token_hash = $1 returning id;
+-- Confirms once and tolerates a second click; no row back means the token is unknown or expired:
+--   update leads set confirmed_at = coalesce(confirmed_at, $2)
+--   where confirm_token_hash = $1 and (confirmed_at is not null or confirm_token_expires_at > $2) returning id;
 
 -- down
 --   drop index if exists leads_confirm_token_key;
 --   alter table leads drop column if exists confirmed_at;
+--   alter table leads drop column if exists confirm_token_expires_at;
 --   alter table leads drop column if exists confirm_token_hash;

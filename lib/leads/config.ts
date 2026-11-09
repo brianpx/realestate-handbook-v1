@@ -14,8 +14,9 @@ export const LEAD_SOURCES = ['signup', 'sample', 'upsell'] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 // The list is confirmed opt-in: the address is stored at once but counts as subscribed only when the reader opens
-// the emailed link. The page at CONFIRM_PATH shows the one-button form that posts to /api/lead/confirm.
+// the emailed link within a week. The page at CONFIRM_PATH shows the one-button form that posts to /api/lead/confirm.
 export const CONFIRM_PATH = '/subscribe/confirm';
+export const CONFIRM_TTL_SECONDS = 7 * 24 * 3600;
 
 // What the standalone form offers (decision OD-02): a purchase notice while nothing is on sale, the daily-number
 // offer once it is. The open-state email that carries the number is not built yet; the owner confirms this copy

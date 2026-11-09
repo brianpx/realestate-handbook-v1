@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type Mock } from 'vitest';
 import { hashSecret } from '@/lib/auth/token';
 import { CONFIRM_PATH, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
 import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, hashIp, type LeadDeps } from './handler';
@@ -10,9 +10,9 @@ const SITE = 'https://handbook.example';
 const body = (o: Record<string, unknown>) => JSON.stringify({ consentVersion: CONSENT_VERSION, source: 'sample', ...o });
 const ok = (init?: Partial<Response>) => Promise.resolve({ ok: true, status: 202, ...init } as Response);
 
-function setup(over: Partial<LeadDeps> = {}) {
+function setup(over: Partial<LeadDeps> & { fetchImpl?: Mock<typeof fetch> } = {}) {
   const store = new MemoryLeadStore();
-  const fetchImpl = vi.fn<typeof fetch>(() => ok());
+  const fetchImpl = over.fetchImpl ?? vi.fn<typeof fetch>(() => ok()); // the one sentLink() reads from
   const mail: MailConfig = { provider: 'sendgrid', apiKey: 'SG.x', from: 'me@example.test', fromName: 'Handbook', replyTo: 'me@example.test', mailingAddress: '1 Main St' };
   const deps: LeadDeps = { store, mail, allowedOrigins: [SITE], siteUrl: SITE, ipSalt: 's', now: () => NOW, fetchImpl, ...over };
   const post = (b: string, extra: { origin?: string | null; ip?: string } = {}) =>
@@ -72,6 +72,23 @@ describe('a repeat or a bot', () => {
     expect(store.leads[0]!.source).toBe('sample');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
+  it('gets a fresh link, and the same answer, when the first email failed and the address is still unconfirmed', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(() => ok({ ok: false, status: 500 }));
+    const { store, post, sentLink } = setup({ fetchImpl });
+    await post(body({ email: 'a@b.co' }));
+    const firstHash = store.leads[0]!.confirmTokenHash;
+    expect(store.leads[0]!.emailStatus).toBe('failed');
+    fetchImpl.mockImplementation(() => ok());
+    expect(await post(body({ email: 'a@b.co' }))).toEqual({ status: 200, body: { ok: true } });
+    expect(store.leads).toHaveLength(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(store.leads[0]!.emailStatus).toBe('sent');
+    expect(store.leads[0]!.confirmTokenHash).not.toBe(firstHash);
+    expect(hashSecret(new URL(sentLink(1)).searchParams.get('token')!)).toBe(store.leads[0]!.confirmTokenHash);
+    // once the link went out, a third submit sends nothing more
+    await post(body({ email: 'a@b.co' }));
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
   it('treats a filled hidden field as a bot: success on the surface, nothing stored or sent', async () => {
     const { store, post, fetchImpl } = setup();
     expect(await post(body({ email: 'bot@spam.co', _gotcha: 'http://spam' }))).toEqual({ status: 200, body: { ok: true } });
@@ -99,13 +116,25 @@ describe('confirmation', () => {
     expect((await confirm('x'.repeat(43), { origin: 'https://evil.example' })).status).toBe(403);
     expect(store.leads).toHaveLength(0);
   });
-  it('is rate-limited per address like the form, and answers 503 when the store throws', async () => {
+  it('refuses a link older than a week, but still answers a confirmed one', async () => {
+    const { store, post, confirm, sentLink, deps } = setup();
+    await post(body({ email: 'a@b.co' }));
+    const token = new URL(sentLink()).searchParams.get('token')!;
+    const late = { ...deps, now: () => new Date(NOW.getTime() + 8 * 24 * 3600 * 1000) };
+    const at = (t: string) => handleConfirm({ origin: SITE, ip: '203.0.113.9', body: new URLSearchParams({ token: t }).toString() }, late);
+    expect(await at(token)).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
+    expect(store.leads[0]!.confirmedAt).toBeNull();
+    expect(await confirm(token)).toEqual({ status: 303, headers: { Location: CONFIRMED } });
+    expect(await at(token)).toEqual({ status: 303, headers: { Location: CONFIRMED } });
+  });
+  it('is rate-limited per address like the form, and lands on the failure page for the limit, a missing store and a store error, because the reader is navigating', async () => {
     const { confirm, store } = setup();
     for (let i = 0; i < RATE_LIMIT.attempts; i++) await confirm('short');
-    expect((await confirm('x'.repeat(43))).status).toBe(429);
+    expect(await confirm('x'.repeat(43))).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
+    expect(await setup({ store: null }).confirm('x'.repeat(43))).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     store.failWith = new Error('db down');
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect((await confirm('x'.repeat(43), { ip: '198.51.100.7' })).status).toBe(503);
+    expect(await confirm('x'.repeat(43), { ip: '198.51.100.7' })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     spy.mockRestore();
   });
 });

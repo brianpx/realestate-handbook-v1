@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { hashSecret, isSecretShape, newSecret } from '@/lib/auth/token';
-import { CONFIRM_PATH, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
+import { CONFIRM_PATH, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
 import { sendConfirmation, type MailConfig } from './mail';
 import type { LeadStore } from './store';
 import { leadSchema } from './validate';
@@ -38,7 +38,8 @@ async function overLimit(store: LeadStore, req: LeadRequest, deps: LeadDeps, now
  *
  * Duplicates and bots get the same answer as a new sign-up, so the form cannot be used to find out who is on the
  * list. The address is stored at once but is not subscribed: the email sent for a new address carries the link
- * that confirms it (handleConfirm). A failed send never loses the lead; a repeat address gets no second email.
+ * that confirms it (handleConfirm). A failed send never loses the lead: the next submit of that address gets a
+ * fresh link, the only case in which a repeat address is emailed again.
  */
 export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
   if (req.origin && !deps.allowedOrigins.includes(req.origin)) return reply(403, 'forbidden');
@@ -61,8 +62,11 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
     if (_gotcha) return OK; // a bot filled the hidden field: look successful, store nothing
 
     const raw = newSecret();
-    const { created, id } = await deps.store.insert({ email, source, consentVersion, consentText: CONSENT_TEXTS[consentVersion], confirmTokenHash: hashSecret(raw), at: now });
-    if (created) await deps.store.setEmailStatus(id, await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, deps.fetchImpl));
+    const expiresAt = new Date(now.getTime() + CONFIRM_TTL_SECONDS * 1000);
+    const row = await deps.store.insert({ email, source, consentVersion, consentText: CONSENT_TEXTS[consentVersion], confirmTokenHash: hashSecret(raw), confirmExpiresAt: expiresAt, at: now });
+    const retry = !row.created && row.confirmedAt === null && row.emailStatus === 'failed';
+    if (retry) await deps.store.resetConfirmation(row.id, hashSecret(raw), expiresAt); // the old link is dead with it
+    if (row.created || retry) await deps.store.setEmailStatus(row.id, await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, deps.fetchImpl));
     return OK;
   } catch (err) {
     console.error('lead: storage failed', err instanceof Error ? err.name : 'error');
@@ -72,23 +76,23 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
 
 /**
  * Consumes a confirmation link (a form POST from the confirm page; `token` in the body), so a mail scanner that
- * fetches the link subscribes nobody. An unknown token and a malformed one end on the same failure state; a second
- * click on a good link lands on the same success state as the first.
+ * fetches the link subscribes nobody. An unknown, expired or malformed token ends on the failure state, and so
+ * do a rate-limited or failing request, because the reader is navigating, not reading JSON; a second click on a
+ * good link lands on the same success state as the first.
  */
 export async function handleConfirm(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
   if (!req.origin || !deps.allowedOrigins.includes(req.origin)) return reply(403, 'forbidden');
-  if (!deps.store) return reply(503, 'unavailable');
+  if (!deps.store) return redirect(CONFIRM_FAILED);
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
 
   const now = deps.now();
   try {
-    const limited = await overLimit(deps.store, req, deps, now);
-    if (limited) return limited;
+    if (await overLimit(deps.store, req, deps, now)) return redirect(CONFIRM_FAILED);
     const raw = new URLSearchParams(req.body).get('token');
     if (!isSecretShape(raw)) return redirect(CONFIRM_FAILED);
     return redirect((await deps.store.confirm(hashSecret(raw), now)) ? CONFIRMED : CONFIRM_FAILED);
   } catch (err) {
     console.error('lead: confirmation failed', err instanceof Error ? err.name : 'error');
-    return reply(503, 'unavailable');
+    return redirect(CONFIRM_FAILED);
   }
 }

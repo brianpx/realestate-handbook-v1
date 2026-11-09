@@ -2,34 +2,39 @@ import { describe, expect, it, vi } from 'vitest';
 import { fakeSql as fake } from '@/lib/db/fake-sql';
 import { NeonLeadStore, type Sql } from './neon-store';
 
-const lead = { email: 'a@b.co', source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: 'h'.repeat(64), at: new Date('2026-11-02T12:00:00Z') };
+const lead = { email: 'a@b.co', source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: 'h'.repeat(64), confirmExpiresAt: new Date('2026-11-09T12:00:00Z'), at: new Date('2026-11-02T12:00:00Z') };
 
 describe('NeonLeadStore', () => {
   it('inserts a new address in one statement and reports it as created', async () => {
     const { sql, calls } = fake([{ id: 'u-1' }]);
-    expect(await new NeonLeadStore(sql).insert(lead)).toEqual({ created: true, id: 'u-1' });
+    expect(await new NeonLeadStore(sql).insert(lead)).toEqual({ created: true, id: 'u-1', emailStatus: null, confirmedAt: null });
     expect(calls).toHaveLength(1);
     expect(calls[0]!.text).toContain('on conflict (email) do nothing');
-    expect(calls[0]!.values).toEqual(['a@b.co', 'sample', 'v1', 'text', 'h'.repeat(64), '2026-11-02T12:00:00.000Z']); // values are bound, never spliced in
+    expect(calls[0]!.values).toEqual(['a@b.co', 'sample', 'v1', 'text', 'h'.repeat(64), '2026-11-09T12:00:00.000Z', '2026-11-02T12:00:00.000Z']); // values are bound, never spliced in
   });
-  it('reports a repeat as not created and returns the existing id', async () => {
-    const { sql, calls } = fake([], [{ id: 'u-9' }]);
-    expect(await new NeonLeadStore(sql).insert(lead)).toEqual({ created: false, id: 'u-9' });
-    expect(calls[1]!.text).toBe('select id from leads where email = ?');
+  it('reports a repeat as not created, with the existing row id and state', async () => {
+    const { sql, calls } = fake([], [{ id: 'u-9', email_status: 'failed', confirmed_at: null }]);
+    expect(await new NeonLeadStore(sql).insert(lead)).toEqual({ created: false, id: 'u-9', emailStatus: 'failed', confirmedAt: null });
+    expect(calls[1]!.text).toBe('select id, email_status, confirmed_at from leads where email = ?');
+  });
+  it('resets the confirmation token and its expiry in one statement', async () => {
+    const { sql, calls } = fake([]);
+    await new NeonLeadStore(sql).resetConfirmation('u-1', 'n'.repeat(64), new Date('2026-11-16T12:00:00Z'));
+    expect(calls[0]).toEqual({ text: 'update leads set confirm_token_hash = ?, confirm_token_expires_at = ? where id = ?', values: ['n'.repeat(64), '2026-11-16T12:00:00.000Z', 'u-1'] });
   });
   it('records the email outcome against the lead', async () => {
     const { sql, calls } = fake([]);
     await new NeonLeadStore(sql).setEmailStatus('u-1', 'failed');
     expect(calls[0]).toEqual({ text: 'update leads set email_status = ? where id = ?', values: ['failed', 'u-1'] });
   });
-  it('confirms in one statement that keeps the first time, and answers false for no row', async () => {
+  it('confirms in one statement that keeps the first time and refuses an expired link, and answers false for no row', async () => {
     const { sql, calls } = fake([{ id: 'u-1' }], []);
     const store = new NeonLeadStore(sql);
     const now = new Date('2026-11-02T13:00:00Z');
     expect(await store.confirm('t'.repeat(64), now)).toBe(true);
     expect(await store.confirm('t'.repeat(64), now)).toBe(false);
-    expect(calls[0]!.text).toBe('update leads set confirmed_at = coalesce(confirmed_at, ?) where confirm_token_hash = ? returning id');
-    expect(calls[0]!.values).toEqual([now.toISOString(), 't'.repeat(64)]);
+    expect(calls[0]!.text).toBe('update leads set confirmed_at = coalesce(confirmed_at, ?) where confirm_token_hash = ? and (confirmed_at is not null or confirm_token_expires_at > ?) returning id');
+    expect(calls[0]!.values).toEqual([now.toISOString(), 't'.repeat(64), now.toISOString()]);
   });
   it('records an attempt with the hash and time, and counts them within the window', async () => {
     const { sql, calls } = fake([], [{ n: 3 }]);

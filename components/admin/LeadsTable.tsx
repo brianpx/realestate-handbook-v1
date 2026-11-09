@@ -54,7 +54,9 @@ const columns: ColumnDef<SerializedLead>[] = [
     // the one search box matches either column; the filter lives on this column so the table has one place to look
     filterFn: (row, _id, value: string) => {
       const q = value.toLowerCase();
-      return row.original.email.toLowerCase().includes(q) || row.original.source.toLowerCase().includes(q);
+      const { email, source } = row.original;
+      // "failed" and "unconfirmed" find the addresses whose confirmation never went out or was never opened
+      return email.toLowerCase().includes(q) || source.toLowerCase().includes(q) || statusOf(row.original).includes(q) || (row.original.confirmedAt ? 'confirmed' : 'unconfirmed').includes(q);
     },
     cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
   },
@@ -143,7 +145,7 @@ export function LeadsTable({ leads }: { leads: SerializedLead[] }) {
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
-            <InputGroupInput value={query} onChange={event => { setQuery(event.target.value); setPagination(prev => ({ ...prev, pageIndex: 0 })); }} placeholder="Search email or source" aria-label="Search leads" />
+            <InputGroupInput value={query} onChange={event => { setQuery(event.target.value); setPagination(prev => ({ ...prev, pageIndex: 0 })); }} placeholder="Search email, source or status" aria-label="Search leads" />
           </InputGroup>
         </div>
 
@@ -178,7 +180,7 @@ export function LeadsTable({ leads }: { leads: SerializedLead[] }) {
                       </EmptyMedia>
                       <EmptyTitle>{leads.length === 0 ? 'No leads yet' : 'No leads match'}</EmptyTitle>
                       <EmptyDescription>
-                        {leads.length === 0 ? 'Addresses left through the email form will be listed here.' : 'Nothing has that text in its email or source.'}
+                        {leads.length === 0 ? 'Addresses left through the email form will be listed here.' : 'Nothing has that text in its email, source or status.'}
                       </EmptyDescription>
                     </EmptyHeader>
                   </Empty>

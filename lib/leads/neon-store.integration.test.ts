@@ -14,7 +14,7 @@ run('NeonLeadStore against a real database', () => {
   const tag = randomUUID().slice(0, 8);
   const email = `it-${tag}@integration.test`;
   const ip = `it-${tag}`;
-  const lead = { email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${tag}`, at: new Date() };
+  const lead = { email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${tag}`, confirmExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000), at: new Date() };
 
   afterAll(async () => {
     await sql`delete from leads where email = ${email}`;
@@ -25,7 +25,7 @@ run('NeonLeadStore against a real database', () => {
     const first = await store.insert(lead);
     const again = await store.insert(lead);
     expect(first.created).toBe(true);
-    expect(again).toEqual({ created: false, id: first.id });
+    expect(again).toEqual({ created: false, id: first.id, emailStatus: null, confirmedAt: null });
     const rows = await sql`select email, source, consent_version, email_status from leads where email = ${email}`;
     expect(rows).toEqual([{ email, source: 'sample', consent_version: 'v1', email_status: null }]);
   });
@@ -35,6 +35,20 @@ run('NeonLeadStore against a real database', () => {
     await store.setEmailStatus(id, 'sent');
     expect((await sql`select email_status from leads where id = ${id}`)[0]).toEqual({ email_status: 'sent' });
     await expect(sql`update leads set email_status = 'bogus' where id = ${id}`).rejects.toThrow();
+  });
+
+  it('confirms through the token once, refuses an unknown or expired one, and answers a confirmed link after expiry', async () => {
+    const { id } = await store.insert(lead);
+    const soon = new Date(Date.now() + 60_000);
+    expect(await store.confirm(`h-${tag}`, soon)).toBe(true);
+    const confirmedAt = (await sql`select confirmed_at from leads where id = ${id}`)[0]!.confirmed_at;
+    expect(confirmedAt).not.toBeNull();
+    expect(await store.confirm(`h-${tag}`, new Date(Date.now() + 30 * 24 * 3600 * 1000))).toBe(true); // confirmed: still the success page
+    expect((await sql`select confirmed_at from leads where id = ${id}`)[0]!.confirmed_at).toEqual(confirmedAt);
+    expect(await store.confirm('h-nobody', soon)).toBe(false);
+    await store.resetConfirmation(id, `h-${tag}-2`, new Date(Date.now() - 1000));
+    await sql`update leads set confirmed_at = null where id = ${id}`;
+    expect(await store.confirm(`h-${tag}-2`, new Date())).toBe(false); // expired, unconfirmed
   });
 
   it('refuses an upper-case address, so the route must lower-case first', async () => {

@@ -1,5 +1,5 @@
 import { sqlFromUrl, toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
-import { LEAD_LIST_CAP, type EmailStatus, type LeadRow, type LeadStore, type NewLead } from './store';
+import { LEAD_LIST_CAP, type EmailStatus, type Inserted, type LeadRow, type LeadStore, type NewLead } from './store';
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql and
@@ -16,17 +16,21 @@ export class NeonLeadStore implements LeadStore {
     return new NeonLeadStore(sqlFromUrl(url));
   }
 
-  async insert(lead: NewLead) {
+  async insert(lead: NewLead): Promise<Inserted> {
     const { sql } = this;
     // one statement tells a new address from a repeat: a conflict returns no row
     const created = await sql`
-      insert into leads (email, source, consent_version, consent_text, confirm_token_hash, created_at)
-      values (${lead.email}, ${lead.source}, ${lead.consentVersion}, ${lead.consentText}, ${lead.confirmTokenHash}, ${lead.at.toISOString()})
+      insert into leads (email, source, consent_version, consent_text, confirm_token_hash, confirm_token_expires_at, created_at)
+      values (${lead.email}, ${lead.source}, ${lead.consentVersion}, ${lead.consentText}, ${lead.confirmTokenHash}, ${lead.confirmExpiresAt.toISOString()}, ${lead.at.toISOString()})
       on conflict (email) do nothing
       returning id`;
-    if (created[0]) return { created: true, id: String(created[0].id) };
-    const existing = await sql`select id from leads where email = ${lead.email}`;
-    return { created: false, id: String(existing[0]?.id ?? '') };
+    if (created[0]) return { created: true, id: String(created[0].id), emailStatus: null, confirmedAt: null };
+    const existing = await sql`select id, email_status, confirmed_at from leads where email = ${lead.email}`;
+    return { created: false, id: String(existing[0]?.id ?? ''), emailStatus: emailStatus(existing[0]?.email_status), confirmedAt: toDateOrNull(existing[0]?.confirmed_at) };
+  }
+
+  async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {
+    await this.sql`update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()} where id = ${id}`;
   }
 
   async setEmailStatus(id: string, status: EmailStatus) {
@@ -34,8 +38,12 @@ export class NeonLeadStore implements LeadStore {
   }
 
   async confirm(tokenHash: string, now: Date) {
-    // one statement: a second click keeps the first time, and no row back means the token is unknown
-    const rows = await this.sql`update leads set confirmed_at = coalesce(confirmed_at, ${now.toISOString()}) where confirm_token_hash = ${tokenHash} returning id`;
+    const nowIso = now.toISOString();
+    // one statement: a second click keeps the first time, and no row back means the token is unknown or expired
+    const rows = await this.sql`
+      update leads set confirmed_at = coalesce(confirmed_at, ${nowIso})
+      where confirm_token_hash = ${tokenHash} and (confirmed_at is not null or confirm_token_expires_at > ${nowIso})
+      returning id`;
     return rows.length > 0;
   }
 

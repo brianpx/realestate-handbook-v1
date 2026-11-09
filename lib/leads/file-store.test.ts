@@ -9,7 +9,7 @@ let file: string;
 beforeEach(async () => { dir = await mkdtemp(path.join(tmpdir(), 'leads-')); file = path.join(dir, 'nested', 'leads.json'); });
 afterEach(() => rm(dir, { recursive: true, force: true }));
 
-const lead = (email: string) => ({ email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${email}`, at: new Date('2026-11-02T12:00:00Z') });
+const lead = (email: string) => ({ email, source: 'sample', consentVersion: 'v1', consentText: 'text', confirmTokenHash: `h-${email}`, confirmExpiresAt: new Date('2026-11-09T12:00:00Z'), at: new Date('2026-11-02T12:00:00Z') });
 
 describe('FileLeadStore', () => {
   it('creates its folder, stores a lead once and keeps the first record for a repeat', async () => {
@@ -17,7 +17,7 @@ describe('FileLeadStore', () => {
     const first = await store.insert(lead('a@b.co'));
     const again = await store.insert(lead('a@b.co'));
     expect(first.created).toBe(true);
-    expect(again).toEqual({ created: false, id: first.id });
+    expect(again).toEqual({ created: false, id: first.id, emailStatus: null, confirmedAt: null });
     const saved = JSON.parse(await readFile(file, 'utf8'));
     expect(saved.leads).toHaveLength(1);
   });
@@ -43,6 +43,20 @@ describe('FileLeadStore', () => {
     expect(await store.confirm('h-a@b.co', new Date('2026-11-02T14:00:00Z'))).toBe(true);
     expect(await store.confirm('h-nobody', first)).toBe(false);
     expect((await store.list())[0]!.confirmedAt).toEqual(first);
+    // a confirmed row still answers its link after the expiry; an unconfirmed one does not
+    expect(await store.confirm('h-a@b.co', new Date('2026-11-20T12:00:00Z'))).toBe(true);
+    await store.insert(lead('b@b.co'));
+    expect(await store.confirm('h-b@b.co', new Date('2026-11-20T12:00:00Z'))).toBe(false);
+    expect((await store.list()).find(r => r.email === 'b@b.co')!.confirmedAt).toBeNull();
+  });
+  it('resets the confirmation token, so the old link stops working and the new one works, and reports the state of a repeat', async () => {
+    const store = new FileLeadStore(file);
+    const { id } = await store.insert(lead('a@b.co'));
+    await store.setEmailStatus(id, 'failed');
+    expect(await store.insert(lead('a@b.co'))).toEqual({ created: false, id, emailStatus: 'failed', confirmedAt: null });
+    await store.resetConfirmation(id, 'h-new', new Date('2026-11-16T12:00:00Z'));
+    expect(await store.confirm('h-a@b.co', new Date('2026-11-03T12:00:00Z'))).toBe(false);
+    expect(await store.confirm('h-new', new Date('2026-11-10T12:00:00Z'))).toBe(true);
   });
   it('keeps concurrent writes from losing any', async () => {
     const store = new FileLeadStore(file);

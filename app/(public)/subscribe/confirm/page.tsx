@@ -43,7 +43,7 @@ export default async function ConfirmPage({ searchParams }: Props) {
   return (
     <>
       <PageHead eyebrow="Handbook notes" title="That link did not work.">
-        It may be incomplete, or it may belong to an address that was removed. Fill in the form after the sample lesson and a new link is sent.
+        It may be incomplete, older than a week, or belong to an address that was removed. If you are already on the list, nothing more is needed. Otherwise send the form after the sample lesson again: a new link goes out only if the first email could not be delivered, so the one you have is the one to use.
       </PageHead>
       <div className="pub-wrap pub-narrow pub-prose">
         <p><Link href="/preview">Go to the sample lesson</Link>.</p>
