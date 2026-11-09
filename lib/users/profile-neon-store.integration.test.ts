@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, describe, expect, it } from 'vitest';
-import { sqlFromUrl } from '@/lib/db/sql';
+import { sqlFromUrl, toDate } from '@/lib/db/sql';
 import { NeonUserStore } from '@/lib/users/neon-store';
 import { EMPTY_PROFILE } from './profile';
 import { NeonProfileStore } from './profile-neon-store';
@@ -41,7 +41,7 @@ run('the profile store against a real database', () => {
     expect(second.updatedAt.getTime()).toBe(later.getTime());
     expect(await sql`select count(*)::int as n from realtor_profiles where user_id = ${user.id}`).toEqual([{ n: 1 }]);
     const [stamps] = await sql`select created_at, updated_at from realtor_profiles where user_id = ${user.id}`;
-    expect(new Date(String(stamps!.created_at)).getTime()).toBe(NOW.getTime()); // the first save's; the second did not move it
+    expect(toDate(stamps!.created_at).getTime()).toBe(NOW.getTime()); // the first save's; the second did not move it
   });
 
   it('enforces the checks the code relies on', async () => {
