@@ -50,12 +50,18 @@ export function Settings() {
   }, [mounted, size]);
 
   // Scrolling up folds Settings away. Only real user scrolling counts (wheel, swipe, keys, dragging the scrollbar),
-  // so programmatic jumps never collapse it.
+  // so programmatic jumps never collapse it, and never while a control inside has focus (folding would drop it).
+  // The summary itself stays visible through a fold, so focus on it does not hold the panel open.
   useEffect(() => {
     const details = detailsRef.current;
     const main = document.getElementById('main-content');
     if (!details || !main) return;
-    const collapse = () => { details.open = false; };
+    const summary = details.querySelector('summary');
+    const collapse = () => {
+      const active = document.activeElement;
+      if (details.contains(active) && active !== summary) return;
+      details.open = false;
+    };
     const inSidebar = (e: Event) => (e.target as Element | null)?.closest('#sidebar');
     let touchY: number | null = null;
     let dragging = false;
