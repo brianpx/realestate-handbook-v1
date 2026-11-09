@@ -66,7 +66,7 @@ export function TimeBlockPlanner() {
       <div className="alloc-bar planner-bar" role="img" aria-label={`Day from ${fmtClock(start)} to ${fmtClock(eod + 15)}`}>
         {blocks.filter(b => b.mins).map(b => <span key={b.cls} className={`alloc-seg pseg-${b.cls}`} style={{ flexGrow: b.mins }} />)}
       </div>
-      <ul className="planner-legend">
+      <ul className="planner-legend" role="list">
         {blocks.filter(b => b.mins).map(b => <li key={b.cls} className={`pleg-${b.cls}`}>{fmtClock(b.from)}: {b.name} ({b.mins} min)</li>)}
       </ul>
       <p className={`alloc-verdict ${verdict.ok ? 'ok' : 'no'}`} aria-live="polite">{verdict.text}</p>

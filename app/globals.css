@@ -249,6 +249,8 @@ html.dark {
             color: var(--sidebar-hover)}
 
         .nav-item:focus-visible { outline: none; box-shadow: inset 0 0 0 3px #0f172a, inset 0 0 0 6px #ffffff; }
+        /* forced colours drop box-shadow, so the ring above vanishes there; an outline in the system colour stays */
+        @media (forced-colors: active) { .nav-item:focus-visible { outline: 3px solid; outline-offset: -3px} }
 
         /* Baseline focus ring for every control; zero specificity so widget-specific rules still win */
         :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; box-shadow: 0 0 0 3px #0f172a; }

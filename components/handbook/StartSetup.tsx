@@ -145,7 +145,7 @@ export function StartSetup({ intro }: { intro?: ReactNode }) {
       <div className="onboarding-body">
         {intro}
         <nav className="setup-steps setup-no-print" aria-label="Setup steps">
-          <ol>
+          <ol role="list">
             {SETUP_STEPS.map((s, i) => {
               const locked = i > reach;
               const done = i < reach || (i === reach && problems[i] === '' && i < SETUP_STEPS.length - 1);

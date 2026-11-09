@@ -58,7 +58,7 @@ export function ResponseTimer() {
         ))}
         <button type="button" className="btn-mini" onClick={reset}>Reset</button>
       </div>
-      <ul className="timer-results">
+      <ul className="timer-results" role="list">
         {results.map(r => <li key={r.key} className={r.meets ? 'timer-ok' : 'timer-slow'}>{r.text}</li>)}
       </ul>
     </aside>

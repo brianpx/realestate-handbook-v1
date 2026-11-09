@@ -47,7 +47,7 @@ export function ChapterList({ locked = [] }: { locked?: readonly string[] }) {
       {NAV.filter(g => g.pages.some(p => p.id !== 'cover')).map(g => (
         <div key={g.part ?? 'top'} className="hb-part">
           {g.part && <h3>{g.part}</h3>}
-          <ul>
+          <ul role="list">
             {g.pages.filter(p => p.id !== 'cover').map(p => (
               <li key={p.id}>
                 <Link href={pageHref(p.id)}>{p.label}</Link>
