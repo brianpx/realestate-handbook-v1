@@ -34,9 +34,9 @@ describe('profileInputSchema', () => {
     ['an unknown role', { professionalRole: 'ceo' }, 'professionalRole'],
     ['a jurisdiction that is not a code', { licenseJurisdiction: 'Texas' }, 'licenseJurisdiction'],
     ['a market state that is not a code', { primaryMarketState: 'tx' }, 'primaryMarketState'],
-    ['an unknown licence status', { licenseStatus: 'revoked' }, 'licenseStatus'],
+    ['an unknown license status', { licenseStatus: 'revoked' }, 'licenseStatus'],
     ['a brokerage name over 200 characters', { brokerageName: 'x'.repeat(201) }, 'brokerageName'],
-    ['a licence number over 50 characters', { licenseNumber: 'x'.repeat(51) }, 'licenseNumber'],
+    ['a license number over 50 characters', { licenseNumber: 'x'.repeat(51) }, 'licenseNumber'],
     ['a year before 1950', { yearFirstLicensed: 1949 }, 'yearFirstLicensed'],
     ['a year after next year', { yearFirstLicensed: lastLicenseYear(NOW) + 1 }, 'yearFirstLicensed'],
     ['a year that is not a whole number', { yearFirstLicensed: 2020.5 }, 'yearFirstLicensed'],
@@ -51,7 +51,7 @@ describe('profileInputSchema', () => {
     expect(parsed.success).toBe(false);
     expect(parsed.error?.issues.map(i => i.path[0])).toEqual([field]);
   });
-  it('allows next year as the first licence year, as the table does', () => {
+  it('allows next year as the first license year, as the table does', () => {
     expect(schema.safeParse({ yearFirstLicensed: 2027 }).success).toBe(true);
     expect(lastLicenseYear(new Date('2030-12-31T23:59:59Z'))).toBe(2031);
   });

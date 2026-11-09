@@ -71,8 +71,8 @@ export default async function AccountPage({ searchParams }: Props) {
 
       <h2 className="hb-h2" id="profile">Your profile</h2>
       <p>
-        Where you practise and how far along you are, if you care to say: it lets the handbook and its tools speak to your situation later on. Every field is optional, nothing here is shared, and it is yours to change or clear at any time.
-        Your licence and any REALTOR® membership are separate facts; neither is assumed from the other.
+        Where you practice and how far along you are, if you care to say: it lets the handbook and its tools speak to your situation later on. Every field is optional, nothing here is shared, and it is yours to change or clear at any time.
+        Your license and any REALTOR® membership are separate facts; neither is assumed from the other.
       </p>
       {loaded.kind === 'none' && <p className="setup-hint">Profile editing needs the account database, which this setup does not have.</p>}
       {loaded.kind === 'failed' && <p className="setup-error" role="alert">Your profile could not be loaded just now. Reload the page to try again.</p>}

@@ -26,7 +26,7 @@ export const LICENSE_STATUS_LABELS: Record<LicenseStatus, string> = {
   unknown: 'Not sure',
 };
 
-/** US states, the District, the inhabited territories, and 'other' for a licence held anywhere else. */
+/** US states, the District, the inhabited territories, and 'other' for a license held anywhere else. */
 export const JURISDICTIONS = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME',
   'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
@@ -50,7 +50,7 @@ export const PROFILE_SOURCES = ['survey', 'user', 'admin'] as const;
 export type ProfileSource = (typeof PROFILE_SOURCES)[number];
 
 export const FIRST_LICENSE_YEAR = 1950;
-/** The latest year a licence may date from: next year, as the table's check allows (a licence issued in December for January). */
+/** The latest year a license may date from: next year, as the table's check allows (a license issued in December for January). */
 export const lastLicenseYear = (now: Date): number => now.getUTCFullYear() + 1;
 
 /** The editable columns, as the form and the store see them; null is "not given". `narMemberSince` is a YYYY-MM-DD date. */
@@ -111,7 +111,7 @@ const text = (max: number) => z.string().trim().max(max).nullish().transform(bla
 const choice = <const T extends readonly [string, ...string[]]>(values: T) => z.enum(values).or(z.literal('')).nullish().transform(blankToNull);
 const E164 = /^\+[1-9]\d{1,14}$/;
 
-/** The profile form's body, checked at the boundary. Built per request because the latest licence year moves with the clock. */
+/** The profile form's body, checked at the boundary. Built per request because the latest license year moves with the clock. */
 export const profileInputSchema = (now: Date) =>
   z.object({
     professionalRole: choice(PROFESSIONAL_ROLES),
