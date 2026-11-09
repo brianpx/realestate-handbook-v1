@@ -94,7 +94,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
         items: [
           "CRM mobile app installed.",
           "Notifications on for new leads and due tasks.",
-          "Speed-to-lead test completed (friend submits inquiry at 8 p.m.; times recorded).",
+          "Speed-to-lead test completed (a friend submits an inquiry at 9 p.m.; times recorded).",
           "Friday review block and monthly review on the calendar.",
         ],
       },

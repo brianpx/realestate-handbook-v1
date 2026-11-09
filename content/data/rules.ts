@@ -57,7 +57,7 @@ export const WEEKLY_TARGETS = {
   followups: { target: '30 to 50', min: 30 },
   'appts-set': { target: '1 to 2', min: 1 },
   'appts-held': { target: '1+', min: 1 },
-  events: { target: '1 in the first 30 days, then up to 1 a week', min: 1 },
+  events: { target: '1', min: 1 },
   'db-days': { target: '5', min: 5 },
   'new-contacts': { target: '15', min: 15 },
   content: { target: '2', min: 2 },

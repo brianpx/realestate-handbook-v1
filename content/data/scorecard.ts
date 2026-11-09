@@ -1,7 +1,6 @@
 // Scorecard rows, moved verbatim from Appendix A. `id` is the legacy data-row value; persisted keys are `${id}:${week}`.
 // mode: min = hit at or above `min`, close at half of it; growing = beats the previous week; track = no status.
-// Targets and thresholds come from Table 8.2 via rules.ts; the events row keeps its one-figure form until M4 step 4
-// decides how the widget scores the table's first-30-days ramp-up.
+// Targets and thresholds come from Table 8.2 via rules.ts.
 import { WEEKLY_TARGETS, type WeeklyTargetId } from './rules';
 
 export type ScoreMode = 'min' | 'growing' | 'track';
@@ -17,7 +16,7 @@ export const SCORE_ROWS: ScoreRow[] = [
   { id: "followups", label: "Follow-ups completed (follow-up plan tasks, nurture touches, overdue contacts)", mode: "min", ...WEEKLY_TARGETS.followups },
   { id: "appts-set", label: "Appointments set (consultations and listing appointments)", mode: "min", ...WEEKLY_TARGETS["appts-set"] },
   { id: "appts-held", label: "Appointments held", mode: "min", ...WEEKLY_TARGETS["appts-held"] },
-  { id: "events", label: "Open houses or events", mode: "min", target: "1", min: WEEKLY_TARGETS.events.min },
+  { id: "events", label: "Open houses or events", mode: "min", ...WEEKLY_TARGETS.events },
   { id: "db-days", label: "Database updated before end of day (days out of 5)", mode: "min", ...WEEKLY_TARGETS["db-days"] },
   { id: "new-contacts", label: "New contacts added to your CRM (with source)", mode: "min", ...WEEKLY_TARGETS["new-contacts"] },
   { id: "content", label: "Content posted (per Table 3.1)", mode: "min", ...WEEKLY_TARGETS.content },
