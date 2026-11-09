@@ -42,7 +42,7 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
     const { email, consentVersion, _gotcha } = parsed.data;
     if (_gotcha) return OK; // a bot filled the hidden field: look successful, store nothing
 
-    const { created, id } = await deps.store.insert({ email, source: 'gate', consentVersion, consentText: CONSENT_TEXTS[consentVersion]!, at: now });
+    const { created, id } = await deps.store.insert({ email, source: 'gate', consentVersion, consentText: CONSENT_TEXTS[consentVersion], at: now });
     if (created) await deps.store.setEmailStatus(id, await sendWelcome(deps.mail, email, deps.fetchImpl));
     return OK;
   } catch (err) {

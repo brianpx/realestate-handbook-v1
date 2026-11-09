@@ -72,8 +72,11 @@ describe('bad requests', () => {
     expect(store.leads).toHaveLength(0);
   });
   it('rejects an unknown consent version, so the text stored is never the browser\'s', async () => {
-    const { post } = setup();
+    const { store, post } = setup();
     expect((await post(body({ email: 'a@b.co', consentVersion: 'v99' }))).body).toEqual({ ok: false, error: 'invalid_request' });
+    // a prototype key is not a version either: the old `in` check accepted it and stored a function as the consent text
+    expect((await post(body({ email: 'a@b.co', consentVersion: 'constructor' }))).body).toEqual({ ok: false, error: 'invalid_request' });
+    expect(store.leads).toHaveLength(0);
     expect((await post(JSON.stringify({ email: 'a@b.co' }))).body).toEqual({ ok: false, error: 'invalid_request' });
   });
   it('rejects JSON that is not JSON, and bodies that are too large', async () => {
