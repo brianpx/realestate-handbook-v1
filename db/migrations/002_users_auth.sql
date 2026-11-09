@@ -74,9 +74,11 @@ create table if not exists sessions (
 create index if not exists sessions_user_id on sessions (user_id);
 create index if not exists sessions_expires_at on sessions (expires_at);
 
--- Sliding renewal, at most once a day, never for a revoked or expired session. Zero rows updated is the normal case:
+-- Sliding renewal, at most once a day, never for a revoked, expired or over-cap session. Zero rows updated is the
+-- normal case. The intervals are bound from lib/auth/config.ts (90 days, one year, 24 hours):
 --   update sessions set expires_at = $2 + interval '90 days', last_seen_at = $2
---   where id_hash = $1 and revoked_at is null and expires_at > $2 and last_seen_at < $2 - interval '24 hours';
+--   where id_hash = $1 and revoked_at is null and expires_at > $2
+--     and created_at > $2 - interval '1 year' and last_seen_at < $2 - interval '24 hours';
 
 create table if not exists auth_attempts (
   scope     text not null check (scope in ('ip', 'email')),
