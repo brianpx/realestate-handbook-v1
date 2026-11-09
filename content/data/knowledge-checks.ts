@@ -53,7 +53,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'A "just sold" update with a line about how many showings or offers the home received shows neighbors what you can do for them.' },
             { q: 'What should happen if a new lead arrives at 9 p.m. before you start paying for ads?',
                 options: ['It waits in a portal queue until Monday', 'You reply by hand and then forget it until next week',
-                    'They get an immediate automated reply, a call before 9 a.m., and a 90-day plan', 'You raise the ad budget to attract more leads'], answer: 2,
+                    'They get an immediate automated reply, a call by the next morning and a 90-day plan', 'You raise the ad budget to attract more leads'], answer: 2,
                 explain: 'If your system cannot do that without you having to remember, "buying leads is buying a leak."' }
         ],
         blank: {
@@ -70,7 +70,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'The day opens and closes in your CRM, and the order matters because of this reason.' },
             { q: 'What are the two layers of the speed-to-lead standard?',
                 options: ['A live call within one minute and an email within a day',
-                    'An automated text and email within one minute, then a live call within five minutes when possible, and always the same day',
+                    'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
                     'A voicemail within an hour and a text within a day', 'A personal email within 30 minutes and a call within a week'], answer: 1,
                 explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.' },
             { q: 'When should you add optional tools such as AI texting assistants or dialers?',
@@ -186,7 +186,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'A furnace-filter reminder or a contractor list passes. "Thinking of selling?" every month does not.' },
             { q: 'When does a closed client go on the post-close plan?',
                 options: ['The day of closing', 'After the 30-day call', 'When they mention moving', 'One year after closing'], answer: 0,
-                explain: 'Build the plan once as a follow-up plan and apply it at every closing. Closing day is the handwritten note, the gift and the ask for the introduction.' }
+                explain: 'Build the plan once, assign it the day the contract goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.' }
         ],
         blank: {
             before: 'Once a year, unprompted, send each past client a home', after: 'update. Sellers come from this.',

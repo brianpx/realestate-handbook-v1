@@ -1,8 +1,9 @@
 // The handbook's shared rules, stated once. The four sentences are the canonical phrasing the owner signed on
 // 9 November 2026 (docs/plans/MASTER-PROMPT.md, section 4, row OD-09), copied verbatim; the numbers are the values
 // those sentences and Table 8.2 state. The consistency tests, the scorecard rows and the speed-to-lead stopwatch read
-// them from here; the chapter text and answer keys still restate them in their own words until M4 steps 3 to 5 point
-// them at this module. Change a value here and the tests name every file that still disagrees.
+// them from here; the chapter that defines each rule states its sentence verbatim under `anchor`, and the answer keys
+// restate it (lib/nurture-consistency.test.ts checks both). Change a sentence or value here and the tests name every
+// file that still disagrees.
 // `chapter` and `anchor` are the page and heading id where the handbook defines the rule (the coach's review links
 // deep-link there); `concepts` are the coach concepts that test it.
 

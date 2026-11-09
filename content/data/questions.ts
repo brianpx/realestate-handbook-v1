@@ -105,7 +105,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'What are the two layers of the speed-to-lead standard?',
     options: [
       'A live call within one minute and an email within a day',
-      'An automated text and email within one minute, then a live call within five minutes when possible, and always the same day',
+      'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
       'A voicemail within an hour and a text within a day',
       'A personal email within 30 minutes and a call within a week',
     ],
@@ -182,9 +182,9 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'ch4.text-permission.opt-out', version: 1, concept: 'ch4.text-permission', kind: 'blank', draft: true,
-    before: 'Honor quiet hours and stop on the first', after: '.',
+    before: 'Honor quiet hours and stop at the first', after: '.',
     answer: 'opt-out', accept: ['opt-out', 'opt out', 'optout'],
-    explain: 'The automated first touch should honor quiet hours and stop on the first opt-out.',
+    explain: 'The automated first touch should honor quiet hours and stop at the first opt-out.',
   },
 
   // ---- ch4.optional-tools
