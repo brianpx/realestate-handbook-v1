@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('the home page declares the Book and every chapter a Chapter that belongs to it', async ({ page }) => {
   await page.goto('/');

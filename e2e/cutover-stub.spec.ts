@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { BASE_URL } from './target';
 
 // The page that replaces the old address at cutover (docs/cutover/pages-stub-index.html). The old address is

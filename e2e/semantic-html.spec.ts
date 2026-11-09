@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // Heading levels changed. These checks keep the chapter looking like it did, and the landmarks real.
 test('a chapter has one h1, real landmarks, and the previous heading sizes', async ({ page }) => {

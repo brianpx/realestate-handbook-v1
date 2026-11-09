@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { waitForHydration } from '../hydration';
+import { expect, test } from '../fixtures';
 
 // Parity checks for the sidebar search. Assertions were read off legacy/js/search.js, not observed by running
 // the static site.
@@ -8,7 +7,6 @@ test.describe('sidebar search', () => {
     const hits: string[] = [];
     page.on('request', r => { if (r.url().endsWith('/search-index.json')) hits.push(r.url()); });
     await page.goto('/handbook/ch1');
-    await waitForHydration(page);
     expect(hits).toHaveLength(0);
     await page.getByLabel('Search the handbook').focus();
     await expect.poll(() => hits.length).toBe(1);
@@ -69,7 +67,6 @@ test.describe('sidebar search', () => {
 
   test('works from the keyboard: Ctrl/Cmd+K, arrows, Escape', async ({ page }) => {
     await page.goto('/handbook/ch1');
-    await waitForHydration(page); // the shortcut listener is attached on mount
     await page.keyboard.press('ControlOrMeta+K');
     await expect(page.getByLabel('Search the handbook')).toBeFocused();
     await page.keyboard.type('crm');

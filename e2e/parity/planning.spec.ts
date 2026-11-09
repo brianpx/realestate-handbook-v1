@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 
 // Parity checks for the 90-day roadmap (ch12), time-block planner (ch8) and post-close scheduler (ch10).
 // Assertions were read off legacy/js/widgets-plan.js, not observed by running the static site. Today is pinned

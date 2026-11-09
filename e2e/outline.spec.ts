@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // The in-page outline. The rail needs about 1160px in the main column, which is a viewport near 1680
 // with the 320px sidebar and the main padding. Narrower widths keep the same list inside the card.

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures';
 import { CHECKLISTS } from '../../content/data/checklists';
 import { GOAL_CAPTION } from '../../content/data/goal';
 import { SCORECARD_CAPTION } from '../../content/data/scorecard';

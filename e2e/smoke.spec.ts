@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { PAGES } from '../lib/pages';
 
 for (const { id, label } of PAGES) {

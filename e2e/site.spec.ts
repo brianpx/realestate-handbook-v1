@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { LEGACY_PAGE_SLUGS } from '../lib/routes';
 
 const PUBLIC = ['/', '/preview', '/about', '/support', '/pricing', '/privacy', '/terms', '/refunds', '/updates'];

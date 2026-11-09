@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 
 // Parity checks for the checklists (ch12, app-c) and the weekly scorecard (app-a). Assertions were read off
 // setupChecklists and setupScorecard in legacy/js/interactive.js, not observed by running the static site.

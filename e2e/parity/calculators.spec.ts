@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 import { BYPASS_HEADERS } from '../target';
 
 // Parity checks for the goal calculator (ch1), speed-to-lead explorer and response timer (ch4). Assertions were

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 // Moving progress as a file, for readers who change device or web address at cutover.
 const open = async (page: Page) => { await page.locator('details.settings summary').click(); };

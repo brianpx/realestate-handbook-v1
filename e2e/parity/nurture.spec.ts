@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures';
 
 // Parity checks for the Chapter 5 nurture timeline. Assertions were read off setupNurtureTimeline in
 // legacy/js/widgets.js, not observed by running the static site.

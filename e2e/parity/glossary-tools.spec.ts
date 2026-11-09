@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { waitForHydration } from '../hydration';
+import { expect, test } from '../fixtures';
 
 // Parity checks for glossary popovers (every chapter) and the Appendix E tool index. Assertions were read off
 // setupGlossary / openTermPop in legacy/js/widgets-plan.js and goToWidget / trimToolIndex in the other legacy
@@ -25,7 +24,6 @@ test.describe('glossary popovers', () => {
 
   test('clicking a term opens a tooltip with its definition, and clicking again, Escape or elsewhere closes it', async ({ page }) => {
     await page.goto('/handbook/ch4');
-    await waitForHydration(page); // the popover listens once the page has hydrated
     const term = page.locator('button.term[data-term="CRM"]');
     await term.click();
     const pop = page.locator('#termPop');
@@ -50,8 +48,8 @@ test.describe('glossary popovers', () => {
   test('keeps the popover inside the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/handbook/ch4');
-    await waitForHydration(page); // the popover listens once the page has hydrated
     await page.locator('button.term[data-term="CRM"]').click();
+    await expect(page.locator('#termPop')).toBeVisible();
     const box = (await page.locator('#termPop').boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);
@@ -59,7 +57,6 @@ test.describe('glossary popovers', () => {
 
   test('a term can be opened from the keyboard', async ({ page }) => {
     await page.goto('/handbook/ch4');
-    await waitForHydration(page); // the popover listens once the page has hydrated
     await page.locator('button.term[data-term="CRM"]').focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#termPop')).toBeVisible();

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures';
 
 // "Essential tools only" (ESSENTIAL_WIDGETS in legacy/js/interactive.js) keeps five tools; every other tool is
 // not built and the page shows its plain text.

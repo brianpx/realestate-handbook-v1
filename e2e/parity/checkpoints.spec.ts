@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 import { KNOWLEDGE_CHECKS } from '../../content/data/knowledge-checks';
 
 // Parity checks for Checkpoint self-tests (chapters 1-12), the sidebar roll-up and "Test your knowledge"
