@@ -8,7 +8,7 @@ test('a chapter has one h1, real landmarks, and the previous heading sizes', asy
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.locator('h1')).toHaveText('1. Mindset and business foundations');
   await expect(page.locator('article.chapter-section')).toHaveCount(1);
-  await expect(page.locator('p.sidebar-title')).toHaveText('Finding, Keeping, and Nurturing Clients');
+  await expect(page.locator('p.sidebar-title')).toHaveText('Finding, Nurturing, and Keeping Clients');
   await expect(page.locator('search.nav-search')).toHaveCount(1);
   // a searchbox is not a disclosure: the result count in #searchStatus is what announces the results
   await expect(page.locator('#navSearch')).not.toHaveAttribute('aria-controls');

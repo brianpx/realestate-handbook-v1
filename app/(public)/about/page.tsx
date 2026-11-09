@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHead eyebrow="About" title="Written for the agent who does not know what to do on Tuesday morning.">
-        Finding, Keeping, and Nurturing Clients is a practical training manual for agents in their first year, built to be worked through rather than just read.
+        Finding, Nurturing, and Keeping Clients is a practical training manual for agents in their first year, built to be worked through rather than just read.
       </PageHead>
       <div className="pub-wrap pub-narrow pub-prose">
         <h2>Who it is for</h2>

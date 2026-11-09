@@ -13,7 +13,7 @@ export default function TermsPage() {
 
         <h2>What this is</h2>
         <p>
-          Finding, Keeping, and Nurturing Clients is training material for new real estate agents, with interactive tools. It is provided by{' '}
+          Finding, Nurturing, and Keeping Clients is training material for new real estate agents, with interactive tools. It is provided by{' '}
           {OWNER.businessName ?? 'the author'}. Using the site means you accept these terms once they are approved.
         </p>
         {!OWNER.businessName && <Decision>the legal name of the seller and a postal address.</Decision>}

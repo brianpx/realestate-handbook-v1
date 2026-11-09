@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: BOOK_TITLE,
     locale: 'en_US',
-    images: [{ url: '/images/og-image.png', width: 1200, height: 630, alt: `${BOOK_TITLE}: a practical guide for new agents` }],
+    images: [{ url: '/images/og-image.png', width: 1200, height: 630, alt: `${BOOK_TITLE}: a practical guide for new real estate agents` }],
   },
   twitter: { card: 'summary_large_image' },
 };

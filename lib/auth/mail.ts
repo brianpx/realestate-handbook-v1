@@ -9,7 +9,7 @@ import { TOKEN_TTL_SECONDS } from './config';
  */
 export function authMailFromEnv(env: Record<string, string | undefined>): MailConfig {
   const from = env.LEAD_FROM_EMAIL;
-  const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Keeping, and Nurturing Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
+  const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Nurturing, and Keeping Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
   if (env.SENDGRID_API_KEY) {
     if (!from) return { provider: 'none' };
     return { provider: 'sendgrid', apiKey: env.SENDGRID_API_KEY, from, ...common };
@@ -23,7 +23,7 @@ export function signInMessage(link: string): Message {
   return {
     subject: 'Your sign-in link',
     text: [
-      'Open this link to sign in to Finding, Keeping, and Nurturing Clients:',
+      'Open this link to sign in to Finding, Nurturing, and Keeping Clients:',
       '',
       link,
       '',
