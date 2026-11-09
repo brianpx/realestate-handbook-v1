@@ -47,6 +47,11 @@ test.describe('public pages', () => {
     await expect(table.getByRole('button', { name: 'Not on sale yet' })).toHaveCount(2);
     await expect(table.locator('a[href^="https://"]')).toHaveCount(0);
     await expect(table.getByRole('link', { name: 'Try the sample lesson' })).toHaveAttribute('href', '/preview');
+    // the update and support rows promise nothing until the owner publishes those terms (lib/offer.ts): two rows
+    // for two paid plans in the grid, and again in whichever plan tab is mounted
+    await expect(table.getByText('Not published yet').first()).toBeVisible();
+    expect(await table.getByText('Not published yet').count()).toBeGreaterThanOrEqual(4);
+    await expect(table.getByText('This edition and the next')).toHaveCount(0);
 
     await page.setViewportSize({ width: 390, height: 800 });
     await expect(table.getByRole('tab', { name: 'Basic' })).toHaveAttribute('aria-selected', 'true');

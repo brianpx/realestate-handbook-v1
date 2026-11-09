@@ -34,9 +34,7 @@ export default function SalesPage() {
 type Action = ReturnType<typeof primaryAction>;
 
 function ActionLink({ action, className }: { action: Action; className: string }) {
-  return action.external
-    ? <a className={className} href={action.href} rel="noopener">{action.label}</a>
-    : <Link className={className} href={action.href}>{action.label}</Link>;
+  return <Link className={className} href={action.href}>{action.label}</Link>;
 }
 
 /* 1. Who is this for, and what will it help me do */
@@ -396,15 +394,16 @@ function Faq() {
 }
 
 function Final({ action }: { action: Action }) {
-  // Once purchase is open the buyer's next step is the purchase; until then it is the free sample.
-  const preview = <Link className={`pub-btn ${action.external ? 'pub-btn-secondary' : 'pub-btn-primary'}`} href="/preview">Try a sample lesson</Link>;
+  // The sample comes first; checkout, when it opens, is on the pricing page, so the plans link stays secondary.
+  const preview = <Link className="pub-btn pub-btn-primary" href="/preview">Try a sample lesson</Link>;
   return (
     <section className="pub-section pub-final" aria-labelledby="finalTitle">
       <div className="pub-wrap pub-narrow">
         <h2 id="finalTitle" className="pub-h2">Start with tomorrow morning.</h2>
         <p className="pub-lede" style={{ margin: '0 auto 24px' }}>Try the sample lesson, set your daily number, and see whether this is the routine you want to follow for the next 90 days.</p>
         <div className="pub-actions">
-          {action.external ? <><ActionLink action={action} className="pub-btn pub-btn-primary" />{preview}</> : <>{preview}<ActionLink action={action} className="pub-btn pub-btn-secondary" /></>}
+          {preview}
+          <ActionLink action={action} className="pub-btn pub-btn-secondary" />
         </div>
         <p className="pub-fineprint">Pricing and purchase status are on the <Link href="/pricing">pricing page</Link>.</p>
       </div>

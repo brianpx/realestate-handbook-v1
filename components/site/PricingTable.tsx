@@ -4,8 +4,8 @@ import { badgeVariants } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { checkoutUrlFor, purchaseOpen } from '@/lib/offer';
-import { FEATURES, TIERS, type FeatureValue, type Tier } from '@/lib/tiers';
+import { checkoutUrlFor, purchaseOpen, termPublished } from '@/lib/offer';
+import { FEATURES, TIERS, type Feature, type FeatureValue, type Tier, type TierId } from '@/lib/tiers';
 import { cn } from '@/lib/utils';
 
 // The plan comparison on /pricing, fed from lib/tiers.ts. A wide screen gets the grid, a phone one plan at a time
@@ -17,6 +17,13 @@ const rowSpan = { gridRow: `1 / span ${FEATURES.length + 2}` };
 // "Recommended", not "Most popular": nothing has been sold yet, so there is no popularity to report. Styled by
 // badgeVariants rather than <Badge>, which renders through a hook and so would need a client component.
 const Highlight = () => <span className={badgeVariants()}>Recommended</span>;
+
+// A promise that rests on a term the owner has not published yet is not made: the cell says so, as the terms block
+// on the same page does, until the term exists.
+const cellValue = (feature: Feature, tier: TierId): FeatureValue => {
+  const value = feature.values[tier];
+  return value !== false && feature.publishedWhen && !termPublished(feature.publishedWhen) ? 'Not published yet' : value;
+};
 
 function FeatureCell({ value }: { value: FeatureValue }) {
   if (value === true) {
@@ -108,7 +115,7 @@ export function PricingTable() {
             {FEATURES.map(feature => (
               <div key={feature.label} className="flex items-center justify-center border-b px-4 py-5">
                 <span className="sr-only">{feature.label}: </span>
-                <FeatureCell value={feature.values[tier.id]} />
+                <FeatureCell value={cellValue(feature, tier.id)} />
               </div>
             ))}
 
@@ -141,7 +148,7 @@ export function PricingTable() {
                   {FEATURES.map(feature => (
                     <li key={feature.label} className="flex items-center justify-between gap-4 py-3">
                       <span className="font-medium text-foreground">{feature.label}</span>
-                      <span className="flex items-center text-right"><FeatureCell value={feature.values[tier.id]} /></span>
+                      <span className="flex items-center text-right"><FeatureCell value={cellValue(feature, tier.id)} /></span>
                     </li>
                   ))}
                 </ul>
