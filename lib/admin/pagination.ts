@@ -6,7 +6,8 @@ export const PAGE_SIZE = 25;
 /** The zero-based page a `?page=` value names (one-based in the URL, so the first page has no query); anything odd is the first page. */
 export function pageIndexFrom(value: string | string[] | undefined): number {
   const n = Number.parseInt((Array.isArray(value) ? value[0] : value) ?? '', 10);
-  return Number.isFinite(n) && n >= 1 ? n - 1 : 0;
+  // a safe integer, or the database would refuse the offset (bigint) and the page would throw
+  return Number.isSafeInteger(n) && n >= 1 ? n - 1 : 0;
 }
 
 /**

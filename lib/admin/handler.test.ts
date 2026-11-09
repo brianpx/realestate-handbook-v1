@@ -156,6 +156,10 @@ describe('create-grant and revoke-grant', () => {
     expect(dated.body).toMatchObject({ changed: true });
     expect(access.grants[1]).toMatchObject({ kind: 'promo', tier: 'basic', endsAt: new Date('2027-01-01T00:00:00Z') });
     expect((await post('create-grant', { kind: 'promo', tier: 'gold' })).status).toBe(400);
+    const past = await post('create-grant', { kind: 'promo', tier: 'basic', endsAt: '2026-11-08T12:00:00Z' });
+    expect(past.status).toBe(400);
+    expect(past.body).toMatchObject({ message: 'ends before it starts' });
+    expect(access.grants).toHaveLength(2);
 
     expect((await post('revoke-grant', { grantId, reason: 'admin' })).body).toEqual({ ok: true, changed: true });
     expect(access.grants[0]).toMatchObject({ revokedAt: NOW, revokedBy: admin.user.id, revokeReason: 'admin' });
@@ -194,6 +198,21 @@ describe('suspend and unsuspend', () => {
     expect(access.audit[0]).toMatchObject({ action: 'membership.suspend', before: null });
     expect((await post('unsuspend')).body).toEqual({ ok: true, changed: true });
     expect(access.memberships[0]).toMatchObject({ status: 'none', suspendedAt: null });
+  });
+  it('lifting recomputes the projection, so a grant that ran out while suspended no longer shows as current', async () => {
+    const { post, access, admin, reader, deps } = await setup();
+    const grant = await grantAccess(access, { userId: reader.user.id, kind: 'promo', tier: 'basic', grantedBy: admin.user.id, endsAt: new Date('2026-11-10T12:00:00Z') }, { kind: 'system', userId: null }, NOW);
+    expect((await post('suspend', { reason: 'Hold' })).body).toEqual({ ok: true, changed: true });
+    expect(access.memberships[0]).toMatchObject({ status: 'suspended', currentGrantId: grant.id });
+    deps.now = () => new Date('2026-11-11T12:00:00Z');
+    expect((await post('unsuspend')).body).toEqual({ ok: true, changed: true });
+    expect(access.memberships[0]).toMatchObject({ status: 'lapsed', tier: null, currentGrantId: null, endsAt: null });
+  });
+  it('a deleted account cannot be suspended, so no projection row is made for it', async () => {
+    const { post, access, reader } = await setup();
+    await access.anonymise({ userId: reader.user.id, email: reader.user.email, emailHash: 'h', at: NOW }, { at: NOW, actorUserId: null, actorKind: 'system', action: 'user.anonymize', reason: null, ipHash: null });
+    expect((await post('suspend', { reason: 'Hold' })).body).toMatchObject({ error: 'account_deleted' });
+    expect(access.memberships).toHaveLength(0);
   });
 });
 

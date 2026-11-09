@@ -1,5 +1,6 @@
 import { grantLive } from '@/lib/access/entitlement';
 import { grantAccess, revokeAccess } from '@/lib/access/grants';
+import { recomputeMembership } from '@/lib/access/membership';
 import { auditBy, type Actor } from '@/lib/audit';
 import { MAX_BODY_BYTES } from '@/lib/auth/config';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
@@ -75,6 +76,7 @@ async function apply(input: AdminActionInput, { admin, user, actor, now, stores:
     case 'create-grant': {
       if (user.status === 'deleted') return reply(400, 'account_deleted', 'A deleted account cannot be granted access.');
       const endsAt = input.endsAt ?? null;
+      if (endsAt && endsAt <= now) return reply(400, 'invalid_request', 'ends before it starts');
       // the same grant again (kind, tier and end) is already in force: nothing to add, nothing to log
       const same = (await access.listGrants(user.id)).find(g => grantLive(g, now) && g.kind === input.kind && g.tier === input.tier && iso(g.endsAt) === iso(endsAt));
       if (same) return done(false, { grantId: same.id });
@@ -87,9 +89,14 @@ async function apply(input: AdminActionInput, { admin, user, actor, now, stores:
       return done((await revokeAccess(access, { grantId: input.grantId, reason: input.reason }, actor, now)) !== null);
     }
     case 'suspend':
+      if (user.status === 'deleted') return reply(400, 'account_deleted', 'A deleted account has no membership to suspend.');
       return done((await access.suspend(user.id, { at: now, by: admin.id, reason: input.reason }, auditBy(actor, 'membership.suspend', now, input.reason))) !== null);
-    case 'unsuspend':
-      return done((await access.unsuspend(user.id, now, auditBy(actor, 'membership.unsuspend', now))) !== null);
+    case 'unsuspend': {
+      const lifted = await access.unsuspend(user.id, now, auditBy(actor, 'membership.unsuspend', now));
+      // the projection's other columns may have gone stale while suspended (an expired grant), as after a revoke
+      if (lifted) await recomputeMembership(access, user.id, now);
+      return done(lifted !== null);
+    }
     case 'link-billing': {
       const linked = await access.linkBilling(input.billingRecordId, user.id, now, auditBy(actor, 'billing.link_user', now));
       return linked ? done(linked.changed) : reply(404, 'not_found');

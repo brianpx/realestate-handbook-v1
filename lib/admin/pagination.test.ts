@@ -10,6 +10,7 @@ describe('pageIndexFrom', () => {
     expect(pageIndexFrom('0')).toBe(0);
     expect(pageIndexFrom('-2')).toBe(0);
     expect(pageIndexFrom('abc')).toBe(0);
+    expect(pageIndexFrom('10000000000000000000000')).toBe(0); // past the safe integers: the database would refuse the offset
   });
 });
 

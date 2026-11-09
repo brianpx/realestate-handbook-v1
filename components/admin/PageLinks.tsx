@@ -15,9 +15,9 @@ export function PageLinks({ pageIndex, pageCount, href }: { pageIndex: number; p
     </Link>
   );
   const still = (label: string, children: ReactNode) => (
-    <span aria-label={label} aria-disabled="true" className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }), 'pointer-events-none opacity-50')}>
+    <button type="button" disabled aria-label={label} className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}>
       {children}
-    </span>
+    </button>
   );
   return (
     <nav className="ml-auto flex items-center gap-1" aria-label="Pagination">
