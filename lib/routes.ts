@@ -8,7 +8,10 @@ export const ADMIN = '/admin';
 
 export const pageHref = (id: PageId): string => `${HANDBOOK}/${id}`;
 
-/** The page id a handbook path shows, or null for the handbook home, the setup, the coach pages and everything else. */
+/**
+ * The slug under /handbook (a page id, or a section such as start, plan, review: callers narrow with isPageId),
+ * or null for the handbook home and every path outside it.
+ */
 export function pageIdFromPath(pathname: string): string | null {
   const m = /^\/handbook\/([^/]+)\/?$/.exec(pathname);
   return m ? m[1]! : null;
