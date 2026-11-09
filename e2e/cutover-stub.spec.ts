@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { signedInState } from './auth';
 import { expect, test } from './fixtures';
 import { BASE_URL } from './target';
 
@@ -15,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 const PAGES = ['pref', ...Array.from({ length: 13 }, (_, i) => `ch${i + 1}`), ...'abcdef'.split('').map(l => `app-${l}`)];
 
 test.describe('a reader with no saved progress', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: signedInState([]) });
 
   for (const id of PAGES) {
     test(`/#${id} goes to the same chapter on the new site`, async ({ page }) => {
@@ -33,7 +34,7 @@ test.describe('a reader with no saved progress', () => {
 });
 
 test.describe('a reader with saved progress', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: signedInState([]) });
   const progress = { read: { ch1: true, ch2: true }, checks: { 'ch12-d1:0': true }, widgets: { checkpoints: { 'ch4:0': { status: 'got' } } } };
 
   test('is offered the file first, and nothing is redirected until they continue', async ({ page }) => {
