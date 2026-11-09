@@ -4,7 +4,8 @@ import { bookJsonLd, chapterJsonLd, jsonLdScript } from './jsonld';
 describe('structured data', () => {
   it('describes the book the way the static site did', () => {
     const book = bookJsonLd();
-    expect(book).toMatchObject({ '@type': 'Book', name: 'Finding, Keeping, and Nurturing Clients', inLanguage: 'en', bookEdition: '1.0', datePublished: '2026-10', genre: 'Real estate training' });
+    expect(book).toMatchObject({ '@type': 'Book', name: 'Finding, Nurturing, and Keeping Clients', inLanguage: 'en', bookEdition: '1.0', datePublished: '2026-10', genre: 'Real estate training' });
+    expect(book.author).toEqual({ '@type': 'Person', name: 'Brian Pitts', honorificSuffix: 'M.D.' });
     expect(book.audience).toEqual({ '@type': 'Audience', audienceType: 'New real estate agents' });
     expect(book.about).toHaveLength(4);
     expect(book.url).toMatch(/^https?:\/\/[^/]+(\/.*)?\/$/);

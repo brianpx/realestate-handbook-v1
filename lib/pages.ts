@@ -36,7 +36,7 @@ export const NAV: NavGroup[] = [
 export const PAGES: PageEntry[] = NAV.flatMap(g => g.pages);
 export const PAGE_IDS = PAGES.map(x => x.id);
 
-export const BOOK_TITLE = 'Finding, Keeping, and Nurturing Clients';
+export const BOOK_TITLE = 'Finding, Nurturing, and Keeping Clients';
 export const BOOK_DESCRIPTION =
   'A practical training manual for new real estate agents: how to find clients, nurture leads and keep past clients, with scripts, calculators and a 90-day plan.';
 

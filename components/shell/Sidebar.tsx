@@ -183,7 +183,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-dark" src="/images/logo3-sidebar-dark.png" width={320} height={320} alt="" />
           <p className="sidebar-title"><Link href={HANDBOOK}>{BOOK_TITLE}</Link></p>
-          <p>A practical guide for new agents</p>
+          <p>A practical guide for new real estate agents</p>
         </div>
         <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi}>
           <button

@@ -162,7 +162,7 @@ export function Settings() {
         <ProgressTransfer />
       </details>
       <p className="settings-legal">
-        <strong>Finding, Keeping, and Nurturing Clients</strong><br />A Practical Guide for New Agents<br />v1.0 · October 2026 · All rights reserved.
+        <strong>Finding, Nurturing, and Keeping Clients</strong><br />A Practical Guide for New Real Estate Agents<br />v1.0 · October 2026 · All rights reserved.
       </p>
     </li>
   );

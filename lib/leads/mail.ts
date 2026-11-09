@@ -11,7 +11,7 @@ export type Message = { subject: string; text: string };
 
 export function mailFromEnv(env: Record<string, string | undefined>): MailConfig {
   const from = env.LEAD_FROM_EMAIL;
-  const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Keeping, and Nurturing Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
+  const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Nurturing, and Keeping Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
   if (env.SENDGRID_API_KEY) {
     // a commercial email needs a real sender and the author's postal address (CAN-SPAM); without them send nothing
     if (!from || !common.mailingAddress) return { provider: 'none' };
@@ -26,7 +26,7 @@ export function confirmationMessage(link: string, address: string): Message {
   return {
     subject: 'Confirm your email for handbook notes',
     text: [
-      'You asked for notes about Finding, Keeping, and Nurturing Clients. Open this link to confirm your address:',
+      'You asked for notes about Finding, Nurturing, and Keeping Clients. Open this link to confirm your address:',
       '',
       link,
       '',
