@@ -897,7 +897,7 @@ html.dark {
         .touch-btn.in-zone { background: var(--color-accent-tint); border: 2px solid var(--color-link)}
         .touch-btn.value { border-bottom: 4px solid var(--color-warning)}
         /* A touch outside the chosen filter fades by surface, border and text color, not opacity: at 0.35 its label fell
-           to about 2.3:1 (CR-M5). Muted on tint stays above 6:1 in both themes. The selected touch keeps its fill below. */
+           to about 2.3:1 (CR-M5). Muted on tint is 6.8:1 in light mode and 5.7:1 in dark. The selected touch keeps its fill below. */
         .touch-btn.dim { color: var(--color-muted); background: var(--color-tint); border-color: var(--color-line)}
         .touch-btn.dim .touch-day { opacity: 1}
         .touch-btn[aria-pressed="true"] { background: var(--color-brand); border-color: var(--color-brand); color: var(--color-on-brand)}
