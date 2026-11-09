@@ -33,7 +33,7 @@ export async function ChapterView({ id }: { id: PageId }) {
   if (items.length === 0) {
     return (
       <div className="content-container" id="content-container">
-        <article className="chapter-section" id={id} data-page={id}>
+        <article className="chapter-section chapter-body" id={id} data-page={id}>
           {render(splitSegments(id, html))}
           {end}
         </article>

@@ -45,13 +45,41 @@ test.describe('public pages', () => {
 
   test('the sample carries Chapters 1 and 7 in full, with their tools, checkpoints and quizzes', async ({ page }) => {
     await page.goto('/preview');
-    await expect(page.getByRole('heading', { name: '1. Mindset and business foundations' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '7. Common errors and pitfalls of new agents' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1. Mindset and business foundations', level: 2 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '7. Common errors and pitfalls of new agents', level: 2 })).toBeVisible();
     await expect(page.locator('.box.checkpoint')).toHaveCount(2);
+    await expect(page.locator('.box.checkpoint').last()).toBeVisible();
     await expect(page.locator('.box.quiz')).toHaveCount(2);
+    await expect(page.locator('.box.quiz').last()).toBeVisible();
     await expect(page.locator('[data-widget="pitfall-cycle"]')).toBeVisible();
     await expect(page.locator('[data-widget="error-self-score"]')).toBeVisible();
     await expect(page.locator('[data-widget="knowledge-check"]')).toHaveCount(2);
+    await expect(page.locator('[data-widget="knowledge-check"]').last()).toBeVisible();
+  });
+
+  test('the sample reads as one outline: page, chapter, section, box, with no duplicate ids', async ({ page }) => {
+    await page.goto('/preview');
+    await expect(page.locator('h1')).toHaveCount(1);
+    // the outline a reader meets: headings inside the calculator's closed footnote dialog are not rendered
+    const levels = await page.locator('h1, h2, h3, h4, h5, h6').evaluateAll(hs => hs.filter(h => h.getClientRects().length > 0).map(h => Number(h.tagName.slice(1))));
+    for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!, `heading ${i} of ${levels.length}`).toBeLessThanOrEqual(1);
+    await expect(page.locator('.pub-sample h4.box-title').first()).toBeVisible(); // content boxes and tool boxes both sit under their section
+    // a section heading in the sample is the handbook's 1.35rem, not the public site's h2
+    await expect(page.locator('.pub-sample h3#you-own-a-business-now')).toHaveCSS('font-size', '21.6px');
+    const ids = await page.locator('[id]').evaluateAll(els => els.map(e => e.id));
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+
+  test('the sample is readable in dark mode: callout text and interrupted pitfall nodes use the theme tokens', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('handbookSettings', '{"dark":true}'));
+    await page.goto('/preview');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect(page.locator('.pub-sample .box.try-it p').first()).toHaveCSS('color', 'rgb(51, 65, 85)'); // .box p from globals.css, not the public body colour
+    await page.getByRole('button', { name: 'CRM + follow-up plans' }).click();
+    const broken = page.locator('.cycle-node.is-broken').first();
+    await expect(broken).toHaveCSS('background-color', 'rgb(5, 46, 22)'); // --color-brand-tint, dark
+    await expect(broken).toHaveCSS('color', 'rgb(203, 213, 225)'); // --color-body, dark
+    await expect(broken.locator('.cycle-badge')).toHaveCSS('color', 'rgb(134, 239, 172)'); // --color-success, dark
   });
 
   test('the header menu opens by keyboard on a phone and closes with Escape', async ({ page }) => {

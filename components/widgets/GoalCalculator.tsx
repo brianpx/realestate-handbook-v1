@@ -5,6 +5,7 @@ import { GOAL_CAPTION, GOAL_HEADINGS, GOAL_ROWS } from '@/content/data/goal';
 import { CALC_DEFAULTS, CALC_SCENARIOS, fmtNum, fmtPerDay, goalPlan, goalVerdict, WORKDAYS_PER_WEEK, type GoalInputs } from '@/lib/goal';
 import { setCalc, useHandbookState } from '@/lib/state';
 import { AmountInput } from './AmountInput';
+import { BoxTitle } from './BoxTitle';
 import { InteractiveHeader } from './InteractiveHeader';
 
 type Key = keyof GoalInputs;
@@ -136,7 +137,7 @@ export function GoalCalculator() {
         </div>
       </dialog>
       <aside className="box try-it calc-panel iw">
-        <h3 className="box-title">● CALCULATOR · YOUR DAILY TARGET</h3>
+        <BoxTitle>● CALCULATOR · YOUR DAILY TARGET</BoxTitle>
         <div className="calc-stats" role="status">
           {shown ? (
             <>

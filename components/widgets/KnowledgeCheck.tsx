@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { KNOWLEDGE_CHECKS } from '@/content/data/knowledge-checks';
 import { blankVerdict } from '@/lib/checkpoints';
+import { BoxTitle } from './BoxTitle';
 import { InteractiveHeader } from './InteractiveHeader';
 
 // End-of-chapter "Test your knowledge". Nothing is saved. The Settings toggle hides it with a class on <html>.
@@ -12,7 +13,7 @@ export function KnowledgeCheck({ page }: { page: string }) {
   if (!quiz) throw new Error(`${page}: no knowledge check in content/data/knowledge-checks.ts`);
   return (
     <aside className="box quiz">
-      <h3 className="box-title">● TEST YOUR KNOWLEDGE</h3>
+      <BoxTitle>● TEST YOUR KNOWLEDGE</BoxTitle>
       <InteractiveHeader hint="Pick an answer to see right away whether it is correct, and why. Nothing is saved." widgetKey="knowledge-check" label="Test your knowledge" />
       <Round key={round} page={page} quiz={quiz} onRestart={() => setRound(r => r + 1)} />
     </aside>

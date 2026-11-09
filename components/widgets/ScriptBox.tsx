@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { announce } from '@/lib/announce';
 import { setScript, useHandbookState } from '@/lib/state';
+import { BoxTitle } from './BoxTitle';
 
 export type TranscriptLine = { who: 'Agent' | 'Prospect'; step?: string; text: string };
 
@@ -52,7 +53,7 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
 
   return (
     <aside className={`box script${mode === 'practicing' ? ' practicing' : ''}`} data-widget="script-practice" tabIndex={-1}>
-      <h3 className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
+      <BoxTitle dangerouslySetInnerHTML={{ __html: titleHtml }} />
       <blockquote className="script-body" ref={bodyRef} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       <div className="script-actions">
         <span className="interactive-pill"><span aria-hidden="true">◉ </span>INTERACTIVE</span>

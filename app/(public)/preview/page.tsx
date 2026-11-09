@@ -17,8 +17,8 @@ export default function PreviewPage() {
           <p className="pub-eyebrow">Free sample</p>
           <h1 className="pub-h1">Read two chapters before you buy.</h1>
           <p className="pub-lede">
-            Chapter 1 and Chapter 7 exactly as they appear in the handbook, with their tools, checkpoints and quizzes working, followed by two
-            more tools from later chapters. Nothing is blurred or locked, and you do not need to sign up.
+            Chapter 1 and Chapter 7 in full, with their tools, checkpoints and quizzes working, followed by two more tools from later
+            chapters. Nothing is blurred or locked, and you do not need to sign up.
           </p>
         </div>
       </section>
@@ -33,18 +33,18 @@ export default function PreviewPage() {
             <li>The weekly time-block planner from Chapter 8, including calendar export.</li>
           </ul>
           <p className="pub-small" style={{ margin: '10px 0 0' }}>
-            Not in the sample: the other eleven chapters and their tools, the appendices, the guided setup, the checklists and the scorecard.
-            What you type here is saved in this browser only, the same way it is in the handbook, and it is still there if you buy.
+            Not in the sample: the other eleven chapters and their tools, the appendices, the guided setup, the checklists and the scorecard,
+            and the reading aids the handbook wraps around every chapter (glossary pop-ups, the chapter outline, read tracking and the link to
+            the next chapter). What you type here is saved in this browser only, the same way it is in the handbook, and it is still there if you buy.
           </p>
         </div>
 
-        <h2 className="pub-h2" id="chapter-1">Chapter 1</h2>
+        {/* The chapter's own title is the heading here; Excerpt demotes it to an h2 under the page's h1. */}
         <div className="pub-sample" id="goal-calculator">
           <Excerpt page="ch1" />
         </div>
 
-        <h2 className="pub-h2" id="chapter-7" style={{ marginTop: 56 }}>Chapter 7</h2>
-        <p>Chapter 7 sits later in the book, after the system has been built. It is here because it tells you which trap is yours, and which chapter to read first.</p>
+        <p style={{ marginTop: 56 }}>Chapter 7 sits later in the book, after the system has been built. It is here because it tells you which trap is yours, and which chapter to read first.</p>
         <div className="pub-sample">
           <Excerpt page="ch7" />
         </div>
