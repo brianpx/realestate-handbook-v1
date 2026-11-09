@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
-  FIRST_LICENSE_YEAR,
   JURISDICTION_LABELS,
   JURISDICTIONS,
   LICENSE_STATUS_LABELS,
@@ -32,7 +31,7 @@ const FIELDS = Object.keys(LABELS) as ProfileField[];
 
 /** What the boxes hold: every field a string, '' for empty; the choices are the stored codes, `narMember` is '', 'yes' or 'no'. */
 type Values = Record<ProfileField, string>;
-type State = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved'; at: string } | { kind: 'error'; message: string; fields: ProfileField[] };
+type State = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved' } | { kind: 'error'; message: string; fields: ProfileField[] };
 
 const toValues = (p: ProfileFields): Values => ({
   professionalRole: p.professionalRole ?? '',
@@ -97,7 +96,7 @@ export function ProfileForm({ initial, updatedAt }: Props) {
       if (res.ok && body.profile) {
         setValues(toValues(body.profile));
         setSavedAt(body.updatedAt ?? null);
-        setState({ kind: 'saved', at: body.updatedAt ?? '' });
+        setState({ kind: 'saved' });
         return;
       }
       if (res.status === 400 && body.error === 'invalid_profile') {
@@ -115,17 +114,18 @@ export function ProfileForm({ initial, updatedAt }: Props) {
 
   const error = state.kind === 'error' ? state : null;
   const invalid = (field: ProfileField) => (error?.fields.includes(field) ? true : undefined);
+  const describedBy = (field: ProfileField) => (invalid(field) ? 'profile-error' : undefined);
   const id = (field: ProfileField) => `profile-${field}`;
   const textInput = (field: ProfileField, extra: Partial<React.ComponentProps<'input'>> = {}) => (
     <div className="profile-field">
       <label htmlFor={id(field)}>{LABELS[field]}</label>
-      <input id={id(field)} name={field} className="account-input" type="text" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} {...extra} />
+      <input id={id(field)} name={field} className="account-input" type="text" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)} {...extra} />
     </div>
   );
   const select = (field: ProfileField, options: readonly string[], labels: Record<string, string>, none = 'Not given') => (
     <div className="profile-field">
       <label htmlFor={id(field)}>{LABELS[field]}</label>
-      <select id={id(field)} name={field} className="account-input" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)}>
+      <select id={id(field)} name={field} className="account-input" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)}>
         <option value="">{none}</option>
         {options.map(o => <option key={o} value={o}>{labels[o]}</option>)}
       </select>
@@ -133,14 +133,14 @@ export function ProfileForm({ initial, updatedAt }: Props) {
   );
 
   return (
-    <form className="account-form profile-form" noValidate onSubmit={submit} data-profile-form data-ready={ready || undefined} aria-describedby={error ? 'profile-error' : undefined}>
+    <form className="account-form profile-form" noValidate onSubmit={submit} data-profile-form data-ready={ready || undefined}>
       {select('professionalRole', PROFESSIONAL_ROLES, PROFESSIONAL_ROLE_LABELS)}
       {textInput('brokerageName', { autoComplete: 'organization', maxLength: 200 })}
       {textInput('teamName', { maxLength: 200 })}
       {select('licenseJurisdiction', JURISDICTIONS, JURISDICTION_LABELS)}
       {textInput('licenseNumber', { autoComplete: 'off', maxLength: 50 })}
       {select('licenseStatus', LICENSE_STATUSES, LICENSE_STATUS_LABELS)}
-      {textInput('yearFirstLicensed', { inputMode: 'numeric', min: FIRST_LICENSE_YEAR, maxLength: 4, placeholder: 'YYYY' })}
+      {textInput('yearFirstLicensed', { inputMode: 'numeric', maxLength: 4, placeholder: 'YYYY' })}
       {textInput('primaryMarketCity', { autoComplete: 'address-level2', maxLength: 100 })}
       {select('primaryMarketState', JURISDICTIONS, JURISDICTION_LABELS)}
       {textInput('phone', { type: 'tel', autoComplete: 'tel', inputMode: 'tel', maxLength: 20, placeholder: '+12025550123' })}

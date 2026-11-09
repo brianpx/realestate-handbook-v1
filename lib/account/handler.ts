@@ -20,8 +20,9 @@ const redirect = (location: string, headers: Record<string, string | string[]> =
 const originRefused = (req: AuthRequest, deps: AccountDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
 
 // The account routes are plain form posts from the account page, so they answer with redirects. The session is
-// read here, not through the page's data-access layer: a route handler has no render to share a cache with.
-async function signedInUser(req: AuthRequest, deps: AccountDeps, now: Date): Promise<User | null> {
+// read here, not through the page's data-access layer: a route handler has no render to share a cache with. The
+// profile routes (profile-handler.ts) read it the same way.
+export async function signedInUser(req: AuthRequest, deps: Pick<AccountDeps, 'stores'>, now: Date): Promise<User | null> {
   if (!deps.stores || !isSecretShape(req.sessionId)) return null;
   const session = await deps.stores.auth.findSession(hashSecret(req.sessionId));
   if (!session || !sessionLive(session, now)) return null;

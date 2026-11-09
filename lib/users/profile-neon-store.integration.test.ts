@@ -34,7 +34,7 @@ run('the profile store against a real database', () => {
     expect(await profiles.find(user.id)).toBeNull();
     const first = await profiles.save(user.id, { ...EMPTY_PROFILE, brokerageName: 'Example Realty', yearFirstLicensed: 2025, narMember: true, narMemberSince: '2025-03-01', phone: '+15125550123' }, 'user', NOW);
     expect(first).toMatchObject({ userId: user.id, brokerageName: 'Example Realty', yearFirstLicensed: 2025, narMember: true, narMemberSince: '2025-03-01', profileSource: 'user' });
-    expect(first.updatedAt.getTime()).toBe(Math.floor(NOW.getTime())); // timestamptz keeps the millisecond
+    expect(first.updatedAt.getTime()).toBe(NOW.getTime()); // timestamptz keeps the millisecond
     const later = new Date(NOW.getTime() + 60_000);
     const second = await profiles.save(user.id, { ...EMPTY_PROFILE, teamName: 'The A Team' }, 'user', later);
     expect(second).toMatchObject({ brokerageName: null, yearFirstLicensed: null, narMember: null, narMemberSince: null, teamName: 'The A Team' });
