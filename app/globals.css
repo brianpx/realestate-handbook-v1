@@ -1,6 +1,9 @@
 @import "tailwindcss" source(none);
 @source "../app";
 @source "../components";
+/* test files are not markup; a variable called `container` would otherwise ship the Tailwind container utility */
+@source not "../components/**/*.test.tsx";
+@source not "../components/**/*.test.ts";
 
 /* Class dark mode matches the handbook setting on <html>, not the OS scheme alone. */
 @custom-variant dark (&:where(.dark, .dark *));
