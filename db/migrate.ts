@@ -51,11 +51,27 @@ export async function migrate(url: string, dir = MIGRATIONS_DIR, log: (line: str
   return files;
 }
 
+/**
+ * Why a non-production deployment is refused, or null. The Vercel Neon integration gives a CLI (non-pushed) preview
+ * the production branch's URL, and the integration has no per-environment branch mapping, so the runner itself must
+ * refuse to migrate the production database from anywhere but a production deployment. PRODUCTION_DB_HOST is the
+ * production endpoint id (a plain, non-secret value set on every target); unset means no check.
+ */
+export function refusalReason(env: Record<string, string | undefined>, url: string): string | null {
+  const prodHost = env.PRODUCTION_DB_HOST;
+  if (!env.VERCEL_ENV || env.VERCEL_ENV === 'production' || !prodHost) return null;
+  const host = new URL(url).hostname;
+  const isProduction = host === prodHost || host.startsWith(`${prodHost}.`) || host.startsWith(`${prodHost}-pooler.`);
+  return isProduction ? `a ${env.VERCEL_ENV} deployment points at the production database (${prodHost})` : null;
+}
+
 const isMain = process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const url = process.env.DATABASE_URL;
   if (!url) {
     console.log('db:migrate: DATABASE_URL is not set, nothing to do');
+  } else if (refusalReason(process.env, url)) {
+    console.log(`db:migrate: skipped, ${refusalReason(process.env, url)}; migrations run from production deployments only`);
   } else {
     migrate(url).catch(err => {
       // the message can quote SQL but never the URL; the driver's errors do not carry it
