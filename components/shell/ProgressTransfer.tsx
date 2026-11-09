@@ -28,7 +28,13 @@ export function ProgressTransfer() {
 
   const choose = async (file: File | undefined) => {
     if (!file) return;
-    const result = parseImport(await file.text());
+    let result: ImportResult;
+    try {
+      result = parseImport(await file.text());
+    } catch {
+      // the file moved or became unreadable between choosing it and reading it
+      result = { ok: false, error: 'That file could not be read. Choose it again.' };
+    }
     if (fileRef.current) fileRef.current.value = ''; // so choosing the same file again still fires
     if (!result.ok) { setReady(null); setNote(result.error); return; }
     setReady(result);

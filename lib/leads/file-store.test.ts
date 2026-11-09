@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -20,6 +20,14 @@ describe('FileLeadStore', () => {
     expect(again).toEqual({ created: false, id: first.id });
     const saved = JSON.parse(await readFile(file, 'utf8'));
     expect(saved.leads).toHaveLength(1);
+  });
+  it('starts empty when the file holds something other than the two arrays', async () => {
+    await mkdir(path.dirname(file), { recursive: true });
+    await writeFile(file, JSON.stringify({ leads: 'nope', attempts: null }));
+    const store = new FileLeadStore(file);
+    expect(await store.countAttempts('ip1', new Date(0))).toBe(0);
+    expect((await store.insert(lead('a@b.co'))).created).toBe(true);
+    expect(JSON.parse(await readFile(file, 'utf8')).leads).toHaveLength(1);
   });
   it('records the email outcome against the lead', async () => {
     const store = new FileLeadStore(file);
@@ -58,5 +66,12 @@ describe('storeFromEnv', () => {
     expect(storeFromEnv({ NODE_ENV: 'production' })).toBeNull();
     expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file })).toBeInstanceOf(FileLeadStore);
     expect(storeFromEnv({ DATABASE_URL: 'postgres://u:p@ep-x.us-east-1.aws.neon.tech/db' })?.constructor.name).toBe('NeonLeadStore');
+  });
+  it('never picks the file store on a hosted deployment, even when LEAD_STORE asks for it', () => {
+    expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, VERCEL_ENV: 'production' })).toBeNull();
+    expect(storeFromEnv({ LEAD_STORE: 'file', VERCEL_ENV: 'preview', DATABASE_URL: 'postgres://u:p@ep-x.us-east-1.aws.neon.tech/db' })?.constructor.name).toBe('NeonLeadStore');
+    // vercel dev and a local production build (the e2e suite) still may
+    expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, VERCEL_ENV: 'development' })).toBeInstanceOf(FileLeadStore);
+    expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, NODE_ENV: 'production' })).toBeInstanceOf(FileLeadStore);
   });
 });

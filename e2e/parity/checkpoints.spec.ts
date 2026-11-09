@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 import { KNOWLEDGE_CHECKS } from '../../content/data/knowledge-checks';
 
 // Parity checks for Checkpoint self-tests (chapters 1-12), the sidebar roll-up and "Test your knowledge"
@@ -108,13 +108,16 @@ test.describe('test your knowledge', () => {
     // first question wrong, the other two right
     const fs = quiz.locator('fieldset.quiz-item');
     await fs.nth(0).getByRole('radio').nth(wrongFor(ch1.mcq[0]!.answer)).check();
+    await fs.nth(0).getByRole('button', { name: 'Check answer' }).click(); // a pick commits only on Check answer (CR-M2)
     await expect(fs.nth(0).locator('.quiz-opt.is-wrong .quiz-mark')).toHaveText('✗ Your answer');
     await expect(fs.nth(0).locator('.quiz-opt.is-right .quiz-mark')).toHaveText('✓ Correct answer');
     await expect(fs.nth(0).locator('.drill-feedback strong')).toHaveText('✗ Not quite.');
     await expect(fs.nth(0).getByRole('radio').first()).toBeDisabled();
     await expect(quiz.locator('.quiz-score')).toHaveText('');
     await fs.nth(1).getByRole('radio').nth(ch1.mcq[1]!.answer).check();
+    await fs.nth(1).getByRole('button', { name: 'Check answer' }).click();
     await fs.nth(2).getByRole('radio').nth(ch1.mcq[2]!.answer).check();
+    await fs.nth(2).getByRole('button', { name: 'Check answer' }).click();
     await expect(fs.nth(1).locator('.drill-feedback strong')).toHaveText('✓ Correct.');
     await expect(quiz.locator('.quiz-score')).toHaveText('You got 2 of 3 multiple-choice questions right.');
   });

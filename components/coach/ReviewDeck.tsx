@@ -94,9 +94,9 @@ function Question({ run, onNext }: { run: Run; onNext: (items: DeckItem[], first
 
   return (
     <aside className="box">
-      <h3 className="box-title" aria-live="polite">
+      <h2 className="box-title" aria-live="polite">
         ● REVIEW · {run.index + 1} OF {run.items.length}{item.retest ? ' · ONE MORE TRY' : ''}
-      </h3>
+      </h2>
       <p className="quiz-sentence"><em>{concept.title}</em></p>
       <QuestionItem
         q={q}
@@ -141,7 +141,7 @@ function Finished({ run, outlook, onMore }: { run: Run; outlook: Snapshot; onMor
   const waiting = outlook.deck.items.length + outlook.deck.deferred;
   return (
     <aside className="box" aria-live="polite">
-      <h3 className="box-title">● DONE FOR NOW</h3>
+      <h2 className="box-title">● DONE FOR NOW</h2>
       <p><strong>{right} of {total} right on the first try.</strong></p>
       {missed.length > 0 && (
         <>

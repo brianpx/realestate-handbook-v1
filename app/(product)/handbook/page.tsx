@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChapterList, ContinuePanel } from '@/components/handbook/HomePanels';
+import { requireViewer } from '@/lib/auth/dal';
 import { ProductCard } from '@/components/shell/ProductCard';
 import { BOOK_TITLE } from '@/lib/pages';
 import { HANDBOOK, pageHref } from '@/lib/routes';
@@ -17,7 +18,8 @@ const TOOLS = [
   { page: 'app-a', widget: 'scorecard', name: 'Weekly scorecard', task: 'Review your numbers every Friday.' },
 ] as const;
 
-export default function HandbookHome() {
+export default async function HandbookHome() {
+  await requireViewer();
   return (
     <ProductCard>
       <p className="part-label">Your handbook</p>

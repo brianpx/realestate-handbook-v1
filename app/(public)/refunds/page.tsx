@@ -18,7 +18,7 @@ export default function RefundsPage() {
         <Decision>how the policy fits consumer-protection rules where buyers live. This needs a professional’s review before it is published.</Decision>
 
         <h2>Before you buy</h2>
-        <p>The <Link href="/preview">free sample lesson</Link> is a full section with working tools, so you can judge the handbook first.</p>
+        <p>The <Link href="/preview">free sample lesson</Link> is two full chapters with working tools, so you can judge the handbook first.</p>
       </div>
     </>
   );

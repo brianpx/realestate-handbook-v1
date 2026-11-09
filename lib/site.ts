@@ -14,3 +14,6 @@ export const SITE_URL = resolveSiteUrl(process.env);
 // Crawlers are kept out until this is "true", which is set for Production at cutover. Previews also get Vercel's
 // own noindex header; this covers the production alias before the real domain exists.
 export const isIndexable = (env: Env): boolean => env.SITE_INDEXABLE === 'true';
+
+/** The origins a state-changing POST may come from: the site itself plus any named in LEAD_ALLOWED_ORIGINS (previews). */
+export const allowedOrigins = (env: Env): string[] => [new URL(SITE_URL).origin, ...(env.LEAD_ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean) ?? [])];

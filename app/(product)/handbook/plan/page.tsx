@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { requireViewer } from '@/lib/auth/dal';
 import { notFound } from 'next/navigation';
 import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { PlanApp } from '@/components/coach/PlanApp';
@@ -6,7 +7,8 @@ import { ProductCard } from '@/components/shell/ProductCard';
 
 export const metadata: Metadata = { title: 'My plan', alternates: { canonical: '/handbook/plan' } };
 
-export default function Page() {
+export default async function Page() {
+  await requireViewer();
   if (!COACH_ENABLED) notFound();
   return (
     <ProductCard>

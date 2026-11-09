@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { requireViewer } from '@/lib/auth/dal';
 import { StartSetup } from '@/components/handbook/StartSetup';
 import { Breadcrumbs } from '@/components/shell/Breadcrumbs';
 import { HANDBOOK } from '@/lib/routes';
@@ -6,7 +7,8 @@ import { HANDBOOK } from '@/lib/routes';
 export const metadata: Metadata = { title: 'Start here: guided setup', alternates: { canonical: `${HANDBOOK}/start` } };
 
 // The onboarding wizard draws its own sheet (brand header, progress bar), so this page has no ProductCard.
-export default function StartPage() {
+export default async function StartPage() {
+  await requireViewer();
   return (
     <div className="onboarding-page">
       <Breadcrumbs className="onboarding-crumbs" />

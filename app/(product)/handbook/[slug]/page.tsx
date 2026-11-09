@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { requireViewer } from '@/lib/auth/dal';
 import { notFound } from 'next/navigation';
 import { ChapterView } from '@/components/shell/ChapterView';
 import { JsonLd } from '@/components/shell/JsonLd';
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
+  await requireViewer();
   const { slug } = await params;
   if (!isPageId(slug)) notFound();
   return (

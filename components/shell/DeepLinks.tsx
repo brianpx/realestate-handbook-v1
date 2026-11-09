@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { announce } from '@/lib/announce';
-import { NAV, type PageId } from '@/lib/pages';
+import { NAV, isPageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
 import { essentialOnly, settingsStore } from '@/lib/state';
 
@@ -32,15 +32,16 @@ export function DeepLinks() {
     const onClick = (e: MouseEvent) => {
       const link = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[data-goto]');
       if (!link || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      const page = link.dataset.goto;
+      if (page === undefined || !isPageId(page)) return; // not a handbook page: the link's own href decides
       e.preventDefault();
-      const page = link.dataset.goto!;
       const key = link.dataset.widget;
       if (key) pending.current = { page, key };
-      if (pathname === pageHref(page as PageId)) {
+      if (pathname === pageHref(page)) {
         if (key) setTimeout(() => land(page, key), 0);
         pending.current = null;
       } else {
-        router.push(pageHref(page as PageId));
+        router.push(pageHref(page));
       }
     };
     document.addEventListener('click', onClick);

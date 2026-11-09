@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { requireViewer } from '@/lib/auth/dal';
 import Link from 'next/link';
 import { SavedProgress } from '@/components/handbook/AccountPanels';
 import { ProductCard } from '@/components/shell/ProductCard';
@@ -8,7 +9,8 @@ export const metadata: Metadata = { title: 'Account and saved progress', alterna
 
 // There is no sign-in, purchase record or server-side progress yet (see docs/launch-handoff.md), so this page says so
 // and offers only what works: the device's saved progress, backup and restore.
-export default function AccountPage() {
+export default async function AccountPage() {
+  await requireViewer();
   return (
     <ProductCard>
       <p className="part-label">Account</p>

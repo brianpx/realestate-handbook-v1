@@ -5,6 +5,7 @@ import { isoDate, nextMonday, parseIso } from '@/lib/dates';
 import { downloadIcs } from '@/lib/ics';
 import { fmtClock, planBlocks, plannerVerdict, readTimeblockCfg, timeblockEvents, WEEKDAY_NAMES, type TimeblockCfg } from '@/lib/plan';
 import { setTimeblock, useHandbookState, widgetOf } from '@/lib/state';
+import { BoxTitle } from './BoxTitle';
 import { InteractiveHeader } from './InteractiveHeader';
 
 export function TimeBlockPlanner() {
@@ -19,7 +20,7 @@ export function TimeBlockPlanner() {
 
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● PLANNER · YOUR WEEKLY TIME BLOCKS</h3>
+      <BoxTitle>● PLANNER · YOUR WEEKLY TIME BLOCKS</BoxTitle>
       <InteractiveHeader
         hint="Set your own start time and block lengths, check that lead generation lands before noon, then add the blocks to your calendar."
         widgetKey="timeblock-planner"

@@ -1,15 +1,15 @@
-import { neon } from '@neondatabase/serverless';
+import { sqlFromUrl, type Sql } from '@/lib/db/sql';
 import type { EmailStatus, LeadStore, NewLead } from './store';
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql.
-export type Sql = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<Record<string, unknown>[]>;
+export type { Sql };
 
 export class NeonLeadStore implements LeadStore {
   constructor(private readonly sql: Sql) {}
 
   static fromUrl(url: string): NeonLeadStore {
-    return new NeonLeadStore(neon(url) as unknown as Sql);
+    return new NeonLeadStore(sqlFromUrl(url));
   }
 
   async insert(lead: NewLead) {

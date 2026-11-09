@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('settings and progress', () => {
   test('dark mode and full width persist across reloads and set html classes', async ({ page }) => {

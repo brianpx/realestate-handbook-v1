@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HeroPlan } from '@/components/site/HeroPlan';
+import { ToolIndex } from '@/components/site/ToolIndex';
 import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
@@ -285,6 +286,7 @@ function Included() {
             <ol>{CHAPTER_NAV.map(p => <li key={p.id}>{p.label}</li>)}</ol>
           </div>
         </details>
+        <ToolIndex />
       </div>
     </section>
   );
@@ -359,7 +361,7 @@ function Offer({ open }: { open: boolean }) {
             <>
               <span className="pub-status">Purchase is not open yet</span>
               <p>No price, access term or refund policy has been published, so there is nothing to buy today. When that changes, the price and every term will be on the pricing page before you are asked for anything.</p>
-              <p>Until then you can read a full sample lesson and use its calculator, with no sign-up.</p>
+              <p>Until then you can read two full chapters and use their tools, with no sign-up.</p>
               <div className="pub-actions">
                 <Link className="pub-btn pub-btn-primary" href="/pricing">See pricing and availability</Link>
                 <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>

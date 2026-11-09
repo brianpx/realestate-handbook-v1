@@ -12,7 +12,7 @@ export function pageIdFromPath(pathname: string): string | null {
   return m ? m[1]! : null;
 }
 
-// Old address -> new address. next.config.ts turns this into permanent redirects; e2e/routes.spec.ts walks it.
+// Old address -> new address. next.config.ts turns this into permanent redirects; e2e/site.spec.ts walks it.
 // '/' used to be the title page, so only its #hash links (handled in app/layout.tsx) still point at the handbook.
 export const LEGACY_PAGE_SLUGS = [
   'pref',

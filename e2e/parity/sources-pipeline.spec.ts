@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '../fixtures';
 
 // Parity checks for the lead-source comparison (ch2) and the pipeline calculator (ch12). Assertions were read off
 // setupLeadSources and setupPipelineCalculator in legacy/js/widgets-practice.js, not observed by running the

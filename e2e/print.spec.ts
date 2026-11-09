@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // Print styles (the plan's phase 1 check). This exercises the print media rules in a browser; it does not replace
 // printing a few chapters to paper or PDF and reading them.

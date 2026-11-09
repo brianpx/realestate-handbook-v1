@@ -91,7 +91,7 @@ export function ChapterOutline({ pageId, items, before, intro, rest }: {
       <div className="chapter-frame">
         <div className="content-container" id="content-container">
           {before}
-          <article className="chapter-section" id={pageId} data-page={pageId}>
+          <article className="chapter-section chapter-body" id={pageId} data-page={pageId}>
             {intro}
             {list('chapter-outline outline-stacked')}
             {rest}

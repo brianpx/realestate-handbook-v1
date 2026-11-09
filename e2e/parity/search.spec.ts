@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures';
 
 // Parity checks for the sidebar search. Assertions were read off legacy/js/search.js, not observed by running
 // the static site.
@@ -7,7 +7,6 @@ test.describe('sidebar search', () => {
     const hits: string[] = [];
     page.on('request', r => { if (r.url().endsWith('/search-index.json')) hits.push(r.url()); });
     await page.goto('/handbook/ch1');
-    await page.waitForLoadState('networkidle');
     expect(hits).toHaveLength(0);
     await page.getByLabel('Search the handbook').focus();
     await expect.poll(() => hits.length).toBe(1);

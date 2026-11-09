@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../fixtures';
 
 // Parity checks for the practice tools of items 6: qualifying drill (ch5), pitfall cycle and six-errors
 // self-score (ch7), consultation lab (ch9) and Fair Housing drill (ch11). Assertions were read off

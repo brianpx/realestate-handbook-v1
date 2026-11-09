@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test, type Page } from '@playwright/test';
+import { signedInState } from './auth';
+import { expect, test, type Page } from './fixtures';
 
 // The first-visit email gate and /api/lead. Assertions were read off setupGate in legacy/js/app-with-cover.js,
 // with the Formspree call replaced by the new route. Each test gets its own fake client address, because the
 // route's rate limit is per address.
-test.use({ storageState: { cookies: [], origins: [] } });
+test.use({ storageState: signedInState([]) });
 let n = 0;
 test.beforeEach(async ({ context }) => { await context.setExtraHTTPHeaders({ 'x-forwarded-for': `198.51.100.${(++n % 250) + 1}` }); });
 

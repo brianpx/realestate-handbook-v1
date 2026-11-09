@@ -1,0 +1,64 @@
+import { randomUUID } from 'node:crypto';
+import type { Role, User } from './types';
+
+export type VerifiedSignIn = { email: string; termsVersion: string; at: Date };
+
+/**
+ * Where users live. Production uses the database; the memory store is for unit tests and the file store in
+ * lib/auth/file-store.ts for local development. Addresses are already normalised (lib/validate/email.ts) by the
+ * time they get here; the database refuses anything else.
+ */
+export interface UserStore {
+  findByEmail(email: string): Promise<User | null>;
+  findById(id: string): Promise<User | null>;
+  /** First sign-in creates the row; a later one only fills what is still empty (verification, terms). */
+  upsertVerified(input: VerifiedSignIn): Promise<{ user: User; created: boolean }>;
+  countAdmins(): Promise<number>;
+  setRole(id: string, role: Role, at: Date): Promise<void>;
+  touchSignIn(id: string, at: Date): Promise<void>;
+}
+
+export const newUser = (input: VerifiedSignIn): User => ({
+  id: randomUUID(),
+  email: input.email,
+  emailVerifiedAt: input.at,
+  role: 'reader',
+  status: 'active',
+  acceptedTermsVersion: input.termsVersion,
+  acceptedTermsAt: input.at,
+  lastSignInAt: null,
+  createdAt: input.at,
+});
+
+/** Applies a repeat sign-in to an existing row the way the database upsert does: only empty fields are filled. */
+export const fillVerified = (user: User, input: VerifiedSignIn): User => ({
+  ...user,
+  emailVerifiedAt: user.emailVerifiedAt ?? input.at,
+  acceptedTermsVersion: user.acceptedTermsVersion ?? input.termsVersion,
+  acceptedTermsAt: user.acceptedTermsAt ?? input.at,
+});
+
+/** In-memory store for unit tests. */
+export class MemoryUserStore implements UserStore {
+  users: User[] = [];
+  failWith: Error | null = null;
+  private check() { if (this.failWith) throw this.failWith; }
+
+  async findByEmail(email: string) { this.check(); return this.users.find(u => u.email === email) ?? null; }
+  async findById(id: string) { this.check(); return this.users.find(u => u.id === id) ?? null; }
+  async upsertVerified(input: VerifiedSignIn) {
+    this.check();
+    const i = this.users.findIndex(u => u.email === input.email);
+    if (i >= 0) {
+      const user = fillVerified(this.users[i]!, input);
+      this.users[i] = user;
+      return { user, created: false };
+    }
+    const user = newUser(input);
+    this.users.push(user);
+    return { user, created: true };
+  }
+  async countAdmins() { this.check(); return this.users.filter(u => u.role === 'admin').length; }
+  async setRole(id: string, role: Role) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.role = role; }
+  async touchSignIn(id: string, at: Date) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.lastSignInAt = at; }
+}

@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { fixChapter, rankErrors, type ErrorRow } from '@/lib/drills';
+import { isPageId } from '@/lib/pages';
+import { pageHref } from '@/lib/routes';
 import { updateWidget, useHandbookState, widgetOf } from '@/lib/state';
+import { BoxTitle } from './BoxTitle';
 import { InteractiveHeader } from './InteractiveHeader';
 
 export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
@@ -10,9 +13,11 @@ export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
   const ranked = rankErrors(errors, saved);
   const top = ranked[0];
   const chapter = top && fixChapter(top.fix);
+  const chapterId = chapter ? `ch${chapter}` : '';
+  const chapterHref = isPageId(chapterId) ? pageHref(chapterId) : null;
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● SELF-SCORE · THE SIX ERRORS</h3>
+      <BoxTitle>● SELF-SCORE · THE SIX ERRORS</BoxTitle>
       <InteractiveHeader hint="Rate how often each error shows up in your week, from 1 (never) to 5 (every day)." widgetKey="error-self-score" label="Six-errors self-score" />
       <div className="score-rows">
         {errors.map((err, i) => (
@@ -47,7 +52,7 @@ export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
             <div className="drill-feedback ok">
               <strong>Start with: {top.name}</strong>
               <p>What it costs: {top.cost}</p>
-              <p>Fix: {top.fix} {chapter && <Link className="goto" href={`/ch${chapter}`}>Go to Chapter {chapter}</Link>}</p>
+              <p>Fix: {top.fix} {chapterHref && <Link className="goto" href={chapterHref}>Go to Chapter {chapter}</Link>}</p>
               {ranked.length < errors.length && <p className="calc-note">You have rated {ranked.length} of {errors.length} so far.</p>}
             </div>
           </>

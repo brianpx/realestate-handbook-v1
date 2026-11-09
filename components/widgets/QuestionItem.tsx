@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Question } from '@/content/data/questions';
 import { isCorrect } from '@/lib/coach/check';
 import type { Confidence } from '@/lib/coach/types';
@@ -24,6 +24,7 @@ export function QuestionItem({ q, label, name, onAnswer, after }: {
   const [pick, setPick] = useState<number>();
   const [typed, setTyped] = useState('');
   const [answer, setAnswer] = useState<Answer>();
+  const feedbackRef = useRef<HTMLDivElement>(null);
   const prefix = label ? `${label} ` : '';
 
   const commit = (response: number | string) => {
@@ -33,6 +34,12 @@ export function QuestionItem({ q, label, name, onAnswer, after }: {
     onAnswer(result);
   };
 
+  // Committing removes the Check answer button under the focus, which would drop it to <body>. Unless `after` has
+  // already placed it (the review deck's autoFocused Next button), the feedback takes it.
+  useEffect(() => {
+    if (answer && document.activeElement === document.body) feedbackRef.current?.focus();
+  }, [answer]);
+
   const feedback = answer && (
     <>
       <strong>{answer.correct ? '✓ Correct. ' : '✗ Not quite. '}</strong>
@@ -41,7 +48,7 @@ export function QuestionItem({ q, label, name, onAnswer, after }: {
       {!answer.correct && answer.confidence === 'sure' ? ' You were sure about this one, which makes it the most useful one to get straight.' : ''}
     </>
   );
-  const feedbackBox = <div className={`drill-feedback${answer ? (answer.correct ? ' ok' : ' no') : ''}`} aria-live="polite">{feedback}</div>;
+  const feedbackBox = <div ref={feedbackRef} tabIndex={-1} className={`drill-feedback${answer ? (answer.correct ? ' ok' : ' no') : ''}`} aria-live="polite">{feedback}</div>;
 
   if (q.kind === 'mcq') {
     return (
@@ -50,18 +57,24 @@ export function QuestionItem({ q, label, name, onAnswer, after }: {
         {!confidence && <ConfidencePrompt onPick={setConfidence} />}
         {confidence && q.options.map((text, i) => (
           <label key={text} className={`opt-item quiz-opt${answer && i === q.answer ? ' is-right' : ''}${answer && i === pick && i !== q.answer ? ' is-wrong' : ''}`}>
+            {/* aria-disabled rather than disabled: the locked options stay in the tab order so the reader can go back over them */}
             <input
               type="radio"
               name={name}
               checked={pick === i}
-              disabled={answer !== undefined}
+              aria-disabled={answer !== undefined}
               autoFocus={i === 0}
-              onChange={() => { setPick(i); commit(i); }}
+              onChange={() => { if (!answer) setPick(i); }}
             />
             <span>{text}</span>
             <span className="quiz-mark">{answer && i === q.answer ? ' ✓ Correct answer' : answer && i === pick ? ' ✗ Your answer' : ''}</span>
           </label>
         ))}
+        {confidence && !answer && (
+          <div className="script-actions">
+            <button type="button" className="btn-mini" disabled={pick === undefined} onClick={() => { if (pick !== undefined) commit(pick); }}>Check answer</button>
+          </div>
+        )}
         {feedbackBox}
         {answer && after?.(answer)}
       </fieldset>

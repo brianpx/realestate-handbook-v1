@@ -1,7 +1,7 @@
 import { handleLead } from '@/lib/leads/handler';
 import { mailFromEnv } from '@/lib/leads/mail';
 import { storeFromEnv } from '@/lib/leads/store';
-import { SITE_URL } from '@/lib/site';
+import { allowedOrigins } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     {
       store: configured ? storeFromEnv(env) : null,
       mail: mailFromEnv(env),
-      allowedOrigins: [new URL(SITE_URL).origin, ...(env.LEAD_ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean) ?? [])],
+      allowedOrigins: allowedOrigins(env),
       ipSalt: env.LEAD_IP_SALT ?? 'dev-only-salt',
       now: () => new Date(),
     },

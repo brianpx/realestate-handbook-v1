@@ -25,7 +25,7 @@ Package manager: `pnpm` (lockfile is `pnpm-lock.yaml`; never create a second loc
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Build: `pnpm build`
-- Typecheck: `pnpm typecheck`
+- Typecheck: `pnpm typecheck` (runs `next typegen` first so the generated route types exist on a clean clone). If `tsc` fails on a stale `.next/dev/types` validator that names a deleted route, restart `next dev` or remove that folder, then re-run.
 - Test: `pnpm test` (single file: `pnpm test <path>`)
 - E2E: `pnpm e2e`
 
