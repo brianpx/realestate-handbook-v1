@@ -1,8 +1,8 @@
 # Master plan: realestate-handbook-v1
 
-Written 8 November 2026 from five planning documents (now in `docs/_archive/`; this file is the only plan kept under `docs/plans/`), from `AGENTS.md`, and from the repository at commit `6652f83` plus three kinds of uncommitted work: the staged move of older docs into `docs/_archive/`, the project-instructions half of `AGENTS.md` (only the managed Next.js block is committed), and content edits in progress by another session that already execute part of the content review (listed under M4, "Status at 8 November"). Nothing in this document changes what the source plans decided. It decides **order, ownership, dependencies, and which overlapping steps are done once**, and it carries every step from the source plans so a session can work from this file alone and open a source plan only for verbatim detail (SQL column lists, command transcripts, finding evidence).
+Written 8 November 2026 from five planning documents (now in ``; this file is the only plan kept under `docs/plans/`), from `AGENTS.md`, and from the repository at commit `6652f83` plus three kinds of uncommitted work: the staged move of older docs into `docs/_archive/`, the project-instructions half of `AGENTS.md` (only the managed Next.js block is committed), and content edits in progress by another session that already execute part of the content review (listed under M4, "Status at 8 November"). Nothing in this document changes what the source plans decided. It decides **order, ownership, dependencies, and which overlapping steps are done once**, and it carries every step from the source plans so a session can work from this file alone and open a source plan only for verbatim detail (SQL column lists, command transcripts, finding evidence).
 
-Source plans, all under `docs/_archive/`, and the tags used to cite them:
+Source plans, all under ``, and the tags used to cite them:
 
 | Tag | Document | What it is |
 |---|---|---|
@@ -19,8 +19,8 @@ Citations look like `[CR-H1]` (finding), `[CC-§2]` (section), `[CC-A]` (decisio
 - Work top to bottom through **section 6 (milestones)**. Each milestone lists preconditions, steps with source tags and files, verification, and exit criteria.
 - **Section 4 (decision register)** is the only list of owner decisions. When the owner answers, record the answer there with the date, then tick the steps it unblocks.
 - **Section 7 (file collision map)** says which files more than one workstream edits. Partition agents by it so no two agents touch the same file (AGENTS.md, Parallelism).
-- When a step lands, tick it here and add the commit hash. When a source plan is fully executed, move it to `docs/_archive/` and note that in section 10.
-- This file does not replace the Vercel migration prompt. For that work, hand `docs/_archive/vercel-pro-migration-meded.md` to the session verbatim; section 6, milestone M3 says when and what must be true first.
+- When a step lands, tick it here and add the commit hash. When a source plan is fully executed, move it to `` and note that in section 10.
+- This file does not replace the Vercel migration prompt. For that work, hand `vercel-pro-migration-meded.md` to the session verbatim; section 6, milestone M3 says when and what must be true first.
 
 ## 1. The five plans in one sentence each
 
@@ -46,7 +46,7 @@ Citations look like `[CR-H1]` (finding), `[CC-§2]` (section), `[CC-A]` (decisio
 | 10 | CR-L15, FS status, CC-C, UD-P5, UD-P6 | Public copy on `/pricing`, `/refunds`, `/about`, `/`, `/preview`, FAQ, footer, Terms: stale sample description (CR), Keller Williams Command positioning (CC-C), "no accounts" sentences and billing copy (UD) | Three copy passes at three different times, each with one owner and no concurrent editor of those files: M2 (CR-L15 four lines), M4 (CC-C once OD-05 is answered), M7 (UD Phases 5 and 6). Section 7 lists the files |
 | 11 | CR-L14, CC-Phase 4 | If Chapter 1 or 7 questions gain concept tags, `/preview` would switch to `CoachCheck` and write coach attempts for anonymous visitors | Fix CR-L14 (register plain `KnowledgeCheck` for the sample) in M2, **before** CC Phase 4 authors questions for Chapters 1 and 7 |
 | 12 | CR-H1, UD-P1..P7 ("each phase ends with e2e green"), VM-6b | Every later plan assumes `pnpm e2e` is a usable signal; it exits 1 on every run today | M1 makes e2e green first. Nothing in M2 onward is "done" against a red suite |
-| 13 | CR-M10, AGENTS.md Commands | `pnpm typecheck` depends on generated `.next/types`; AGENTS.md tells every session to run it | Change the script to `next typegen && tsc --noEmit` in M1 and record the recovery (`rm -rf .next/dev/types` or restart `next dev`) in AGENTS.md |
+| 13 | CR-M10, AGENTS.md Commands | `pnpm typecheck` depends on generated `../../.next/types`; AGENTS.md tells every session to run it | Change the script to `next typegen && tsc --noEmit` in M1 and record the recovery (`rm -rf .next/dev/types` or restart `next dev`) in AGENTS.md |
 | 14 | CR-L5, UD-§12.3, UD-P6 | The privacy page: four `Decision` placeholders and no contact (CR); cookie disclosure and an accounts section (UD) | One edit in M7 (UD Phase 6) that does both; `POLICY_STATUS.privacy` stays `draft` until the owner approves so the draft-label e2e keeps passing |
 | 15 | CR-M2, CC-§5, UD-P2 | `QuestionItem` is shared by chapter checks, `CoachCheck` and `/handbook/review`; CR changes its commit behaviour; CC adds questions; UD gates the pages | Fix CR-M2 in M6 before CC Phase 4 adds content that depends on the quiz UI, and before UD Phase 2 e2e tests seed sessions to reach those pages |
 | 16 | CR open question 2, VM | CR-L2's severity depends on Vercel overwriting `x-forwarded-for` | Resolved: the host is Vercel (VM). L2 stays Low; the global send ceiling is added in M8 before lead capture goes live |
@@ -55,11 +55,11 @@ Citations look like `[CR-H1]` (finding), `[CC-§2]` (section), `[CC-A]` (decisio
 
 ## 3. Working rules for every milestone (AGENTS.md applied)
 
-These rules come from `AGENTS.md`, the user-level `CLAUDE.md`, and the ground rules inside VM. They apply to every step below. A session that cannot follow one of them stops and says which. As of 8 November the "Project instructions" section of `AGENTS.md` exists only in the working tree; M0 step 3 commits it so every later session and subagent sees the same rules.
+These rules come from `../../AGENTS.md`, the user-level `CLAUDE.md`, and the ground rules inside VM. They apply to every step below. A session that cannot follow one of them stops and says which. As of 8 November the "Project instructions" section of `AGENTS.md` exists only in the working tree; M0 step 3 commits it so every later session and subagent sees the same rules.
 
 ### 3.1 Before writing code
 
-- Read the matching guide under `node_modules/next/dist/docs/` **before** writing any Next.js code; this Next.js has breaking changes against training data. Guides this plan's work needs, by workstream:
+- Read the matching guide under `../../node_modules/next/dist/docs` **before** writing any Next.js code; this Next.js has breaking changes against training data. Guides this plan's work needs, by workstream:
   - Gate and sessions: `01-app/03-api-reference/03-file-conventions/proxy.md`, `01-app/01-getting-started/16-proxy.md`, `01-app/02-guides/authentication.md`, `01-app/03-api-reference/04-functions/cookies.md`, `headers.md`, `redirect.md`, `generate-static-params.md`, `01-app/03-api-reference/03-file-conventions/02-route-segment-config/`.
   - Route handlers (auth, account, admin, billing webhook, cron, gated media): `01-app/03-api-reference/03-file-conventions/route.md`, `public-folder.md`.
   - Typecheck script: `01-app/03-api-reference/06-cli/next.md` (the `next typegen` section).
@@ -69,7 +69,7 @@ These rules come from `AGENTS.md`, the user-level `CLAUDE.md`, and the ground ru
   - Testing and CI: `01-app/02-guides/testing/`, `01-app/02-guides/ci-build-caching.md`, `01-app/02-guides/environment-variables.md`, `01-app/02-guides/production-checklist.md`.
 - Heed deprecation notices. `middleware.ts` is deprecated in favour of `proxy.ts`. `forbidden()` and `unauthorized()` need an experimental flag and are not used (UD-§9).
 - Never introduce Pages Router patterns. Server Components by default; `"use client"` only for interactivity, browser APIs or local state, pushed to the leaf.
-- Keep the managed Next.js block at the top of `AGENTS.md` exactly as written and commit it with the work.
+- Keep the managed Next.js block at the top of `../../AGENTS.md` exactly as written and commit it with the work.
 - Package manager is `pnpm` at `/opt/homebrew/bin/pnpm` (the `pnpm` first on PATH is a broken shim). Never create a second lockfile. Ask before adding a dependency or changing the lockfile (the `happy-dom` bump, OD-27, is such a change).
 
 ### 3.2 Branching and commits
@@ -86,7 +86,7 @@ These rules come from `AGENTS.md`, the user-level `CLAUDE.md`, and the ground ru
 - Use the repo's scripts and pinned versions: `pnpm typecheck`, `pnpm test` (single file: `pnpm test <path>`), `pnpm e2e` (`PLAYWRIGHT_BASE_URL` and `VERCEL_AUTOMATION_BYPASS_SECRET` for a deployment). There is no lint or format script. Never substitute global tools.
 - After any code change run typecheck plus the tests for what was touched; before declaring a milestone step done run the full three. Fix failures caused by the change before reporting.
 - Bug fixes get a focused regression test when practical (CR names the test for most findings). Never weaken an assertion, skip a test, or run `--update-snapshots` or any `--fix` to get green.
-- `lib/leads/neon-store.integration.test.ts` and the UD integration tests run only with `TEST_DATABASE_URL` set to a **Neon branch**, never production.
+- `../../lib/leads/neon-store.integration.test.ts` and the UD integration tests run only with `TEST_DATABASE_URL` set to a **Neon branch**, never production.
 - Review the final diff for accidental edits, secrets, debug output and unrelated formatting. No placeholders, `TODO` in place of code, dead code or commented-out blocks. Strict typing: no `any`, no unchecked casts, no `@ts-ignore` or `eslint-disable` without a one-line justification beside it.
 - **Done means:** implemented; typecheck, tests and e2e pass or the exact failure is reported; the diff is clean; the final report lists files changed, verification commands with results, assumptions, and blockers, with completed work separated from anything unverified.
 
@@ -94,7 +94,7 @@ These rules come from `AGENTS.md`, the user-level `CLAUDE.md`, and the ground ru
 
 - Carry a step through implementation, verification and a final report. Don't stop at a plan or ask whether to continue. Look in the repo, docs and tools before asking. Authorization given once continues for that scope.
 - **Never infer authorization** for destructive actions, publishing, sending messages or spending money. That covers, concretely: the Vercel project transfer, any Production environment variable change, deleting or disconnecting a Neon resource, any write to a hosted database (including applying a migration), enabling deployment-pausing on the spend limit, buying or changing a plan, any real email send, flipping `purchaseOpen()` to true, pushing to `main`, and adding CI. Finish all useful preparation, then ask one concise question, and keep working on independent parts while waiting.
-- Do not modify CI, deployment or infrastructure config unless that is the task (M3 and the cron file in M7 are such tasks). Do not touch `.vscode/`, `.idea/` or shell config.
+- Do not modify CI, deployment or infrastructure config unless that is the task (M3 and the cron file in M7 are such tasks). Do not touch `.vscode/`, `../../.idea` or shell config.
 - Never print environment variable values, connection strings, tokens or row contents. Names, environments and counts only.
 - Stay inside the ask. Mention an adjacent problem in one line; don't fix it unbidden. Note refactor opportunities in the report.
 
@@ -119,7 +119,7 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 |---|---|---|---|---|---|
 | OD-01 | The free set. Confirm `/preview` = Chapter 1 and Chapter 7 in full plus the two teasers, and the signed-in free set `FREE_PAGE_IDS = cover, pref, ch1, ch7` | FS-D1, FS open 1, UD-D1, CR-L15 | Yes to both as stated | M2 step 3 (copy), M5 UD-P2 | |
 | OD-02 | Post-sample email offer wording: "Tell me when purchase opens" or "Email me my daily number and the Chapter 1 card" | FS-D3, FS open 2 | Purchase notice while `purchaseOpen()` is false; switch copy when it opens | M5 UD-P3 | |
-| OD-03 | Reading plan order vs. book order; add a quick start | CC-A | Plan follows book order; `content/data/plan.ts` updated; short self-contained quick start | M4 Phase 0 | |
+| OD-03 | Reading plan order vs. book order; add a quick start | CC-A | Plan follows book order; `../../content/data/plan.ts` updated; short self-contained quick start | M4 Phase 0 | |
 | OD-04 | Early safeguards: minimum "before your first outreach" checklist in the quick start | CC-B | Yes; Chapter 11 stays the full treatment | M4 Phase 0 | |
 | OD-05 | CRM positioning: vendor-neutral with labelled optional Keller Williams Command examples, or an explicitly Command-oriented edition | CC-C | Vendor-neutral with labelled examples | M4 Phase 1 copy pass | |
 | OD-06 | Jurisdiction: California-first or national; label Appendix F accordingly | CC-D | Owner's call; label either way | M4 Phase 1 | |
@@ -133,7 +133,7 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 | OD-14 | One-time edition-scoped purchase first | UD-D6 | Yes | M7 UD-P5 | |
 | OD-15 | Grace after failed payment (subscriptions only) | UD-D7 | 7 days | M7 UD-P5 (only if recurring) | |
 | OD-16 | Refund window | UD-D8 | 14 days, no usage condition | M7 UD-P5 copy | |
-| OD-17 | Are `public/downloads` and `public/audio` member-only? Also: what is the untracked root `downloads/` folder (a PDF, `audio/`, `downloads/`, `images/`) for, and should it be committed, ignored or moved | UD-D9 (Phase 0 **launch blocker**), repo state | If member-only, a viewer-checked `app/api/media/[...path]/route.ts` in UD-P2. Root `downloads/` should not stay untracked | M5 UD-P2; M0 step 4 | |
+| OD-17 | Are `../../public/downloads` and `public/audio` member-only? Also: what is the untracked root `downloads/` folder (a PDF, `audio/`, `downloads/`, `images/`) for, and should it be committed, ignored or moved | UD-D9 (Phase 0 **launch blocker**), repo state | If member-only, a viewer-checked `app/api/media/[...path]/route.ts` in UD-P2. Root `../../downloads` should not stay untracked | M5 UD-P2; M0 step 4 | |
 | OD-18 | Retire the first-visit `Gate.tsx` dialog for signed-in readers | UD-D10, FS open 3 | Yes | M5 UD-P2 | |
 | OD-19 | Billing record retention after account deletion | UD-D11 | 7 years, anonymised; confirm with an accountant | M7 UD-P5 | |
 | OD-20 | What "updates" covers; is a future edition sold separately | UD-D12 | Corrections included; one `product_key` for edition 1.0 | M7 UD-P5 copy | |
@@ -141,8 +141,8 @@ One list. Recommended defaults come from the source plans. "Blocks" names the fi
 | OD-22 | Marketing opt-in on the sign-in form | UD-D14 | Separate optional checkbox through `/api/lead`, confirmed opt-in | M5 UD-P3 | |
 | OD-23 | Owner inputs: transactional from-address on a domain the owner controls (SPF and DKIM verified), postal address, support email, price, checkout URL, access and update terms, approval of privacy, terms, refunds and updates policies, billing provider | UD-D16, UD-§3.3, FS-D3, launch-handoff blockers 2 to 5 | From-address and postal address first (they block M5); the rest before M7 | M5 step 1; M7; M8 | |
 | OD-24 | Add CI (a workflow running typecheck, test, e2e on Node 22 with `playwright install --with-deps chromium`) | CR-H1, CR open 5 | Yes | M1 step 4 | |
-| OD-25 | Remove `legacy/` and rename the `parity/` specs | CR open 3 | Remove `legacy/` once no spec references it; rename later | M6 (optional) | |
-| OD-26 | Keep `.next/dev/types/**` in `tsconfig.json` include | CR open 4, CR-M10 | Check the Next 16 docs; the line is generator-written and may be re-added | M1 step 2 | |
+| OD-25 | Remove `../../legacy` and rename the `parity/` specs | CR open 3 | Remove `../../legacy` once no spec references it; rename later | M6 (optional) | |
+| OD-26 | Keep `.next/dev/types/**` in `../../tsconfig.json` include | CR open 4, CR-M10 | Check the Next 16 docs; the line is generator-written and may be re-added | M1 step 2 | |
 | OD-27 | Bump `happy-dom` to ≥ 21.0.4 (lockfile change) | CR-L4 | Yes, when convenient | M6 | |
 | OD-28 | Public site dark mode follows the OS or the handbook setting with no toggle: intentional? | CR open 6 | Keep, but stop handbook-only state (`hide-quizzes`) reaching public pages (CR-L13) | M2 step 3 | |
 | OD-29 | Spend Management on `meded`: enable "pause production deployments when the limit is reached" (the live site goes down at $20 of usage) | VM Decision 5 | Leave off (notify only) unless the owner says yes after the warning | M3 step 2 | |
@@ -174,22 +174,22 @@ Goal: the docs and rules committed on their own branch, the in-flight content wo
 
 State of the tree on 8 November (from `git status` and `git diff --stat`, 35 files, +382/-205):
 
-- Staged: the renames of twelve older docs into `docs/_archive/` and `docs/free-sample-decision.md` into `docs/plans/`; several archived files also carry small path updates after the move.
-- Unstaged: the 79-line "Project instructions" section of `AGENTS.md`.
-- Unstaged, **another session's work in progress**: `content/pages/{ch1,ch2,ch3,ch5,ch6,ch8,ch9,ch10,ch11,ch12,ch13,app-d,app-e}.html`, `content/data/{checkpoints,qualify}.ts`, `components/widgets/LeadSources.tsx`, `lib/{sources,glossary}.ts`, `lib/state/index.ts`, `lib/{checkpoints,sources-pipeline}.test.ts`, `e2e/parity/{checkpoints,practice}.spec.ts`. These implement content-review Phase 2 items (see M4 status). Do not edit, stage or revert any of them from another session.
-- Untracked: the three new plan files, this file, and the root `downloads/` folder.
+- Staged: the renames of twelve older docs into `` and `docs/free-sample-decision.md` into `docs/plans/`; several archived files also carry small path updates after the move.
+- Unstaged: the 79-line "Project instructions" section of `../../AGENTS.md`.
+- Unstaged, **another session's work in progress**: `content/pages/{ch1,ch2,ch3,ch5,ch6,ch8,ch9,ch10,ch11,ch12,ch13,app-d,app-e}.html`, `content/data/{checkpoints,qualify}.ts`, `../../components/widgets/LeadSources.tsx`, `lib/{sources,glossary}.ts`, `lib/state/index.ts`, `lib/{checkpoints,sources-pipeline}.test.ts`, `e2e/parity/{checkpoints,practice}.spec.ts`. These implement content-review Phase 2 items (see M4 status). Do not edit, stage or revert any of them from another session.
+- Untracked: the three new plan files, this file, and the root `../../downloads` folder.
 
 Branch: `docs/plans-master` for steps 1 to 3; the content session uses its own branch (suggested `feat(content)/practice-gaps`).
 
 Steps:
 
-- [ ] 1. Stage by path and commit the docs reorganisation (the archive renames, `free-sample-decision.md`, the three new plans, this file): `docs(plans): archive superseded docs and add the master plan`. Nothing under `content/`, `components/`, `lib/` or `e2e/` goes into this commit.
-- [x] 2. Fix the stale line in `free-sample-decision.md:30` (now `docs/_archive/free-sample-decision.md`) (the recommended set lists the Preface; resolution #1): the Preface belongs to the signed-in free set, not to `/preview` [CR-L15]. Include in the same commit.
-- [ ] 3. Commit `AGENTS.md` on its own: `docs(agents): add project instructions`. Keep the managed Next.js block byte for byte.
+- [ ] 1. Stage by path and commit the docs reorganisation (the archive renames, `free-sample-decision.md`, the three new plans, this file): `docs(plans): archive superseded docs and add the master plan`. Nothing under `../../content`, `components/`, `lib/` or `e2e/` goes into this commit.
+- [x] 2. Fix the stale line in `free-sample-decision.md:30` (now `free-sample-decision.md`) (the recommended set lists the Preface; resolution #1): the Preface belongs to the signed-in free set, not to `/preview` [CR-L15]. Include in the same commit.
+- [ ] 3. Commit `../../AGENTS.md` on its own: `docs(agents): add project instructions`. Keep the managed Next.js block byte for byte.
 - [ ] 4. The content session finishes its Phase 2 work, runs `pnpm typecheck`, `pnpm test` and `pnpm e2e` (its own spec changes expect 16 scripts and 9 objections), and commits on its branch with Conventional Commits, one commit per logical change where practical. Tick the matching M4 steps here with the hashes.
-- [ ] 5. Decide the untracked root `downloads/` folder (OD-17). Until answered, leave it untracked and do not add it to `.gitignore`.
+- [ ] 5. Decide the untracked root `../../downloads` folder (OD-17). Until answered, leave it untracked and do not add it to `.gitignore`.
 
-Exit: `git status` clean apart from `downloads/`; `main` untouched until the owner asks to merge.
+Exit: `git status` clean apart from `../../downloads`; `main` untouched until the owner asks to merge.
 
 ### M1. Green baseline (lane A)
 
@@ -199,9 +199,9 @@ Branch: `fix/e2e-green`; CI on its own branch `chore/ci` if OD-24 is yes.
 
 Steps:
 
-- [ ] 1. **Calculator locators** [CR-H1]. In `e2e/parity/calculators.spec.ts` change the `outputCell` helper at line 11 from `.locator('td').nth(2)` to `.nth(1)`, and line 98 from `.nth(1)` to `.nth(0)`; or use `getByRole('row', { name: /Closings needed/ }).getByRole('cell').nth(1)`. Cause: since `581fff3`, `GoalCalculator.tsx:73` renders the label as `<th scope="row">` with two `<td>`. Verify: `pnpm exec playwright test e2e/parity/calculators.spec.ts` gives 14 passed.
+- [ ] 1. **Calculator locators** [CR-H1]. In `../../e2e/parity/calculators.spec.ts` change the `outputCell` helper at line 11 from `.locator('td').nth(2)` to `.nth(1)`, and line 98 from `.nth(1)` to `.nth(0)`; or use `getByRole('row', { name: /Closings needed/ }).getByRole('cell').nth(1)`. Cause: since `581fff3`, `GoalCalculator.tsx:73` renders the label as `<th scope="row">` with two `<td>`. Verify: `pnpm exec playwright test e2e/parity/calculators.spec.ts` gives 14 passed.
 - [ ] 2. **Ctrl+K flake** [CR-H1, CR-L27]. `e2e/parity/search.spec.ts:70-72` presses the shortcut before hydration. Add a hydration signal (a `data-hydrated` attribute the shell sets after mount) and wait for it, then replace the `networkidle` waits in `e2e/parity/{search,glossary-tools,practice}.spec.ts`, the fixed wait in `cutover-stub.spec.ts:43` and `parity/settings.spec.ts:69-76` with the same signal. Verify: `search.spec.ts --repeat-each 10` green.
-- [ ] 3. **Typecheck script** [CR-M10]. `package.json`: `"typecheck": "next typegen && tsc --noEmit"`. Decide OD-26 on `.next/dev/types/**` after reading the `next typegen` docs. Add the recovery note ("if `tsc` fails on a stale `.next/dev/types`, restart `next dev` or remove that folder") to `AGENTS.md` under Commands. Verify on a clean checkout (`git stash -u` is not allowed; use a fresh clone or worktree): `pnpm typecheck` passes.
+- [ ] 3. **Typecheck script** [CR-M10]. `../../package.json`: `"typecheck": "next typegen && tsc --noEmit"`. Decide OD-26 on `.next/dev/types/**` after reading the `next typegen` docs. Add the recovery note ("if `tsc` fails on a stale `.next/dev/types`, restart `next dev` or remove that folder") to `AGENTS.md` under Commands. Verify on a clean checkout (`git stash -u` is not allowed; use a fresh clone or worktree): `pnpm typecheck` passes.
 - [ ] 4. **CI** (only if OD-24 is yes) [CR-H1]. `.github/workflows/ci.yml` running `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm exec playwright install --with-deps chromium`, `pnpm e2e` on Node 22. Read `01-app/02-guides/ci-build-caching.md` first. Until CI exists, run `pnpm e2e` before every commit.
 - [ ] 5. **Doc comment** [CR-L26]. `lib/routes.ts:15` cites `e2e/routes.spec.ts`, which does not exist; point it at `e2e/site.spec.ts:112-121`.
 
@@ -220,17 +220,17 @@ Steps:
 - [ ] 1. **Pitfall-cycle dark mode** [CR-H2]. `app/globals.css:959` `.cycle-node.is-broken`: use theme tokens (`background: var(--color-brand-tint); border-color: var(--color-brand-soft)`, the pair `.setup-source.on` uses) and `.cycle-badge { color: var(--color-success) }`. Verify on `/handbook/ch7` and `/preview` in dark mode after clicking "CRM": node title and body at least 4.5:1.
 - [ ] 2. **Callout text on `/preview` dark mode** [CR-H3]. `app/(public)/site.css:53`: lower the public base rules' specificity to `.pub :where(p)`, `.pub :where(a)` so `.box p` from `globals.css:1214` wins. Verify: `.pub-sample .box p` computed colour in dark mode is `#334155`.
 - [ ] 3. **Finish the `/preview` commit** [CR-M6, L12, L13, L14, L15, OD-28]:
-  - `components/site/Excerpt.tsx:47`: when rendering a whole page, demote every heading one level (h1 to h2, h2 to h3, h3 to h4), match `<h1\b[^>]*>` not only a bare `<h1>`, and throw when a whole-page render finds no h1. Drop or merge the `<h2>Chapter N</h2>` wrappers in `app/(public)/preview/page.tsx:41-50`. Keep `lib/outline.ts` ids so `/preview#…` anchors work.
+  - `components/site/Excerpt.tsx:47`: when rendering a whole page, demote every heading one level (h1 to h2, h2 to h3, h3 to h4), match `<h1\b[^>]*>` not only a bare `<h1>`, and throw when a whole-page render finds no h1. Drop or merge the `<h2>Chapter N</h2>` wrappers in `app/(public)/preview/page.tsx:41-50`. Keep `../../lib/outline.ts` ids so `/preview#…` anchors work.
   - Move content typography from `.chapter-section …` (`globals.css:356-362,383-396`) to a `.chapter-body` scope that both `ChapterView` and `Excerpt` emit. This is also the start of CR-L25; finish L25 in M6.
   - Scope the `hide-quizzes` rule at `globals.css:1124` to `.shell-handbook` so a reader who hid quizzes still sees them on `/preview`.
   - `PREVIEW_WIDGETS` in `Excerpt.tsx:24`: register plain `KnowledgeCheck`, not `KnowledgeCheckEntry`, so the sample never switches to `CoachCheck` when Chapter 1 or 7 questions gain concept tags (precondition for M4 step 9).
   - Copy: `app/(public)/refunds/page.tsx:21` ("a full section"), `app/(public)/page.tsx:362` ("a full sample lesson"), the "exactly as they appear" claims on `preview/page.tsx:20` and `pricing/page.tsx:122`. Say what the sample omits (glossary popovers, outline, read tracking, next-chapter link).
   - `e2e/site.spec.ts:46-55`: assert visibility, exactly one `h1`, no duplicate ids, and the outline h1 to h2 (chapter) to h3 (section) to h4 (box).
-- [ ] 4. **Consent-version check** [CR-M7]. `lib/leads/validate.ts:7`: `z.enum([CONSENT_VERSION])` or `Object.hasOwn`; type `CONSENT_TEXTS` as `Record<typeof CONSENT_VERSION, string>` and remove the `!` in `handler.ts:45`. Add the `'constructor'` case to `lib/leads/handler.test.ts` expecting `invalid_request` and no stored lead.
+- [ ] 4. **Consent-version check** [CR-M7]. `lib/leads/validate.ts:7`: `z.enum([CONSENT_VERSION])` or `Object.hasOwn`; type `CONSENT_TEXTS` as `Record<typeof CONSENT_VERSION, string>` and remove the `!` in `handler.ts:45`. Add the `'constructor'` case to `../../lib/leads/handler.test.ts` expecting `invalid_request` and no stored lead.
 - [ ] 5. **Legacy link** [CR-L11]. `components/widgets/ErrorScoreCard.tsx:50` links `/chN`; use `pageHref`.
-- [ ] 6. **Public live region** [CR-L16]. Add the `#pageStatus` region to `app/(public)/layout.tsx` so `announce()` works and "Copy script" on `/preview` is announced.
+- [ ] 6. **Public live region** [CR-L16]. Add the `#pageStatus` region to `../../app/(public)/layout.tsx` so `announce()` works and "Copy script" on `/preview` is announced.
 - [ ] 7. **Appendix E tool table on the sales page** [FS-D1, "not done yet"]. Render the tool list as "what is inside" on `/pricing` or `/`. It is a feature list, not teaching.
-- [ ] 8. **FS status check** [FS]. Confirm `e2e/site.spec.ts` still checks both chapters, both checkpoint boxes, both quizzes and the two Chapter 7 tools after step 3.
+- [ ] 8. **FS status check** [FS]. Confirm `../../e2e/site.spec.ts` still checks both chapters, both checkpoint boxes, both quizzes and the two Chapter 7 tools after step 3.
 
 Verification: dark-mode screenshots of ch7 and `/preview`; the heading outline; `pnpm typecheck`, `pnpm test`, `pnpm e2e` green.
 
@@ -238,7 +238,7 @@ Exit: CR items H2, H3, M6, M7, L11, L12, L13, L14, L15, L16 closed; FS Appendix 
 
 ### M3. Vercel Pro migration (lane D)
 
-Goal: the project lives under `meded` with a new Neon resource, per-environment branches, scoped and Sensitive variables, and the public alias never stopped returning 200. **Hand `docs/_archive/vercel-pro-migration-meded.md` to the session verbatim**; this section is the checklist and the stop points.
+Goal: the project lives under `meded` with a new Neon resource, per-environment branches, scoped and Sensitive variables, and the public alias never stopped returning 200. **Hand `vercel-pro-migration-meded.md` to the session verbatim**; this section is the checklist and the stop points.
 
 Branch: none for code (VM says no commits or pushes). The result file is committed afterwards on `docs/vercel-migration-result`.
 
@@ -254,10 +254,10 @@ Steps (the full detail, including every command, is in VM):
 - [ ] 1. **Pre-flight, read only** [VM-1]: repo root check; no `vercel.json` or `vercel.ts`; `.vercel/` absent; `.env.local` git-ignored, names only; `vercel --version`, `which pg_dump psql neon`; upgrade the CLI from 62.2.0 if `vercel integration --help` or `vercel integration resource --help` is missing (VM Decision 4, report before and after); `vercel whoami`, `vercel teams ls`, `vercel project ls --scope brianpxs-projects`, `vercel project ls --scope meded` (a `realestate-handbook` already under `meded` would force a rename and change the alias: stop); `vercel link --scope brianpxs-projects --project realestate-handbook --yes`, `cat .vercel/project.json`, `vercel env ls`, `vercel domains ls`, `vercel integration list`, `vercel ls --prod`; record `orgId`, `projectId`, the production deployment id and URL, the env var list per environment, the Neon resource name to a scratch file (names only); dashboard Git settings on both scopes; Neon read-only: confirm project `morning-credit-15469990`, `select count(*) from leads;` and `select count(*) from lead_attempts;`.
 - [ ] 2. **Pro and Spend Management** [VM-2]: `vercel switch meded`; Billing shows Pro; payment method on file; spend amount $20, notification $10; show the screen before saving; "pause deployments" stays off unless OD-29 is a yes after the plain warning.
 - [ ] 3. **Transfer** [VM-3]: dashboard Transfer Project to `meded`, name unchanged; paste the dialog's moves and does-not-move list verbatim and call out differences from the docs; if the dialog refuses because of the connected Neon resource, stop; wait for the explicit yes; then `rm -rf .vercel`, `vercel link --scope meded --project realestate-handbook --yes`, `cat .vercel/project.json`, `vercel ls --prod`, `vercel env ls`, `vercel integration list`, `curl -sI https://realestate-handbook.vercel.app | head -5`. **Stop rule:** if the alias is not 200 from the same deployment id as step 1, or the Neon variables are missing, stop, delete nothing, provision nothing, redeploy nothing, report, and be ready to reverse. Report which of the 18 Neon variables arrived as plain values per environment; confirm Git link and `all_except_custom_domains` protection survived; check whether the Protection Bypass for Automation secret survived (re-create it, with permission, before 6b if not).
-- [ ] 4. **New Neon resource, Path A** [VM-4]: if counts were non-zero, `pg_dump --data-only -t leads -t lead_attempts` to `/tmp/leads.sql` (never echo the URL); confirm provisioning is possible (`vercel integration add --help`, `vercel integration list` under `meded`, payment method, offered plans) before removing anything; **one ask** covers deleting the 18 copied variables and running `vercel integration add neon --name realestate-handbook` immediately after, in the same sitting; choose the lowest Neon plan with branching (stop and report the price if only paid plans are offered); confirm the resource is connected for Production, Preview and Development; then make sure Preview and Development never hold the production `DATABASE_URL` (per-preview branching if offered, otherwise `preview` and `development` branches created with permission and `DATABASE_URL` re-scoped per environment); `vercel env ls` must show `DATABASE_URL` scoped separately for all three and the session states which branch each points at (names only); apply `db/migrations/001_leads.sql` to main (ask first) and to the other branches if they pre-date it; restore the dump if any and show before and after counts and `min/max(created_at)` only; do not remove the old resource yet.
+- [ ] 4. **New Neon resource, Path A** [VM-4]: if counts were non-zero, `pg_dump --data-only -t leads -t lead_attempts` to `/tmp/leads.sql` (never echo the URL); confirm provisioning is possible (`vercel integration add --help`, `vercel integration list` under `meded`, payment method, offered plans) before removing anything; **one ask** covers deleting the 18 copied variables and running `vercel integration add neon --name realestate-handbook` immediately after, in the same sitting; choose the lowest Neon plan with branching (stop and report the price if only paid plans are offered); confirm the resource is connected for Production, Preview and Development; then make sure Preview and Development never hold the production `DATABASE_URL` (per-preview branching if offered, otherwise `preview` and `development` branches created with permission and `DATABASE_URL` re-scoped per environment); `vercel env ls` must show `DATABASE_URL` scoped separately for all three and the session states which branch each points at (names only); apply `../../db/migrations/001_leads.sql` to main (ask first) and to the other branches if they pre-date it; restore the dump if any and show before and after counts and `min/max(created_at)` only; do not remove the old resource yet.
 - [ ] 5. **Environment variables** [VM-5, VM Decision 3]: diff `vercel env ls` against step 1; recreate only variables that existed or that `.env.example` marks required; ask for every value not in hand; mark `SENDGRID_API_KEY`, `LEAD_IP_SALT`, `VERCEL_AUTOMATION_BYPASS_SECRET` and all Neon credentials Sensitive; Preview gets `SITE_INDEXABLE` unset and `NEXT_PUBLIC_SITE_URL` unset or the preview pattern; Preview never gets production SendGrid credentials unless told; note build-time variables (`NEXT_PUBLIC_SITE_URL`, `LEAD_CAPTURE_ENABLED`, `NEXT_PUBLIC_COACH_ENABLED`) need a redeploy; `vercel env pull .env.local --environment development` after confirming `.env.local` is ignored; never pull Production locally unless a check requires it, and delete the file after.
 - [ ] 6. **Release** [VM-6, VM Decision 2]: **6a local**: `pnpm install`, `pnpm typecheck`, `pnpm test`, `TEST_DATABASE_URL=<development branch> pnpm vitest run lib/leads/neon-store.integration.test.ts`, `pnpm dev`, `curl -sI http://localhost:3000/api/lead` gives 405. **6b preview**: `vercel` (no `--prod`); record URL and id; 200 (or 401 then bypass header); `/api/lead` 405 on GET; preview `DATABASE_URL` is a non-production branch; `PLAYWRIGHT_BASE_URL=<preview> pnpm e2e` with the bypass secret; `vercel logs <preview> --level error`; **stop and wait for the yes**. **6c production**: `vercel --prod`; record the id; 200 on the alias; `/robots.txt` and `/sitemap.xml` unchanged (indexing off unless `SITE_INDEXABLE=true`); `/api/lead` 405; if lead capture is on, one test lead with the owner's address lands in the new database and the old count is unchanged; `PLAYWRIGHT_BASE_URL=https://realestate-handbook.vercel.app pnpm e2e`; `vercel logs --level error` for the first minutes; Usage shows the project under Pro.
-- [ ] 7. **Cleanup and record** [VM-7]: only after 6c is green, ask, then remove the old Neon resource from `brianpxs-projects`; delete scratch files and `/tmp/leads.sql`; write `docs/_archive/vercel-pro-migration-meded-result.md` (beside the prompt) with everything VM lists (ids before and after, branch per environment, bypass secret fate, CLI versions, `--help` transcripts, spend settings, env list with Sensitive flags, the dialog text, row counts, what was verified, every **unchecked** item), ending with the sequencing note that UD's variables and migrations `002+` apply only to the new `meded` resource; add a dated note to `docs/_archive/vercel-preview-plan.md`.
+- [ ] 7. **Cleanup and record** [VM-7]: only after 6c is green, ask, then remove the old Neon resource from `brianpxs-projects`; delete scratch files and `/tmp/leads.sql`; write `docs/_archive/vercel-pro-migration-meded-result.md` (beside the prompt) with everything VM lists (ids before and after, branch per environment, bypass secret fate, CLI versions, `--help` transcripts, spend settings, env list with Sensitive flags, the dialog text, row counts, what was verified, every **unchecked** item), ending with the sequencing note that UD's variables and migrations `002+` apply only to the new `meded` resource; add a dated note to `vercel-preview-plan.md`.
 
 Exit (VM "Done when"): alias 200 from a `meded` build; no variable points at `morning-credit-15469990`; Preview and Development on non-production branches with `DATABASE_URL` scoped three ways; Git link authorised; bypass secret exists and Playwright used it; $10 alert and $20 limit; nothing left in the personal scope except what the owner kept; result file lists every unchecked item.
 
@@ -267,7 +267,7 @@ Goal: one authoritative source for every shared rule, no learner-facing contradi
 
 Branches: `docs/content-decisions` (Phase 0 record), `fix(content)/rules-module`, `fix(content)/contradictions`, `feat(content)/core-plans`, `chore(content)/trim`, `feat(coach)/coverage-chN` (one per chapter in Phase 4).
 
-**Status at 8 November.** Another session has Phase 2 work in the tree, uncommitted (M0 step 4). From the diff: five new Chapter 6 scripts with practice mode (referral partner introduction, one-week call, 30-day review request, home anniversary card, quarterly call) and the matching Chapter 6 checkpoint lines (step 9c); the buyer-agreement objection as a ninth objection-trainer row (step 9c); the seller column in Table 5.2 and the qualifying drill pointing at it (step 9c); cost per appointment in Chapter 2, Chapter 12, Appendix D, the glossary, `lib/sources.ts`, the lead-sources widget and its state field (step 9d); review profiles in Chapter 3 (step 9e); Table 1.2 runway and commission worksheet in Chapter 1 (step 9e); checkpoint answers for Chapter 1's "three things", Chapter 8's slow week, Chapter 11's seven documentation items and a new Chapter 13 checkpoint (step 9e); Chapter 10's Try It now says "rewrite" the Chapter 6 scripts; Chapter 13 points at the Chapter 6 introduction script. **Not in the diff:** the Phase 1 Critical contradiction fixes (the Chapter 2 checkpoint still says "five to ten times"; the Chapter 10 quiz item and the Chapter 5 stem are in files that have not changed), the rules module, and the Phase 0 decisions. Phase 2 landing before Phase 1 is acceptable because the two touch different sentences, but Phase 1 remains the higher priority and starts as soon as the Phase 2 branch is committed, so the chapter files are not edited by two sessions at once.
+**Status at 8 November.** Another session has Phase 2 work in the tree, uncommitted (M0 step 4). From the diff: five new Chapter 6 scripts with practice mode (referral partner introduction, one-week call, 30-day review request, home anniversary card, quarterly call) and the matching Chapter 6 checkpoint lines (step 9c); the buyer-agreement objection as a ninth objection-trainer row (step 9c); the seller column in Table 5.2 and the qualifying drill pointing at it (step 9c); cost per appointment in Chapter 2, Chapter 12, Appendix D, the glossary, `../../lib/sources.ts`, the lead-sources widget and its state field (step 9d); review profiles in Chapter 3 (step 9e); Table 1.2 runway and commission worksheet in Chapter 1 (step 9e); checkpoint answers for Chapter 1's "three things", Chapter 8's slow week, Chapter 11's seven documentation items and a new Chapter 13 checkpoint (step 9e); Chapter 10's Try It now says "rewrite" the Chapter 6 scripts; Chapter 13 points at the Chapter 6 introduction script. **Not in the diff:** the Phase 1 Critical contradiction fixes (the Chapter 2 checkpoint still says "five to ten times"; the Chapter 10 quiz item and the Chapter 5 stem are in files that have not changed), the rules module, and the Phase 0 decisions. Phase 2 landing before Phase 1 is acceptable because the two touch different sentences, but Phase 1 remains the higher priority and starts as soon as the Phase 2 branch is committed, so the chapter files are not edited by two sessions at once.
 
 **Phase 0 (blocking, short)** [CC Phase 0]:
 
@@ -275,18 +275,18 @@ Branches: `docs/content-decisions` (Phase 0 record), `fix(content)/rules-module`
 
 **Phase 1 (high-priority consistency)** [CC Phase 1, CC-§1, CC-§2, CC-H]:
 
-- [ ] 2. **Shared rules module** [CC-H]. Create `content/data/rules.ts` with the canonical phrasing and values (consent rule, speed-to-lead standard, 9 p.m. test, post-close milestone, scorecard thresholds as Table 8.2 states them). Point `lib/nurture-consistency.test.ts`, `lib/scorecard-consistency.test.ts` and `lib/coach/anchors.test.ts` at it. Chapter text, widgets and the coach reference it.
+- [ ] 2. **Shared rules module** [CC-H]. Create `content/data/rules.ts` with the canonical phrasing and values (consent rule, speed-to-lead standard, 9 p.m. test, post-close milestone, scorecard thresholds as Table 8.2 states them). Point `../../lib/nurture-consistency.test.ts`, `lib/scorecard-consistency.test.ts` and `lib/coach/anchors.test.ts` at it. Chapter text, widgets and the coach reference it.
 - [ ] 3. **Text versus assessment** [CC-§2]:
-  - Critical: Chapter 2 checkpoint answer 1 in `content/data/checkpoints.ts` ("five to ten times") to match "often converts far better"; retire the matching `knowledge-checks.ts` item so it cannot resurface.
+  - Critical: Chapter 2 checkpoint answer 1 in `../../content/data/checkpoints.ts` ("five to ten times") to match "often converts far better"; retire the matching `knowledge-checks.ts` item so it cannot resurface.
   - Critical: Chapter 10 quiz MCQ 1 ("seven to ten years") to match "a decade or two" (this item is live because Chapter 10 has no tagged questions).
   - Critical: Chapter 5 quiz stem "industry follow-up data says" to "many agents and industry trainers report", also in `questions.ts` (`ch5.multi-touch.fifth-to-twelfth`, non-draft, live).
   - Critical: Chapter 4 blank asserting conversion is highest under five minutes: reword to test the standard (automated reply in a minute, call in minutes), not the illustrative Figure 4.
   - Medium: Chapter 6 explains ("gets no reply" vs "rarely"; "thank them and move on" vs "keep in touch").
-- [ ] 4. **Text versus widget** [CC-§2]: scorecard (`content/data/scorecard.ts`) scoring zero open houses red in any week vs Table 8.2's first-30-days allowance (change the row mode or the table wording); Appendix C's 8 p.m. test to 9 p.m.; qualifying drill scenario 4 sending a seller to a plan with no sequence (resolves with OD-08).
+- [ ] 4. **Text versus widget** [CC-§2]: scorecard (`../../content/data/scorecard.ts`) scoring zero open houses red in any week vs Table 8.2's first-30-days allowance (change the row mode or the table wording); Appendix C's 8 p.m. test to 9 p.m.; qualifying drill scenario 4 sending a seller to a plan with no sequence (resolves with OD-08).
 - [ ] 5. **Text versus text** [CC-§2, CC-§6]: the consent rule's four phrasings across Chapters 2, 4 (twice), 5, 6, 11, Appendix B.1 and C become the one canonical sentence from `rules.ts`; keep brief reminders beside B.1 and the Chapter 5 Try It.
-- [ ] 6. **Sequencing** [CC-§1, OD-03, OD-04, OD-07]: implement the reading-plan decision in `content/data/plan.ts` and the preface; add the quick start with the "before your first outreach" checklist (consent before automated texts, describe property not people, agency disclosure at first substantive contact, do-not-call); fix forward references (Chapter 4's Try It importing the Chapter 2 sphere list; Chapter 12's "you have now met every part"); state the three post-close moments once and apply to Chapter 4 step 3, Chapter 5, Chapter 12, the preface and Appendix C.
+- [ ] 6. **Sequencing** [CC-§1, OD-03, OD-04, OD-07]: implement the reading-plan decision in `../../content/data/plan.ts` and the preface; add the quick start with the "before your first outreach" checklist (consent before automated texts, describe property not people, agency disclosure at first substantive contact, do-not-call); fix forward references (Chapter 4's Try It importing the Chapter 2 sphere list; Chapter 12's "you have now met every part"); state the three post-close moments once and apply to Chapter 4 step 3, Chapter 5, Chapter 12, the preface and Appendix C.
 - [ ] 7. **Free-set validation** [CC cross-plan, UD-§13, OD-01]: once OD-01 and OD-03/04 are answered, confirm the pages in `FREE_PAGE_IDS` and on `/preview` are self-contained and that the safeguards appear in the free material or a quick start a free reader can reach.
-- [ ] 8. **CRM positioning copy pass** [CC-C, OD-05]: FAQ (`content/site/faq.ts`), footer, About and Terms claim examples "use Keller Williams Command screens and terms, and each is labeled"; make site copy and the handbook vocabulary (Marketing Profile, Client App, Agent Site, "productivity coach" in Chapters 3 and 4, Appendix C, glossary) agree with the decision. Single owner for these files during this pass (section 7). Label Appendix F per OD-06.
+- [ ] 8. **CRM positioning copy pass** [CC-C, OD-05]: FAQ (`../../content/site/faq.ts`), footer, About and Terms claim examples "use Keller Williams Command screens and terms, and each is labeled"; make site copy and the handbook vocabulary (Marketing Profile, Client App, Agent Site, "productivity coach" in Chapters 3 and 4, Appendix C, glossary) agree with the decision. Single owner for these files during this pass (section 7). Label Appendix F per OD-06.
 
 Definition of done for Phase 1 [CC]: all non-draft questions and checkpoints match chapter text; scorecard and Appendix C match their source tables; reading plan and forward references consistent; `rules.ts` exists and is referenced by text, widgets and tests; existing tests pass and the new assertions below are in place.
 
@@ -311,13 +311,13 @@ Definition of done for Phase 1 [CC]: all non-draft questions and checkpoints mat
 - Assessment: every non-draft question's `explain` and answer text is found in its chapter's HTML; every checkpoint answer's numeric claims appear in the chapter.
 - Widgets: scorecard thresholds match Table 8.2 wording; Appendix C's test time matches Chapter 4.
 - Forward-reference integrity after OD-03.
-- Optional: a content lint that greps `content/pages/` for retired phrasings and fails on a hit; widget snapshots for scorecard, lead-sources and roadmap if e2e supports them.
+- Optional: a content lint that greps `../../content/pages` for retired phrasings and fails on a hit; widget snapshots for scorecard, lead-sources and roadmap if e2e supports them.
 
 **Phase 4 (coach coverage, lane H)** [CC Phase 4, CC-§5]:
 
 Preconditions, all required: Phases 1 to 3 landed and the rules frozen; CR-L14 fixed (M2 step 3); CR-M2 fixed (M6 step 1); OD-30 names the reviewer.
 
-- [ ] 12. Author concepts (`content/data/concepts.ts`) and questions (`content/data/questions.ts`) for Chapters 1, 3, 6, 7, 8, 9, 10, 11 and 13; rough size 8 chapters × 4 to 6 concepts × 2 to 3 questions, about 80 to 140 items, each needing agent review and sign-off (clearing `draft`) and validation against the chapter text. One branch per chapter so agents never share a file. Keep the Chapter 2, 4, 5 and 12 question reviews in `docs/_archive/` as the pattern.
+- [ ] 12. Author concepts (`../../content/data/concepts.ts`) and questions (`content/data/questions.ts`) for Chapters 1, 3, 6, 7, 8, 9, 10, 11 and 13; rough size 8 chapters × 4 to 6 concepts × 2 to 3 questions, about 80 to 140 items, each needing agent review and sign-off (clearing `draft`) and validation against the chapter text. One branch per chapter so agents never share a file. Keep the Chapter 2, 4, 5 and 12 question reviews in `docs/_archive/` as the pattern.
 
 Exit: CC Phase 1 definition of done met; Phases 2 and 3 items ticked; coach bank covers all 13 chapters with no draft items left unreviewed.
 
@@ -327,18 +327,18 @@ Goal: readers sign in with a magic link, the handbook is gated, free pages open 
 
 Preconditions: M1 green; M3 done (hosted migrations go only to the new `meded` resource and to a branch first); OD-01, OD-10 to OD-13, OD-17, OD-18, OD-21, OD-22 answered; the sender in step 1 verified before any real send.
 
-Branches: `feat/auth-core` (P1), `feat/access-gate` (P2), `feat/signup-home` (P3). P1 and P2 share `lib/leads/validate.ts` only through the shared email schema; land P1 before P2 starts. P3 touches public files no other lane may edit meanwhile.
+Branches: `feat/auth-core` (P1), `feat/access-gate` (P2), `feat/signup-home` (P3). P1 and P2 share `../../lib/leads/validate.ts` only through the shared email schema; land P1 before P2 starts. P3 touches public files no other lane may edit meanwhile.
 
 **Phase 0: decisions and launch blockers** [UD-P0]:
 
-- [ ] 1. **Email sender ready** (resolution #3): a transactional from-address on a domain the owner controls, SPF and DKIM verified at SendGrid, a test sign-in link landing in the inbox (not spam) of at least one Gmail and one Outlook account; postal address supplied for the marketing footer; `SENDGRID_API_KEY`, `LEAD_FROM_EMAIL`, `LEAD_MAILING_ADDRESS`, `LEAD_FROM_NAME`, `LEAD_REPLY_TO` set on the `meded` project per VM scoping (Production only unless told). Rewrite the welcome text in `lib/leads/mail.ts` ("The book stays free to read") [FS-D3, UD-§3.3, UD-P6]. Before lead capture goes live, also add the `unsubscribed_at` column and documented process, set a retention period, and resolve `OWNER.supportEmail` [CR-L5] (the privacy page text itself is M7).
-- [ ] 2. Record OD-17 (media) because a yes adds the gated media route to Phase 2. Decide the fate of the root `downloads/` folder at the same time.
-- [ ] 3. Update `.env.example` with `AUTH_IP_SALT` (or reuse `LEAD_IP_SALT`), `ADMIN_BOOTSTRAP_EMAILS`, and placeholders for the later `BILLING_PROVIDER`, `BILLING_WEBHOOK_SECRET`, `BILLING_API_KEY`, `CRON_SECRET` [UD-§12.5]. Fill `lib/offer.ts` values the owner has supplied.
+- [ ] 1. **Email sender ready** (resolution #3): a transactional from-address on a domain the owner controls, SPF and DKIM verified at SendGrid, a test sign-in link landing in the inbox (not spam) of at least one Gmail and one Outlook account; postal address supplied for the marketing footer; `SENDGRID_API_KEY`, `LEAD_FROM_EMAIL`, `LEAD_MAILING_ADDRESS`, `LEAD_FROM_NAME`, `LEAD_REPLY_TO` set on the `meded` project per VM scoping (Production only unless told). Rewrite the welcome text in `../../lib/leads/mail.ts` ("The book stays free to read") [FS-D3, UD-§3.3, UD-P6]. Before lead capture goes live, also add the `unsubscribed_at` column and documented process, set a retention period, and resolve `OWNER.supportEmail` [CR-L5] (the privacy page text itself is M7).
+- [ ] 2. Record OD-17 (media) because a yes adds the gated media route to Phase 2. Decide the fate of the root `../../downloads` folder at the same time.
+- [ ] 3. Update `.env.example` with `AUTH_IP_SALT` (or reuse `LEAD_IP_SALT`), `ADMIN_BOOTSTRAP_EMAILS`, and placeholders for the later `BILLING_PROVIDER`, `BILLING_WEBHOOK_SECRET`, `BILLING_API_KEY`, `CRON_SECRET` [UD-§12.5]. Fill `../../lib/offer.ts` values the owner has supplied.
 
 **Phase 1: users and auth core** [UD-P1, UD-§3, UD-§6.1 to §6.4, UD-§12.1, UD-§12.2]:
 
 - [ ] 4. Migration `db/migrations/002_users_auth.sql`: `users`, `auth_tokens`, `sessions`, `auth_attempts` exactly as UD-§6 specifies (uuid keys, `timestamptz`, `text` with `check (... in (...))`, lower-cased unique email with `check (email = lower(btrim(email)))`, commented `-- down` block, 001-style header). If OD-10 chose Neon Auth, 002 omits `auth_tokens` and `sessions` and says so.
-- [ ] 5. Shared email schema `lib/validate/email.ts` (trim, lower-case, max 254, no dot or plus rewriting); `lib/leads/validate.ts` imports it.
+- [ ] 5. Shared email schema `lib/validate/email.ts` (trim, lower-case, max 254, no dot or plus rewriting); `../../lib/leads/validate.ts` imports it.
 - [ ] 6. Stores and helpers: `lib/users/{types,validate,store,neon-store,memory-store}.ts`; `lib/auth/{config,token,session,cookie,handler,validate,store,neon-store,memory-store,mail,dal}.ts`. `config.ts` holds `TERMS_VERSION` and the exact sentence shown under the sign-in button, as `CONSENT_TEXTS` does. Token: 32 random bytes, base64url in the link, SHA-256 hex stored, 15-minute expiry, `next_path` validated (starts with `/`, not `//`, no scheme), `source` in the allowed set. Session cookie `__Host-hb_session` in production (`hb_session` over plain http), `HttpOnly; Secure; SameSite=Lax; Path=/`, Max-Age 90 days; hash stored; sliding renewal by the single conditional statement in UD-§3.2 at most once per 24 hours; one-year absolute cap. The auth mailer relaxes the postal-address check for the transactional sign-in message only.
 - [ ] 7. Handlers and routes: `app/api/auth/request-link/route.ts` (Origin required and allow-listed; 5 per IP per 10 minutes, 3 per email hash per hour; `200 {ok:true}` and identical email whether or not the address is known; **no user row at request time**); `app/auth/verify/page.tsx` (GET does a read-only lookup and renders "expired or already used" with a resend form, or a one-button "Sign me in" form that JavaScript submits, so scanners consume nothing); `app/api/auth/verify/route.ts` (one atomic `update … where token_hash = $1 and consumed_at is null and expires_at > now() returning …`; rate-limited 10 per IP per 10 minutes; upserts the user with `email_verified_at` and `accepted_terms_version`; writes the session; sets the cookie; updates `last_sign_in_at`; redirects to `next` or `/handbook`; bootstrap admin from `ADMIN_BOOTSTRAP_EMAILS` only while zero admins exist, audited `actor_kind = 'system'`, `action = 'bootstrap_admin'`, inserting the owner grant once Phase 2's tables exist); `app/api/auth/sign-out/route.ts`.
 - [ ] 8. `proxy.ts` at the repo root (read `proxy.md` first): matcher `['/handbook/:path*', '/account/:path*', '/admin/:path*', '/search-index.json']`; missing or malformed cookie (not 43 base64url characters) redirects to `/signup?next=<path>`; otherwise re-emit the cookie with a fresh Max-Age and continue; no database access; never decides preview versus member.
@@ -349,19 +349,19 @@ Branches: `feat/auth-core` (P1), `feat/access-gate` (P2), `feat/signup-home` (P3
 
 - [ ] 11. Migration `db/migrations/003_access_billing.sql`: `access_grants`, `memberships`, `billing_customers`, `billing_records`, `billing_events`, `audit_log` per UD-§6.5 to §6.9 and §6.12 (the billing tables ship now so the schema is complete; billing code waits for M7). Apply to a branch first, as in step 10.
 - [ ] 12. `lib/access/{entitlement,grants,membership,validate}.ts` and `lib/audit.ts`. `entitlement()` is the pure function in UD-§8: status not active gives none; `memberships.suspended_at` set gives none for paid content; role ignored; any non-revoked in-window grant gives member; the billing safety net in rule 5; otherwise preview. `recomputeMembership()` per UD-§7.2, run after every grant or suspension change and lazily when a gate read finds `ends_at` past. `audit_log` is append-only; mutations and their audit row run in one fixed `transaction([...])` batch and skip the row when before equals after.
-- [ ] 13. `FREE_PAGE_IDS` in `lib/pages.ts` per OD-01. `app/(product)/handbook/[slug]/page.tsx` keeps `generateStaticParams` and `dynamicParams = false`, calls `requireViewer()`, and renders the **designed upsell card** (chapter title, one line on what it teaches, the price or "not yet on sale" state from `purchaseOpen()`, one primary action, links to the free chapters and `/pricing`) when the slug is not free and the viewer is not a member. It must never read as a broken page.
-- [ ] 14. Leaks: `app/search-index.json/route.ts` becomes dynamic, requires a viewer, filters to free pages for preview users. If OD-17 is yes, `app/api/media/[...path]/route.ts` checks the viewer and the files move out of `public/`.
-- [ ] 15. `app/(product)/layout.tsx`: retire `Gate` for signed-in readers (OD-18); `components/shell/Sidebar.tsx` shows locked markers; `app/(product)/account/page.tsx` and `components/handbook/AccountPanels.tsx` show identity, last sign-in, sessions, "sign out everywhere" (`app/api/account/sign-out-all/route.ts`) and delete (`app/api/account/delete/route.ts`, typed-email confirmation, the one fixed anonymisation batch in UD-§12.4); `app/robots.ts` disallows `/admin`, `/auth` and `/api`.
+- [ ] 13. `FREE_PAGE_IDS` in `../../lib/pages.ts` per OD-01. `app/(product)/handbook/[slug]/page.tsx` keeps `generateStaticParams` and `dynamicParams = false`, calls `requireViewer()`, and renders the **designed upsell card** (chapter title, one line on what it teaches, the price or "not yet on sale" state from `purchaseOpen()`, one primary action, links to the free chapters and `/pricing`) when the slug is not free and the viewer is not a member. It must never read as a broken page.
+- [ ] 14. Leaks: `../../app/search-index.json/route.ts` becomes dynamic, requires a viewer, filters to free pages for preview users. If OD-17 is yes, `app/api/media/[...path]/route.ts` checks the viewer and the files move out of `public/`.
+- [ ] 15. `../../app/(product)/layout.tsx`: retire `Gate` for signed-in readers (OD-18); `components/shell/Sidebar.tsx` shows locked markers; `app/(product)/account/page.tsx` and `components/handbook/AccountPanels.tsx` show identity, last sign-in, sessions, "sign out everywhere" (`app/api/account/sign-out-all/route.ts`) and delete (`app/api/account/delete/route.ts`, typed-email confirmation, the one fixed anonymisation batch in UD-§12.4); `app/robots.ts` disallows `/admin`, `/auth` and `/api`.
 - [ ] 16. Tests: table-driven `entitlement()` and `recomputeMembership()` cases from UD-§15; integration tests for unique constraints, atomic consume under concurrency, single renewal under concurrency, one admin from two bootstrap addresses, cascades, anonymisation keeping billing rows.
 
 **Phase 3: home page and forms** [UD-P3, UD-§2, FS-D3, OD-02, OD-22]:
 
 - [ ] 17. Recreate `components/site/SignupForm.tsx` (honeypot, validation, inbox-check state) with `variant` (`hero`, `card`, `inline`) and `source` props, and `app/(public)/signup/page.tsx` with copy per OD-01 (resolution #7). Hold the sitemap entry until the form sends (UD-D15).
-- [ ] 18. `app/(public)/page.tsx`: the form in the hero as the primary action ("No password, no card. The link we email also signs you in next time."), "Try the sample lesson without an email" and "Pricing and availability" as text links, the form repeated after the calculator win in `components/site/HeroPlan.tsx` (`source: 'calculator'`) and at the end (`source: 'final'`); returning readers with a cookie see "Welcome back. Open the handbook"; `components/site/PublicHeader.tsx` shows "Open the handbook" instead of "Sign in" (also close the menu on same-page hash links and fix `aria-current`, CR-M9, since this file is open). When `purchaseOpen()` is true the buy button returns as primary and the form moves to the side column. No invented proof.
+- [ ] 18. `../../app/(public)/page.tsx`: the form in the hero as the primary action ("No password, no card. The link we email also signs you in next time."), "Try the sample lesson without an email" and "Pricing and availability" as text links, the form repeated after the calculator win in `components/site/HeroPlan.tsx` (`source: 'calculator'`) and at the end (`source: 'final'`); returning readers with a cookie see "Welcome back. Open the handbook"; `components/site/PublicHeader.tsx` shows "Open the handbook" instead of "Sign in" (also close the menu on same-page hash links and fix `aria-current`, CR-M9, since this file is open). When `purchaseOpen()` is true the buy button returns as primary and the form moves to the side column. No invented proof.
 - [ ] 19. `app/(public)/signin/page.tsx` (same form, `source: 'signin'`); verify page states; success state inline with "Send again" after 30 seconds and "Use a different email".
 - [ ] 20. Marketing opt-in: a separate optional checkbox posting through `/api/lead` with a new `source` value, confirmed opt-in (send a confirmation link; store as subscribed only when clicked). This is the FS post-sample form; its copy follows OD-02. Place it after the sample on `/preview` too. Signing in never implies marketing consent.
 - [ ] 21. Placement measurement without a tracker: store `source` on every link request and count requests against completed sign-ins in the database.
-- [ ] 22. E2E: `e2e/auth.spec.ts`, `e2e/auth.ts` (session seeding helper), updates to `e2e/site.spec.ts`, `e2e/gate.spec.ts`, `playwright.config.ts`, `e2e/global-setup.ts`; Mailpit locally. The scenarios in UD-§15 (request on `/signup`, read the link from Mailpit, GET leaves the token unconsumed, click lands on `next`; preview reader sees the upsell on `/handbook/ch2` and content on `/handbook/ch1`; signed out `/handbook/ch1` redirects, `/preview` loads, `/search-index.json` is not public; sign-out and sign-out-everywhere; no admin access for a preview reader). The product-page loops seed a session or they fail on the redirect.
+- [ ] 22. E2E: `e2e/auth.spec.ts`, `e2e/auth.ts` (session seeding helper), updates to `../../e2e/site.spec.ts`, `e2e/gate.spec.ts`, `playwright.config.ts`, `e2e/global-setup.ts`; Mailpit locally. The scenarios in UD-§15 (request on `/signup`, read the link from Mailpit, GET leaves the token unconsumed, click lands on `next`; preview reader sees the upsell on `/handbook/ch2` and content on `/handbook/ch1`; signed out `/handbook/ch1` redirects, `/preview` loads, `/search-index.json` is not public; sign-out and sign-out-everywhere; no admin access for a preview reader). The product-page loops seed a session or they fail on the redirect.
 
 Verification: `pnpm typecheck`, `pnpm test`, integration tests against a branch, `pnpm e2e`; UD acceptance criteria for the gate: no route under `/handbook`, `/account`, `/admin` or `/search-index.json` returns member content without a database-backed session and a member entitlement; raw tokens and session ids never appear anywhere but the one email link and the cookie; identical responses for known and unknown emails.
 
@@ -377,18 +377,18 @@ Steps:
 
 - [ ] 1. **Quiz keyboard** [CR-M2]. `components/widgets/KnowledgeCheck.tsx:42`, `QuestionItem.tsx:53-59`: commit on an explicit "Check answer" action (as fill-in-blank does); after committing use `aria-disabled` or move focus to the feedback (`tabIndex={-1}` plus `focus()`). Verify: ArrowDown twice commits nothing; `document.activeElement !== body` after commit. Precondition for M4 step 12.
 - [ ] 2. **Mobile menu inert** [CR-M3]. `components/shell/Sidebar.tsx:60-83,203-207`: when open on a phone set `inert` on `#main-content` and the skip link (the `Gate.tsx:37-38` pattern); same for the search-results overlay.
-- [ ] 3. **Phone scroll padding** [CR-M4]. In the `(max-width: 900px)` block of `app/globals.css` add `html { scroll-padding-top: 72px }` (or derive from `--header-h`) and collapse the per-element rule at `:1061`.
+- [ ] 3. **Phone scroll padding** [CR-M4]. In the `(max-width: 900px)` block of `../../app/globals.css` add `html { scroll-padding-top: 72px }` (or derive from `--header-h`) and collapse the per-element rule at `:1061`.
 - [ ] 4. **Dimmed timeline buttons** [CR-M5]. `globals.css:886`, `NurtureTimeline.tsx:55`: de-emphasise with border or background only (or opacity 0.7), or make them genuinely disabled.
 - [ ] 5. **`AmountInput` prop sync** [CR-M8]. Track the last prop value and clear `text` when the parent changes it; remove the remount keys in `Scorecard.tsx:35,101` and `PipelineCalculator.tsx:23`. happy-dom test: type, re-render with a new value, assert the string.
 - [ ] 6. **Public header menu** [CR-M9] if not already done in M5 step 18.
-- [ ] 7. **404 pages** [CR-M12]. `app/not-found.tsx` inside the public chrome with `pub-h1`; add `app/(product)/not-found.tsx` so product `notFound()` keeps the sidebar. Read `not-found.md` first.
+- [ ] 7. **404 pages** [CR-M12]. `../../app/not-found.tsx` inside the public chrome with `pub-h1`; add `app/(product)/not-found.tsx` so product `notFound()` keeps the sidebar. Read `not-found.md` first.
 - [ ] 8. **Coach e2e** [CR-M11]. `e2e/coach.spec.ts`: pinned-date plan creation, mark three steps, miss a ch4 question and see it in the review deck, `handbookCoach` export round-trip, plus the coach-off `notFound()` branch.
 - [ ] 9. **Leads config and validation** [CR-L3, L7]. `lib/leads/store.ts:119-123`: refuse the file store when `NODE_ENV === 'production'` (mirror the `LEAD_IP_SALT` refusal at `route.ts:14`); guard that parsed `leads` and `attempts` are arrays. Fix `.env.example:17` so `LEAD_STORE=file` is commented or clearly dev-only.
 - [ ] 10. **State and narrowing** [CR-L6, L8, L9, L10]. `lib/state/index.ts:10` and `transfer.ts:54`: stop running the handbook-state migration on the settings store (or give settings its own); `DeepLinks.tsx:37-44` and `SidebarSearch.tsx:85,137`: `isPageId` before casting; `coach/schema.ts:65`: per-field catches instead of a whole-object `.catch(undefined)`; `ProgressTransfer.tsx:30,44`: handle `file.text()` rejection with a message.
 - [ ] 11. **Lower-impact a11y** [CR-L17 to L22]. `Settings.tsx:54-94` collapse guard while a control inside is focused; drop `aria-expanded`/`aria-controls` from the searchbox in `SidebarSearch.tsx:103-105`; move the literal "●" out of 28 content h3s and 16 widget headings into CSS `::before` or an `aria-hidden` span (the `InteractiveHeader.tsx:7` pattern; coordinate with M4 so no two agents edit the same `content/pages/*.html`); coach pages h1 to h2 instead of h1 to h3 (`PlanSetup.tsx:47`, `TodayCard.tsx:31,89`, `ReviewDeck.tsx:98,144`); `<caption>` on the seven data tables (`app-b.html:7,30,48`, `app-e.html:6`, `app-f.html`, `ch2.html:79`, `ch9.html:61`); `Gate.tsx` `aria-invalid`/`aria-describedby` and Escape behaviour only if the dialog survives OD-18.
 - [ ] 12. **CSS** [CR-L23, L24, L25]. `.sidebar-header p` and `.settings-legal` lose `white-space: nowrap`; move the shell breakpoints to range syntax with a few named breakpoints (the 900 to 901 px gap, nine distinct max-widths); finish scoping the unscoped `h2/h3/p/li/table` rules (`globals.css:356-414,506-531`) to the `.chapter-body` wrapper begun in M2, then delete the eight undo rules in `site.css`.
 - [ ] 13. **Dependency** [CR-L4, OD-27]. Bump `happy-dom` to ≥ 21.0.4 with the owner's yes (lockfile change).
-- [ ] 14. **Optional improvements** [CR]: `app/(product)/error.tsx`; one shared `storage` listener per store; derive `WidgetName` from `WIDGET_NAMES as const` and check whether the three `as unknown as ComponentType` casts can go under `@types/react` 19.3; export `LeadBody`/`LeadError` from the handler for `Gate.tsx`; build `THEME_SCRIPT` from `TEXT_SIZES`; `role="list"` on `list-style: none` lists, label `nav#sidebar` "Handbook", forced-colours outline; the `globals.css` reset and print-token tidy; `parity/` rename and `legacy/` removal (OD-25); follow system dark-mode changes while `dark` is unset; fix the `pageIdFromPath` doc comment; remove the unused `useConceptStates` export.
+- [ ] 14. **Optional improvements** [CR]: `app/(product)/error.tsx`; one shared `storage` listener per store; derive `WidgetName` from `WIDGET_NAMES as const` and check whether the three `as unknown as ComponentType` casts can go under `@types/react` 19.3; export `LeadBody`/`LeadError` from the handler for `Gate.tsx`; build `THEME_SCRIPT` from `TEXT_SIZES`; `role="list"` on `list-style: none` lists, label `nav#sidebar` "Handbook", forced-colours outline; the `globals.css` reset and print-token tidy; `parity/` rename and `../../legacy` removal (OD-25); follow system dark-mode changes while `dark` is unset; fix the `pageIdFromPath` doc comment; remove the unused `useConceptStates` export.
 
 Exit: CR Medium items all closed; Low items closed or explicitly deferred to M8 (L1, L2, L5).
 
@@ -406,16 +406,16 @@ Branches: `feat/admin`, `feat/billing`, `docs(site)/policies-copy`, `feat/profil
 
 **Phase 5: billing** [UD-P5, UD-§10, UD-§6.7 to §6.9]:
 
-- [ ] 2. Adapter interface (`verify`, `parse`, `fetch`, `checkoutParams`) in `lib/billing/{types,store,neon-store,memory-store,process-event,adapters/<provider>}.ts`. `lib/offer.ts` gains `checkoutUrlFor({ userId, email })`; the buy button sends a signed-out visitor through sign-in first so the user id travels in metadata. Nothing is merged automatically; `linkBillingToUser` is the audited exception path.
+- [ ] 2. Adapter interface (`verify`, `parse`, `fetch`, `checkoutParams`) in `lib/billing/{types,store,neon-store,memory-store,process-event,adapters/<provider>}.ts`. `../../lib/offer.ts` gains `checkoutUrlFor({ userId, email })`; the buy button sends a signed-out visitor through sign-in first so the user id travels in metadata. Nothing is merged automatically; `linkBillingToUser` is the audited exception path.
 - [ ] 3. `app/api/billing/webhook/route.ts` (`dynamic = 'force-dynamic'`, `maxDuration = 60`, raw body, constant-time signature check with a five-minute window before any database call; 400 on bad signature, 500 on processing failure so the provider retries). Processing per UD-§10.3 and the recovery table in §10.4: claim the event row (`on conflict … do update … where status = 'failed'`), fetch the object by id, `ignored_stale` if older than `last_event_at`, resolve the user (metadata id, else normalised email, else create), one fixed batch for record upsert, grant upsert or revoke, `recomputeMembership` and audit, then the ready email with `ready_email_sent_at` written after, then `processed`.
 - [ ] 4. `app/api/cron/billing-reconcile/route.ts` (GET, `CRON_SECRET`), scheduled daily in the cron config file (resolution #9; the one deployment-config change in this phase): mirror every non-terminal record, re-queue `received` rows older than ten minutes as `failed`, send the ready email for paid rows with `ready_email_sent_at` null, null `billing_events.payload` older than 90 days, delete expired tokens and sessions past retention. The same function backs the admin "Resync" button.
-- [ ] 5. Account billing panel on `app/(product)/account/page.tsx` (provider status, dates, manage link, or "no purchase" plus pricing). Environment: `BILLING_PROVIDER`, `BILLING_WEBHOOK_SECRET`, `BILLING_API_KEY`, `CRON_SECRET` on `meded` only, Sensitive, Production and Preview scoped as VM prescribes, provider test mode on Preview.
+- [ ] 5. Account billing panel on `../../app/(product)/account/page.tsx` (provider status, dates, manage link, or "no purchase" plus pricing). Environment: `BILLING_PROVIDER`, `BILLING_WEBHOOK_SECRET`, `BILLING_API_KEY`, `CRON_SECRET` on `meded` only, Sensitive, Production and Preview scoped as VM prescribes, provider test mode on Preview.
 - [ ] 6. Tests per UD-§15 billing list, including the store fake that throws after each step in turn and converges after one retry or one reconcile pass; a payload containing `role: 'admin'` changes nothing.
 
 **Phase 6: copy and policies** [UD-P6, UD-§12.3, CR-L5, CC-C follow-through] (one owner, one branch, no concurrent editor of these files):
 
-- [ ] 7. `app/(public)/privacy/page.tsx`: replace "It sets no cookies of its own" with the strictly necessary session cookie disclosure (name, 90 days, why no banner); add "Accounts and sign-in" (email, transactional emails, session records, retention, how to delete); hosting names Vercel, Neon and SendGrid; resolve the four `Decision` placeholders and add the contact; the payment `Decision` stays until the provider is chosen; `POLICY_STATUS.privacy` stays `draft` until approved.
-- [ ] 8. Remove "no accounts" sentences from pricing, support, account and FAQ; pricing, refunds (OD-16), updates (OD-20) and FAQ copy for the purchase; `lib/leads/config.ts` consent text review; update `docs/_archive/launch-handoff.md` blockers and `docs/_archive/cutover-runbook.md`.
+- [ ] 7. `../../app/(public)/privacy/page.tsx`: replace "It sets no cookies of its own" with the strictly necessary session cookie disclosure (name, 90 days, why no banner); add "Accounts and sign-in" (email, transactional emails, session records, retention, how to delete); hosting names Vercel, Neon and SendGrid; resolve the four `Decision` placeholders and add the contact; the payment `Decision` stays until the provider is chosen; `POLICY_STATUS.privacy` stays `draft` until approved.
+- [ ] 8. Remove "no accounts" sentences from pricing, support, account and FAQ; pricing, refunds (OD-16), updates (OD-20) and FAQ copy for the purchase; `../../lib/leads/config.ts` consent text review; update `docs/_archive/launch-handoff.md` blockers and `docs/_archive/cutover-runbook.md`.
 
 **Phase 7: profile and survey hooks** [UD-P7, UD-§6.10, §6.11, §11] (any time after Phase 2):
 
@@ -427,12 +427,12 @@ Exit: a signed webhook fixture posted to the local build makes `/account` show t
 
 Goal: `purchaseOpen()` can be flipped to true honestly. Nothing here is started before M5 and M7 are complete.
 
-- [ ] 1. **Security headers** [CR-L1]. `next.config.ts` `headers()`: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Content-Security-Policy: frame-ancestors 'none'`; hash the two constant inline scripts in `app/layout.tsx:32,36` for a full CSP (medium task; read `content-security-policy.md`). Verify with `curl -sI` against the production alias, not the dev server.
+- [ ] 1. **Security headers** [CR-L1]. `../../next.config.ts` `headers()`: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Content-Security-Policy: frame-ancestors 'none'`; hash the two constant inline scripts in `app/layout.tsx:32,36` for a full CSP (medium task; read `content-security-policy.md`). Verify with `curl -sI` against the production alias, not the dev server.
 - [ ] 2. **Rate-limit backstop** [CR-L2]. A global per-window send ceiling on `/api/lead` and the auth request-link route as a cost backstop.
 - [ ] 3. **Lead capture live** [CR-L5, FS-D3]: only after M5 step 1 (sender), the unsubscribe column and process, retention, and the privacy page (M7 step 7) are done, set `LEAD_CAPTURE_ENABLED=true` for Production on `meded` and redeploy (build-time variable).
-- [ ] 4. **Owner inputs** (OD-23): price, checkout URL, access and update terms in `lib/offer.ts`; `POLICY_STATUS` for terms, refunds, updates (and privacy) to `approved` once the owner approves; `purchaseOpen()` then returns true by its own rule. Flipping it is a publishing action: ask.
+- [ ] 4. **Owner inputs** (OD-23): price, checkout URL, access and update terms in `../../lib/offer.ts`; `POLICY_STATUS` for terms, refunds, updates (and privacy) to `approved` once the owner approves; `purchaseOpen()` then returns true by its own rule. Flipping it is a publishing action: ask.
 - [ ] 5. **Pre-launch verification**: full `pnpm e2e` against a preview with the bypass secret, then against production; `curl -sI https://<host>/handbook/ch13` gives a redirect without a valid cookie [CR-M1 verify]; `/search-index.json` not public; a test purchase in provider test mode end to end; `vercel logs --level error`; Spend Management unchanged.
-- [ ] 6. **Custom domain cutover**: out of this plan's scope; follow `docs/_archive/cutover-runbook.md` when the owner is ready.
+- [ ] 6. **Custom domain cutover**: out of this plan's scope; follow `cutover-runbook.md` when the owner is ready.
 
 Exit: launch-handoff blockers 1 to 5 closed; CR "Later / at launch" items closed; UD acceptance criteria all green.
 
@@ -442,37 +442,37 @@ Files that more than one milestone or lane edits. Before spawning parallel agent
 
 | File | Touched by | Rule |
 |---|---|---|
-| `app/globals.css` | M2 (H2, M6 scope start), M6 (M3, M4, M5, L13, L23, L24, L25) | One CSS agent at a time |
-| `app/(public)/site.css` | M2 (H3), M5-P3, M6 (L25 undo rules) | Same |
-| `components/site/Excerpt.tsx` | M2 (M6, L12, L14) | M2 only |
-| `app/(public)/preview/page.tsx` | M2 (M6, L15, Appendix E), M5-P3 (opt-in form) | M2 lands first |
-| `app/(public)/page.tsx` | M2 (L15), M5-P3 (hero rework) | M2 lands first |
-| `app/(public)/pricing/page.tsx`, `refunds/page.tsx` | M2 (L15), M7-P5/P6 | Three separate passes; never concurrent |
-| `content/site/faq.ts`, footer, About, Terms | M4 step 8 (CC-C), M7-P6 | Never concurrent |
-| `app/(public)/privacy/page.tsx` | M7-P6 only (CR-L5 and UD-§12.3 together) | One edit |
-| `lib/leads/mail.ts` | M5 step 1 (welcome rewrite), M5-P1 (auth mailer reuses) | Same lane |
-| `lib/leads/validate.ts` | M2 (M7), M5-P1 (shared schema) | M2 lands first |
-| `lib/leads/config.ts` | M2 (M7), M5 step 1 and M7-P6 (L5 review) | Sequential |
-| `lib/leads/store.ts` | M6 (L3, L7) | M6 only |
-| `components/shell/Gate.tsx` | M5-P2 (retire), M6 (L22 only if it survives) | Decide OD-18 first |
-| `app/(product)/layout.tsx` | M5-P2, M7-P4 (admin layout) | Sequential |
-| `app/(product)/handbook/[slug]/page.tsx` | M5-P2 | One lane |
-| `components/shell/Sidebar.tsx` | M6 (M3 inert), M5-P2 (locked markers) | Partition by hunk is not allowed; sequence them |
-| `components/shell/SidebarSearch.tsx` | M6 (L8, L18) | M6 only |
-| `components/widgets/QuestionItem.tsx`, `KnowledgeCheck.tsx` | M6 (M2); M4 Phase 4 depends on the result | M6 before M4 step 12 |
-| `components/site/PublicHeader.tsx` | M5-P3 (header state) and CR-M9 | Do M9 inside M5-P3 |
+| `../../app/globals.css` | M2 (H2, M6 scope start), M6 (M3, M4, M5, L13, L23, L24, L25) | One CSS agent at a time |
+| `../../app/(public)/site.css` | M2 (H3), M5-P3, M6 (L25 undo rules) | Same |
+| `../../components/site/Excerpt.tsx` | M2 (M6, L12, L14) | M2 only |
+| `../../app/(public)/preview/page.tsx` | M2 (M6, L15, Appendix E), M5-P3 (opt-in form) | M2 lands first |
+| `../../app/(public)/page.tsx` | M2 (L15), M5-P3 (hero rework) | M2 lands first |
+| `../../app/(public)/pricing/page.tsx`, `refunds/page.tsx` | M2 (L15), M7-P5/P6 | Three separate passes; never concurrent |
+| `../../content/site/faq.ts`, footer, About, Terms | M4 step 8 (CC-C), M7-P6 | Never concurrent |
+| `../../app/(public)/privacy/page.tsx` | M7-P6 only (CR-L5 and UD-§12.3 together) | One edit |
+| `../../lib/leads/mail.ts` | M5 step 1 (welcome rewrite), M5-P1 (auth mailer reuses) | Same lane |
+| `../../lib/leads/validate.ts` | M2 (M7), M5-P1 (shared schema) | M2 lands first |
+| `../../lib/leads/config.ts` | M2 (M7), M5 step 1 and M7-P6 (L5 review) | Sequential |
+| `../../lib/leads/store.ts` | M6 (L3, L7) | M6 only |
+| `../../components/shell/Gate.tsx` | M5-P2 (retire), M6 (L22 only if it survives) | Decide OD-18 first |
+| `../../app/(product)/layout.tsx` | M5-P2, M7-P4 (admin layout) | Sequential |
+| `../../app/(product)/handbook/[slug]/page.tsx` | M5-P2 | One lane |
+| `../../components/shell/Sidebar.tsx` | M6 (M3 inert), M5-P2 (locked markers) | Partition by hunk is not allowed; sequence them |
+| `../../components/shell/SidebarSearch.tsx` | M6 (L8, L18) | M6 only |
+| `../../components/widgets/QuestionItem.tsx`, `KnowledgeCheck.tsx` | M6 (M2); M4 Phase 4 depends on the result | M6 before M4 step 12 |
+| `../../components/site/PublicHeader.tsx` | M5-P3 (header state) and CR-M9 | Do M9 inside M5-P3 |
 | `content/pages/*.html` | M4 (text), M6 (L19 bullets, L21 captions) | Assign chapters, not hunks; L19 and L21 after M4 Phase 3. **In flight, uncommitted, by the content session on 8 November**: no other lane touches them until M0 step 4 is done |
-| `content/data/*.ts`, `lib/sources.ts`, `lib/glossary.ts`, `components/widgets/LeadSources.tsx`, `e2e/parity/{checkpoints,practice}.spec.ts` | M4 only | Lane C; in flight on 8 November (M0 step 4) |
-| `lib/state/index.ts` | M4 (in flight: the `appointments` field), M6 (CR-L6 settings migration) | M6 step 10 waits for the content commit |
-| `app/layout.tsx` | M2 (L13 via CSS, not the script), M8 (CSP hashes), M6 optional (`THEME_SCRIPT` from `TEXT_SIZES`) | Sequential |
-| `next.config.ts` | M8 (L1) | M8 only |
-| `app/robots.ts`, `app/sitemap.ts` | M5-P2, M5-P3 | Lane E |
-| `e2e/site.spec.ts` | M2 (L12), M5-P3 (session seeding) | M2 lands first |
-| `playwright.config.ts`, `e2e/global-setup.ts` | M1 (hydration signal), M5-P3 | Sequential |
-| `package.json`, `tsconfig.json` | M1 (M10), M6 (`happy-dom`) | Ask before lockfile changes |
+| `content/data/*.ts`, `../../lib/sources.ts`, `lib/glossary.ts`, `components/widgets/LeadSources.tsx`, `e2e/parity/{checkpoints,practice}.spec.ts` | M4 only | Lane C; in flight on 8 November (M0 step 4) |
+| `../../lib/state/index.ts` | M4 (in flight: the `appointments` field), M6 (CR-L6 settings migration) | M6 step 10 waits for the content commit |
+| `../../app/layout.tsx` | M2 (L13 via CSS, not the script), M8 (CSP hashes), M6 optional (`THEME_SCRIPT` from `TEXT_SIZES`) | Sequential |
+| `../../next.config.ts` | M8 (L1) | M8 only |
+| `../../app/robots.ts`, `app/sitemap.ts` | M5-P2, M5-P3 | Lane E |
+| `../../e2e/site.spec.ts` | M2 (L12), M5-P3 (session seeding) | M2 lands first |
+| `../../playwright.config.ts`, `e2e/global-setup.ts` | M1 (hydration signal), M5-P3 | Sequential |
+| `../../package.json`, `tsconfig.json` | M1 (M10), M6 (`happy-dom`) | Ask before lockfile changes |
 | `.env.example` | M3 (none, read only), M5 step 3, M6 (L3 comment) | Lane E owns it; M6 edits one line after |
-| `AGENTS.md` | M1 step 3 (recovery note) | Keep the managed block verbatim |
-| `lib/offer.ts` | M5 step 3, M7-P5 (`checkoutUrlFor`), M8 (values) | Sequential |
+| `../../AGENTS.md` | M1 step 3 (recovery note) | Keep the managed block verbatim |
+| `../../lib/offer.ts` | M5 step 3, M7-P5 (`checkoutUrlFor`), M8 (values) | Sequential |
 
 ## 8. Verification matrix
 
@@ -504,12 +504,12 @@ Everything is run with `/opt/homebrew/bin/pnpm` or `PATH=/opt/homebrew/bin:$PATH
 
 ## 10. Document status and maintenance
 
-- `docs/plans/master-plan.md` (this file): the sequencing authority and the only document under `docs/plans/`. Update ticks, decision answers and commit hashes as work lands.
-- The five source plans were moved to `docs/_archive/` on 8 November so that this file is the single live plan. They remain the authority for their own detail and are cited by tag throughout:
-  - `docs/_archive/2026-11-08-code-review.md`: finding evidence and verification steps.
-  - `docs/_archive/2026-11-08-course-content-review.md`: content detail; Phase 4 is tracked here.
-  - `docs/_archive/free-sample-decision.md`: decided; its open items are OD-01, OD-02 and OD-18.
-  - `docs/_archive/user-database-plan.md`: schema, flows and tests, through M7.
-  - `docs/_archive/vercel-pro-migration-meded.md`: the executable prompt for M3; its result file goes beside it.
-- Also in `docs/_archive/`: the older superseded documents; `launch-handoff.md` and `cutover-runbook.md` are still updated in M7 step 8 and consulted in M8 step 6.
-- `docs/chapter-reviews/`: the October chapter review, mostly landed per CC; reference only.
+- `docs/plans/master-plan.md` (this file): the sequencing authority and the only document under `../plans`. Update ticks, decision answers and commit hashes as work lands.
+- The five source plans were moved to `` on 8 November so that this file is the single live plan. They remain the authority for their own detail and are cited by tag throughout:
+  - `2026-11-08-code-review.md`: finding evidence and verification steps.
+  - `2026-11-08-course-content-review.md`: content detail; Phase 4 is tracked here.
+  - `free-sample-decision.md`: decided; its open items are OD-01, OD-02 and OD-18.
+  - `user-database-plan.md`: schema, flows and tests, through M7.
+  - `vercel-pro-migration-meded.md`: the executable prompt for M3; its result file goes beside it.
+- Also in ``: the older superseded documents; `launch-handoff.md` and `cutover-runbook.md` are still updated in M7 step 8 and consulted in M8 step 6.
+- `../chapter-reviews`: the October chapter review, mostly landed per CC; reference only.
