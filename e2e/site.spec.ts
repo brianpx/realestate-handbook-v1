@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 import { LEGACY_PAGE_SLUGS } from '../lib/routes';
 
-const PUBLIC = ['/', '/preview', '/about', '/support', '/pricing', '/privacy', '/terms', '/refunds', '/updates'];
+const PUBLIC = ['/', '/preview', '/about', '/support', '/pricing', '/privacy', '/terms', '/refunds', '/updates', '/signup', '/signin', '/subscribe/confirm'];
 const PRODUCT = ['/handbook', '/handbook/start', '/account'];
 
 test.describe('public pages', () => {
@@ -34,6 +34,37 @@ test.describe('public pages', () => {
     await expect(page.getByRole('link', { name: 'See plans and pricing' }).first()).toHaveAttribute('href', '/pricing');
     await expect(page.getByRole('link', { name: 'Try a sample lesson' }).first()).toHaveAttribute('href', '/preview');
     await expect(page.getByText('Purchase is not open yet').first()).toBeVisible();
+    // the suite runs signed in: the hero welcomes the reader back instead of asking for the address again
+    await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
+  });
+
+  test.describe('signed out', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test('the hero asks for an address, with the sample and pricing as text links, and the form returns at the end', async ({ page }) => {
+      await page.goto('/');
+      const hero = page.locator('form[data-source="hero"]');
+      await expect(hero.getByRole('button', { name: 'Send me the free chapters' })).toBeVisible();
+      await expect(hero.getByLabel(/Also email me occasional notes/)).not.toBeChecked(); // marketing is a separate choice (OD-22)
+      await expect(page.getByText('No password, no card. The link we email also signs you in next time.').first()).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Try the sample lesson without an email' }).first()).toHaveAttribute('href', '/preview');
+      await expect(page.getByRole('link', { name: 'Pricing and availability' }).first()).toHaveAttribute('href', '/pricing');
+      await expect(page.locator('form[data-source="final"]')).toBeVisible();
+      await expect(page.locator('[data-welcome-back]')).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/signin');
+    });
+
+    test('editing the calculator offers the form once, after the effort', async ({ page }) => {
+      await page.goto('/');
+      await expect(page.locator('form[data-source="hero"]')).toHaveAttribute('data-ready', 'true');
+      await expect(page.locator('[data-calculator-prompt]')).toHaveCount(0);
+      await page.getByLabel('Yearly income goal').fill('120000');
+      const prompt = page.locator('[data-calculator-prompt]');
+      await expect(prompt).toContainText('Keep this number.');
+      await expect(prompt.locator('form[data-source="calculator"]').getByRole('button', { name: 'Open Chapter 1' })).toBeVisible();
+    });
   });
 
   // The comparison grid is shown from 768px up and the per-plan tabs below it; both come from lib/tiers.ts.
@@ -70,6 +101,9 @@ test.describe('public pages', () => {
     await expect(stats.locator('b')).toHaveText(['19', '24', '5']); // 19 closings; 23.75 a week and 4.75 a day, rounded
     await page.getByLabel('Yearly income goal').fill('');
     await expect(stats).toContainText('Enter both numbers');
+    // a signed-in reader is pointed at the chapter, not asked for an address
+    await expect(page.locator('.pub-device-prompt').getByRole('link', { name: 'Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
+    await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
   });
 
   test('the sample lesson runs the real calculator and links to pricing', async ({ page }) => {
@@ -138,6 +172,24 @@ test.describe('public pages', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Pricing', exact: true })).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  // CR-M9: a same-page hash link changes no pathname, so the menu has to close on the tap itself
+  test('the phone menu closes on a same-page hash link, which is marked as a location on its page', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    // the links are hidden until the menu opens, and role queries skip hidden elements
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await expect(nav.getByRole('link', { name: 'How it works' })).toHaveAttribute('aria-current', 'location');
+    await expect(nav.getByRole('link', { name: 'Sample lesson' })).not.toHaveAttribute('aria-current', /.+/);
+    await nav.getByRole('link', { name: 'How it works' }).click();
+    await expect(page).toHaveURL(/\/#how-it-works$/);
+    await expect(nav.getByRole('link', { name: 'Pricing', exact: true })).toBeHidden();
+    await page.goto('/preview');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await expect(nav.getByRole('link', { name: 'Sample lesson' })).toHaveAttribute('aria-current', 'page');
+    await expect(nav.getByRole('link', { name: 'How it works' })).not.toHaveAttribute('aria-current', /.+/);
   });
 
   // 320 is the smallest phone the site supports and 360 the common Android width. The hero's stat tiles were

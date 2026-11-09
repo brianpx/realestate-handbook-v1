@@ -3,10 +3,13 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { NeonLeadStore } from './neon-store';
 
-export type NewLead = { email: string; source: string; consentVersion: string; consentText: string; at: Date };
+/** `confirmTokenHash` is the SHA-256 hex of the token in the confirmation link; the raw token is never stored. */
+export type NewLead = { email: string; source: string; consentVersion: string; consentText: string; confirmTokenHash: string; confirmExpiresAt: Date; at: Date };
+/** What insert() reports: for a repeat, the state of the row already there, so the handler can resend a failed confirmation. */
+export type Inserted = { created: boolean; id: string; emailStatus: EmailStatus | null; confirmedAt: Date | null };
 export type EmailStatus = 'sent' | 'failed' | 'skipped';
-/** One stored lead as the admin pages read it; the consent text stays in the store. */
-export type LeadRow = { id: string; email: string; source: string; createdAt: Date; consentVersion: string; emailStatus: EmailStatus | null };
+/** One stored lead as the admin pages read it; the consent text and the token hash stay in the store. */
+export type LeadRow = { id: string; email: string; source: string; createdAt: Date; consentVersion: string; emailStatus: EmailStatus | null; confirmedAt: Date | null };
 /** The most a listing returns, newest first; the admin table filters client-side, so it stays in memory. */
 export const LEAD_LIST_CAP = 5000;
 
@@ -16,8 +19,12 @@ export const LEAD_LIST_CAP = 5000;
  */
 export interface LeadStore {
   /** `created` is false when the address is already on file (case-insensitive); nothing is changed then. */
-  insert(lead: NewLead): Promise<{ created: boolean; id: string }>;
+  insert(lead: NewLead): Promise<Inserted>;
   setEmailStatus(id: string, status: EmailStatus): Promise<void>;
+  /** A fresh confirmation token for a lead whose first email failed; the old link stops working. */
+  resetConfirmation(id: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  /** Marks the lead with this token confirmed (a second click changes nothing); false when no lead has it or the link expired. */
+  confirm(tokenHash: string, now: Date): Promise<boolean>;
   recordAttempt(ipHash: string, at: Date): Promise<void>;
   countAttempts(ipHash: string, since: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
@@ -28,11 +35,15 @@ export interface LeadStore {
   deleteByEmail(email: string): Promise<void>;
 }
 
-type Row = NewLead & { id: string; emailStatus: EmailStatus | null };
+// Rows written before confirmation existed have no `confirmedAt`; they read as unconfirmed, like the database's null.
+type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmedAt?: Date | string | null };
 type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[] };
 
 // `at` is a Date in memory but a string once it has been through JSON, so both are accepted here.
-const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus });
+const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus, confirmedAt: r.confirmedAt ? new Date(r.confirmedAt) : null });
+// A confirmed row answers its link whatever the expiry; an unconfirmed one only while the link is live. A row with no
+// expiry (written before the column existed) never confirms.
+const confirmable = (r: Row, now: Date): boolean => r.confirmedAt != null || (r.confirmExpiresAt !== undefined && new Date(r.confirmExpiresAt) > now);
 const newestFirst = (rows: Row[]): LeadRow[] => rows.map(toLeadRow).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, LEAD_LIST_CAP);
 
 export class FileLeadStore implements LeadStore {
@@ -68,15 +79,28 @@ export class FileLeadStore implements LeadStore {
   insert(lead: NewLead) {
     return this.change(data => {
       const existing = data.leads.find(l => l.email === lead.email);
-      if (existing) return { created: false, id: existing.id };
+      if (existing) return { created: false, id: existing.id, emailStatus: existing.emailStatus, confirmedAt: existing.confirmedAt ? new Date(existing.confirmedAt) : null };
       const id = randomUUID();
-      data.leads.push({ ...lead, id, emailStatus: null });
-      return { created: true, id };
+      data.leads.push({ ...lead, confirmExpiresAt: lead.confirmExpiresAt.toISOString(), id, emailStatus: null, confirmedAt: null });
+      return { created: true, id, emailStatus: null, confirmedAt: null };
     });
   }
 
   setEmailStatus(id: string, status: EmailStatus) {
     return this.change(data => { const row = data.leads.find(l => l.id === id); if (row) row.emailStatus = status; });
+  }
+
+  resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {
+    return this.change(data => { const row = data.leads.find(l => l.id === id); if (row) { row.confirmTokenHash = tokenHash; row.confirmExpiresAt = expiresAt.toISOString(); } });
+  }
+
+  confirm(tokenHash: string, now: Date) {
+    return this.change(data => {
+      const row = data.leads.find(l => l.confirmTokenHash === tokenHash);
+      if (!row || !confirmable(row, now)) return false;
+      row.confirmedAt ??= now.toISOString();
+      return true;
+    });
   }
 
   recordAttempt(ipHash: string, at: Date) {
@@ -121,12 +145,20 @@ export class MemoryLeadStore implements LeadStore {
   async insert(lead: NewLead) {
     this.check();
     const existing = this.leads.find(l => l.email === lead.email);
-    if (existing) return { created: false, id: existing.id };
-    const row = { ...lead, id: randomUUID(), emailStatus: null };
+    if (existing) return { created: false, id: existing.id, emailStatus: existing.emailStatus, confirmedAt: existing.confirmedAt ? new Date(existing.confirmedAt) : null };
+    const row = { ...lead, id: randomUUID(), emailStatus: null, confirmedAt: null };
     this.leads.push(row);
-    return { created: true, id: row.id };
+    return { created: true, id: row.id, emailStatus: null, confirmedAt: null };
   }
   async setEmailStatus(id: string, status: EmailStatus) { const r = this.leads.find(l => l.id === id); if (r) r.emailStatus = status; }
+  async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) { this.check(); const r = this.leads.find(l => l.id === id); if (r) { r.confirmTokenHash = tokenHash; r.confirmExpiresAt = expiresAt; } }
+  async confirm(tokenHash: string, now: Date) {
+    this.check();
+    const r = this.leads.find(l => l.confirmTokenHash === tokenHash);
+    if (!r || !confirmable(r, now)) return false;
+    r.confirmedAt ??= now;
+    return true;
+  }
   async recordAttempt(ipHash: string, at: Date) { this.check(); this.attempts.push({ ipHash, at }); }
   async countAttempts(ipHash: string, since: Date) { this.check(); return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length; }
   async recordAndCount(ipHash: string, at: Date, since: Date) {

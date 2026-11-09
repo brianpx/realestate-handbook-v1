@@ -21,7 +21,7 @@ async function setup() {
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
-  await leads.insert({ email: EMAIL, source: 'hero', consentVersion: 'v1', consentText: 't', at: NOW });
+  await leads.insert({ email: EMAIL, source: 'signup', consentVersion: 'v1', consentText: 't', confirmTokenHash: 'c'.repeat(64), confirmExpiresAt: NOW, at: NOW });
   await auth.createToken({ tokenHash: 'h'.repeat(64), email: EMAIL, nextPath: null, termsVersion: 'v1', source: 'hero', expiresAt: NOW, createdIpHash: null, createdAt: NOW });
   const req = (body = '', extra: { origin?: string | null; sessionId?: string; url?: string } = {}) => ({
     url: extra.url ?? `${ORIGIN}/api/account/x`,
@@ -39,7 +39,7 @@ describe('sign out everywhere', () => {
     const res = await handleSignOutAll(req(), deps);
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/signup?next=%2Faccount');
-    expect(res.headers?.['Set-Cookie']).toContain('__Host-hb_session=;');
+    expect(String(res.headers?.['Set-Cookie'])).toContain('__Host-hb_session=;');
     expect(auth.sessions.every(s => s.revokedAt !== null)).toBe(true);
     expect(access.audit).toHaveLength(1);
     expect(access.audit[0]).toMatchObject({ action: 'session.revoke_all', actorKind: 'user', actorUserId: user.id, subjectTable: 'sessions', subjectId: user.id, after: { revoked: 2 } });
@@ -55,7 +55,7 @@ describe('sign out everywhere', () => {
     expect((await handleSignOutAll(req('', { origin: null }), deps)).status).toBe(403);
     const res = await handleSignOutAll(req('', { sessionId: undefined }), deps);
     expect(res.status).toBe(303);
-    expect(res.headers?.['Set-Cookie']).toContain('hb_session=;');
+    expect(String(res.headers?.['Set-Cookie'])).toContain('hb_session=;');
     expect(auth.sessions.every(s => s.revokedAt === null)).toBe(true);
     expect((await handleSignOutAll(req(), { ...deps, stores: null })).status).toBe(503);
   });
@@ -73,7 +73,7 @@ describe('delete account', () => {
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: ' Reader@Example.com ' }).toString()), deps);
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/goodbye');
-    expect(res.headers?.['Set-Cookie']).toContain('hb_session=;');
+    expect(String(res.headers?.['Set-Cookie'])).toContain('hb_session=;');
     expect(users.users[0]).toMatchObject({ status: 'deleted', role: 'reader', email: `deleted+${user.id}@invalid.local` });
     expect(auth.sessions).toHaveLength(0);
     expect(auth.tokens).toHaveLength(0);
@@ -97,7 +97,7 @@ describe('delete account', () => {
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), deps);
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/signup?next=%2Faccount');
-    expect(res.headers?.['Set-Cookie']).toContain('hb_session=;');
+    expect(String(res.headers?.['Set-Cookie'])).toContain('hb_session=;');
   });
   it('refuses a foreign origin and an oversized body, and sends a signed-out visitor to sign in', async () => {
     const { users, deps, req } = await setup();

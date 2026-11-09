@@ -233,8 +233,8 @@
 .pub-included-box { padding: 20px 24px; border-radius: 12px; background: var(--pub-tint); border: 1px solid var(--color-line); margin-bottom: 28px}
 .pub-included-box ul { margin: 8px 0 0; padding-left: 20px}
 .pub-included-box li { margin-bottom: 4px; font-size: 0.98rem}
-.pub-upsell { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; justify-content: space-between; padding: 24px 28px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface); margin-top: 36px}
-.pub-upsell p { margin: 0; max-width: 34rem}
+.pub-upsell { display: grid; gap: 18px; padding: 24px 28px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface); margin-top: 36px}
+.pub-upsell > p { margin: 0; max-width: 40rem}
 @media (width <= 700px) { .pub-sample { padding: 18px 16px} }
 
 /* ---- page header, prose and drafts ---- */
@@ -274,9 +274,41 @@ html:has(.pub) { scroll-padding-top: 84px}
 .pub .signup-form .pub-field { margin-bottom: 14px}
 .pub .signup-trap { position: absolute; left: -9999px}
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
-.pub .signup-error[hidden] { display: none}
 .pub .signup-terms { margin: 14px 0 0; color: var(--pub-muted)}
 .pub .signup-sent p { margin: 0 0 14px}
+.pub .signup-sent p:focus-visible, .pub .lead-sent p:focus-visible { outline-offset: 6px}
 .pub .signup-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center}
 .pub .pub-link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer}
+/* Variants: the hero and inline forms put the field and the button in one row and speak the label only; the card
+   is the stacked form on its own page. The notes checkbox sits under every variant, off by default. */
+.pub .signup-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start}
+.pub .signup-row .pub-field { flex: 1 1 220px; margin: 0}
+.pub .signup-row .pub-btn { flex: none}
+.pub .signup-card .signup-row { display: block}
+.pub .signup-card .signup-row .pub-field { margin-bottom: 14px}
+.pub .signup-hero, .pub .signup-inline { max-width: 36rem}
+.pub .signup-inline { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-line)}
+.pub .signup-inline .pub-btn { min-height: 44px}
+.pub .signup-optin { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0 0; font-size: 0.92rem; color: var(--pub-body); cursor: pointer}
+.pub .signup-optin input { margin: 3px 0 0; width: 18px; height: 18px; flex: none; accent-color: var(--pub-navy)}
+.pub .pub-trust { font-size: 0.95rem; color: var(--pub-body); margin: 0 0 12px}
+.pub .pub-hero-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 14px 0 0; font-size: 0.95rem}
+.pub .pub-hero-links a { font-weight: 600}
+.pub .pub-hero-form { margin: 0 0 6px}
+.pub .pub-welcome { padding: 18px 20px; border: 1px solid var(--pub-line); border-radius: 12px; background: var(--color-surface); max-width: 36rem}
+.pub .pub-welcome p { margin: 0 0 12px}
+.pub .pub-device-prompt { margin: 14px 0 0; font-size: 0.95rem; color: var(--pub-body)}
+/* The notes form (components/site/LeadForm.tsx) after the sample lesson. */
+.pub .lead-form { display: grid; gap: 10px; max-width: 36rem}
+.pub .lead-form .pub-field { margin: 0}
+.pub .lead-form .lead-title, .pub .lead-form .lead-text, .pub .lead-sent p { margin: 0}
+.pub .lead-form .lead-title { font-size: 1.1rem; color: var(--pub-ink)}
+.pub .lead-form .pub-btn { justify-self: start}
+.pub .lead-trap { position: absolute; left: -9999px}
+.pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
+.pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
+.pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
+.pub .pub-final-form { display: flex; justify-content: center}
+.pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
+.pub .pub-final .pub-trust, .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}
 }

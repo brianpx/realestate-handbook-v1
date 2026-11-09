@@ -38,6 +38,8 @@ describe('FileAuthStore', () => {
     expect((await store.peekToken('th'))?.expiresAt).toEqual(tokenExpiry(NOW));
     expect(await store.consumeToken('th', NOW)).toEqual({ email: 'a@b.co', nextPath: '/handbook/ch2', termsVersion: 'v1', source: 'hero' });
     expect(await store.consumeToken('th', NOW)).toBeNull();
+    await store.createToken({ tokenHash: 'th2', email: 'b@b.co', nextPath: null, termsVersion: 'v1', source: 'hero', expiresAt: tokenExpiry(NOW), createdIpHash: null, createdAt: NOW });
+    expect(await store.placementStats()).toEqual([{ source: 'hero', requested: 2, signedIn: 1 }]);
     await store.createSession({ idHash: 'sh', userId: 'u', createdAt: hours(-48), expiresAt: hours(24 * 30) });
     expect(await store.renewSession('sh', NOW)).toBe(true);
     expect(await store.renewSession('sh', NOW)).toBe(false);

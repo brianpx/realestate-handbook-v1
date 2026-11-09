@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Excerpt } from '@/components/site/Excerpt';
+import { LeadForm } from '@/components/site/LeadForm';
 import { purchaseOpen } from '@/lib/offer';
 
 export const metadata: Metadata = {
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function PreviewPage() {
+  const open = purchaseOpen();
   return (
     <>
       <section className="pub-pagehead">
@@ -66,8 +68,10 @@ export default function PreviewPage() {
             <strong>That is two of thirteen chapters.</strong> The rest covers finding clients, your CRM, nurturing leads, the full script library,
             consultations, keeping clients and the 90-day plan, with a guided setup for your first session.
           </p>
+          {/* The one optional email form on this page, after the sample and never in front of it (FS-D3, OD-02). */}
+          <LeadForm source="sample" offer={open ? 'open' : 'closed'} />
           <div className="pub-actions" style={{ margin: 0 }}>
-            <Link className="pub-btn pub-btn-primary" href="/pricing">{purchaseOpen() ? 'See pricing' : 'Pricing and availability'}</Link>
+            <Link className="pub-btn pub-btn-secondary" href="/pricing">{open ? 'See pricing' : 'Pricing and availability'}</Link>
             <Link className="pub-btn pub-btn-secondary" href="/#included">What is included</Link>
           </div>
         </div>

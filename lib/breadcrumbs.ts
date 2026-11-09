@@ -16,6 +16,9 @@ const SITE_PAGES: Record<string, string> = {
   '/terms': 'Terms of use',
   '/updates': 'Access and updates',
   '/account': 'Account and saved progress',
+  '/signup': 'Sign in',
+  '/signin': 'Sign in',
+  '/subscribe/confirm': 'Handbook notes',
 };
 
 /** The part a chapter sits in, shortened for a breadcrumb: "PART IV: Nurture" -> "Nurture", "APPENDICES" -> "Appendices". */

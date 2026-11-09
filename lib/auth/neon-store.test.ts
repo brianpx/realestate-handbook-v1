@@ -22,6 +22,12 @@ describe('NeonAuthStore', () => {
     expect(calls[0]!.text).toContain('consumed_at is null and expires_at > ?');
     expect(calls[0]!.values).toEqual([ISO, 't', ISO]);
   });
+  it('counts requests and sign-ins per placement in one grouped statement', async () => {
+    const { sql, calls } = fakeSql([{ source: 'hero', requested: 5, signed_in: 2 }, { source: null, requested: 1, signed_in: '1' }]);
+    expect(await new NeonAuthStore(sql).placementStats()).toEqual([{ source: 'hero', requested: 5, signedIn: 2 }, { source: null, requested: 1, signedIn: 1 }]);
+    expect(calls[0]!.text).toBe('select source, count(*)::int as requested, count(consumed_at)::int as signed_in from auth_tokens group by source order by requested desc, source');
+    expect(calls[0]!.values).toEqual([]);
+  });
   it('peeks without writing', async () => {
     const { sql, calls } = fakeSql([{ token_hash: 't', email: 'a@b.co', next_path: '/x', terms_version: 'v1', source: null, expires_at: ISO, consumed_at: null, created_ip_hash: null, created_at: NOW }]);
     const token = await new NeonAuthStore(sql).peekToken('t');

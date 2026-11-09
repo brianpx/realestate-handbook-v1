@@ -1,16 +1,18 @@
 import { toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
-import { SESSION_CAP_SECONDS, SESSION_MAX_AGE_SECONDS, SESSION_RENEW_AFTER_SECONDS, type Source } from './config';
-import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken } from './store';
+import { SESSION_CAP_SECONDS, SESSION_MAX_AGE_SECONDS, SESSION_RENEW_AFTER_SECONDS, SOURCES, type Source } from './config';
+import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken, PlacementStat } from './store';
 import type { AuthToken, Session } from './types';
 
 const text = (value: unknown): string | null => (value === null || value === undefined ? null : String(value));
+// The column is checked in the database, so anything else can only be a null.
+const source = (value: unknown): Source | null => SOURCES.find(s => s === value) ?? null;
 
 export const rowToToken = (row: Record<string, unknown>): AuthToken => ({
   tokenHash: String(row.token_hash),
   email: String(row.email),
   nextPath: text(row.next_path),
   termsVersion: String(row.terms_version),
-  source: text(row.source) as Source | null,
+  source: source(row.source),
   expiresAt: toDate(row.expires_at),
   consumedAt: toDateOrNull(row.consumed_at),
   createdIpHash: text(row.created_ip_hash),
@@ -52,7 +54,7 @@ export class NeonAuthStore implements AuthStore {
       where token_hash = ${tokenHash} and consumed_at is null and expires_at > ${nowIso}
       returning email, next_path, terms_version, source`;
     const row = rows[0];
-    return row ? { email: String(row.email), nextPath: text(row.next_path), termsVersion: String(row.terms_version), source: text(row.source) as Source | null } : null;
+    return row ? { email: String(row.email), nextPath: text(row.next_path), termsVersion: String(row.terms_version), source: source(row.source) } : null;
   }
 
   async createSession(s: NewSession) {
@@ -116,5 +118,13 @@ export class NeonAuthStore implements AuthStore {
       console.error('auth: attempt cleanup failed', err instanceof Error ? err.name : 'error');
     }
     return Number(rows[0]?.n ?? 0);
+  }
+
+  async placementStats(): Promise<PlacementStat[]> {
+    // consumed_at is null for a link never opened, so count() over it is the sign-ins
+    const rows = await this.sql`
+      select source, count(*)::int as requested, count(consumed_at)::int as signed_in
+      from auth_tokens group by source order by requested desc, source`;
+    return rows.map(r => ({ source: source(r.source), requested: Number(r.requested), signedIn: Number(r.signed_in) }));
   }
 }

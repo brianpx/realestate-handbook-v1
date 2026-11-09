@@ -1,7 +1,7 @@
 import type { EmailStatus } from './store';
 
-// Follow-up email. SendGrid in production, Mailpit (a local mail catcher) in development, nothing otherwise.
-// Both are plain HTTPS calls, so no client library is needed.
+// Confirmation email for the marketing list. SendGrid in production, Mailpit (a local mail catcher) in development,
+// nothing otherwise. Both are plain HTTPS calls, so no client library is needed.
 export type MailConfig =
   | { provider: 'none' }
   | { provider: 'mailpit'; url: string; from: string; fromName: string; replyTo?: string; mailingAddress: string }
@@ -21,15 +21,17 @@ export function mailFromEnv(env: Record<string, string | undefined>): MailConfig
   return { provider: 'none' };
 }
 
-export function welcomeMessage(address: string): Message {
+/** The one message the list sends on its own: the link that turns a form submission into a subscription. */
+export function confirmationMessage(link: string, address: string): Message {
   return {
-    subject: 'Your handbook follow-up note',
+    subject: 'Confirm your email for handbook notes',
     text: [
-      'Thanks for opening Finding, Keeping, and Nurturing Clients.',
+      'You asked for notes about Finding, Keeping, and Nurturing Clients. Open this link to confirm your address:',
       '',
-      'You asked for a follow-up note about the handbook, and this is the first one. The book stays free to read, and you do not need this email for anything. If there is a part you would like more of, reply and say so.',
+      link,
       '',
-      'To stop these notes at any time, reply "unsubscribe".',
+      'Nothing is sent until you do. If you did not ask for this, ignore this message and your address is not used.',
+      'To stop the notes at any time afterwards, reply "unsubscribe".',
       '',
       address,
     ].join('\n'),
@@ -68,7 +70,7 @@ export async function deliver(cfg: MailConfig, to: string, { subject, text }: Me
   }
 }
 
-export function sendWelcome(cfg: MailConfig, to: string, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> {
+export function sendConfirmation(cfg: MailConfig, to: string, link: string, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> {
   if (cfg.provider === 'none') return Promise.resolve('skipped');
-  return deliver(cfg, to, welcomeMessage(cfg.mailingAddress), fetchImpl, 'lead email');
+  return deliver(cfg, to, confirmationMessage(link, cfg.mailingAddress), fetchImpl, 'lead email');
 }

@@ -6,6 +6,7 @@ import type { AccessSnapshot, BillingAccess, Grant, Membership } from '@/lib/acc
 import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
 import { fillVerified, newUser, type UserStore, type VerifiedSignIn } from '@/lib/users/store';
 import type { Role, User } from '@/lib/users/types';
+import { placementStatsFrom } from './placements';
 import { sessionDueForRenewal, sessionExpiry, tokenUsable } from './session';
 import type { AttemptScope, AuthStore, ConsumedToken, NewSession, NewToken } from './store';
 import type { AuthToken, Session } from './types';
@@ -138,6 +139,7 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
     return this.change(d => { d.tokens.push({ ...t, expiresAt: t.expiresAt.toISOString(), createdAt: t.createdAt.toISOString(), consumedAt: null }); });
   }
   peekToken(tokenHash: string) { return this.view(d => { const t = d.tokens.find(x => x.tokenHash === tokenHash); return t ? tokenOut(t) : null; }); }
+  placementStats() { return this.view(d => placementStatsFrom(d.tokens)); }
   consumeToken(tokenHash: string, now: Date): Promise<ConsumedToken | null> {
     return this.change(d => {
       const t = d.tokens.find(x => x.tokenHash === tokenHash);

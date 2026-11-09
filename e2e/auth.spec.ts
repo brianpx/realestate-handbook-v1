@@ -1,27 +1,16 @@
+import { readFile } from 'node:fs/promises';
 import { extraSession, signedInState } from './auth';
-import { expect, test, type APIRequestContext } from './fixtures';
+import { expect, test } from './fixtures';
+import { linkFor } from './mail';
 import { BASE_URL } from './target';
 
 // Sign-in with an emailed link, read back from Mailpit, and the gate in front of the handbook. Each test gets its
 // own fake client address because the routes limit per connection, and its own reader address because they limit
 // per address too.
-const MAILPIT = 'http://localhost:8025';
 let n = 0;
 test.beforeEach(async ({ context }) => { await context.setExtraHTTPHeaders({ 'x-forwarded-for': `203.0.113.${(++n % 250) + 1}` }); });
 const fresh = () => `reader-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.test`;
-
-async function linkFor(request: APIRequestContext, email: string): Promise<string> {
-  let link = '';
-  await expect.poll(async () => {
-    const search = (await (await request.get(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`)).json()) as { messages: { ID: string }[] };
-    const id = search.messages[0]?.ID;
-    if (!id) return null;
-    const message = (await (await request.get(`${MAILPIT}/api/v1/message/${id}`)).json()) as { Text: string };
-    link = /https?:\/\/\S+/.exec(message.Text)?.[0] ?? '';
-    return link || null;
-  }, { timeout: 10_000 }).not.toBeNull();
-  return link;
-}
+const leads = async () => (JSON.parse(await readFile('.data/e2e-leads.json', 'utf8')) as { leads: { email: string; source: string; confirmedAt: string | null }[] }).leads;
 
 test.describe('signed out', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
@@ -66,6 +55,68 @@ test.describe('signed out', () => {
     await expect(again.getByRole('heading', { level: 1 })).toContainText('That link has expired or was already used.');
     await expect(again.getByLabel('Email address')).toBeVisible();
     await again.close();
+  });
+
+  test('the hero form sends the link; the notes box, ticked, sends a separate confirmation that subscribes only when opened', async ({ page, request }) => {
+    const email = fresh();
+    await page.goto('/');
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/signin');
+    await expect(page.getByText('No password, no card. The link we email also signs you in next time.').first()).toBeVisible();
+    const hero = page.locator('form[data-source="hero"]');
+    await expect(hero).toHaveAttribute('data-ready', 'true'); // hydrated: the submit reaches React, not the server
+    await hero.getByLabel('Email address').fill(email);
+    await hero.getByLabel(/Also email me occasional notes/).check();
+    await hero.getByRole('button', { name: 'Send me the free chapters' }).click();
+    const sent = page.locator('.signup-sent[data-source="hero"]');
+    await expect(sent).toContainText('Check your inbox.');
+    await expect(sent).toContainText('a second email asks you to confirm it');
+    await expect(sent.getByRole('button', { name: /Send again in \d+s/ })).toBeDisabled();
+
+    // stored at once, subscribed to nothing yet
+    await expect.poll(async () => (await leads()).find(l => l.email === email)).toMatchObject({ source: 'signup', confirmedAt: null });
+    const signIn = await linkFor(request, email, 'Your sign-in link');
+    expect(signIn.startsWith(`${BASE_URL}/auth/verify?token=`)).toBe(true);
+    const confirm = await linkFor(request, email, 'Confirm your email');
+    expect(confirm.startsWith(`${BASE_URL}/subscribe/confirm?token=`)).toBe(true);
+
+    // a scanner's fetch confirms nothing; the reader's visit posts the token and lands on the success state
+    const preview = await request.get(confirm);
+    expect(preview.status()).toBe(200);
+    expect(await preview.text()).toContain('Confirm my email');
+    expect((await leads()).find(l => l.email === email)!.confirmedAt).toBeNull();
+    await page.goto(confirm);
+    await expect(page).toHaveURL(`${BASE_URL}/subscribe/confirm?done=1`);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('You are on the list.');
+    expect((await leads()).find(l => l.email === email)!.confirmedAt).not.toBeNull();
+
+    // "Use a different email" brings the form back
+    await page.goto('/');
+    await page.locator('form[data-source="final"]').getByLabel('Email address').fill(email);
+    await page.locator('form[data-source="final"]').getByRole('button', { name: 'Send me the free chapters' }).click();
+    await page.locator('.signup-sent[data-source="final"]').getByRole('button', { name: 'Use a different email' }).click();
+    await expect(page.locator('form[data-source="final"]').getByLabel('Email address')).toBeFocused();
+  });
+
+  test('/signin is the same form with return-visit copy, and the home page welcomes a signed-in reader back', async ({ page, request }) => {
+    const email = fresh();
+    await page.goto('/signin');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome back.');
+    const form = page.locator('form[data-source="signin"]');
+    await expect(form).toHaveAttribute('data-ready', 'true');
+    await form.getByLabel('Email address').fill(email);
+    await form.getByRole('button', { name: 'Email me a sign-in link' }).click();
+    await expect(page.getByText('Check your inbox.')).toBeVisible();
+    await page.goto(await linkFor(request, email));
+    await expect(page).toHaveURL(`${BASE_URL}/handbook`);
+
+    await page.goto('/');
+    await expect(page.locator('[data-welcome-back]')).toContainText('Welcome back.');
+    await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
+    // the notes form after the sample is for everyone: signing in never implied marketing consent
+    await page.goto('/preview');
+    await expect(page.locator('form[data-source="sample"]')).toContainText('Tell me when purchase opens');
   });
 
   test('a malformed or unknown token shows the same card, and the routes refuse other sites', async ({ page, request }) => {

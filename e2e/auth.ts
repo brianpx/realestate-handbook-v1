@@ -118,7 +118,11 @@ export function signedInState(localStorage: LocalStorageEntry[], sessionId = SES
   // over https the cookie is the __Host- one (lib/auth/cookie.ts); a deployment with no seed path gets no cookie at all
   const secure = protocol === 'https:';
   const cookies = CAN_SEED
-    ? [{ name: secure ? '__Host-hb_session' : 'hb_session', value: sessionId, domain: hostname, path: '/', expires: -1, httpOnly: true, secure, sameSite: 'Lax' as const }]
+    ? [
+        { name: secure ? '__Host-hb_session' : 'hb_session', value: sessionId, domain: hostname, path: '/', expires: -1, httpOnly: true, secure, sameSite: 'Lax' as const },
+        // the readable flag the public site shows "Welcome back" on (lib/auth/cookie.ts), set beside the session at sign-in
+        { name: 'hb_signed_in', value: '1', domain: hostname, path: '/', expires: -1, httpOnly: false, secure, sameSite: 'Lax' as const },
+      ]
     : [];
   return { cookies, origins: localStorage.length ? [{ origin: BASE_URL, localStorage }] : [] };
 }

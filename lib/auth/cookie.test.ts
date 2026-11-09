@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clearedCookieHeader, cookieName, isSecureRequest, sessionCookieHeader, sessionIdFrom } from './cookie';
+import { clearedCookieHeader, clearedCookieHeaders, cookieName, isSecureRequest, sessionCookieHeader, sessionCookieHeaders, sessionIdFrom } from './cookie';
 
 describe('the session cookie', () => {
   it('takes the __Host- prefix and Secure over https, the plain name over http', () => {
@@ -21,5 +21,16 @@ describe('the session cookie', () => {
     expect(sessionIdFrom(n => jar[n])).toBe('host');
     expect(sessionIdFrom(n => ({ hb_session: 'plain' })[n])).toBe('plain');
     expect(sessionIdFrom(() => undefined)).toBeUndefined();
+  });
+});
+
+describe('the signed-in flag', () => {
+  it('goes beside the session cookie, readable by scripts, with the same lifetime, path and Secure', () => {
+    expect(sessionCookieHeaders(true, 'raw')).toEqual([sessionCookieHeader(true, 'raw'), 'hb_signed_in=1; Path=/; Max-Age=7776000; SameSite=Lax; Secure']);
+    expect(sessionCookieHeaders(false, 'raw')).toEqual([sessionCookieHeader(false, 'raw'), 'hb_signed_in=1; Path=/; Max-Age=7776000; SameSite=Lax']);
+  });
+  it('is cleared with the session cookie', () => {
+    expect(clearedCookieHeaders(true)).toEqual([clearedCookieHeader(true), 'hb_signed_in=; Path=/; Max-Age=0; SameSite=Lax; Secure']);
+    expect(clearedCookieHeaders(false)).toEqual([clearedCookieHeader(false), 'hb_signed_in=; Path=/; Max-Age=0; SameSite=Lax']);
   });
 });

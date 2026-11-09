@@ -14,11 +14,9 @@ export default defineConfig({
       url: ORIGIN,
       reuseExistingServer: false,
       timeout: 180_000,
-      // Lead capture is on for the tests, writing to a throwaway file. LEAD_CAPTURE_ENABLED is read at build time.
-      // Sign-in uses a throwaway file store too, and Mailpit below as the mail catcher the sign-in spec reads from.
+      // The lead and sign-in stores are throwaway files, and Mailpit below is the mail catcher the specs read from.
       env: {
         NEXT_PUBLIC_COACH_ENABLED: 'true',
-        LEAD_CAPTURE_ENABLED: 'true',
         LEAD_STORE: 'file',
         LEAD_STORE_PATH: '.data/e2e-leads.json',
         LEAD_IP_SALT: 'e2e-only-salt',

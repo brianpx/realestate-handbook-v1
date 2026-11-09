@@ -2,7 +2,7 @@ import { bootstrapOwnerGrant } from '@/lib/access/grants';
 import { audit } from '@/lib/audit';
 import type { MailConfig } from '@/lib/leads/mail';
 import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, REQUEST_LINK_LIMITS, VERIFY_PATH, VERIFY_LIMIT } from './config';
-import { clearedCookieHeader, isSecureRequest, sessionCookieHeader } from './cookie';
+import { clearedCookieHeaders, isSecureRequest, sessionCookieHeaders } from './cookie';
 import { sendSignInLink } from './mail';
 import { sessionExpiry, tokenExpiry } from './session';
 import type { AuthStores } from './store';
@@ -18,7 +18,8 @@ export type AuthRequest = {
   /** The raw session id from the cookie, if any (sign-out only). */
   sessionId?: string;
 };
-export type AuthReply = { status: number; body?: Record<string, unknown>; headers?: Record<string, string> };
+/** `headers` may carry several Set-Cookie values; toResponse (env.ts) appends each one. */
+export type AuthReply = { status: number; body?: Record<string, unknown>; headers?: Record<string, string | string[]> };
 export type AuthDeps = {
   stores: AuthStores | null;
   mail: MailConfig;
@@ -30,10 +31,10 @@ export type AuthDeps = {
   fetchImpl?: typeof fetch;
 };
 
-const reply = (status: number, error: string, extra: Record<string, unknown> = {}, headers?: Record<string, string>): AuthReply => ({ status, body: { ok: false, error, ...extra }, headers });
+const reply = (status: number, error: string, extra: Record<string, unknown> = {}, headers?: Record<string, string | string[]>): AuthReply => ({ status, body: { ok: false, error, ...extra }, headers });
 const OK: AuthReply = { status: 200, body: { ok: true } };
 const limited = (windowSeconds: number): AuthReply => reply(429, 'rate_limited', { retryAfterSeconds: windowSeconds }, { 'Retry-After': String(windowSeconds) });
-const redirect = (location: string, headers: Record<string, string> = {}): AuthReply => ({ status: 303, headers: { Location: location, ...headers } });
+const redirect = (location: string, headers: Record<string, string | string[]> = {}): AuthReply => ({ status: 303, headers: { Location: location, ...headers } });
 const FAILED = `${VERIFY_PATH}?error=1`;
 
 // Every state-changing POST needs an allow-listed Origin; a missing one is a 403 (stricter than the lead form).
@@ -116,7 +117,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     const sessionId = newSecret();
     await auth.createSession({ idHash: hashSecret(sessionId), userId: user.id, createdAt: now, expiresAt: sessionExpiry(now) });
     await users.touchSignIn(user.id, now);
-    return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeader(isSecureRequest(req.url), sessionId) });
+    return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeaders(isSecureRequest(req.url), sessionId) });
   } catch (err) {
     console.error('auth: verify failed', err instanceof Error ? err.name : 'error');
     return reply(503, 'unavailable');
@@ -126,7 +127,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
 /** Revokes this session and clears the cookie. A missing or malformed cookie still clears and redirects. */
 export async function handleSignOut(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
   if (originRefused(req, deps)) return reply(403, 'forbidden');
-  const cleared = { 'Set-Cookie': clearedCookieHeader(isSecureRequest(req.url)) };
+  const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
   if (deps.stores && isSecretShape(req.sessionId)) {
     try {
       await deps.stores.auth.revokeSession(hashSecret(req.sessionId), deps.now());
