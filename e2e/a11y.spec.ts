@@ -101,6 +101,17 @@ test.describe('phone menu', () => {
     expect(await isInert(page, '#main-content')).toBe(false);
     expect(await isInert(page, '.skip-link')).toBe(false);
   });
+
+  test('a chapter chosen from the open menu gets focus on its heading, with the page no longer inert', async ({ page }) => {
+    await page.goto('/handbook/ch1');
+    await page.locator('#menuToggle').click();
+    await expect(page.locator('#sidebar')).toHaveClass(/menu-open/);
+    await page.locator('#sidebar').getByRole('link', { name: /^2\. / }).click();
+    await expect(page).toHaveURL(/\/handbook\/ch2$/);
+    await expect(page.locator('#content-container h1')).toBeFocused();
+    expect(await isInert(page, '#main-content')).toBe(false);
+    await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
+  });
 });
 
 test('Settings stays open on a wheel-up while one of its controls has focus', async ({ page }) => {

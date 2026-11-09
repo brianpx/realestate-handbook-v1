@@ -117,12 +117,14 @@ export class MemoryLeadStore implements LeadStore {
 
 /**
  * Picks the store from the environment: a database when DATABASE_URL is set, the throwaway file store only when
- * asked for by name, otherwise none (the route then refuses with 503). A hosted deployment (VERCEL_ENV is set) never
- * gets the file store, whatever LEAD_STORE says: its disk is ephemeral and the leads would vanish with the instance.
- * A local production build (the e2e suite) may still use it.
+ * asked for by name, otherwise none (the route then refuses with 503). A hosted Vercel deployment (VERCEL_ENV is
+ * production or preview) never gets the file store, whatever LEAD_STORE says: its disk is ephemeral and the leads
+ * would vanish with the instance. `vercel dev` (VERCEL_ENV=development) and a local production build (the e2e
+ * suite) may still use it.
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
-  if (env.LEAD_STORE === 'file' && !env.VERCEL_ENV) return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
+  const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
+  if (env.LEAD_STORE === 'file' && !hosted) return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);
   return null;
 }

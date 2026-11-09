@@ -60,12 +60,12 @@ export function Sidebar() {
   // method iOS Safari honours), and the page is inert so Tab cannot reach what the backdrop covers (as Gate.tsx does).
   const syncScrollLock = useCallback((open: boolean) => {
     const sidebar = sidebarRef.current;
-    if (!sidebar) return;
     const root = document.documentElement;
     const locked = root.classList.contains('scroll-locked');
     const lock = open && window.matchMedia(PHONE_QUERY).matches;
     const behind = document.querySelectorAll<HTMLElement>('.skip-link, #main-content');
     if (lock && !locked) {
+      if (!sidebar) return;
       lockedScrollY.current = window.scrollY;
       const rect = sidebar.getBoundingClientRect();
       sidebar.style.top = `${rect.top}px`;
@@ -75,7 +75,7 @@ export function Sidebar() {
       behind.forEach(node => { node.inert = true; });
     } else if (!lock && locked) {
       root.classList.remove('scroll-locked');
-      sidebar.style.top = '';
+      if (sidebar) sidebar.style.top = ''; // null on unmount: a link out of the open menu to the public site
       document.body.style.paddingTop = '';
       document.body.style.top = '';
       behind.forEach(node => { node.inert = false; });
@@ -83,7 +83,12 @@ export function Sidebar() {
     }
   }, []);
 
-  useEffect(() => syncScrollLock(open), [open, syncScrollLock]);
+  // The cleanup unlocks when the shell unmounts with the menu open (a link to the public site), or the page
+  // underneath keeps the fixed body and inert.
+  useEffect(() => {
+    syncScrollLock(open);
+    return () => syncScrollLock(false);
+  }, [open, syncScrollLock]);
 
   useEffect(() => {
     const phone = window.matchMedia(PHONE_QUERY);
@@ -134,6 +139,8 @@ export function Sidebar() {
   const lastPath = useRef<string | null>(null);
   useEffect(() => {
     setMenuOpen(false);
+    // Unlock now, not on the next render: focusing the heading below is a no-op while the page is still inert.
+    syncScrollLock(false);
     // A link with #heading-id (the review deck's "Read the passage") lands on that heading, not the top of the page.
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use it as typed */ }
@@ -159,7 +166,7 @@ export function Sidebar() {
       region.textContent = '';
       setTimeout(() => { region.textContent = label; }, 50);
     }
-  }, [pathname]);
+  }, [pathname, syncScrollLock]);
 
   const settings = useSettings();
   const { read } = useHandbookState();

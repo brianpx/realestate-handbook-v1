@@ -70,7 +70,8 @@ describe('storeFromEnv', () => {
   it('never picks the file store on a hosted deployment, even when LEAD_STORE asks for it', () => {
     expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, VERCEL_ENV: 'production' })).toBeNull();
     expect(storeFromEnv({ LEAD_STORE: 'file', VERCEL_ENV: 'preview', DATABASE_URL: 'postgres://u:p@ep-x.us-east-1.aws.neon.tech/db' })?.constructor.name).toBe('NeonLeadStore');
-    // a local production build (the e2e suite) still may
+    // vercel dev and a local production build (the e2e suite) still may
+    expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, VERCEL_ENV: 'development' })).toBeInstanceOf(FileLeadStore);
     expect(storeFromEnv({ LEAD_STORE: 'file', LEAD_STORE_PATH: file, NODE_ENV: 'production' })).toBeInstanceOf(FileLeadStore);
   });
 });
