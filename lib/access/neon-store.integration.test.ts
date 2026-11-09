@@ -86,7 +86,8 @@ run('the access store against a real database', () => {
     const log = await access.listAudit('users', user.id);
     expect(log.map(a => a.action)).toEqual(['user.anonymize']);
     expect(JSON.stringify(log)).not.toContain(victim);
-    // the audit log is append-only in the application; the database still has no trigger, so this only checks our own code path
-    expect(await sql`select count(*)::int as n from audit_log where subject_id = ${user.id}`).toEqual([{ n: 2 }]); // grant.create + user.anonymize
+    // the grant's own row is filed under the grant id; the user's row is the one anonymisation wrote
+    expect(await sql`select count(*)::int as n from audit_log where subject_id = ${user.id}`).toEqual([{ n: 1 }]);
+    expect(await sql`select count(*)::int as n from audit_log where subject_table = 'access_grants' and subject_id in (select id from access_grants where user_id = ${user.id})`).toEqual([{ n: 1 }]);
   });
 });
