@@ -12,7 +12,7 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
             'Check three things first: new leads overnight, tasks due today and Opportunities that moved. Chapter 4 builds the daily rhythm around them.']
     ],
     ch2: [
-        ['Trust is already built, and the cost is only your time.', 'Sphere contacts convert at five to ten times the rate of a portal lead.',
+        ['Trust is already built, and the cost is only your time.', 'Your sphere often converts far better than a portal lead.',
             'Portal inquirers have no relationship with you and have often inquired with several agents at once.'],
         ['Do not buy online leads until your follow-up system is built and tested on your sphere. Speed and a long nurture are what make those leads pay off after that, and Chapter 3 has the test for turning ads on.'],
         ['Follow up with every visitor within 24 hours.', 'A text the same evening and a call the next morning is the standard.',
