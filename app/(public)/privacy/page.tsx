@@ -107,7 +107,7 @@ export default function PrivacyPage() {
           Reply “unsubscribe” to any note to stop them.
         </p>
         {OWNER.supportEmail
-          ? <p>For other privacy questions, write to <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a>.</p>
+          ? <p>For other privacy questions, or to have an address removed from the notes list without an account, write to <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a>.</p>
           : <Decision>a contact address for privacy requests, including removal of an address from the notes list without an account.</Decision>}
         <Decision>whether laws such as those of California or the EU apply to your buyers and what notices they require. This needs a professional’s review.</Decision>
       </div>

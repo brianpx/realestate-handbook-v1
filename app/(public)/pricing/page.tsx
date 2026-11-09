@@ -28,7 +28,7 @@ export default function PricingPage() {
       <section className="pub-section pub-tight" aria-labelledby="plansTitle">
         <div className="pub-wrap">
           <h2 id="plansTitle" className="pub-h2 text-2xl">Compare the plans</h2>
-          {!open && <p className="pub-small">Basic and Pro are not on sale yet: there is no price, checkout, access term or refund policy to show, so nothing here can be bought and nothing has been charged or promised. The free set opens with an emailed sign-in link; the sample lesson needs no sign-up at all.</p>}
+          {!open && <p className="pub-small">Basic and Pro are not on sale yet: there is no price, checkout or refund policy to show, so nothing here can be bought and nothing has been charged or promised. The free set opens with an emailed sign-in link; the sample lesson needs no sign-up at all.</p>}
           <PricingTable />
           <p className="pub-small mt-6">Not included in any plan: coaching calls, continuing education credit, legal advice, or help with a specific transaction.</p>
           <ToolIndex />

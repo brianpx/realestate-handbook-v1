@@ -19,7 +19,7 @@ export const OWNER: {
   postalAddress: string | null;
 } = {
   author: null,
-  supportEmail: null,
+  supportEmail: 'support@findnurturekeep.com',
   businessName: null,
   postalAddress: null,
 };
@@ -31,8 +31,8 @@ export const OFFER: {
   /** One sentence on what updates are included. */
   updatesTerm: string | null;
 } = {
-  accessTerm: null,
-  updatesTerm: null,
+  accessTerm: 'Lifetime access to edition 1.0 for one person, not transferable.',
+  updatesTerm: 'Corrections and updates to edition 1.0 are included; a future edition is a separate purchase with a discount for existing buyers.',
 };
 
 // A policy page shows a "draft for owner review" notice until its status is changed to 'approved' here.
