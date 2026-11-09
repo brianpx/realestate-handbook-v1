@@ -99,6 +99,13 @@ html.dark {
   }
 }
 
+/* Viewport breakpoints, shared with app/(public)/site.css. Range syntax, so no width (fractional ones at zoom) falls
+   between the two sides of a breakpoint. Container queries for the chapter column are separate (.chapter-slot).
+     1000px  wide:   the public hero and four-column grids collapse
+      900px  shell:  the handbook's phone layout (sticky sidebar, dropdown menu); the public nav becomes a menu button
+      700px  narrow: public sections, grids, the tool index and the sample lose their side room
+      600px  phone:  teaching widgets stack, controls grow to 44px, dialog footers stack
+      420px  small:  the hero's fields and stat tiles become single rows */
 @layer components {
 
         * {
@@ -308,7 +315,7 @@ html.dark {
         .procedure > ol > li::before { content: counter(step); position: absolute; left: 12px; top: 10px; width: 24px; height: 24px; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; color: #1d4ed8; background: #dbeafe; border-radius: 999px}
 
         /* Desktop: every chapter is its own page card, with space between pages */
-        @media (min-width: 901px) {
+        @media (width > 900px) {
             .content-container {
                 background: none;
                 padding: 0;
@@ -714,7 +721,7 @@ html.dark {
         .note-dialog-foot p { margin: 0; font-size: 0.82rem; color: var(--color-muted)}
         .note-dialog-done { flex-shrink: 0; padding: 8px 16px; font: inherit; font-size: 0.875rem; font-weight: 600; color:var(--color-on-brand); background:var(--color-brand); border: 0; border-radius: 8px; cursor: pointer}
         .note-dialog-done:hover { background:var(--color-brand-hover)}
-        @media (max-width: 480px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
+        @media (width <= 600px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
 
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px}
@@ -1027,7 +1034,7 @@ html.dark {
         .term-pop strong { display: block; margin-bottom: 2px}
         .term-more { display: block; margin-top: 6px; font-size: 0.75rem; opacity: 0.75}
 
-        @media (max-width: 600px) {
+        @media (width <= 600px) {
             .interactive-head { font-size: 0.85rem}
             .calc-stat { flex-basis: 100%}
             .score-bar-row { grid-template-columns: 1fr 24px}
@@ -1043,7 +1050,7 @@ html.dark {
             .nurture-tag { margin: 4px 6px 0 0}
         }
 
-        @media (pointer: coarse), (max-width: 600px) {
+        @media (pointer: coarse), (width <= 600px) {
             .calc-input, .score-input, select.calc-input { min-height: 44px}
             .btn-mini, .btn-nav { min-height: 44px}
             .speed-slider, .alloc-row input[type="range"], .planner-controls input[type="range"] { height: 44px}
@@ -1054,7 +1061,7 @@ html.dark {
         .menu-close { display: none}
         .menu-backdrop { display: none}
 
-        @media (max-width: 900px) {
+        @media (width <= 900px) {
             /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
                toolbar. The sidebar sticks to the top with its header just off-screen, so scrolling slides the
                header away and leaves the search row pinned. */
@@ -1210,7 +1217,7 @@ html.dark {
             .setup-no-print { display: none !important}
             .setup-plan { border: 1px solid #000}
         }
-        @media (max-width: 600px) {
+        @media (width <= 600px) {
             .hb-title { font-size: 1.7rem}
             .setup-step span:not(.setup-step-num) { font-size: 0.85rem}
         }
