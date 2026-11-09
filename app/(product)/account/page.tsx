@@ -62,7 +62,7 @@ export default async function AccountPage({ searchParams }: Props) {
 
       <h2 className="hb-h2" id="delete">Delete your account</h2>
       <p>
-        Deleting removes your account, every sign-in and your entry on the mailing list. Purchase records, if any, are kept for the accounting period with no address on them.
+        Deleting removes your account, every sign-in and your entry on the mailing list. Purchase records, if any, are kept for seven years for accounting, with no address on them.
         What you saved while reading is only in this browser, so clear this site's data there as well if you want it gone.
       </p>
       {error === 'confirm' && <p className="setup-error" role="alert">The address you typed did not match the one on this account. Nothing was deleted.</p>}

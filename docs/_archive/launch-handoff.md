@@ -14,17 +14,17 @@ Written 21 October 2026. Covers the sales site, the `/handbook` move, the guided
 
 ## Launch blockers (owner or infrastructure)
 
-1. **There is no paid access.** The repo has no authentication, purchase records or server-side entitlement. `/handbook/*` is publicly readable and so is every chapter's HTML. Hiding links is not protection. Before selling, the handbook routes need a real gate (for example a signed access cookie checked in `proxy.ts` or a session library, issued after a hosted-checkout webhook). Nothing in the UI claims accounts or purchases exist.
-2. **No checkout.** The site contains no payment code. `../../lib/offer.ts` takes a hosted-checkout URL; until price, checkout, access term, update term and approved terms/refund/updates policies are all set, every purchase button degrades to "See pricing and availability".
-3. **The handbook is currently advertised as free.** The welcome email says "The book stays free to read", `handbook-webpage-review.md` records the public promise as free, and the live GitHub Pages copy is free. Charging for it, or for part of it, is a decision to make and announce.
-4. **Pricing is not decided.** No price exists in the repo, and none was invented.
-5. **Policies are drafts.** `POLICY_STATUS` in `../../lib/offer.ts` is `draft` for privacy, terms, refunds and updates. Drafts show a notice and are `noindex`. Decisions are marked "Decision needed" on each page. Privacy was written from actual data handling (local storage only, optional email form to Neon + SendGrid, salted IP hash for rate limiting, no analytics). It needs your review and probably a professional's. Also confirm the lead-attempts cleanup from `db/migrations/001_leads.sql` is actually scheduled, since the privacy text says the hash is kept briefly.
+1. **The gate exists; a purchase cannot yet open it.** Superseded 9 November 2026 (M5 of `../plans/MASTER-PROMPT.md`): magic-link sign-in, a session cookie checked in `proxy.ts` and a grant-based entitlement check now gate `/handbook/*` and the search index. Grants are created by hand in the admin until the billing webhook (M7 Phase 5) exists.
+2. **No checkout.** The site contains no payment code. Each paid tier in `../../lib/tiers.ts` takes a hosted-checkout URL; until price, checkout, access term, update term and approved terms/refund/updates policies are all set, every purchase button degrades to "See pricing and availability".
+3. **The handbook is currently advertised as free.** `handbook-webpage-review.md` records the public promise as free, and the live GitHub Pages copy is free. (The welcome email that said "The book stays free to read" is gone: the notes list now sends only a confirmation link, `../../lib/leads/mail.ts`.) Charging for it, or for part of it, is a decision to make and announce.
+4. **Pricing is decided, not entered.** Basic $79 and Pro $149, one-time (OD-23, 9 November 2026); neither is in `../../lib/tiers.ts` yet, and no copy invents one.
+5. **Policies are drafts.** `POLICY_STATUS` in `../../lib/offer.ts` is `draft` for privacy, terms, refunds and updates. Drafts show a notice and are `noindex`. Decisions are marked "Decision needed" on each page. Privacy was written from actual data handling (local storage, the two sign-in cookies, account and session records, the confirmed notes list on Neon + SendGrid, salted IP hashes for rate limiting, no analytics). It needs your review and probably a professional's. The lead-attempts cleanup from `db/migrations/001_leads.sql` runs on the request path (`../../lib/leads/neon-store.ts`), so the "kept for a day" wording holds.
 
 ## Owner inputs needed (all in `../../lib/offer.ts`)
 
 - `OWNER.author` (name, bio, confirmed background lines). Until set, `/about` and the sales page say nothing about the author instead of inventing it.
 - `OWNER.supportEmail`, `OWNER.businessName`, `OWNER.postalAddress`.
-- `OFFER.priceDisplay`, `OFFER.checkoutUrl`, `OFFER.accessTerm`, `OFFER.updatesTerm`.
+- `OFFER.accessTerm`, `OFFER.updatesTerm`; `priceDisplay` and `checkoutUrl` per paid tier in `../../lib/tiers.ts`.
 - Genuine reviews or sources, if any. None are shown.
 - `SITE_INDEXABLE=true` and `NEXT_PUBLIC_SITE_URL` at cutover, as before (see `cutover-runbook.md`, which still needs a pass for the new sales home page).
 

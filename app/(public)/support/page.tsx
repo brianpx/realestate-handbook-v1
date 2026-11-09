@@ -35,8 +35,8 @@ export default function SupportPage() {
 
         <h2 id="saving">Saving progress</h2>
         <p>
-          There is no account. Everything you do (chapters read, checklist ticks, calculator entries, script practice, scorecard and quiz answers) is saved
-          automatically in your browser, on the device you are using. It is not sent to a server and nobody else can see it.
+          Your account holds your sign-in, not your work. Everything you do (chapters read, checklist ticks, calculator entries, script practice, scorecard and quiz answers)
+          is saved automatically in your browser, on the device you are using. It is not sent to a server and nobody else can see it.
         </p>
         <p>
           Because it lives in the browser, it stays only as long as the browser keeps it. Clearing site data, using a private window, switching browsers,
@@ -64,8 +64,9 @@ export default function SupportPage() {
           <p>Details of how your purchase gives you access are on <Link href="/updates">Access and updates</Link>.</p>
         ) : (
           <p>
-            There is no login to recover: the handbook has no accounts, passwords or purchase records today. If you lose your place, restore a progress file. How
-            access works once purchase opens will be described on <Link href="/updates">Access and updates</Link> before anything is sold.
+            There is no password to recover: you sign in from the <Link href="/signin">sign-in page</Link> with a link we email to your address, and a sign-in lasts 90 days
+            from your last visit. The <Link href="/account">Account page</Link> shows where you are signed in and can end every sign-in at once. If you lose your place, restore
+            a progress file. How a purchase will add access is on <Link href="/updates">Access and updates</Link>; nothing is sold yet.
           </p>
         )}
 
