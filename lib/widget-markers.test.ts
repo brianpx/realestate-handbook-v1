@@ -1,9 +1,18 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { splitSegments } from './content';
-import { validateMarkers, widgetInstanceId } from './widget-markers';
+import { isWidgetName, validateMarkers, WIDGET_NAMES, widgetInstanceId } from './widget-markers';
 
 const known = ['goal-calculator', 'roadmap'];
+
+describe('WIDGET_NAMES', () => {
+  it('is the list isWidgetName narrows to, and nothing else', () => {
+    for (const name of WIDGET_NAMES) expect(isWidgetName(name)).toBe(true);
+    expect(isWidgetName('roadmap')).toBe(false);
+    expect(isWidgetName('')).toBe(false);
+    expect(new Set(WIDGET_NAMES).size).toBe(WIDGET_NAMES.length);
+  });
+});
 
 describe('validateMarkers', () => {
   it('accepts well-formed, known, unique markers', () => {

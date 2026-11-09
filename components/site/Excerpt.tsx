@@ -9,7 +9,7 @@ import { ScriptPractice } from '@/components/widgets/ScriptPractice';
 import { TimeBlockPlanner } from '@/components/widgets/TimeBlockPlanner';
 import { readPageHtml, splitSegments } from '@/lib/content';
 import type { PageId } from '@/lib/pages';
-import { widgetInstanceId } from '@/lib/widget-markers';
+import { isWidgetName, widgetInstanceId, type WidgetName } from '@/lib/widget-markers';
 
 // The tools the public sample runs: everything Chapters 1 and 7 use, plus the two teasers. Importing only these keeps
 // the public bundle from carrying every handbook widget. They are the real components under the handbook's instance
@@ -17,7 +17,7 @@ import { widgetInstanceId } from '@/lib/widget-markers';
 // browser. The "Essential tools only" switch lives in the handbook's Settings, which the public site cannot reach, so
 // the sample does not apply it.
 type WidgetProps = { page: string; id: string; html?: string };
-const PREVIEW_WIDGETS: Record<string, ComponentType<WidgetProps>> = {
+const PREVIEW_WIDGETS: Partial<Record<WidgetName, ComponentType<WidgetProps>>> = {
   'goal-calculator': GoalCalculator,
   'script-practice': ScriptPractice,
   'timeblock-planner': TimeBlockPlanner,
@@ -26,8 +26,7 @@ const PREVIEW_WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   // coach attempts, when Chapter 1 or 7 questions gain concept tags
   'knowledge-check': KnowledgeCheck,
   'pitfall-cycle': PitfallCycle,
-  // an async server component; the cast only keeps ComponentType, which predates them, from rejecting it
-  'error-self-score': ErrorSelfScore as unknown as ComponentType<WidgetProps>,
+  'error-self-score': ErrorSelfScore,
 };
 
 type Range = { from: string; to: string } | { from?: undefined; to?: undefined };
@@ -57,7 +56,7 @@ export async function Excerpt({ page, from, to }: { page: PageId } & Range) {
   const segments = splitSegments(page, demoted ? demoteHeadings(slice) : slice);
   const body = segments.map((s, i) => {
     if (s.kind === 'html') return <div key={i} style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: s.html }} />;
-    const Tool = PREVIEW_WIDGETS[s.name];
+    const Tool = isWidgetName(s.name) ? PREVIEW_WIDGETS[s.name] : undefined;
     if (!Tool) throw new Error(`Excerpt of ${page}: the preview does not include the "${s.name}" tool`);
     return <Tool key={i} page={page} id={widgetInstanceId(page, s.name, s.slug)} html={s.html} />;
   });
