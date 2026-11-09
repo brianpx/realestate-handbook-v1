@@ -3,10 +3,9 @@ import { audit, auditBy } from '@/lib/audit';
 import { MAX_BODY_BYTES, SIGN_IN_PATH } from '@/lib/auth/config';
 import { clearedCookieHeaders, isSecureRequest } from '@/lib/auth/cookie';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
-import { sessionLive } from '@/lib/auth/session';
-import { hashKey, hashSecret, isSecretShape } from '@/lib/auth/token';
+import { signedInUser } from '@/lib/auth/request-user';
+import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
-import type { User } from '@/lib/users/types';
 
 export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null };
 
@@ -19,14 +18,7 @@ const redirect = (location: string, headers: Record<string, string | string[]> =
 const originRefused = (req: AuthRequest, deps: AccountDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
 
 // The account routes are plain form posts from the account page, so they answer with redirects. The session is
-// read here, not through the page's data-access layer: a route handler has no render to share a cache with.
-async function signedInUser(req: AuthRequest, deps: AccountDeps, now: Date): Promise<User | null> {
-  if (!deps.stores || !isSecretShape(req.sessionId)) return null;
-  const session = await deps.stores.auth.findSession(hashSecret(req.sessionId));
-  if (!session || !sessionLive(session, now)) return null;
-  const user = await deps.stores.users.findById(session.userId);
-  return user && user.status === 'active' ? user : null;
-}
+// read through lib/auth/request-user.ts, not the page's data-access layer.
 
 /** "Sign out everywhere": every session of the reader's, this one included, is revoked, and the fact is logged. */
 export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
@@ -35,7 +27,7 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
   try {
     const now = deps.now();
-    const user = await signedInUser(req, deps, now);
+    const user = await signedInUser(req.sessionId, deps.stores, now);
     if (!user) return redirect(SIGN_IN, cleared);
     const revoked = await deps.stores.auth.revokeAllForUser(user.id, now);
     if (revoked > 0) {
@@ -61,7 +53,7 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
   try {
     const now = deps.now();
-    const user = await signedInUser(req, deps, now);
+    const user = await signedInUser(req.sessionId, deps.stores, now);
     if (!user) return redirect(SIGN_IN, cleared);
     const { id: userId, email } = user; // copied: the store may rewrite the user object it handed out
     const parsed = deleteAccountSchema.safeParse({ confirmEmail: new URLSearchParams(req.body).get('confirmEmail') ?? '' });
