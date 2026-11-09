@@ -68,6 +68,36 @@ describe('createStore', () => {
     expect(listener).toHaveBeenCalled();
     expect(store.get().dark).toBe(true);
   });
+
+  it('holds one storage listener for all subscribers, and drops it with the last one', () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const store = createStore({ key: 'k', schema: settingsSchema });
+    const first = vi.fn();
+    const second = vi.fn();
+    const unsubscribeFirst = store.subscribe(first);
+    const unsubscribeSecond = store.subscribe(second);
+    const storageAdds = () => add.mock.calls.filter(([type]) => type === 'storage').length;
+    const storageRemoves = () => remove.mock.calls.filter(([type]) => type === 'storage').length;
+    expect(storageAdds()).toBe(1);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: 'k' }));
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+
+    unsubscribeFirst();
+    expect(storageRemoves()).toBe(0);
+    window.dispatchEvent(new StorageEvent('storage', { key: 'k' }));
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(2);
+
+    unsubscribeSecond();
+    expect(storageRemoves()).toBe(1);
+    window.dispatchEvent(new StorageEvent('storage', { key: 'k' }));
+    expect(second).toHaveBeenCalledTimes(2);
+    add.mockRestore();
+    remove.mockRestore();
+  });
 });
 
 describe('versioning and recovery', () => {
