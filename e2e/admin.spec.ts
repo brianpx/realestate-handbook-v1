@@ -90,12 +90,24 @@ test.describe('as an administrator', () => {
     expect(await self.json()).toMatchObject({ ok: false, error: 'self_change' });
     expect((await request.post(`/api/admin/users/${reader.userId}/suspend`, { data: { reason: 'x' }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
 
+    // the user page's history is unpaged, so the one suspend row is counted there rather than in a page of the global log
+    await page.reload();
+    await expect(page.getByRole('row').filter({ hasText: 'membership.suspend' })).toHaveCount(1);
+
     await page.goto(`/admin/users/${admin.id}`);
     await expect(page.getByRole('form', { name: 'Role' }).getByRole('combobox', { name: 'Role' })).toBeDisabled();
 
     await page.goto('/admin/audit');
     await expect(page.getByRole('heading', { level: 1, name: 'Audit log' })).toBeVisible();
-    await expect(page.getByRole('row').filter({ hasText: 'membership.suspend' }).filter({ hasText: reader.email })).toHaveCount(1);
+    await expect(page.getByRole('row').filter({ hasText: 'membership.suspend' }).first()).toBeVisible();
+  });
+
+  test('a user page with a long address does not scroll sideways at 360px', async ({ page }) => {
+    const reader = await extraReader();
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto(`/admin/users/${reader.userId}`);
+    await expect(page.getByRole('heading', { level: 1, name: reader.email })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
   });
 
   // the tables scroll inside their cards; the page itself must not, or the sidebar trigger drifts off-screen
