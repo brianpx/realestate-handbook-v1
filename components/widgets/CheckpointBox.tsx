@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { CheckpointAnswer } from '@/content/data/checkpoints';
 import { updateWidget, useHandbookState, widgetOf } from '@/lib/state';
+import { BoxTitle } from './BoxTitle';
 import { InteractiveHeader } from './InteractiveHeader';
 
 type Entry = { text?: unknown; status?: unknown };
@@ -13,7 +14,7 @@ export function CheckpointBox({ page, titleHtml, questions, answers }: { page: s
   const got = questions.filter((_, i) => entryOf(saved, `${page}:${i}`).status === 'got').length;
   return (
     <aside className="box checkpoint iw">
-      <h3 className="box-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
+      <BoxTitle dangerouslySetInnerHTML={{ __html: titleHtml }} />
       <InteractiveHeader hint="Answer in your own words first, then check the key points. Your answers save on this device." widgetKey="checkpoint" label="Checkpoint self-test">
         <span className="cp-count">{got} of {questions.length} confident</span>
       </InteractiveHeader>
