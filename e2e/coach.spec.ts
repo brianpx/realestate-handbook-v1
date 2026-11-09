@@ -207,7 +207,7 @@ test('Download my progress carries the plan, its steps and the attempts to a fre
   expect(Object.keys(file.handbookCoach.completions)).toEqual(['ch1']);
   expect(file.handbookCoach.attempts).toHaveLength(1);
 
-  // A second device: the config's storage state (gate dismissed) and nothing else.
+  // A second device: the config's storage state (signed in) and nothing else.
   const { storageState, baseURL, extraHTTPHeaders } = test.info().project.use;
   const fresh = await browser.newContext({ storageState, baseURL, extraHTTPHeaders });
   try {

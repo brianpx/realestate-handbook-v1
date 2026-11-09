@@ -84,7 +84,7 @@ test.describe('signed out', () => {
 test.describe('signed in', () => {
   test('a reader opens a chapter, and signing out closes the handbook again', async ({ browser }) => {
     // its own session, so revoking it leaves the shared one every other test uses untouched
-    const context = await browser.newContext({ storageState: signedInState([{ name: 'handbookAccess', value: '1' }], await extraSession()) });
+    const context = await browser.newContext({ storageState: signedInState([], await extraSession()) });
     const page = await context.newPage();
     await page.goto('/handbook/ch1');
     await expect(page.locator('#content-container')).toBeVisible();

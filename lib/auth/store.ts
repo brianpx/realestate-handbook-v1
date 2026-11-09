@@ -1,4 +1,6 @@
 import path from 'node:path';
+import { NeonAccessStore } from '@/lib/access/neon-store';
+import type { AccessStore } from '@/lib/access/store';
 import { sqlFromUrl } from '@/lib/db/sql';
 import { NeonUserStore } from '@/lib/users/neon-store';
 import type { UserStore } from '@/lib/users/store';
@@ -26,15 +28,27 @@ export interface AuthStore {
   consumeToken(tokenHash: string, now: Date): Promise<ConsumedToken | null>;
   createSession(session: NewSession): Promise<void>;
   findSession(idHash: string): Promise<Session | null>;
+  /** Every session row of one user, live or not; the account page counts the live ones. */
+  listSessions(userId: string): Promise<Session[]>;
   /** Extends a live session last extended over a day ago; false when there was nothing to do. */
   renewSession(idHash: string, now: Date): Promise<boolean>;
   revokeSession(idHash: string, now: Date): Promise<void>;
-  revokeAllForUser(userId: string, now: Date): Promise<void>;
+  /** "Sign out everywhere": how many live sessions were revoked. */
+  revokeAllForUser(userId: string, now: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
   recordAndCount(scope: AttemptScope, keyHash: string, at: Date, since: Date): Promise<number>;
 }
 
-export type AuthStores = { users: UserStore; auth: AuthStore };
+export type AuthStores = { users: UserStore; auth: AuthStore; access: AccessStore };
+
+// One file store per path for the life of the process: its write queue only serialises writes that go through the
+// same instance, and requests arrive concurrently.
+const fileStores = new Map<string, FileAuthStore>();
+const fileStore = (file: string): FileAuthStore => {
+  let store = fileStores.get(file);
+  if (!store) fileStores.set(file, (store = new FileAuthStore(file)));
+  return store;
+};
 
 /**
  * Picks the stores from the environment: a database when DATABASE_URL is set, the throwaway file store only when
@@ -44,12 +58,12 @@ export type AuthStores = { users: UserStore; auth: AuthStore };
 export function authStoresFromEnv(env: Record<string, string | undefined>): AuthStores | null {
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
   if (env.AUTH_STORE === 'file' && !hosted) {
-    const store = new FileAuthStore(env.AUTH_STORE_PATH ?? path.join(process.cwd(), '.data', 'auth.json'));
-    return { users: store, auth: store };
+    const store = fileStore(env.AUTH_STORE_PATH ?? path.join(process.cwd(), '.data', 'auth.json'));
+    return { users: store, auth: store, access: store };
   }
   if (env.DATABASE_URL) {
     const sql = sqlFromUrl(env.DATABASE_URL);
-    return { users: new NeonUserStore(sql), auth: new NeonAuthStore(sql) };
+    return { users: new NeonUserStore(sql), auth: new NeonAuthStore(sql), access: new NeonAccessStore(sql) };
   }
   return null;
 }

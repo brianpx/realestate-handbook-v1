@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
-import { requireViewer } from '@/lib/auth/dal';
 import { StartSetup } from '@/components/handbook/StartSetup';
+import { UpsellCard } from '@/components/handbook/UpsellCard';
 import { Breadcrumbs } from '@/components/shell/Breadcrumbs';
+import { requireViewer } from '@/lib/auth/dal';
 import { HANDBOOK } from '@/lib/routes';
 
 export const metadata: Metadata = { title: 'Start here: guided setup', alternates: { canonical: `${HANDBOOK}/start` } };
 
 // The onboarding wizard draws its own sheet (brand header, progress bar), so this page has no ProductCard.
+// The setup belongs to the paid handbook (it builds the plan the member chapters run); the free set reads about it.
 export default async function StartPage() {
-  await requireViewer();
+  const viewer = await requireViewer();
+  if (viewer.entitlement.level !== 'member') return <UpsellCard feature="start" entitlement={viewer.entitlement} />;
   return (
     <div className="onboarding-page">
       <Breadcrumbs className="onboarding-crumbs" />

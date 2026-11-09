@@ -1,3 +1,5 @@
+import { bootstrapOwnerGrant } from '@/lib/access/grants';
+import { audit } from '@/lib/audit';
 import type { MailConfig } from '@/lib/leads/mail';
 import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, REQUEST_LINK_LIMITS, VERIFY_PATH, VERIFY_LIMIT } from './config';
 import { clearedCookieHeader, isSecureRequest, sessionCookieHeader } from './cookie';
@@ -88,7 +90,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
   if (originRefused(req, deps)) return reply(403, 'forbidden');
   if (!deps.stores) return reply(503, 'unavailable');
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
-  const { auth, users } = deps.stores;
+  const { auth, users, access } = deps.stores;
   const now = deps.now();
   try {
     if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - VERIFY_LIMIT.windowSeconds * 1000))) > VERIFY_LIMIT.attempts) return limited(VERIFY_LIMIT.windowSeconds);
@@ -102,9 +104,14 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     if (existing && existing.status !== 'active') return redirect(FAILED);
     const { user } = await users.upsertVerified({ email: consumed.email, termsVersion: consumed.termsVersion, at: now });
 
-    // The first administrator: only while none exists, so the list is inert once an admin is in place. The owner's
-    // content grant and the audit row arrive with the access tables (Phase 2).
-    if (user.role !== 'admin' && deps.bootstrapEmails.includes(user.email) && (await users.countAdmins()) === 0) await users.setRole(user.id, 'admin', now);
+    // The first administrator: only while none exists, so the list is inert once an admin is in place. The role
+    // change is audited and the owner gets a content grant, because the admin role opens nothing by itself (OD-13).
+    if (user.role !== 'admin' && deps.bootstrapEmails.includes(user.email) && (await users.countAdmins()) === 0) {
+      const before = { role: user.role };
+      await users.setRole(user.id, 'admin', now);
+      await access.appendAudit(audit({ kind: 'system', userId: null }, 'bootstrap_admin', { table: 'users', id: user.id }, { before, after: { role: 'admin' } }, now));
+      await bootstrapOwnerGrant(access, user.id, now);
+    }
 
     const sessionId = newSecret();
     await auth.createSession({ idHash: hashSecret(sessionId), userId: user.id, createdAt: now, expiresAt: sessionExpiry(now) });

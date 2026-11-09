@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChapterList, ContinuePanel } from '@/components/handbook/HomePanels';
-import { requireViewer } from '@/lib/auth/dal';
 import { ProductCard } from '@/components/shell/ProductCard';
-import { BOOK_TITLE } from '@/lib/pages';
+import { pageOpen } from '@/lib/access/entitlement';
+import { requireViewer } from '@/lib/auth/dal';
+import { purchaseOpen } from '@/lib/offer';
+import { BOOK_TITLE, PAGE_IDS } from '@/lib/pages';
 import { HANDBOOK, pageHref } from '@/lib/routes';
 
 export const metadata: Metadata = { title: 'Handbook home', alternates: { canonical: HANDBOOK } };
@@ -19,14 +21,29 @@ const TOOLS = [
 ] as const;
 
 export default async function HandbookHome() {
-  await requireViewer();
+  const { entitlement } = await requireViewer();
+  const locked = PAGE_IDS.filter(id => !pageOpen(entitlement, id));
   return (
     <ProductCard>
       <p className="part-label">Your handbook</p>
       <h1 className="hb-title">{BOOK_TITLE}</h1>
       <p>A practical 90-day plan for your first year: find conversations, follow up on a plan, and keep clients so they send you the next ones. Work through it in order, and do each exercise the day you read the chapter.</p>
 
-      <ContinuePanel />
+      {entitlement.level !== 'member' && (
+        <section className="hb-continue" aria-labelledby="freeSetTitle" data-free-set>
+          <h2 id="freeSetTitle">{entitlement.level === 'preview' && entitlement.suspended ? 'Your access is paused' : 'You are reading the free set'}</h2>
+          <p>
+            The overview, Chapter 1 and Chapter 7 are open in full, with their tools. The other chapters, the appendices and the guided setup are part of the paid handbook
+            {purchaseOpen() ? '.' : ', which is not on sale yet.'}
+          </p>
+          <div className="hb-actions">
+            <Link className="btn-nav hb-primary" href="/pricing">{purchaseOpen() ? 'See plans and buy' : 'Pricing and availability'}</Link>
+            <Link className="btn-mini" href={pageHref('ch1')}>Read Chapter 1</Link>
+          </div>
+        </section>
+      )}
+
+      {entitlement.level === 'member' && <ContinuePanel />}
 
       <h2 className="hb-h2">How to use the handbook</h2>
       <ol className="hb-how">
@@ -49,7 +66,7 @@ export default async function HandbookHome() {
 
       <h2 className="hb-h2">Chapters</h2>
       <p><Link href={pageHref('cover')}>Title page</Link> · <Link href={pageHref('pref')}>Overview and plan</Link></p>
-      <ChapterList />
+      <ChapterList locked={locked} />
     </ProductCard>
   );
 }

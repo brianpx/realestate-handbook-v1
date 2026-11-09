@@ -1,13 +1,13 @@
 import { defineConfig } from '@playwright/test';
 import { AUTH_FILE, signedInState } from './e2e/auth';
-import { BASE_URL as ORIGIN, BYPASS_HEADERS, IS_REMOTE, LOCAL_ONLY_SPECS } from './e2e/target';
+import { BASE_URL as ORIGIN, BYPASS_HEADERS, IS_REMOTE, LOCAL_ONLY_SPECS, SEED_DATABASE_URL, SEEDING_SPECS } from './e2e/target';
 
 const MAILPIT_URL = 'http://localhost:8025';
 
 export default defineConfig({
   testDir: 'e2e',
   globalSetup: './e2e/global-setup.ts',
-  testIgnore: IS_REMOTE ? LOCAL_ONLY_SPECS : undefined,
+  testIgnore: IS_REMOTE ? [...LOCAL_ONLY_SPECS, ...(SEED_DATABASE_URL ? [] : SEEDING_SPECS)] : undefined,
   webServer: IS_REMOTE ? undefined : [
     {
       command: 'pnpm build && pnpm start -p 3187',
@@ -36,8 +36,7 @@ export default defineConfig({
     // A failure on CI is otherwise only a line of log; the trace goes into the uploaded HTML report.
     trace: 'retain-on-failure',
     extraHTTPHeaders: BYPASS_HEADERS,
-    // Every test starts as a signed-in reader who has already dismissed the email gate; the gate's and sign-in's own
-    // tests override this.
-    storageState: signedInState([{ name: 'handbookAccess', value: '1' }]),
+    // Every test starts as a signed-in member; the sign-in, lead and admin specs override this.
+    storageState: signedInState([]),
   },
 });

@@ -3,27 +3,29 @@ import { readPageHtml, splitSegments, type Segment } from '@/lib/content';
 import { NO_GLOSSARY_PAGES, wrapGlossary } from '@/lib/glossary';
 import { collectOutline, introCut } from '@/lib/outline';
 import { glossaryDefs } from '@/lib/page-html';
+import { toolOpen, type Entitlement } from '@/lib/access/entitlement';
 import type { PageId } from '@/lib/pages';
 import { widgetInstanceId } from '@/lib/widget-markers';
-import { Widget } from '../widgets/registry';
+import { LockedWidget, Widget } from '../widgets/registry';
 import { Breadcrumbs } from './Breadcrumbs';
 import { ChapterEnd } from './ChapterEnd';
 import { ChapterOutline } from './ChapterOutline';
 import { ReadTracker } from './ReadTracker';
 
-export async function ChapterView({ id }: { id: PageId }) {
+// The page is already open to this reader (the route checked); the entitlement decides which tools are built.
+export async function ChapterView({ id, entitlement }: { id: PageId; entitlement: Entitlement }) {
   const html = await readPageHtml(id);
-  // The first use of each glossary term on the page gets a popover. Checkpoint boxes are tool markup and are skipped.
-  const defs = NO_GLOSSARY_PAGES.includes(id) ? null : await glossaryDefs();
+  // The first use of each glossary term on the page gets a popover, for members: the definitions are Appendix D, a
+  // member page, and the pricing table lists the pop-ups with the paid plans. Checkpoint boxes are tool markup and are skipped.
+  const defs = NO_GLOSSARY_PAGES.includes(id) || entitlement.level !== 'member' ? null : await glossaryDefs();
   const used = new Set<string>();
   const gloss = (raw: string) => (defs ? wrapGlossary(raw, defs, used) : raw);
-  const render = (segments: Segment[]) => segments.map((s, i) =>
-    s.kind === 'html' ? (
-      <div key={i} style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: gloss(s.html) }} />
-    ) : (
-      <Widget key={i} id={widgetInstanceId(id, s.name, s.slug)} name={s.name} html={s.html !== undefined && s.name !== 'checkpoints' ? gloss(s.html) : s.html} />
-    ),
-  );
+  const render = (segments: Segment[]) => segments.map((s, i) => {
+    if (s.kind === 'html') return <div key={i} style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: gloss(s.html) }} />;
+    const inner = s.html !== undefined && s.name !== 'checkpoints' ? gloss(s.html) : s.html;
+    if (!toolOpen(entitlement, id, s.name)) return <LockedWidget key={i} name={s.name} html={inner} />;
+    return <Widget key={i} id={widgetInstanceId(id, s.name, s.slug)} name={s.name} html={inner} />;
+  });
   const end = (
     <>
       <ChapterEnd id={id} />

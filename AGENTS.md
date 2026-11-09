@@ -28,6 +28,7 @@ Package manager: `pnpm` (lockfile is `pnpm-lock.yaml`; never create a second loc
 - Typecheck: `pnpm typecheck` (runs `next typegen` first so the generated route types exist on a clean clone). If `tsc` fails on a stale `.next/dev/types` validator that names a deleted route, restart `next dev` or remove that folder, then re-run.
 - Test: `pnpm test` (single file: `pnpm test <path>`)
 - E2E: `pnpm e2e`
+- Migrations: `pnpm db:migrate` applies `db/migrations/*.sql` to `DATABASE_URL` once each (recorded in `schema_migrations`); `pnpm build` runs it first, so every Vercel deployment migrates the branch it reads. Without `DATABASE_URL` it does nothing. Against a specific branch: `node --env-file=<ignored .env.*.local file> db/migrate.ts`
 
 There is no `lint` or `format` script. After any code change, run typecheck + the tests for what you touched. Fix failures caused by your changes before reporting done.
 

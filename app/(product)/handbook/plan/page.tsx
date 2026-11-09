@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
-import { requireViewer } from '@/lib/auth/dal';
 import { notFound } from 'next/navigation';
-import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { PlanApp } from '@/components/coach/PlanApp';
+import { UpsellCard } from '@/components/handbook/UpsellCard';
 import { ProductCard } from '@/components/shell/ProductCard';
+import { coachOpen } from '@/lib/access/entitlement';
+import { requireViewer } from '@/lib/auth/dal';
+import { COACH_ENABLED } from '@/lib/coach/enabled';
 
 export const metadata: Metadata = { title: 'My plan', alternates: { canonical: '/handbook/plan' } };
 
 export default async function Page() {
-  await requireViewer();
+  const viewer = await requireViewer();
   if (!COACH_ENABLED) notFound();
+  if (!coachOpen(viewer.entitlement)) return <UpsellCard feature="coach" entitlement={viewer.entitlement} />;
   return (
     <ProductCard>
       <h1>My reading plan</h1>

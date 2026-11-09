@@ -24,6 +24,8 @@ export interface LeadStore {
   recordAndCount(ipHash: string, at: Date, since: Date): Promise<number>;
   /** Newest first, at most LEAD_LIST_CAP rows. */
   list(): Promise<LeadRow[]>;
+  /** Account deletion removes the marketing row for the same address (user-database plan, section 12.4). */
+  deleteByEmail(email: string): Promise<void>;
 }
 
 type Row = NewLead & { id: string; emailStatus: EmailStatus | null };
@@ -103,6 +105,10 @@ export class FileLeadStore implements LeadStore {
     await this.queue;
     return newestFirst((await this.read()).leads);
   }
+
+  deleteByEmail(email: string) {
+    return this.change(data => { data.leads = data.leads.filter(l => l.email !== email); });
+  }
 }
 
 /** In-memory store for unit tests. */
@@ -129,7 +135,17 @@ export class MemoryLeadStore implements LeadStore {
     return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length;
   }
   async list() { this.check(); return newestFirst(this.leads); }
+  async deleteByEmail(email: string) { this.check(); this.leads = this.leads.filter(l => l.email !== email); }
 }
+
+// One file store per path for the life of the process: its write queue only serialises writes that go through the
+// same instance, and requests arrive concurrently.
+const fileStores = new Map<string, FileLeadStore>();
+const fileStore = (file: string): FileLeadStore => {
+  let store = fileStores.get(file);
+  if (!store) fileStores.set(file, (store = new FileLeadStore(file)));
+  return store;
+};
 
 /**
  * Picks the store from the environment: a database when DATABASE_URL is set, the throwaway file store only when
@@ -140,7 +156,7 @@ export class MemoryLeadStore implements LeadStore {
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
-  if (env.LEAD_STORE === 'file' && !hosted) return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
+  if (env.LEAD_STORE === 'file' && !hosted) return fileStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);
   return null;
 }

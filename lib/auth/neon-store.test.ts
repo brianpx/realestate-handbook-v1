@@ -48,16 +48,16 @@ describe('NeonAuthStore', () => {
     await store.revokeSession('s', NOW);
     await store.revokeAllForUser('u', NOW);
     expect(calls[1]).toEqual({ text: 'update sessions set revoked_at = ? where id_hash = ? and revoked_at is null', values: [ISO, 's'] });
-    expect(calls[2]).toEqual({ text: 'update sessions set revoked_at = ? where user_id = ? and revoked_at is null', values: [ISO, 'u'] });
+    expect(calls[2]).toEqual({ text: 'update sessions set revoked_at = ? where user_id = ? and revoked_at is null returning id_hash', values: [ISO, 'u'] });
   });
   it('inserts and counts an attempt in one statement, and still returns the count when cleanup throws', async () => {
     const { sql, calls } = fakeSql([{ n: 4 }]);
     const cleanup = new Error('delete failed');
     cleanup.name = 'CleanupError';
-    const flaky: Sql = async (strings, ...values) => {
+    const flaky: Sql = Object.assign(async (strings: TemplateStringsArray, ...values: unknown[]) => {
       if (strings.join('').includes('delete')) throw cleanup;
       return sql(strings, ...values);
-    };
+    }, { transaction: sql.transaction });
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       const since = new Date('2026-11-08T11:50:00Z');

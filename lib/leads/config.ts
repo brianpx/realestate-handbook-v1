@@ -1,7 +1,5 @@
-// The email gate's shared constants. The consent text is what the reader was shown when they submitted; the
+// The lead form's shared constants. The consent text is what the reader was shown when they submitted; the
 // server stores the text for the version they name, never text the browser sends.
-export const GATE_KEY = 'handbookAccess'; // same key as the static site, so readers who skipped it stay skipped on the same origin
-
 export const CONSENT_VERSION = 'v1';
 export const CONSENT_PURPOSE = 'Leave your email for a follow-up note about the handbook. This form is not a key to the book.';
 export const CONSENT_DETAILS =

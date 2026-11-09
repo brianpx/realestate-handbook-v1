@@ -58,7 +58,6 @@ test.describe('a reader with saved progress', () => {
     await page.locator('#go').click();
     await expect(page).toHaveURL(`${NEW}/handbook/ch5`);
     // the new site starts empty (a different origin), then restores the file
-    await page.evaluate(() => localStorage.setItem('handbookAccess', '1'));
     await page.reload();
     await page.locator('details.settings summary').click();
     await page.setInputFiles('#settingImportFile', path);

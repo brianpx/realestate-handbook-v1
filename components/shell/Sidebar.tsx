@@ -15,7 +15,9 @@ import { SidebarSearch, type SearchApi } from './SidebarSearch';
 // The CSS keys off the same ids and classes, so those names stay.
 const PHONE_QUERY = '(max-width: 900px)';
 
-export function Sidebar() {
+// `locked` names the rows the reader's plan does not open (a page id, 'plan' or 'review') and the badge to show
+// on them; the pages themselves show the upsell card. The layout works it out from the viewer.
+export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, string>> }) {
   const pathname = usePathname();
   // Which sidebar row is active: a page id, or one of 'home', 'start', 'plan', 'review', 'account', 'support'.
   const current = pathname === HANDBOOK ? 'home' : (pageIdFromPath(pathname) ?? pathname.slice(1));
@@ -57,7 +59,7 @@ export function Sidebar() {
   }, []);
 
   // On phones an open menu (or open search results) pins the page behind it: body fixed at the current offset (the
-  // method iOS Safari honours), and the page is inert so Tab cannot reach what the backdrop covers (as Gate.tsx does).
+  // method iOS Safari honours), and the page is inert so Tab cannot reach what the backdrop covers (as a modal dialog would).
   const syncScrollLock = useCallback((open: boolean) => {
     const sidebar = sidebarRef.current;
     const root = document.documentElement;
@@ -199,10 +201,10 @@ export function Sidebar() {
         </SidebarSearch>
         <ul className="nav-list" id="navList">
           <ProgressItem />
-          <ProductLinks current={current} />
-          {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} />}
+          <ProductLinks current={current} locked={locked} />
+          {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}
           {NAV.map(group => (
-            <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} />
+            <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} locked={locked} />
           ))}
           <HelpLinks current={current} />
           <Settings />
@@ -233,15 +235,25 @@ const PRODUCT_LINKS = [
   { id: 'tools', label: 'Interactive tools', href: pageHref('app-e') }, // the same page as Appendix E, so never marked current here
 ];
 
-function ProductLinks({ current }: { current: string }) {
+type Locked = Readonly<Record<string, string>>;
+
+/** The badge on a row the reader's plan does not open; the row still links, to the upsell card. */
+function LockBadge({ label }: { label: string | undefined }) {
+  if (!label) return null;
+  return <span className="nav-lock"><span aria-hidden="true">{label}</span><span className="visually-hidden"> ({label} only)</span></span>;
+}
+
+function ProductLinks({ current, locked }: { current: string; locked: Locked }) {
   return (
     <>
       <li className="nav-section-title" role="presentation">GET STARTED</li>
       {PRODUCT_LINKS.map(link => {
         const active = link.id === current;
+        // the setup is part of the paid handbook; the tools row is Appendix E
+        const lock = locked[link.id === 'start' ? 'start' : link.id === 'tools' ? 'app-e' : ''];
         return (
           <li key={link.id}>
-            <Link href={link.href} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>{link.label}</Link>
+            <Link href={link.href} className={`nav-item${active ? ' active' : ''}${lock ? ' locked' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>{link.label}<LockBadge label={lock} /></Link>
           </li>
         );
       })}
@@ -261,7 +273,7 @@ function HelpLinks({ current }: { current: string }) {
   );
 }
 
-function StudyLinks({ current }: { current: string }) {
+function StudyLinks({ current, locked }: { current: string; locked: Locked }) {
   return (
     <>
       <li className="nav-section-title" role="presentation">MY STUDY</li>
@@ -269,8 +281,8 @@ function StudyLinks({ current }: { current: string }) {
         const active = link.id === current;
         return (
           <li key={link.id}>
-            <Link href={`${HANDBOOK}/${link.id}`} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
-              {link.label}
+            <Link href={`${HANDBOOK}/${link.id}`} className={`nav-item${active ? ' active' : ''}${locked[link.id] ? ' locked' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
+              {link.label}<LockBadge label={locked[link.id]} />
             </Link>
           </li>
         );
@@ -279,21 +291,22 @@ function StudyLinks({ current }: { current: string }) {
   );
 }
 
-function SectionGroup({ group, current, read }: { group: (typeof NAV)[number]; current: string; read: Record<string, boolean> }) {
+function SectionGroup({ group, current, read, locked }: { group: (typeof NAV)[number]; current: string; read: Record<string, boolean>; locked: Locked }) {
   return (
     <>
       {group.part && <li className="nav-section-title" role="presentation">{group.part}</li>}
       {group.pages.map(page => {
         const active = page.id === current;
+        const lock = locked[page.id];
         return (
           <li key={page.id}>
             <Link
               href={pageHref(page.id)}
-              className={`nav-item${active ? ' active' : ''}${read[page.id] ? ' read' : ''}`}
+              className={`nav-item${active ? ' active' : ''}${read[page.id] && !lock ? ' read' : ''}${lock ? ' locked' : ''}`}
               data-page={page.id}
               aria-current={active ? 'page' : undefined}
             >
-              {page.label}
+              {page.label}<LockBadge label={lock} />
             </Link>
           </li>
         );

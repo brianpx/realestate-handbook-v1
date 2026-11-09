@@ -66,6 +66,11 @@ export class NeonAuthStore implements AuthStore {
     return rows[0] ? rowToSession(rows[0]) : null;
   }
 
+  async listSessions(userId: string) {
+    const rows = await this.sql`select id_hash, user_id, created_at, expires_at, last_seen_at, revoked_at from sessions where user_id = ${userId} order by created_at`;
+    return rows.map(rowToSession);
+  }
+
   async renewSession(idHash: string, now: Date) {
     const nowIso = now.toISOString();
     // the single conditional update from the plan: two concurrent calls on a stale session extend it once
@@ -86,7 +91,8 @@ export class NeonAuthStore implements AuthStore {
   }
 
   async revokeAllForUser(userId: string, now: Date) {
-    await this.sql`update sessions set revoked_at = ${now.toISOString()} where user_id = ${userId} and revoked_at is null`;
+    const rows = await this.sql`update sessions set revoked_at = ${now.toISOString()} where user_id = ${userId} and revoked_at is null returning id_hash`;
+    return rows.length;
   }
 
   async recordAndCount(scope: AttemptScope, keyHash: string, at: Date, since: Date) {
