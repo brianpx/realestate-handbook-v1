@@ -185,6 +185,14 @@ describe('verify', () => {
     expect(t.users.users).toHaveLength(1);
     expect(t.users.users[0]).toMatchObject({ acceptedTermsVersion: 'v0', lastSignInAt: NOW });
   });
+  it('counts sign-ins apart from link requests, so a reader can sign in five times in ten minutes', async () => {
+    const t = setup();
+    for (let i = 0; i < REQUEST_LINK_LIMITS.ip.attempts; i++) {
+      expect((await t.request(body({ email: `r${i}@b.co` }))).status).toBe(200);
+      expect((await t.verify(t.rawToken(i))).status).toBe(303);
+    }
+    expect(t.auth.sessions).toHaveLength(REQUEST_LINK_LIMITS.ip.attempts);
+  });
   it('refuses a missing Origin and limits one connection to ten tries in ten minutes', async () => {
     const t = setup();
     expect((await t.verify(newSecret(), { origin: null })).status).toBe(403);

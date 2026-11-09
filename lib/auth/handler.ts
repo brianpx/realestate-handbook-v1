@@ -99,7 +99,8 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
   const { auth, users, access } = deps.stores;
   const now = deps.now();
   try {
-    if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - VERIFY_LIMIT.windowSeconds * 1000))) > VERIFY_LIMIT.attempts) return limited(VERIFY_LIMIT.windowSeconds);
+    // its own key under the same scope: sharing request-link's counter made every sign-in cost two of its five tries
+    if ((await auth.recordAndCount('ip', hashKey(`verify:${req.ip}`, deps.ipSalt), now,new Date(now.getTime() - VERIFY_LIMIT.windowSeconds * 1000))) > VERIFY_LIMIT.attempts) return limited(VERIFY_LIMIT.windowSeconds);
 
     const raw = new URLSearchParams(req.body).get('token');
     if (!isSecretShape(raw)) return redirect(FAILED);
