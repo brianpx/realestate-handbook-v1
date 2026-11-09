@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ProfileForm } from '@/components/account/ProfileForm';
 import { SavedProgress } from '@/components/handbook/AccountPanels';
 import { ProductCard } from '@/components/shell/ProductCard';
 import { requireViewer } from '@/lib/auth/dal';
@@ -8,6 +9,8 @@ import { authStoresFromEnv } from '@/lib/auth/store';
 import { OWNER, purchaseOpen } from '@/lib/offer';
 import { pageHref } from '@/lib/routes';
 import { tierById } from '@/lib/tiers';
+import { EMPTY_PROFILE, profileFields, type Profile } from '@/lib/users/profile';
+import { profileStoreFromEnv } from '@/lib/users/profile-store';
 
 export const metadata: Metadata = { title: 'Account and saved progress', alternates: { canonical: '/account' } };
 
@@ -16,15 +19,30 @@ type Props = { searchParams: Promise<{ error?: string | string[] }> };
 const day = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' });
 const moment = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
 
-// Who the reader is to the handbook, what their plan opens, where they are signed in, and the two things only they
-// can do: sign out everywhere and delete the account (OD-21: typed address). Both are plain form posts, so they
-// work without JavaScript and carry the Origin header the routes insist on. Progress stays in the browser.
+// The profile as the form first shows it: no row is the normal case (empty fields); a store that fails to answer
+// hides the form for this render rather than failing the page, which has more on it than the profile.
+async function loadProfile(userId: string): Promise<{ kind: 'none' } | { kind: 'failed' } | { kind: 'ok'; profile: Profile | null }> {
+  const profiles = profileStoreFromEnv(process.env);
+  if (!profiles) return { kind: 'none' };
+  try {
+    return { kind: 'ok', profile: await profiles.find(userId) };
+  } catch (err) {
+    console.error('account: profile read failed', err instanceof Error ? err.name : 'error');
+    return { kind: 'failed' };
+  }
+}
+
+// Who the reader is to the handbook, what their plan opens, their realtor profile (optional, every field), where they
+// are signed in, and the two things only they can do: sign out everywhere and delete the account (OD-21: typed
+// address). Those two are plain form posts, so they work without JavaScript and carry the Origin header the routes
+// insist on; the profile form is a client component that saves with a fetch. Progress stays in the browser.
 export default async function AccountPage({ searchParams }: Props) {
   const { user, entitlement } = await requireViewer();
   const { error } = await searchParams;
   const stores = authStoresFromEnv(process.env);
   const now = new Date();
   const liveSessions = stores ? (await stores.auth.listSessions(user.id)).filter(s => sessionLive(s, now)).length : 0;
+  const loaded = await loadProfile(user.id);
 
   const plan = entitlement.level === 'member' ? `${tierById(entitlement.tier).name} plan` : entitlement.level === 'preview' && entitlement.suspended ? 'Paused' : 'Free set';
 
@@ -51,6 +69,15 @@ export default async function AccountPage({ searchParams }: Props) {
         )}
       </p>
 
+      <h2 className="hb-h2" id="profile">Your profile</h2>
+      <p>
+        Where you practice and how far along you are, if you care to say: it lets the handbook and its tools speak to your situation later on. Every field is optional, nothing here is shared, and it is yours to change or clear at any time.
+        Your license and any REALTOR® membership are separate facts; neither is assumed from the other.
+      </p>
+      {loaded.kind === 'none' && <p className="setup-hint">Profile editing needs the account database, which this setup does not have.</p>}
+      {loaded.kind === 'failed' && <p className="setup-error" role="alert">Your profile could not be loaded just now. Reload the page to try again.</p>}
+      {loaded.kind === 'ok' && <ProfileForm initial={loaded.profile ? profileFields(loaded.profile) : EMPTY_PROFILE} updatedAt={loaded.profile?.updatedAt.toISOString() ?? null} />}
+
       <h2 className="hb-h2" id="sessions">Where you are signed in</h2>
       <p>{liveSessions === 1 ? 'This is the only browser signed in to your account.' : `Your account is signed in on ${liveSessions} browsers or devices, this one included.`} A sign-in lasts 90 days from your last visit, or until you sign out.</p>
       <form method="post" action="/api/account/sign-out-all" className="account-form">
@@ -62,7 +89,7 @@ export default async function AccountPage({ searchParams }: Props) {
 
       <h2 className="hb-h2" id="delete">Delete your account</h2>
       <p>
-        Deleting removes your account and every sign-in, and then removes your entry from the mailing list (if that last step fails, write to us). Purchase records, if any, are kept for seven years for accounting, with no address on them.
+        Deleting removes your account, your profile and every sign-in, and then removes your entry from the mailing list (if that last step fails, write to us). Purchase records, if any, are kept for seven years for accounting, with no address on them.
         What you saved while reading is only in this browser, so clear this site's data there as well if you want it gone.
       </p>
       {error === 'confirm' && <p className="setup-error" role="alert">The address you typed did not match the one on this account. Nothing was deleted.</p>}

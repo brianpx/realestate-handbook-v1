@@ -6,8 +6,9 @@ import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
 import { signedInUser } from '@/lib/auth/request-user';
 import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
+import type { ProfileStore } from '@/lib/users/profile-store';
 
-export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null };
+export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null };
 
 export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
@@ -18,7 +19,8 @@ const redirect = (location: string, headers: Record<string, string | string[]> =
 const originRefused = (req: AuthRequest, deps: AccountDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
 
 // The account routes are plain form posts from the account page, so they answer with redirects. The session is
-// read through lib/auth/request-user.ts, not the page's data-access layer.
+// read through lib/auth/request-user.ts, not the page's data-access layer; the profile routes
+// (profile-handler.ts) and the admin routes read it the same way.
 
 /** "Sign out everywhere": every session of the reader's, this one included, is revoked, and the fact is logged. */
 export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
@@ -43,8 +45,9 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
 
 /**
  * Deletes the account (OD-21: the reader types their address to confirm). One batch anonymises the user row and
- * removes its sessions and tokens; grants and billing rows stay for the accounting record; the marketing list's
- * row for the same address goes too, as a separate best-effort step in its own store.
+ * removes its sessions and tokens; grants and billing rows stay for the accounting record; the realtor profile and
+ * the marketing list's row for the same address go too, each a separate best-effort step in its own store (the
+ * profile's cascade never fires, because the user row stays).
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
   if (originRefused(req, deps)) return reply(403, 'forbidden');
@@ -62,6 +65,13 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));
     if (!done) return redirect(SIGN_IN, cleared); // deleted by a concurrent request a moment ago: nothing to say goodbye to
+    if (deps.profiles) {
+      try {
+        await deps.profiles.deleteByUser(userId);
+      } catch (err) {
+        console.error('account: profile row not removed', err instanceof Error ? err.name : 'error');
+      }
+    }
     if (deps.leads) {
       try {
         await deps.leads.deleteByEmail(email);

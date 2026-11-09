@@ -51,7 +51,9 @@ export default function PrivacyPage() {
         <p>
           You sign in with your email address and a link we email you; there is no password. The account record is your address, the dates of your first and last sign-in,
           the version of the sign-in terms you were shown, your status and what your plan opens. It is kept in a database the author controls for as long as the account
-          exists.
+          exists. The Account page also offers an optional profile: your role, brokerage, team, license jurisdiction, number and status, the year you were first licensed,
+          your main market, a phone number and whether you belong to a REALTOR® association. Every field is optional, you can change or clear any of it at any time, and it
+          is deleted with the account.
         </p>
         <p>
           Each sign-in link is stored as a one-way hash, with the address it went to, the page you were heading for, the version of the terms shown with the form, which form
@@ -68,7 +70,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           To delete your account, type your address on the <Link href="/account">Account page</Link>. That replaces your address in the account record with a placeholder,
-          deletes every session and sign-in link, and then removes your address from the notes list (that last step is a separate one; if it fails, write to us). What stays: the anonymised account record, the record of any access you were
+          deletes every session and sign-in link, deletes your profile, and then removes your address from the notes list (that last step is a separate one; if it fails, write to us). What stays: the anonymised account record, the record of any access you were
           granted, and any purchase record, kept with no address on it for seven years for accounting. What you saved while reading is only in your browser, so clear this
           site’s data there as well if you want it gone.
         </p>
