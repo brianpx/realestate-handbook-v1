@@ -201,36 +201,56 @@ function Tools() {
           <h2 id="toolsTitle" className="pub-h2">Tools you use to do the work, not just read about it.</h2>
           <p>Each tool is built into the chapter it belongs to and saves to your device. The first three run in the free sample exactly as they do in the handbook.</p>
         </div>
-        <div className="pub-grid four">
+        <div className="pub-grid four pub-tools">
           <article className="pub-tile pub-tool">
+            <div className="pub-tool-visual" aria-label="Example from the income goal calculator">
+              <dl className="pub-funnel">
+                <div><dt>Yearly goal</dt><dd>$80,000</dd></div>
+                <div><dt>Closings</dt><dd>13</dd></div>
+                <div><dt>Conversations</dt><dd>780</dd></div>
+                <div className="is-result"><dt>Per day</dt><dd>3</dd></div>
+              </dl>
+              <p className="pub-tool-caption">Example numbers at a $6,500 commission.</p>
+            </div>
+            <p className="pub-tool-meta"><span>Chapter 1</span><span className="pub-tool-free">Free sample</span></p>
             <h3 className="pub-h3">Set a number you can hit</h3>
             <p>The income goal calculator turns a yearly goal into closings, appointments and conversations per day.</p>
-            <div className="pub-tool-visual"><b>$80,000</b> goal ÷ <b>$6,500</b> commission → 13 closings → about 780 conversations → <b>3 a day</b>. <em>Example numbers.</em></div>
             <Link className="pub-link" href="/preview#goal-calculator">Try the calculator</Link>
           </article>
           <article className="pub-tile pub-tool">
+            <div className="pub-tool-visual" aria-label="Example from script practice, with the key words hidden">
+              <p className="pub-script">
+                “Hi <span className="pub-mask">Name</span>, this is <span className="pub-mask">Your Name</span> with <span className="pub-mask">Your Brokerage</span>. I just saw your inquiry about <span className="pub-mask">address or area</span>…”
+              </p>
+              <p className="pub-tool-caption"><span className="pub-tool-pill">Words hidden</span> New lead by phone</p>
+            </div>
+            <p className="pub-tool-meta"><span>Chapter 6</span><span className="pub-tool-free">Free sample</span></p>
             <h3 className="pub-h3">Practice what you will say</h3>
             <p>Script practice hides the words so you rehearse them from memory, then shows the script so you can check yourself.</p>
-            <div className="pub-tool-visual">“Hi [Name], this is [Your Name] with [Your Brokerage]. I just saw your inquiry about [address or area]…” <em>New lead by phone, Chapter 6.</em></div>
             <Link className="pub-link" href="/preview#script-practice">Practice a script</Link>
           </article>
           <article className="pub-tile pub-tool">
+            <div className="pub-tool-visual" aria-label="Default morning from the weekly planner">
+              <ul className="pub-blocks" role="list">
+                {DEFAULT_BLOCKS.slice(0, 3).map(b => <li key={b.cls}><time>{fmtClock(b.from)}</time><span>{b.name}</span></li>)}
+              </ul>
+              <p className="pub-tool-caption"><span className="pub-tool-pill is-ok">✓ Before noon</span> Lead generation lands at 9:15</p>
+            </div>
+            <p className="pub-tool-meta"><span>Chapter 8</span><span className="pub-tool-free">Free sample</span></p>
             <h3 className="pub-h3">Protect your mornings</h3>
             <p>The weekly planner lays out your day and tells you whether lead generation lands before noon. Export it to your calendar.</p>
-            <div className="pub-tool-visual">
-              <ul className="pub-blocks" role="list" aria-label="Default day from the planner">
-                {DEFAULT_BLOCKS.slice(0, 4).map(b => <li key={b.cls}><time>{fmtClock(b.from)}</time>{b.name}</li>)}
-              </ul>
-            </div>
             <Link className="pub-link" href="/preview#timeblock-planner">Plan a week</Link>
           </article>
           <article className="pub-tile pub-tool">
+            <div className="pub-tool-visual" aria-label="The three milestones on the 90-day roadmap">
+              <ol className="pub-milestones">
+                {ROADMAP_PHASES.map(p => <li key={p.name}><time>Day {p.endDay}</time><span>{p.name}</span></li>)}
+              </ol>
+            </div>
+            <p className="pub-tool-meta"><span>Chapter 12</span></p>
             <h3 className="pub-h3">See the whole 90 days</h3>
             <p>The roadmap puts dates on three milestones and tracks the checklist items behind each one.</p>
-            <div className="pub-tool-visual">
-              <ul>{ROADMAP_PHASES.map(p => <li key={p.name}>Day {p.endDay}: {p.name}</li>)}</ul>
-            </div>
-            <Link className="pub-link" href="/#how-it-works">How the 90 days are laid out</Link>
+            <Link className="pub-link" href="/#how-it-works">See the roadmap</Link>
           </article>
         </div>
       </div>

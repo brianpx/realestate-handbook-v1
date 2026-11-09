@@ -28,7 +28,7 @@ test.describe('checkpoint self-tests', () => {
     await item.getByRole('button', { name: "I've got it" }).click();
     await expect(item.getByRole('button', { name: "I've got it" })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.cp-count')).toHaveText('1 of 3 confident');
-    await expect(page.locator('#checkpointRollup')).toHaveText('1 of 38 checkpoint questions confident');
+    await expect(page.locator('#checkpointRollup')).toHaveText('1 of 43 checkpoint questions confident');
     await item.getByRole('button', { name: 'Review this' }).click();
     await expect(page.locator('.cp-count')).toHaveText('0 of 3 confident');
     await item.getByRole('button', { name: "I've got it" }).click();
@@ -64,12 +64,12 @@ test.describe('checkpoint self-tests', () => {
     await expect(page.locator('.cp-item').nth(1).locator('.cp-q')).toHaveText('What are the six parts of the CRM setup?');
     await expect(page.locator('.cp-item').nth(1).locator('.practice-text')).toHaveValue('six parts');
     await expect(page.locator('.cp-item').nth(1).getByRole('button', { name: "I've got it" })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#checkpointRollup')).toHaveText('1 of 38 checkpoint questions confident');
+    await expect(page.locator('#checkpointRollup')).toHaveText('1 of 43 checkpoint questions confident');
   });
 
   test('the roll-up sits under the progress bar and goes when progress tracking is off', async ({ page }) => {
     await page.goto('/handbook/ch2');
-    await expect(page.locator('.progress-item #checkpointRollup')).toHaveText('0 of 38 checkpoint questions confident');
+    await expect(page.locator('.progress-item #checkpointRollup')).toHaveText('0 of 43 checkpoint questions confident');
     await page.locator('details.settings summary').click();
     await page.locator('#settingTrack').uncheck();
     await expect(page.locator('#checkpointRollup')).toHaveCount(0);
