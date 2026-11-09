@@ -5,6 +5,10 @@ import { NeonLeadStore } from './neon-store';
 
 export type NewLead = { email: string; source: string; consentVersion: string; consentText: string; at: Date };
 export type EmailStatus = 'sent' | 'failed' | 'skipped';
+/** One stored lead as the admin pages read it; the consent text stays in the store. */
+export type LeadRow = { id: string; email: string; source: string; createdAt: Date; consentVersion: string; emailStatus: EmailStatus | null };
+/** The most a listing returns, newest first; the admin table filters client-side, so it stays in memory. */
+export const LEAD_LIST_CAP = 5000;
 
 /**
  * Where leads and the rate-limit counters live. Production uses a database so the counters are shared by every
@@ -18,10 +22,16 @@ export interface LeadStore {
   countAttempts(ipHash: string, since: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
   recordAndCount(ipHash: string, at: Date, since: Date): Promise<number>;
+  /** Newest first, at most LEAD_LIST_CAP rows. */
+  list(): Promise<LeadRow[]>;
 }
 
 type Row = NewLead & { id: string; emailStatus: EmailStatus | null };
 type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[] };
+
+// `at` is a Date in memory but a string once it has been through JSON, so both are accepted here.
+const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus });
+const newestFirst = (rows: Row[]): LeadRow[] => rows.map(toLeadRow).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, LEAD_LIST_CAP);
 
 export class FileLeadStore implements LeadStore {
   private queue: Promise<unknown> = Promise.resolve();
@@ -88,6 +98,11 @@ export class FileLeadStore implements LeadStore {
       return data.attempts.filter(a => a.ipHash === ipHash && Date.parse(a.at) >= since.getTime()).length;
     });
   }
+
+  async list() {
+    await this.queue;
+    return newestFirst((await this.read()).leads);
+  }
 }
 
 /** In-memory store for unit tests. */
@@ -113,6 +128,7 @@ export class MemoryLeadStore implements LeadStore {
     this.attempts.push({ ipHash, at });
     return this.attempts.filter(a => a.ipHash === ipHash && a.at >= since).length;
   }
+  async list() { this.check(); return newestFirst(this.leads); }
 }
 
 /**
