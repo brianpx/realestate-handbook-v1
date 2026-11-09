@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CHECKPOINT_ANSWERS } from '@/content/data/checkpoints';
 import { NURTURE_TOUCHES } from '@/content/data/nurture';
 import { NURTURE_STATIC_HTML } from '@/content/data/nurture-static';
 import { LIVE_CALL_MINUTES, NINE_PM_TEST_HOUR, NURTURE_PLAN_DAYS, POST_CLOSE_TOUCHES_PHRASE, POST_CLOSE_TOUCHES_YEAR_ONE, RULES } from '@/content/data/rules';
@@ -127,6 +128,10 @@ describe('each rule is stated verbatim where the handbook defines it', () => {
   });
   it('the 9 p.m. test is restated verbatim in Appendix C', () => {
     expect(htmlText(page('app-c'))).toContain(RULES.ninePmTest.sentence);
+  });
+  it('the speed-to-lead standard is the Chapter 4 checkpoint answer, verbatim', () => {
+    const keyPoints = CHECKPOINT_ANSWERS.ch4!.flatMap(a => (Array.isArray(a) ? a : []));
+    expect(keyPoints).toContain(RULES.speedToLead.sentence);
   });
 });
 
