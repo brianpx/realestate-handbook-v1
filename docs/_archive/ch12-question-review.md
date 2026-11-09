@@ -1,6 +1,6 @@
 # Chapter 12 question bank: draft questions for review
 
-Prepared 20 October 2026. Seven questions were written from the Chapter 12 text for the spaced-review bank (`content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The four questions that already shipped with the chapter are unchanged and are not listed here.
+Prepared 20 October 2026. Seven questions were written from the Chapter 12 text for the spaced-review bank (`../../content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The four questions that already shipped with the chapter are unchanged and are not listed here.
 
 ## What I am asking you to check
 
@@ -11,7 +11,7 @@ You have worked as an agent, so the useful things only you can judge are below. 
 3. **Is it too easy, too tricky, or testing the wording rather than the idea?**
 4. **Does the explanation say anything the chapter does not?**
 
-Every keyed answer is traceable to a sentence in `content/pages/ch12.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
+Every keyed answer is traceable to a sentence in `../../content/pages/ch12.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
 
 ## How approved questions get used
 

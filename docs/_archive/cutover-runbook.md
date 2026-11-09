@@ -8,13 +8,13 @@ Status: **drafted, not rehearsed.** Nothing here has been run against Vercel, DN
 | --- | --- | --- |
 | All tools ported with parity tests | `pnpm test` and `pnpm e2e` pass | Done (see the plan's progress log) |
 | Search, glossary, tool index | same suites | Done |
-| Book JSON-LD | `e2e/jsonld.spec.ts` | Done |
-| Print styles | `e2e/print.spec.ts` (print emulation and a PDF), then print two chapters to paper or PDF and read them | Automated part done; **human read not done** |
+| Book JSON-LD | `../../e2e/jsonld.spec.ts` | Done |
+| Print styles | `../../e2e/print.spec.ts` (print emulation and a PDF), then print two chapters to paper or PDF and read them | Automated part done; **human read not done** |
 | Phone comparison | Screenshots at iPhone 13 size looked equivalent for the title page, menu, search results and chapter top. **Not a real iPhone**: scroll lock, the opaque dropdown backdrop and search results position need a real-device pass | Emulated only |
 | Lighthouse and axe on every route | Needs `@axe-core/playwright` and a Lighthouse run | **Not done** (new dependency or tool: needs your go-ahead) |
-| Progress moves | Static site's "Download my progress" (`docs/cutover-static-site-export.patch`, for `main`) and the Pages stub (`docs/cutover/pages-stub-index.html`), both round-tripped into Settings > Restore from a file | Built and tested here; **not yet on `main`** |
+| Progress moves | Static site's "Download my progress" (`cutover-static-site-export.patch`, for `main`) and the Pages stub (`docs/cutover/pages-stub-index.html`), both round-tripped into Settings > Restore from a file | Built and tested here; **not yet on `main`** |
 | Lead capture works for real | A production store and SendGrid with an authenticated sending domain | Database done and tested; **SendGrid key, sending domain and postal address still missing** |
-| Content answers reviewed | Checkpoint key points marked as drafted in `content/data/checkpoints.ts`, the gate's "How your email is used" text, and the welcome email | **Author review pending** |
+| Content answers reviewed | Checkpoint key points marked as drafted in `../../content/data/checkpoints.ts`, the gate's "How your email is used" text, and the welcome email | **Author review pending** |
 
 ## Order of work
 
@@ -22,7 +22,7 @@ Status: **drafted, not rehearsed.** Nothing here has been run against Vercel, DN
 2. Create the Vercel project from the `next` branch. Set `NEXT_PUBLIC_SITE_URL` to the final address **at build time**. Set `LEAD_CAPTURE_ENABLED=true` (build time) only once the store and email are in place; leave it off for the first launch if they are not.
 3. Open a preview of `next`, run the e2e suite against it, and test the real deployment on a phone.
 4. Point the domain at production. Record the previous production deployment so it can be restored.
-5. On `main`, replace the root `index.html` with `docs/cutover/pages-stub-index.html` after replacing `__NEW_ORIGIN__`. Keep `chapters/`, `css/`, `js/`, `images/` and `downloads/` where they are for the soak period so old asset links still resolve. Update `sitemap.xml` and `robots.txt` to point at the new address, and re-submit the sitemap.
+5. On `main`, replace the root `index.html` with `../cutover/pages-stub-index.html` after replacing `__NEW_ORIGIN__`. Keep `chapters/`, `css/`, `js/`, `images/` and `downloads/` where they are for the soak period so old asset links still resolve. Update `sitemap.xml` and `robots.txt` to point at the new address, and re-submit the sitemap.
 6. Watch for errors (`vercel logs <deployment> --level error`) and for submissions to the lead store for the first days.
 
 ## Rollback
@@ -38,7 +38,7 @@ Source recovery (`git checkout main`, or the `static-v1` tag) does **not** chang
 
 ## Checks after cutover
 
-- `/#ch5` style links on the old address reach `/ch5` on the new one (`e2e/cutover-stub.spec.ts` covers all 21).
+- `/#ch5` style links on the old address reach `/ch5` on the new one (`../../e2e/cutover-stub.spec.ts` covers all 21).
 - A reader with saved progress is offered the file before being redirected.
 - The sitemap and canonical tags show the new address; `curl -I` on a chapter returns 200.
 - Submit the gate form once with your own address; confirm the row exists and the email arrives with the postal address.

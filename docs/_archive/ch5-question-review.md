@@ -1,6 +1,6 @@
 # Chapter 5 question bank: draft questions for review
 
-Prepared 20 October 2026. 6 questions were written from the Chapter 5 text for the spaced-review bank (`content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The 4 questions that carry the chapter's original check (three multiple choice and one blank) are not marked draft and are not listed here.
+Prepared 20 October 2026. 6 questions were written from the Chapter 5 text for the spaced-review bank (`../../content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The 4 questions that carry the chapter's original check (three multiple choice and one blank) are not marked draft and are not listed here.
 
 ## What I am asking you to check
 
@@ -11,13 +11,13 @@ You have worked as an agent, so the useful things only you can judge are below. 
 3. **Is it too easy, too tricky, or testing the wording rather than the idea?**
 4. **Does the explanation say anything the chapter does not?**
 
-Every keyed answer is traceable to a sentence in `content/pages/ch5.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
+Every keyed answer is traceable to a sentence in `../../content/pages/ch5.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
 
 Lines marked "Reviewer note" are a first pass by Claude. They are leanings, and the decision is yours.
 
 ## How approved questions get used
 
-Approved questions lose their `draft` flag and join the review deck, where a concept the reader missed is asked again with a different question than last time. **They also join the end-of-chapter check**, because `chapterCheck()` in `lib/coach/check.ts` serves every non-draft question for the chapter and `check.test.ts` pins it to the original four. Approving all 6 would grow the Chapter 5 check from 4 to 10. Decide whether to cap the check or mark some questions review-only before approving in bulk.
+Approved questions lose their `draft` flag and join the review deck, where a concept the reader missed is asked again with a different question than last time. **They also join the end-of-chapter check**, because `chapterCheck()` in `../../lib/coach/check.ts` serves every non-draft question for the chapter and `check.test.ts` pins it to the original four. Approving all 6 would grow the Chapter 5 check from 4 to 10. Decide whether to cap the check or mark some questions review-only before approving in bulk.
 
 | Concept | Reviewed now | Draft awaiting you |
 | --- | --- | --- |

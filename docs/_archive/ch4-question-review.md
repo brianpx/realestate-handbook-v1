@@ -1,6 +1,6 @@
 # Chapter 4 question bank: draft questions for review
 
-Prepared 20 October 2026. Fifteen questions were written from the Chapter 4 text for the spaced-review bank (`content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The four questions that already shipped with the chapter are unchanged and are not listed here.
+Prepared 20 October 2026. Fifteen questions were written from the Chapter 4 text for the spaced-review bank (`../../content/data/questions.ts`, each marked `draft: true`). **None of them is shown to readers yet.** The four questions that already shipped with the chapter are unchanged and are not listed here.
 
 ## What I am asking you to check
 
@@ -11,7 +11,7 @@ You have worked as an agent, so the useful things only you can judge are below. 
 3. **Is it too easy, too tricky, or testing the wording rather than the idea?**
 4. **Does the explanation say anything the chapter does not?** (I removed the explanations I found going beyond the text. Say if any others do.)
 
-Every keyed answer is traceable to a sentence in `content/pages/ch4.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
+Every keyed answer is traceable to a sentence in `../../content/pages/ch4.html`; the quoted passages below were checked against that file word for word. That shows the question matches the **book**. It does not show the book is right.
 
 ## How approved questions get used
 
@@ -34,9 +34,9 @@ Approved questions lose their `draft` flag and join the review deck, where a con
 
 ## Reviewer pre-pass: two things that affect every decision
 
-Added by Claude after reading each draft against `content/pages/ch4.html`. The per-question notes below are leanings, not decisions. Every keyed answer matches the chapter text.
+Added by Claude after reading each draft against `../../content/pages/ch4.html`. The per-question notes below are leanings, not decisions. Every keyed answer matches the chapter text.
 
-1. **Approved questions also join the end-of-chapter check, not only the review deck.** `chapterCheck()` in `lib/coach/check.ts` serves every non-draft question for the chapter, and `check.test.ts` pins it to the original four. Approving all 15 would grow the chapter-end quiz to about 19 questions. Decide whether to cap the check or mark some questions review-only before approving in bulk.
+1. **Approved questions also join the end-of-chapter check, not only the review deck.** `chapterCheck()` in `../../lib/coach/check.ts` serves every non-draft question for the chapter, and `check.test.ts` pins it to the original four. Approving all 15 would grow the chapter-end quiz to about 19 questions. Decide whether to cap the check or mark some questions review-only before approving in bulk.
 2. **The keyed answer is the longest option in 7 of the 11 multiple-choice drafts and all 3 shipped ones.** A test-savvy reader can pick it without knowing the chapter. Even out option lengths when editing.
 
 If every leaning is followed: four drafts are dropped (4, 7, 15, and 10 unless reframed), about five are edited, and `text-permission` has two or three live questions. Its review link also points at `#speed-to-lead`, the top of a section covering two concepts; a dedicated anchor on that paragraph would be better.

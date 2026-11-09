@@ -1,6 +1,6 @@
 # Vercel preview plan
 
-Drafted 20 October 2026. Companion to `nextjs-migration-plan.md` (phase 6) and `cutover-runbook.md`.
+Drafted 20 October 2026. Companion to `nextjs-migration-plan.md` (phase 6) and `_archive/cutover-runbook.md`.
 
 Everything under "What is true today" was read with `vercel env ls`, `vercel ls`, `vercel inspect`, GET calls to the Vercel API, and `curl` against the public alias. Nothing was deployed, no variable was changed, nothing was pushed. Anything not checked is marked **unchecked**.
 
@@ -16,7 +16,7 @@ Everything under "What is true today" was read with `vercel env ls`, `vercel ls`
 | `/plan` returns 404 and `/api/lead` answers GET with 405, so the coach pages and gate are off, as intended. | `curl` |
 | Environment variables on the project: only the 18 database variables (`DATABASE_URL`, `POSTGRES_*`, `PG*`, `NEON_*`, `VITE_NEON_AUTH_URL`), each set for **Production, Preview and Development alike**. Not set: `NEXT_PUBLIC_SITE_URL`, `LEAD_IP_SALT`, `LEAD_CAPTURE_ENABLED`, `LEAD_ALLOWED_ORIGINS`, SendGrid variables. | `vercel env ls` |
 | Vercel runs Node 24.x; this machine runs Node 22.23.3. | project inspect, `node -v` |
-| `playwright.config.ts` only runs against a local build on port 3187 and has no way to point at a deployed URL. | file |
+| `../../playwright.config.ts` only runs against a local build on port 3187 and has no way to point at a deployed URL. | file |
 | Other sessions are committing and pushing to `next` while this is written (`origin/next` moved several times in an hour). Each push to a connected branch triggers a Vercel build. | `git log`, `git ls-remote` |
 
 ## Problems to fix before anyone treats the preview as a test
@@ -24,7 +24,7 @@ Everything under "What is true today" was read with `vercel env ls`, `vercel ls`
 1. **The new site is publicly live and indexable under a production alias with broken canonicals.** Search engines that crawl `realestate-handbook.vercel.app` would see a duplicate of the handbook whose canonical points at localhost. Decide whether that alias should be public at all before cutover.
 2. **A `next` commit was deployed as Production although the production branch is `main`.** I did not find out how (a `vercel --prod` from this checkout is the likely cause; unchecked). It matters because "production" is supposed to be the cutover moment. Check `vercel inspect` on that deployment and the project's Git settings, then decide whether to leave it.
 3. **Previews would write to the production database.** The Neon variables are shared by all three environments, and the lead store and its rate-limit table live in that one database. Lead capture is off, so nothing writes today, but turning it on for a preview would put test addresses in the real `leads` table.
-4. **Site URL is baked in at build time and is wrong for every non-local build.** `lib/site.ts` reads `NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'`. A preview needs its own origin; production needs the final domain.
+4. **Site URL is baked in at build time and is wrong for every non-local build.** `../../lib/site.ts` reads `NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'`. A preview needs its own origin; production needs the final domain.
 5. **Preview URLs sit behind Vercel login**, which blocks the Playwright suite and a phone test unless a bypass is arranged.
 6. **Node version mismatch** (24 on Vercel, 22 here) is untested. A build that passes locally could differ.
 
@@ -32,9 +32,9 @@ Everything under "What is true today" was read with `vercel env ls`, `vercel ls`
 
 | # | Change | Why | Needs your go-ahead? |
 | --- | --- | --- | --- |
-| 1 | `lib/site.ts`: resolve the origin as `NEXT_PUBLIC_SITE_URL`, else `https://${VERCEL_BRANCH_URL}` on Vercel previews, else localhost. Set `NEXT_PUBLIC_SITE_URL` explicitly for Production only. | Canonicals, sitemap, JSON-LD and the lead form's same-origin check are right on every preview without per-deploy edits. | Code change in this repo |
-| 2 | `app/robots.ts`: return `Disallow: /` unless a `SITE_INDEXABLE=true` variable is set (Production only, at cutover). Vercel already adds `X-Robots-Tag: noindex` to preview deployments; this covers the production alias before cutover. | Stops the duplicate-content problem in point 1 above. | Code change |
-| 3 | Add `PLAYWRIGHT_BASE_URL` (and an optional `x-vercel-protection-bypass` header from `VERCEL_AUTOMATION_BYPASS_SECRET`) to `playwright.config.ts`; skip the local `webServer` when it is set. | Runs the same 150+ tests against the real deployment. | Code change; creating the bypass secret is a project setting change |
+| 1 | `../../lib/site.ts`: resolve the origin as `NEXT_PUBLIC_SITE_URL`, else `https://${VERCEL_BRANCH_URL}` on Vercel previews, else localhost. Set `NEXT_PUBLIC_SITE_URL` explicitly for Production only. | Canonicals, sitemap, JSON-LD and the lead form's same-origin check are right on every preview without per-deploy edits. | Code change in this repo |
+| 2 | `../../app/robots.ts`: return `Disallow: /` unless a `SITE_INDEXABLE=true` variable is set (Production only, at cutover). Vercel already adds `X-Robots-Tag: noindex` to preview deployments; this covers the production alias before cutover. | Stops the duplicate-content problem in point 1 above. | Code change |
+| 3 | Add `PLAYWRIGHT_BASE_URL` (and an optional `x-vercel-protection-bypass` header from `VERCEL_AUTOMATION_BYPASS_SECRET`) to `../../playwright.config.ts`; skip the local `webServer` when it is set. | Runs the same 150+ tests against the real deployment. | Code change; creating the bypass secret is a project setting change |
 | 4 | Give Preview its own database branch. The Neon integration may offer a branch per preview; **unchecked**. Otherwise create a `preview` branch in Neon and set `DATABASE_URL` for the Preview environment only. | Isolates test leads from real ones. | Yes: creates a Neon branch and changes Vercel env |
 | 5 | Preview environment variables: `LEAD_IP_SALT` (random, Preview-specific), `LEAD_CAPTURE_ENABLED=true` only when testing the gate, no SendGrid key (use no email, or a test sender). | Gate can be exercised without emailing anyone. | Yes: env changes, one secret to generate |
 | 6 | Set the project's Node version to 22.x, or install Node 24 locally and rerun the suites. | Removes the mismatch. | Settings change or local tooling |

@@ -22,17 +22,17 @@ Checked against branch `next` at `3a5f13f` plus uncommitted edits. `pnpm test` p
 
 | Piece | Status | Where |
 | --- | --- | --- |
-| `grade`, `replay`, `dueQueue`, `interleave`, deck building and miss requeue | Built, with unit tests | `lib/coach/grade.ts`, `replay.ts`, `queue.ts`, `review.ts` |
-| Planner: `buildPlan`, `reflow`, paces, study-day warnings, partly-done sessions | Built, with unit tests | `lib/coach/plan.ts`, `today.ts` |
-| `/plan` setup and Today card, `/review` deck, confidence prompt, chapter check writing attempts | Built, behind `NEXT_PUBLIC_COACH_ENABLED` (404 otherwise) | `components/coach/*`, `components/widgets/CoachCheck.tsx`, `app/plan`, `app/review` |
-| Concept registry and tagged question bank | **Chapter 4 only**: 5 concepts, 20 questions, 4 heading anchors | `content/data/concepts.ts`, `questions.ts` |
-| Reviewed questions | **5 of 20**; 15 are `draft` and stay out of the check and the deck | `content/data/questions.ts` |
-| Chapter read and exercise minutes | Not written; `longSessions` has no data, so the over-75-minute warning cannot fire | `lib/coach/plan.ts` |
-| Reminder send-time setting | A stored default of `08:00`; no control for it found in the setup screen | `lib/coach/actions.ts` |
-| Coach end-to-end tests | None in `e2e/` | |
+| `grade`, `replay`, `dueQueue`, `interleave`, deck building and miss requeue | Built, with unit tests | `../../lib/coach/grade.ts`, `replay.ts`, `queue.ts`, `review.ts` |
+| Planner: `buildPlan`, `reflow`, paces, study-day warnings, partly-done sessions | Built, with unit tests | `../../lib/coach/plan.ts`, `today.ts` |
+| `/plan` setup and Today card, `/review` deck, confidence prompt, chapter check writing attempts | Built, behind `NEXT_PUBLIC_COACH_ENABLED` (404 otherwise) | `components/coach/*`, `../../components/widgets/CoachCheck.tsx`, `app/plan`, `app/review` |
+| Concept registry and tagged question bank | **Chapter 4 only**: 5 concepts, 20 questions, 4 heading anchors | `../../content/data/concepts.ts`, `questions.ts` |
+| Reviewed questions | **5 of 20**; 15 are `draft` and stay out of the check and the deck | `../../content/data/questions.ts` |
+| Chapter read and exercise minutes | Not written; `longSessions` has no data, so the over-75-minute warning cannot fire | `../../lib/coach/plan.ts` |
+| Reminder send-time setting | A stored default of `08:00`; no control for it found in the setup screen | `../../lib/coach/actions.ts` |
+| Coach end-to-end tests | None in `../../e2e` | |
 | Accounts, attempt and plan sync | Not started (migration phase 5) | |
-| Reminder tables, cron, outbox, signed links, webhooks | Not started; `db/migrations` has only `001_leads.sql` | |
-| SendGrid sending | Plain-`fetch` sender exists for the lead welcome email and needs a real from-address and mailing address; reminders can reuse the pattern | `lib/leads/mail.ts` |
+| Reminder tables, cron, outbox, signed links, webhooks | Not started; `../../db/migrations` has only `001_leads.sql` | |
+| SendGrid sending | Plain-`fetch` sender exists for the lead welcome email and needs a real from-address and mailing address; reminders can reuse the pattern | `../../lib/leads/mail.ts` |
 | Twilio and SMS | Not started (deferred by design) | |
 | Pre-test, weekly quiz, final check, concept map, chapter banners | Not started (deferred by design) | |
 
@@ -40,8 +40,8 @@ So the first vertical slice is done for chapter 4. What it was meant to test (co
 
 ## What exists today
 
-- The reading plan is a four-item list in `content/pages/pref.html` (Week 1: Ch 1, 4, 12; Week 2: Ch 2, 5, 6; Week 3: Ch 7, 8, 9; Week 4: Ch 3, 10, 11, 13). The planner's week-to-chapter mapping (`content/data/plan.ts`) mirrors it, but the preface list is still static text.
-- The static site's chapter ends have a "Test your knowledge" box: **three multiple-choice questions plus one fill-in-the-blank, four per chapter, 52 in all** (`KNOWLEDGE_CHECKS`, ported to `content/data/knowledge-checks.ts`). Those carry no concept label. Only chapter 4's check is wired to the coach and records attempts.
+- The reading plan is a four-item list in `../../content/pages/pref.html` (Week 1: Ch 1, 4, 12; Week 2: Ch 2, 5, 6; Week 3: Ch 7, 8, 9; Week 4: Ch 3, 10, 11, 13). The planner's week-to-chapter mapping (`content/data/plan.ts`) mirrors it, but the preface list is still static text.
+- The static site's chapter ends have a "Test your knowledge" box: **three multiple-choice questions plus one fill-in-the-blank, four per chapter, 52 in all** (`KNOWLEDGE_CHECKS`, ported to `../../content/data/knowledge-checks.ts`). Those carry no concept label. Only chapter 4's check is wired to the coach and records attempts.
 - The drills (`choiceDrill`) already have an optional `tag` field, but it is a display label, not a concept id.
 - Reading progress is a `read` map in `localStorage` (`handbookState`), marked when a sentinel scrolls into view. Scrolling past a chapter counts as reading it. The coach adds explicit "Mark read" and exercise steps under its own key (`handbookCoach`).
 - Chapters are small: 308 to 1,298 words (about 10,700 total, so 2 to 7 minutes of reading each). **The time cost is the "Try it today" exercises, which the preface sizes at up to an hour.** A plan that schedules reading minutes alone will under-budget every week.
@@ -89,7 +89,7 @@ On first visit to the preface (and from a "My plan" link in the sidebar):
 
 - Pick a **start date**, a **pace** (the 4-week default, a 2-week sprint, or an 8-week relaxed version), and **study days and time** (for example Mon/Wed/Fri, 8:00 a.m. Eastern).
 - The screen shows the **effective schedule before confirming**: the dates sessions land on, the end date, the reminder time with its time zone, and a warning when the chosen study days cannot meet the pace (see "Schedule rules").
-- Sessions are generated by one pure function from `{ startDate, pace, studyDays, timezone, completed }`. The week-to-chapter mapping lives in `content/data/plan.ts`, so the preface list and the planner cannot drift apart.
+- Sessions are generated by one pure function from `{ startDate, pace, studyDays, timezone, completed }`. The week-to-chapter mapping lives in `../../content/data/plan.ts`, so the preface list and the planner cannot drift apart.
 - (Deferred) An optional pre-test; see "Assessments".
 
 ### 2. Today
@@ -297,7 +297,7 @@ Both are called from server code only; keys are never `NEXT_PUBLIC_*`.
 - **SendGrid:** authenticate the sending domain (SPF, DKIM, and a DMARC record) before the first send, or reminders land in spam and the whole feature quietly fails. Use a dedicated sender subdomain. Every email carries an unsubscribe link and a physical mailing address (CAN-SPAM). Subscribe to the **Event Webhook** (delivered, bounce, spam report, unsubscribe) and write those back to the channel status and the outbox. Pass our `outbox.id` as custom data so events can be matched to rows.
 - **Twilio** (later): use a **Messaging Service**, not a loose number. US application-to-person texting requires **A2P 10DLC brand and campaign registration**, which can take days or weeks to approve, so start it first. Point Twilio's inbound webhook at us so `STOP`, `START` and `HELP` update our consent and suppression records (Twilio blocks sending to a number that sent STOP, but our table must agree so the UI is truthful).
 - **Both webhooks verify the provider's signature** before touching the database. Both are idempotent.
-- Wrap each provider in a small interface (`sendEmail(msg)`, `sendSms(msg)`) so the scheduler never imports a vendor SDK. Both providers have plain REST APIs. The lead welcome email already calls SendGrid with plain `fetch` (`lib/leads/mail.ts`), so reminders use the same approach and add no dependency. Webhook signature checks are written by hand and covered by tests.
+- Wrap each provider in a small interface (`sendEmail(msg)`, `sendSms(msg)`) so the scheduler never imports a vendor SDK. Both providers have plain REST APIs. The lead welcome email already calls SendGrid with plain `fetch` (`../../lib/leads/mail.ts`), so reminders use the same approach and add no dependency. Webhook signature checks are written by hand and covered by tests.
 
 ### Consent, suppression and deletion
 
@@ -456,7 +456,7 @@ All validate input with zod, take the user id from the session (never the reques
 
 ### Components
 
-Server by default; `"use client"` at the leaves that need state: `PlanSetup`, `TodayCard`, `ReviewDeck`, `ConfidencePrompt`. (`ConceptMap` and `ChapterWeakBanner` are deferred.) The scheduling math (`buildPlan`, `reflow`, `grade`, `replay`, `dueQueue`, `interleave`) is pure TypeScript in `lib/coach/` with Vitest coverage, including time-zone, DST and month-end cases. Tests of the scheduler are where the bugs will live, as with the post-close scheduler in the migration plan.
+Server by default; `"use client"` at the leaves that need state: `PlanSetup`, `TodayCard`, `ReviewDeck`, `ConfidencePrompt`. (`ConceptMap` and `ChapterWeakBanner` are deferred.) The scheduling math (`buildPlan`, `reflow`, `grade`, `replay`, `dueQueue`, `interleave`) is pure TypeScript in `../../lib/coach` with Vitest coverage, including time-zone, DST and month-end cases. Tests of the scheduler are where the bugs will live, as with the post-close scheduler in the migration plan.
 
 ## Acceptance criteria
 
@@ -521,10 +521,10 @@ Then review what was awkward before tagging the other twelve chapters. This flus
 
 ## Content work that has to happen
 
-1. **Fix the contradictions before tagging them** (`docs/handbook-webpage-review.md`): the 8x8 definition, 8 to 12 versus 13 touches, and the Chapter 2 checkpoint mismatch. A concept tag on a contradictory idea makes a quiz that teaches the wrong answer.
-2. **Add anchors**: a stable `id` on every `h2` and `h3` that a concept points to. Done by a one-time script plus a unit test that every `Concept.anchor` exists in its page, so renaming a heading cannot silently break a review link. *Status: done for chapter 4, with the test in `lib/coach/anchors.test.ts`.*
+1. **Fix the contradictions before tagging them** (`handbook-webpage-review.md`): the 8x8 definition, 8 to 12 versus 13 touches, and the Chapter 2 checkpoint mismatch. A concept tag on a contradictory idea makes a quiz that teaches the wrong answer.
+2. **Add anchors**: a stable `id` on every `h2` and `h3` that a concept points to. Done by a one-time script plus a unit test that every `Concept.anchor` exists in its page, so renaming a heading cannot silently break a review link. *Status: done for chapter 4, with the test in `../../lib/coach/anchors.test.ts`.*
 3. **Write the item bank**: aim for 3 questions per concept (about 150 total from today's 52), at least a quarter scenario-style. The final readiness check needs its own sampled pool, and the pre-test, if built, needs parallel items for the concepts it shares with the final. This is the biggest cost in the project and should be reviewed by someone who has worked as an agent. *Status: 20 questions written for chapter 4, 15 still `draft` and held out of the check and deck until reviewed.*
-4. **Time estimates**: a per-chapter "minutes" figure for reading and for the Try-it exercise, written by hand (the exercise times vary too much to compute). *Status: not started. `longSessions` in `lib/coach/plan.ts` is ready to use the data, but until it exists the over-75-minute warning cannot fire.*
+4. **Time estimates**: a per-chapter "minutes" figure for reading and for the Try-it exercise, written by hand (the exercise times vary too much to compute). *Status: not started. `longSessions` in `../../lib/coach/plan.ts` is ready to use the data, but until it exists the over-75-minute warning cannot fire.*
 5. **Question and concept versions**: a convention for when an edit bumps a version, and who decides.
 
 ## Phases
