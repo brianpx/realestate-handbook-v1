@@ -359,7 +359,12 @@ html.dark {
             font-weight: 700;
             margin-bottom: 8px}
 
-        h2 {
+        /* Running-text element rules, scoped to the two wrappers that carry prose: .chapter-body (the handbook's article
+           and the public sample's Excerpt) and .content-container (the product's own pages: handbook home, guided
+           setup, coach and account). The sidebar, the email gate and the public site style their own elements.
+           :where() keeps these at element specificity, so a single-class rule (.calc-note, .hb-h2, .footnote, …) still
+           wins over them exactly as it did over the bare rules. */
+        :where(.chapter-body, .content-container) h2 {
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 20px;
@@ -367,12 +372,12 @@ html.dark {
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 12px}
 
-        h3 {
+        :where(.chapter-body, .content-container) h3 {
             font-size: 1.35rem;
             color: var(--primary-color);
             margin: 32px 0 16px}
 
-        h4 {
+        :where(.chapter-body, .content-container) h4 {
             font-size: 1.1rem;
             color: var(--color-ink);
             margin: 20px 0 10px}
@@ -404,7 +409,7 @@ html.dark {
             padding-bottom: 12px}
         .chapter-body h1.visually-hidden { margin: -1px; border: 0; padding: 0}
 
-        p {
+        :where(.chapter-body, .content-container) p {
             margin-bottom: 16px;
             font-size: 0.98rem;
             color: var(--color-body)}
@@ -414,11 +419,11 @@ html.dark {
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
         textarea, select { background-color: var(--color-surface); color: var(--color-ink); }
 
-        ul, ol {
+        :where(.chapter-body, .content-container) :is(ul, ol) {
             margin-bottom: 20px;
             padding-left: 24px}
 
-        li {
+        :where(.chapter-body, .content-container) li {
             margin-bottom: 8px}
 
         /* Callout Boxes */
@@ -512,22 +517,22 @@ html.dark {
             overflow-x: auto;
             margin: 24px 0}
 
-        table {
+        :where(.chapter-body, .content-container) table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.9rem}
 
-        th, td {
+        :where(.chapter-body, .content-container) :is(th, td) {
             padding: 12px 14px;
             border: 1px solid var(--border-color)}
 
-        th {
+        :where(.chapter-body, .content-container) th {
             background-color: var(--color-tint);
             color: var(--primary-color);
             font-weight: 700}
 
-        caption {
+        :where(.chapter-body, .content-container) caption {
             caption-side: bottom;
             text-align: left;
             font-style: italic;
@@ -537,7 +542,7 @@ html.dark {
             padding: 12px 2px 0;
             background: transparent}
 
-        tr:nth-child(even) { background-color: var(--color-canvas)}
+        :where(.chapter-body, .content-container) tr:nth-child(even) { background-color: var(--color-canvas)}
 
         /* Diagrams */
         .diagram-box {
