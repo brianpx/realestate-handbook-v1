@@ -39,15 +39,20 @@ export async function seedSession(): Promise<void> {
   await store.setRole(admin.id, 'admin');
 }
 
-/** A second live session for the seeded member, for a test that will revoke it. Returns the raw id for the cookie. */
-export async function extraSession(): Promise<string> {
+/** Another live session for a user, as a second browser would hold. Returns the raw id for the cookie. */
+export async function extraSessionFor(userId: string): Promise<string> {
   const store = new FileAuthStore(AUTH_FILE);
-  const user = await store.findByEmail(READER_EMAIL);
-  if (!user) throw new Error('the seeded reader is missing; did global setup run?');
   const raw = newSecret();
   const now = new Date();
-  await store.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: now, expiresAt: sessionExpiry(now) });
+  await store.createSession({ idHash: hashSecret(raw), userId, createdAt: now, expiresAt: sessionExpiry(now) });
   return raw;
+}
+
+/** A second live session for the seeded member, for a test that will revoke it. */
+export async function extraSession(): Promise<string> {
+  const user = await new FileAuthStore(AUTH_FILE).findByEmail(READER_EMAIL);
+  if (!user) throw new Error('the seeded reader is missing; did global setup run?');
+  return extraSessionFor(user.id);
 }
 
 /**

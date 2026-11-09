@@ -12,4 +12,4 @@ export const BYPASS_HEADERS: Record<string, string> = process.env.VERCEL_AUTOMAT
 
 // Specs that need a server built with lead capture on and a throwaway store, or that stage a fake old host.
 // A deployment is not built that way, so they run only locally.
-export const LOCAL_ONLY_SPECS = ['**/lead.spec.ts', '**/cutover-stub.spec.ts', '**/auth.spec.ts', '**/admin.spec.ts'];
+export const LOCAL_ONLY_SPECS = ['**/lead.spec.ts', '**/cutover-stub.spec.ts', '**/auth.spec.ts', '**/access.spec.ts', '**/admin.spec.ts'];

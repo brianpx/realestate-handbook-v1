@@ -41,6 +41,15 @@ export interface AuthStore {
 
 export type AuthStores = { users: UserStore; auth: AuthStore; access: AccessStore };
 
+// One file store per path for the life of the process: its write queue only serialises writes that go through the
+// same instance, and requests arrive concurrently.
+const fileStores = new Map<string, FileAuthStore>();
+const fileStore = (file: string): FileAuthStore => {
+  let store = fileStores.get(file);
+  if (!store) fileStores.set(file, (store = new FileAuthStore(file)));
+  return store;
+};
+
 /**
  * Picks the stores from the environment: a database when DATABASE_URL is set, the throwaway file store only when
  * asked for by name and only outside a hosted deployment (its disk is ephemeral; see lib/leads/store.ts), otherwise
@@ -49,7 +58,7 @@ export type AuthStores = { users: UserStore; auth: AuthStore; access: AccessStor
 export function authStoresFromEnv(env: Record<string, string | undefined>): AuthStores | null {
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
   if (env.AUTH_STORE === 'file' && !hosted) {
-    const store = new FileAuthStore(env.AUTH_STORE_PATH ?? path.join(process.cwd(), '.data', 'auth.json'));
+    const store = fileStore(env.AUTH_STORE_PATH ?? path.join(process.cwd(), '.data', 'auth.json'));
     return { users: store, auth: store, access: store };
   }
   if (env.DATABASE_URL) {

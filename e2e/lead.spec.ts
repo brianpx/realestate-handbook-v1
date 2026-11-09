@@ -3,15 +3,14 @@ import { expect, test, type APIRequestContext } from './fixtures';
 import { BASE_URL } from './target';
 
 // /api/lead, the marketing list's route, on the local build with a throwaway file store. The first-visit dialog
-// that used to post here is gone (OD-18); the home page forms (M5 Phase 3) are its callers now. Each test gets its
-// own fake client address, because the route limits per address.
+// that used to post here is gone (OD-18); the home page forms (M5 Phase 3) are its callers now. Every request names
+// its own fake client address, because the route limits per address and the request fixture sends no header of its own.
 let n = 0;
-test.beforeEach(async ({ context }) => { await context.setExtraHTTPHeaders({ 'x-forwarded-for': `198.51.100.${(++n % 250) + 1}` }); });
-
+const ip = () => `198.51.100.${(++n % 250) + 1}`;
 const fresh = () => `reader-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
 const leads = async () => (JSON.parse(await readFile('.data/e2e-leads.json', 'utf8')) as { leads: { email: string; consentVersion: string; consentText: string; source: string }[] }).leads;
 const post = (request: APIRequestContext, data: unknown, headers: Record<string, string> = {}) =>
-  request.post('/api/lead', { data, headers: { Origin: BASE_URL, ...headers } });
+  request.post('/api/lead', { data, headers: { Origin: BASE_URL, 'x-forwarded-for': ip(), ...headers } });
 
 test('a valid address is stored once, lower-cased, with the consent text of the version named', async ({ request }) => {
   const email = fresh();
@@ -44,16 +43,15 @@ test('a malformed address is refused by name', async ({ request }) => {
 });
 
 test('too many tries from one address are refused with a retry hint', async ({ request }) => {
-  const headers = { 'x-forwarded-for': '198.51.100.251' };
-  for (let i = 0; i < 6; i++) await post(request, { email: 'x', consentVersion: 'v1' }, headers);
-  const limited = await post(request, { email: fresh(), consentVersion: 'v1' }, headers);
+  const same = { 'x-forwarded-for': '198.51.100.251' };
+  for (let i = 0; i < 6; i++) await post(request, { email: 'x', consentVersion: 'v1' }, same);
+  const limited = await post(request, { email: fresh(), consentVersion: 'v1' }, same);
   expect(limited.status()).toBe(429);
   expect(limited.headers()['retry-after']).toMatch(/^\d+$/);
 });
 
 test('the route refuses another site, bad bodies and the wrong method', async ({ request }) => {
-  const url = '/api/lead';
-  expect((await request.post(url, { data: { email: 'a@b.co', consentVersion: 'v1' }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
-  expect((await request.post(url, { data: '{nope', headers: { 'Content-Type': 'application/json' } })).status()).toBe(400);
-  expect((await request.get(url)).status()).toBe(405);
+  expect((await post(request, { email: 'a@b.co', consentVersion: 'v1' }, { Origin: 'https://evil.example' })).status()).toBe(403);
+  expect((await post(request, '{nope', { 'Content-Type': 'application/json' })).status()).toBe(400);
+  expect((await request.get('/api/lead')).status()).toBe(405);
 });

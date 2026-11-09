@@ -138,6 +138,15 @@ export class MemoryLeadStore implements LeadStore {
   async deleteByEmail(email: string) { this.check(); this.leads = this.leads.filter(l => l.email !== email); }
 }
 
+// One file store per path for the life of the process: its write queue only serialises writes that go through the
+// same instance, and requests arrive concurrently.
+const fileStores = new Map<string, FileLeadStore>();
+const fileStore = (file: string): FileLeadStore => {
+  let store = fileStores.get(file);
+  if (!store) fileStores.set(file, (store = new FileLeadStore(file)));
+  return store;
+};
+
 /**
  * Picks the store from the environment: a database when DATABASE_URL is set, the throwaway file store only when
  * asked for by name, otherwise none (the route then refuses with 503). A hosted Vercel deployment (VERCEL_ENV is
@@ -147,7 +156,7 @@ export class MemoryLeadStore implements LeadStore {
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
-  if (env.LEAD_STORE === 'file' && !hosted) return new FileLeadStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
+  if (env.LEAD_STORE === 'file' && !hosted) return fileStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);
   return null;
 }

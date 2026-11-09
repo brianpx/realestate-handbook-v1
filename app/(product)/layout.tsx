@@ -20,6 +20,7 @@ export default async function ProductLayout({ children }: { children: ReactNode 
   const entitlement = (await getViewer())?.entitlement ?? NOBODY;
   const locked: Record<string, string> = {};
   for (const id of PAGE_IDS) if (!pageOpen(entitlement, id)) locked[id] = 'Members';
+  if (entitlement.level !== 'member') locked.start = 'Members';
   if (!coachOpen(entitlement)) locked.plan = locked.review = 'Pro';
   return (
     <>
