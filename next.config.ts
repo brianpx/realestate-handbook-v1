@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { HANDBOOK, LEGACY_PAGE_SLUGS } from './lib/routes';
+import { securityHeaders } from './lib/security-headers';
 
 const config: NextConfig = {
   // Old shared links look like /#ch5; hashes never reach the server, so app/layout.tsx redirects those on the client.
@@ -9,6 +10,10 @@ const config: NextConfig = {
   // the redirect because browsers carry the fragment over.
   async redirects() {
     return LEGACY_PAGE_SLUGS.map(slug => ({ source: `/${slug}`, destination: `${HANDBOOK}/${slug}`, permanent: true }));
+  },
+  // Every response, the API and static files included (lib/security-headers.ts).
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV === 'development') }];
   },
 };
 
