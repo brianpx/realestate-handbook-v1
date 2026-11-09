@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { coachStore } from '@/lib/coach';
 import { applyImport, exportProgress } from '@/lib/state';
 import { describeSummary, parseImport, type ImportResult } from '@/lib/state/transfer';
@@ -39,22 +40,22 @@ export function ProgressTransfer() {
       <div className="settings-col">
         <span className="settings-transfer-title">Move your progress</span>
         <div className="settings-sub">
-          <button type="button" className="btn-mini" id="settingExport" onClick={download}>Download my progress</button>
-          <button type="button" className="btn-mini" id="settingImport" onClick={() => fileRef.current?.click()}>Restore from a file</button>
+          <Button type="button" variant="outline" size="sm" id="settingExport" onClick={download}>Download my progress</Button>
+          <Button type="button" variant="outline" size="sm" id="settingImport" onClick={() => fileRef.current?.click()}>Restore from a file</Button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden id="settingImportFile" aria-label="Choose a handbook progress file" onChange={e => void choose(e.target.files?.[0])} />
         </div>
         {ready && (
           <div className="settings-confirm" role="group" aria-label="Confirm restoring progress">
             <p className="settings-note">This file has {describeSummary(ready.summary)}. Restoring replaces the progress on this device; what is here now is kept as a backup in this browser.</p>
-            <button
+            <Button
               type="button"
-              className="btn-mini"
+              size="sm"
               id="settingImportConfirm"
               onClick={() => { const saved = applyImport(ready, coachStore); setReady(null); setNote(saved ? 'Progress restored.' : 'Progress restored for this visit only: your browser would not save it.'); }}
             >
               Replace my progress
-            </button>
-            <button type="button" className="btn-mini" onClick={() => setReady(null)}>Cancel</button>
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => setReady(null)}>Cancel</Button>
           </div>
         )}
         <span className="settings-note" id="settingTransferNote" role="status">{note}</span>

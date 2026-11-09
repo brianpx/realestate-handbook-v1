@@ -9,6 +9,7 @@ import { NurtureTimeline } from './NurtureTimeline';
 import { KnowledgeCheckEntry } from './CoachCheck';
 import { LeadSources } from './LeadSources';
 import { ObjectionTrainer } from './ObjectionTrainer';
+import { PageDataTable } from './PageDataTable';
 import { PipelineCalculator } from './PipelineCalculator';
 import { PitfallCycle } from './PitfallCycle';
 import { PostCloseScheduler } from './PostCloseScheduler';
@@ -47,14 +48,16 @@ const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   checkpoints: Checkpoints,
   'knowledge-check': KnowledgeCheckEntry,
   'lead-sources': LeadSources,
+  'data-table': PageDataTable,
   'pipeline-calculator': PipelineCalculator,
   'timeblock-planner': TimeBlockPlanner,
   'postclose-scheduler': PostCloseScheduler as unknown as ComponentType<WidgetProps>,
 };
 
 // The five tools "Essential tools only" keeps (ESSENTIAL_WIDGETS in the static site), plus the pieces that belong
-// to them or switch themselves (checklists show as plain boxes, the response timer hides itself).
-const ALWAYS_BUILT = new Set(['scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'crm-checklists', 'response-timer']);
+// to them or switch themselves (checklists show as plain boxes, the response timer hides itself). Sortable reference
+// tables are page content, not tools, so the setting leaves them alone too.
+const ALWAYS_BUILT = new Set(['scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'script-practice', 'objection-trainer', 'crm-checklists', 'response-timer', 'data-table']);
 // Original markup that a gated tool replaces, put back when the tool is not built.
 function gatedFallback(name: string, html?: string): string | undefined {
   if (name === 'nurture-timeline') return NURTURE_STATIC_HTML;

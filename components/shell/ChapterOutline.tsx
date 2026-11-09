@@ -10,8 +10,10 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const SETTLE_MS = 150;
 
 // One scroll spy, two copies of the list. CSS shows the copy that fits: beside the card, or under the opening.
-export function ChapterOutline({ pageId, items, intro, rest }: {
+export function ChapterOutline({ pageId, items, before, intro, rest }: {
   pageId: string;
+  /** Sits above the chapter inside the card: the breadcrumb trail. */
+  before?: ReactNode;
   intro: ReactNode;
   rest: ReactNode;
   items: OutlineItem[];
@@ -88,6 +90,7 @@ export function ChapterOutline({ pageId, items, intro, rest }: {
     <div className="chapter-slot">
       <div className="chapter-frame">
         <div className="content-container" id="content-container">
+          {before}
           <article className="chapter-section" id={pageId} data-page={pageId}>
             {intro}
             {list('chapter-outline outline-stacked')}

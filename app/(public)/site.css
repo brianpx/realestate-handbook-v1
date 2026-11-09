@@ -5,7 +5,7 @@
 .pub {
   --pub-ink: var(--color-ink);
   --pub-body: var(--color-body);
-  --pub-muted: var(--color-muted);
+  --pub-muted: var(--color-ink-muted);
   --pub-navy: var(--color-brand);
   --pub-green: var(--color-brand-soft);
   --pub-green-dark: var(--color-brand-hover);
@@ -21,6 +21,8 @@
 .pub a { color: var(--color-link); text-underline-offset: 3px}
 .pub a:hover { color: var(--color-ink)}
 .pub-main { flex: 1; outline: none}
+.pub-crumbs { padding: 18px 0 0}
+.pub-crumbs a { text-decoration: none}
 .pub-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px}
 .pub-narrow { max-width: 760px}
 

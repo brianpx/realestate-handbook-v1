@@ -5,8 +5,7 @@ import { useEffect, useRef } from 'react';
 import { announce } from '@/lib/announce';
 import { NAV, type PageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
-import { essentialOnly, settingsStore, useSettings } from '@/lib/state';
-import { ESSENTIAL_WIDGETS } from '@/lib/tools';
+import { essentialOnly, settingsStore } from '@/lib/state';
 
 const labelOf = (page: string) => NAV.flatMap(g => g.pages).find(p => p.id === page)?.label ?? page;
 
@@ -56,17 +55,6 @@ export function DeepLinks() {
     const timer = setTimeout(() => land(want.page, want.key), 120);
     return () => clearTimeout(timer);
   }, [pathname]);
-
-  // Appendix E lists every tool; with Essential tools only on, drop the rows for tools that are not built.
-  const settings = useSettings();
-  useEffect(() => {
-    if (pathname !== pageHref('app-e')) return;
-    const off = essentialOnly(settings);
-    document.querySelectorAll<HTMLElement>('#content-container tr').forEach(row => {
-      const key = row.querySelector<HTMLElement>('[data-widget]')?.dataset.widget;
-      if (key) row.hidden = off && !ESSENTIAL_WIDGETS.includes(key);
-    });
-  }, [pathname, settings]);
 
   return null;
 }

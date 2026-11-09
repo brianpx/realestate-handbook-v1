@@ -1,12 +1,22 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Field, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import { captureScrollAnchor, applyScrollAnchor } from '@/lib/scroll-anchor';
 import { essentialOnly, quizzesShown, resetProgress, textSize, trackingProgress, useSettings, writeSettings } from '@/lib/state';
 import { TEXT_SIZES, type Settings as SettingsShape, type TextSize } from '@/lib/state/schema';
 import { ProgressTransfer } from './ProgressTransfer';
 
 const SIZE_LABELS: Record<TextSize, string> = { small: 'Small', medium: 'Medium', large: 'Large' };
+const isTextSize = (value: unknown): value is TextSize => typeof value === 'string' && (TEXT_SIZES as readonly string[]).includes(value);
+// Settings rows read at the sidebar's size, not the form default.
+const ROW_LABEL = 'text-base font-normal leading-snug';
+// Base UI puts the id on a hidden input unless the control is a native button; the ids here are what labels, the
+// e2e checks and the static site's selectors point at, so every control is a real <button>.
+const AS_BUTTON = { nativeButton: true, render: <button type="button" /> } as const;
 
 export function Settings() {
   const settings = useSettings();
@@ -94,50 +104,48 @@ export function Settings() {
   }, []);
 
   const tracking = trackingProgress(settings);
-  // when storage is blocked the write fails and the controlled checkbox simply keeps its old value
+  // when storage is blocked the write fails and the controlled switch simply keeps its old value
   const set = (patch: Partial<SettingsShape>) => writeSettings(patch);
+
+  // One on/off setting: a switch with its label beside it, the shadcn form-layout row at the sidebar's width.
+  const toggle = (id: string, label: string, checked: boolean, onChange: (checked: boolean) => void, className = '') => (
+    <Field orientation="horizontal" className={`settings-row ${className}`.trim()}>
+      <Switch id={id} checked={checked} onCheckedChange={onChange} {...AS_BUTTON} />
+      <FieldLabel htmlFor={id} className={ROW_LABEL}>{label}</FieldLabel>
+    </Field>
+  );
 
   return (
     <li className="settings-item">
       <details className="settings" ref={detailsRef}>
         <summary>Settings</summary>
-        <label className="settings-row">
-          <input type="checkbox" id="settingDark" checked={dark} onChange={e => set({ dark: e.target.checked })} />
-          <span>Dark mode</span>
-        </label>
-        <fieldset className="settings-size">
-          <legend>Text size</legend>
-          {TEXT_SIZES.map(option => (
-            <label key={option} className={`settings-size-option size-${option}`}>
-              <input type="radio" name="textSize" id={`settingText-${option}`} value={option} checked={size === option} onChange={() => set({ textSize: option })} />
-              <span>{SIZE_LABELS[option]}</span>
-            </label>
-          ))}
-        </fieldset>
-        <label className="settings-row settings-wide">
-          <input type="checkbox" id="settingWide" checked={settings.fullWidth === true} onChange={e => set({ fullWidth: e.target.checked })} />
-          <span>Full width</span>
-        </label>
-        <label className="settings-row">
-          <input type="checkbox" id="settingQuiz" checked={quizzesShown(settings)} onChange={e => set({ hideQuizzes: !e.target.checked })} />
-          <span>Test your knowledge sections</span>
-        </label>
-        <label className="settings-row">
-          <input type="checkbox" id="settingEssential" checked={essentialOnly(settings)} onChange={e => set({ essentialOnly: e.target.checked })} />
-          <span>Essential tools only (the 5 best)</span>
-        </label>
-        <div className="settings-row">
-          <input type="checkbox" id="settingTrack" checked={tracking} onChange={e => { if (set({ trackProgress: e.target.checked })) setNote(''); }} />
+        {toggle('settingDark', 'Dark mode', dark, checked => set({ dark: checked }))}
+        <FieldSet className="settings-size">
+          <FieldLegend variant="label" className={ROW_LABEL}>Text size</FieldLegend>
+          <RadioGroup name="textSize" value={size} onValueChange={value => { if (isTextSize(value)) set({ textSize: value }); }} className="gap-2">
+            {TEXT_SIZES.map(option => (
+              <Field key={option} orientation="horizontal" className={`settings-size-option size-${option}`}>
+                <RadioGroupItem value={option} id={`settingText-${option}`} {...AS_BUTTON} />
+                <FieldLabel htmlFor={`settingText-${option}`} className={ROW_LABEL}><span>{SIZE_LABELS[option]}</span></FieldLabel>
+              </Field>
+            ))}
+          </RadioGroup>
+        </FieldSet>
+        {toggle('settingWide', 'Full width', settings.fullWidth === true, checked => set({ fullWidth: checked }), 'settings-wide')}
+        {toggle('settingQuiz', 'Test your knowledge sections', quizzesShown(settings), checked => set({ hideQuizzes: !checked }))}
+        {toggle('settingEssential', 'Essential tools only (the 5 best)', essentialOnly(settings), checked => set({ essentialOnly: checked }))}
+        <Field orientation="horizontal" className="settings-row">
+          <Switch id="settingTrack" checked={tracking} onCheckedChange={checked => { if (set({ trackProgress: checked })) setNote(''); }} {...AS_BUTTON} />
           <div className="settings-col">
-            <label htmlFor="settingTrack">Keep track of progress</label>
+            <FieldLabel htmlFor="settingTrack" className={ROW_LABEL}>Keep track of progress</FieldLabel>
             <div className="settings-sub" id="settingResetGroup" hidden={!tracking}>
-              <button type="button" className="btn-mini settings-reset" id="settingReset" onClick={() => setNote(resetProgress() ? 'Progress reset.' : 'Nothing to reset.')}>
+              <Button type="button" variant="outline" size="sm" className="settings-reset" id="settingReset" onClick={() => setNote(resetProgress() ? 'Progress reset.' : 'Nothing to reset.')}>
                 Reset progress
-              </button>
+              </Button>
               <span className="settings-note" id="settingResetNote" role="status">{note}</span>
             </div>
           </div>
-        </div>
+        </Field>
         <ProgressTransfer />
       </details>
       <p className="settings-legal">

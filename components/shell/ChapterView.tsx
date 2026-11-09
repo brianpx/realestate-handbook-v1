@@ -6,6 +6,7 @@ import { glossaryDefs } from '@/lib/page-html';
 import type { PageId } from '@/lib/pages';
 import { widgetInstanceId } from '@/lib/widget-markers';
 import { Widget } from '../widgets/registry';
+import { Breadcrumbs } from './Breadcrumbs';
 import { ChapterEnd } from './ChapterEnd';
 import { ChapterOutline } from './ChapterOutline';
 import { ReadTracker } from './ReadTracker';
@@ -33,6 +34,7 @@ export async function ChapterView({ id }: { id: PageId }) {
   if (items.length === 0) {
     return (
       <div className="content-container" id="content-container">
+        <Breadcrumbs />
         <article className="chapter-section" id={id} data-page={id}>
           {render(splitSegments(id, html))}
           {end}
@@ -45,6 +47,7 @@ export async function ChapterView({ id }: { id: PageId }) {
     <ChapterOutline
       pageId={id}
       items={items}
+      before={<Breadcrumbs />}
       intro={render(splitSegments(id, html.slice(0, cut)))}
       rest={<OutlineRest segments={render(splitSegments(id, html.slice(cut)))} end={end} />}
     />
