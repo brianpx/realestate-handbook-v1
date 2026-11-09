@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { announce } from '@/lib/announce';
 
-type Open = { owner: HTMLElement; name: string; definition: string };
+// How the popover came to be open: a click pins it, a hover only shows it while the pointer is there.
+type Open = { owner: HTMLElement; name: string; definition: string; by: 'click' | 'hover' };
 
 // One popover for every glossary term in the page. The terms are plain buttons made at build time (lib/glossary.ts),
 // so this listens on the document rather than on each button. Ported from openTermPop in legacy/js/widgets-plan.js.
@@ -28,24 +29,26 @@ export function TermPopover() {
 
   useEffect(() => {
     const termOf = (e: Event) => (e.target as Element | null)?.closest<HTMLElement>('.term') ?? null;
-    const show = (button: HTMLElement) => {
+    const show = (button: HTMLElement, by: Open['by']) => {
       clearTimeout(timer.current);
-      setOpen({ owner: button, name: button.dataset.term ?? '', definition: button.dataset.definition ?? '' });
+      setOpen({ owner: button, name: button.dataset.term ?? '', definition: button.dataset.definition ?? '', by });
     };
     const hoverCapable = () => window.matchMedia('(hover: hover)').matches;
 
     const onClick = (e: MouseEvent) => {
       const button = termOf(e);
       if (button) {
-        if (openRef.current?.owner === button) { close(); return; }
-        show(button);
+        // A click on the term whose popover is already pinned closes it. One that only showed on hover gets pinned
+        // instead: the pointer arrives a moment before the click, so otherwise a click would undo its own hover.
+        if (openRef.current?.owner === button && openRef.current.by === 'click') { close(); return; }
+        show(button, 'click');
         // the tooltip is not in the reading flow, so say the definition when it is opened on purpose
         announce(`${button.dataset.term}: ${button.dataset.definition}`);
       } else if (openRef.current && !(e.target as Element).closest('.term-pop')) {
         close();
       }
     };
-    const onOver = (e: MouseEvent) => { const b = termOf(e); if (b && hoverCapable()) show(b); };
+    const onOver = (e: MouseEvent) => { const b = termOf(e); if (b && hoverCapable() && openRef.current?.owner !== b) show(b, 'hover'); };
     const onOut = (e: MouseEvent) => { const b = termOf(e); if (b && hoverCapable() && openRef.current?.owner === b) scheduleClose(b); };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && openRef.current) { const owner = openRef.current.owner; close(); owner.focus(); }

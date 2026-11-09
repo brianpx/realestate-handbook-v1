@@ -45,6 +45,20 @@ test.describe('glossary popovers', () => {
     await expect(pop).toBeHidden();
   });
 
+  test('a click on a term that is already showing from hover keeps it open', async ({ page }) => {
+    await page.goto('/handbook/ch4');
+    const term = page.locator('button.term[data-term="CRM"]');
+    const pop = page.locator('#termPop');
+    await term.hover();
+    await expect(pop).toBeVisible();
+    // the pointer reaches the term before the click does, so the click must pin the popover, not toggle it away
+    await term.click();
+    await expect(pop).toBeVisible();
+    await expect(term).toHaveAttribute('aria-expanded', 'true');
+    await term.click();
+    await expect(pop).toBeHidden();
+  });
+
   test('keeps the popover inside the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/handbook/ch4');
