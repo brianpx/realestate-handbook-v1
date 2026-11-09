@@ -1,4 +1,4 @@
-import { ADMIN_SESSION_ID, signedInState } from './auth';
+import { ADMIN_EMAIL, ADMIN_SESSION_ID, extraReader, signedInState, stores } from './auth';
 import { expect, test } from './fixtures';
 import { BASE_URL } from './target';
 
@@ -57,8 +57,49 @@ test.describe('as an administrator', () => {
     await expect(page.getByRole('cell', { name: email })).toBeVisible();
   });
 
+  test('the user list opens a reader, a suspension made in the form is logged once, and the API refuses a self-change', async ({ page, request }) => {
+    const reader = await extraReader('basic');
+    const admin = await stores().users.findByEmail(ADMIN_EMAIL);
+    if (!admin) throw new Error('the seeded administrator is missing; did global setup run?');
+
+    await page.goto('/admin/users');
+    await expect(page.getByRole('heading', { level: 1, name: 'Users' })).toBeVisible();
+    await page.getByRole('link', { name: reader.email }).click(); // newest first, so on the first page
+    await expect(page).toHaveURL(`${BASE_URL}/admin/users/${reader.userId}`);
+    await expect(page.getByRole('heading', { level: 1, name: reader.email })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'live' })).toBeVisible();
+
+    // the admin shell has no hydration mark, so a submit that lands before React mounts is retried (see e2e/fixtures.ts);
+    // a submit that went through refreshes the page, and the suspend form gives way to the lift form
+    const suspend = page.getByRole('form', { name: 'Suspend the membership' });
+    const lift = page.getByRole('form', { name: 'Lift the suspension' });
+    await expect(async () => {
+      await suspend.getByLabel('Reason').fill('e2e hold');
+      await suspend.getByRole('button', { name: 'Suspend' }).click();
+      await expect(lift).toBeVisible({ timeout: 2000 });
+    }).toPass();
+    await expect(lift.getByRole('status')).toHaveCount(0); // the lift form starts with no note of its own
+    await expect(page.getByText('suspended', { exact: true })).toBeVisible();
+
+    // the same action through the route: already suspended, so nothing changes and nothing more is logged
+    const again = await request.post(`/api/admin/users/${reader.userId}/suspend`, { data: { reason: 'again' }, headers: { Origin: BASE_URL } });
+    expect(again.status()).toBe(200);
+    expect(await again.json()).toEqual({ ok: true, changed: false });
+    const self = await request.post(`/api/admin/users/${admin.id}/set-role`, { data: { role: 'reader' }, headers: { Origin: BASE_URL } });
+    expect(self.status()).toBe(400);
+    expect(await self.json()).toMatchObject({ ok: false, error: 'self_change' });
+    expect((await request.post(`/api/admin/users/${reader.userId}/suspend`, { data: { reason: 'x' }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
+
+    await page.goto(`/admin/users/${admin.id}`);
+    await expect(page.getByRole('form', { name: 'Role' }).getByRole('combobox', { name: 'Role' })).toBeDisabled();
+
+    await page.goto('/admin/audit');
+    await expect(page.getByRole('heading', { level: 1, name: 'Audit log' })).toBeVisible();
+    await expect(page.getByRole('row').filter({ hasText: 'membership.suspend' }).filter({ hasText: reader.email })).toHaveCount(1);
+  });
+
   // the tables scroll inside their cards; the page itself must not, or the sidebar trigger drifts off-screen
-  for (const path of ['/admin', '/admin/leads']) {
+  for (const path of ['/admin', '/admin/leads', '/admin/users', '/admin/audit']) {
     test(`${path} does not scroll sideways at 360px`, async ({ page }) => {
       await page.setViewportSize({ width: 360, height: 800 });
       await page.goto(path);
