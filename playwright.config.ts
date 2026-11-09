@@ -33,6 +33,8 @@ export default defineConfig({
   ],
   use: {
     baseURL: ORIGIN,
+    // A failure on CI is otherwise only a line of log; the trace goes into the uploaded HTML report.
+    trace: 'retain-on-failure',
     extraHTTPHeaders: BYPASS_HEADERS,
     // Every test starts as a signed-in reader who has already dismissed the email gate; the gate's and sign-in's own
     // tests override this.

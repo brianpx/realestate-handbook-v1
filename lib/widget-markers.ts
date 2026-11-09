@@ -17,7 +17,7 @@ export const WIDGET_NAMES: readonly string[] = [
   'crm-checklists', 'scorecard', 'scorecard-change', 'goal-calculator', 'speed-to-lead', 'response-timer', 'nurture-timeline',
   'script-practice', 'objection-trainer', 'qualifying-drill', 'pitfall-cycle', 'error-self-score', 'consultation-lab', 'fair-housing-drill',
   'checkpoints', 'knowledge-check', 'lead-sources', 'pipeline-calculator',
-  'timeblock-planner', 'postclose-scheduler',
+  'timeblock-planner', 'postclose-scheduler', 'data-table',
 ];
 
 const keyOf = (name: string, slug?: string) => (slug ? `${name}#${slug}` : name);

@@ -1,4 +1,6 @@
 @import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 @source "../app";
 @source "../components";
 /* test files are not markup; a variable called `container` would otherwise ship the Tailwind container utility */
@@ -11,9 +13,10 @@
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --color-ink: #0f172a;
   --color-body: #334155;
-  --color-muted: #475569;
+  --color-ink-muted: #475569;
   --color-canvas: #f8fafc;
   --color-surface: #ffffff;
   --color-subtle: #e2e8f0;
@@ -47,13 +50,47 @@
   --card-bg: var(--color-surface);
   --text-main: var(--color-ink);
   --border-color: var(--color-line);
+  /* shadcn/ui tokens, mapped onto the handbook palette above so the components follow dark mode and print. */
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-on-brand);
+  --secondary: var(--color-tint);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-tint);
+  --muted-foreground: var(--color-ink-muted);
+  --accent: var(--color-accent-tint);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-danger);
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-focus);
+  --chart-1: var(--color-brand);
+  --chart-2: var(--color-brand-soft);
+  --chart-3: var(--color-link);
+  --chart-4: var(--color-warning);
+  --chart-5: var(--color-danger);
+  /* 6px, the radius the handbook already uses on fields and buttons. */
+  --radius: 0.375rem;
+  --sidebar: var(--color-canvas);
+  --sidebar-foreground: var(--color-body);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: var(--color-on-brand);
+  --sidebar-accent: var(--color-accent-tint);
+  --sidebar-accent-foreground: var(--color-link);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-focus);
 }
 
 html.dark {
   color-scheme: dark;
   --color-ink: #f8fafc;
   --color-body: #cbd5e1;
-  --color-muted: #94a3b8;
+  --color-ink-muted: #94a3b8;
   --color-canvas: #020617;
   --color-surface: #0f172a;
   --color-subtle: #1e293b;
@@ -80,7 +117,7 @@ html.dark {
     color-scheme: light;
     --color-ink: #0f172a;
     --color-body: #334155;
-    --color-muted: #475569;
+    --color-ink-muted: #475569;
     --color-canvas: #f8fafc;
     --color-surface: #ffffff;
     --color-subtle: #e2e8f0;
@@ -176,7 +213,7 @@ html.dark {
         .sidebar-header p:not(.sidebar-title) {
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
             font-size: 1.1rem;
-            color: var(--color-muted);
+            color: var(--color-ink-muted);
             margin: 4px 0 8px}
 
         .nav-list {
@@ -192,7 +229,7 @@ html.dark {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--color-muted);
+            color: var(--color-ink-muted);
             padding: 12px 20px 4px;
             font-weight: 700;
             margin-bottom: 0}
@@ -268,7 +305,7 @@ html.dark {
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: var(--color-muted);
+            color: var(--color-ink-muted);
             margin: 0 0 8px}
         .chapter-outline ul { list-style: none; margin: 0; padding: 0}
         .chapter-outline li { margin: 0}
@@ -515,6 +552,18 @@ html.dark {
         .key-takeaways ul { margin-bottom: 0}
         .key-takeaways li { color: #cbd5e1}
 
+        /* Breadcrumb trail at the top of the card. Sits in the card's padding; print pages have no navigation. */
+        .content-container > [data-slot="breadcrumb"] { margin: -16px 0 20px}
+        .content-container > [data-slot="breadcrumb"] a { text-decoration: none}
+        [data-slot="breadcrumb-list"] { padding: 0; margin: 0}
+        [data-slot="breadcrumb-list"] > li { margin: 0}
+        @media print { [data-slot="breadcrumb"] { display: none} }
+
+        /* Sortable reference tables (the data-table widget). The shadcn table draws its own lines. */
+        .data-table { margin: 24px 0}
+        .data-table th, .data-table td { border: 0}
+        .data-table caption { padding: 10px 10px 2px}
+
         /* Tables */
         .table-wrapper {
             overflow-x: auto;
@@ -612,7 +661,7 @@ html.dark {
         .btn-nav:hover { background-color: var(--color-brand-hover); color: var(--color-on-brand)}
         .btn-nav:disabled, .btn-nav.btn-secondary:disabled {
             background-color: var(--color-subtle);
-            color: var(--color-muted);
+            color: var(--color-ink-muted);
             border-color: var(--color-line);
             cursor: not-allowed}
         .btn-nav.btn-secondary {
@@ -646,37 +695,28 @@ html.dark {
             width: 100%;
             max-width: 420px;
             background: var(--card-bg);
-            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             padding: 32px 24px;
             text-align: center}
         .gate-card h2 { font-size: 1.25rem; line-height: 1.3; margin-bottom: 8px}
-        .gate-card p { color: var(--color-muted); margin-bottom: 20px}
-        .gate-label { display: block; text-align: left; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px}
-        .gate-card input[type="email"] {
-            width: 100%;
-            padding: 12px;
-            font-size: max(16px, 1rem); /* 16px stops iOS zooming on focus */
-            border: 1px solid var(--color-line-strong);
-            border-radius: 6px;
-            margin-bottom: 12px}
-        .gate-card .btn-nav { width: 100%; padding: 12px}
+        .gate-card p { color: var(--color-ink-muted); margin-bottom: 20px}
+        .gate-field { margin-bottom: 14px; text-align: left}
+        .gate-submit, .gate-skip { width: 100%}
         .gate-trap { position: absolute; left: -9999px}
-        .gate-card p.gate-error { color: var(--color-danger); font-size: 0.85rem; margin: 0 0 12px}
-        .gate-details { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: var(--color-muted); text-align: left}
+        .gate-details { margin: 14px 0 10px; font-size: 0.8rem; line-height: 1.45; color: var(--color-ink-muted); text-align: left}
         .gate-details summary { cursor: pointer; min-height: 24px; font-weight: 600; color: var(--color-link)}
         .gate-card .gate-details p { margin: 6px 0 0; font-size: inherit; text-align: left}
-        .gate-skip { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 10px; font: inherit; font-weight: 600; color: var(--color-link); background: transparent; border: 1px solid var(--color-line-strong); border-radius: 6px; cursor: pointer}
-        .gate-skip:hover { background: var(--color-tint)}
 
-        .part-intro { color: var(--color-muted); margin-bottom: 8px}
+        .part-intro { color: var(--color-ink-muted); margin-bottom: 8px}
         .glossary dt { font-weight: 700; margin-top: 14px}
         .glossary dd { margin-left: 0; color: var(--color-body)}
-        .colophon { margin-top: 32px; font-size: 0.85rem; color: var(--color-muted)}
+        .colophon { margin-top: 32px; font-size: 0.85rem; color: var(--color-ink-muted)}
 
         /* Sidebar search */
         .nav-search { display: block; flex-shrink: 0; padding: 12px 20px; border-bottom: 1px solid var(--color-line); background-color: var(--color-canvas)}
         .nav-search-input { width: 100%; padding: 9px 12px; font: inherit; font-size: max(16px, 1rem); color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
-        .nav-search-input::placeholder { color: var(--color-muted)}
+        .nav-search-input::placeholder { color: var(--color-ink-muted)}
         .search-results { list-style: none; margin: 8px -20px -12px; max-height: 50vh; overflow-y: auto}
         .search-results[hidden] { display: none}
         tr[hidden] { display: none}
@@ -685,8 +725,8 @@ html.dark {
         .search-result { display: block; padding: 9px 20px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent}
         .search-result:hover, .search-result:focus-visible { background-color: var(--color-subtle); color: var(--sidebar-hover); border-left-color: var(--color-link)}
         .search-result-title { display: block; font-size: 0.875rem}
-        .search-result-where { display: block; font-size: 0.75rem; color: var(--color-muted)}
-        .search-empty { padding: 9px 20px; font-size: 0.85rem; color: var(--color-muted)}
+        .search-result-where { display: block; font-size: 0.75rem; color: var(--color-ink-muted)}
+        .search-empty { padding: 9px 20px; font-size: 0.85rem; color: var(--color-ink-muted)}
 
         /* Document dialog */
         .link-btn { font: inherit; padding: 0; background: none; border: 0; border-bottom: 1px solid currentColor; color: var(--color-link); cursor: pointer}
@@ -697,10 +737,10 @@ html.dark {
         .doc-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px}
         .doc-dialog-head h4 { margin: 0}
         .doc-frame { flex: 1; width: 100%; border: 1px solid var(--color-line-strong); border-radius: 4px}
-        .doc-dialog-foot { margin: 0; font-size: 0.85rem; color: var(--color-muted)}
+        .doc-dialog-foot { margin: 0; font-size: 0.85rem; color: var(--color-ink-muted)}
 
         /* Footnote dialog */
-        .footnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; padding: 10px 14px; font-size: 0.9rem; color: var(--color-muted); background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 10px}
+        .footnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; padding: 10px 14px; font-size: 0.9rem; color: var(--color-ink-muted); background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 10px}
         .footnote sup { line-height: 0}
         .footnote-ref { width: 22px; height: 22px; padding: 0; font: inherit; font-size: 0.75rem; font-weight: 700; color: #1d4ed8; background: #dbeafe; border: 0; border-radius: 999px; cursor: pointer}
         .footnote-ref:hover { background: #bfdbfe}
@@ -714,11 +754,11 @@ html.dark {
         .note-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 24px 16px; border-bottom: 1px solid var(--color-line)}
         .note-dialog-eyebrow { display: block; margin-bottom: 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-link)}
         .note-dialog-head h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; color: var(--color-ink)}
-        .note-dialog-close { flex-shrink: 0; width: 32px; height: 32px; padding: 0; font-size: 1.4rem; line-height: 1; color: var(--color-muted); background: transparent; border: 0; border-radius: 8px; cursor: pointer}
+        .note-dialog-close { flex-shrink: 0; width: 32px; height: 32px; padding: 0; font-size: 1.4rem; line-height: 1; color: var(--color-ink-muted); background: transparent; border: 0; border-radius: 8px; cursor: pointer}
         .note-dialog-close:hover { color: var(--color-ink); background: var(--color-tint)}
         .note-dialog-body { flex: 1; min-height: 0; padding: 20px 24px; overflow-y: auto; font-size: 0.93rem; line-height: 1.55}
-        .note-dialog-lede { margin: 0 0 16px; color: var(--color-muted)}
-        .note-dialog-section { margin: 20px 0 10px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted)}
+        .note-dialog-lede { margin: 0 0 16px; color: var(--color-ink-muted)}
+        .note-dialog-section { margin: 20px 0 10px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted)}
         .note-dialog-lede + .note-dialog-section { margin-top: 0}
         .note-dialog-body ol { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 8px}
         .note-dialog-body ol li { counter-increment: step; position: relative; margin: 0; padding: 10px 14px 10px 48px; background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 10px}
@@ -726,7 +766,7 @@ html.dark {
         .note-dialog-body ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--color-body)}
         .note-dialog-body ul li::marker { color: var(--color-line-strong)}
         .note-dialog-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 24px; background: var(--color-canvas); border-top: 1px solid var(--color-line)}
-        .note-dialog-foot p { margin: 0; font-size: 0.82rem; color: var(--color-muted)}
+        .note-dialog-foot p { margin: 0; font-size: 0.82rem; color: var(--color-ink-muted)}
         .note-dialog-done { flex-shrink: 0; padding: 8px 16px; font: inherit; font-size: 0.875rem; font-weight: 600; color:var(--color-on-brand); background:var(--color-brand); border: 0; border-radius: 8px; cursor: pointer}
         .note-dialog-done:hover { background:var(--color-brand-hover)}
         @media (width <= 600px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
@@ -734,22 +774,21 @@ html.dark {
         /* Progress */
         .progress-item { list-style: none; padding: 4px 20px 12px}
         .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px}
-        .progress-label { font-size: 0.75rem; color: var(--color-muted)}
+        .progress-label { font-size: 0.75rem; color: var(--color-ink-muted)}
         .settings-item { list-style: none; padding: 12px 20px 16px; margin-top: 8px; border-top: 1px solid var(--color-line)}
         /* a bordered bar with a chevron that flips when opened, so it reads as expandable */
         .settings summary { display: flex; align-items: center; justify-content: space-between; list-style: none; cursor: pointer; padding: 10px 14px; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-body); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
         .settings summary::-webkit-details-marker { display: none}
         .settings summary::after { content: ""; width: 8px; height: 8px; margin: -4px 2px 0 0; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.2s ease, margin 0.2s ease}
         .settings[open] summary::after { margin-top: 4px; transform: rotate(-135deg)}
-        .settings summary:hover { background: var(--color-tint); border-color: var(--color-muted)}
+        .settings summary:hover { background: var(--color-tint); border-color: var(--color-ink-muted)}
         .settings[open] summary { margin-bottom: 4px}
         @media (prefers-reduced-motion: reduce) { .settings summary::after { transition: none} }
         .settings-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 1rem; line-height: 1.45; color: var(--color-body)}
-        .settings-row input { width: 1.2rem; height: 1.2rem; margin-top: 2px; flex-shrink: 0}
+        .settings-row [data-slot="switch"] { margin-top: 3px}
         .settings-size { margin: 12px 0 0; padding: 0; border: 0; color: var(--color-body)}
         .settings-size legend { padding: 0; font-size: 1rem; line-height: 1.45}
         .settings-size-option { display: flex; align-items: center; gap: 8px; margin-top: 8px; line-height: 1.45}
-        .settings-size-option input { width: 1.2rem; height: 1.2rem; flex-shrink: 0}
         /* each choice previews its own size, relative to the (already scaled) text around it */
         .settings-size-option.size-small span { font-size: 0.85em}
         .settings-size-option.size-large span { font-size: 1.2em}
@@ -757,9 +796,9 @@ html.dark {
         .settings-col { display: flex; flex-direction: column}
         .settings-sub { margin-top: 8px}
         .settings-sub[hidden] { display: none}
-        .settings-reset { display: block; width: 100%; text-align: center}
-        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-muted)}
-        .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-muted)}
+        .settings-reset { width: 100%}
+        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-ink-muted)}
+        .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-ink-muted)}
         .settings-transfer-title { font-size: 0.9rem; font-weight: 600}
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
         .settings-confirm { margin-top: 8px}
@@ -773,10 +812,10 @@ html.dark {
         .checklist { margin: 12px 0 20px}
         .check-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; cursor: pointer}
         .check-item input { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; accent-color: var(--color-link)}
-        .check-item input:checked + span { color: var(--color-muted); text-decoration: line-through}
+        .check-item input:checked + span { color: var(--color-ink-muted); text-decoration: line-through}
         h3.checklist-title { margin: 16px 0 0}
         .checklist-total { font-weight: 700; color: var(--color-link); margin: 8px 0}
-        .checklist-meter { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 0.85rem; color: var(--color-muted)}
+        .checklist-meter { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 0.85rem; color: var(--color-ink-muted)}
         .meter-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--color-subtle); overflow: hidden}
         .checklist-fill { display: block; height: 100%; width: 0; background: var(--color-brand-soft); transition: width 0.3s}
 
@@ -794,17 +833,17 @@ html.dark {
         .scorecard-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0}
         .scorecard-confirm { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-weight: 600}
         .scorecard-confirm[hidden], .scorecard-tools [hidden] { display: none}
-                .score-chart { margin: 16px 0; color: var(--color-muted); font-size: 0.9rem}
+                .score-chart { margin: 16px 0; color: var(--color-ink-muted); font-size: 0.9rem}
         .score-chart-title { font-weight: 600; margin-bottom: 4px}
         .score-svg { width: 100%; max-width: 420px; height: auto; display: block}
         .score-bar { fill: var(--color-link)}
         .score-label { font-size: 12px; font-weight: 700; fill: var(--color-ink)}
-        .score-axis { font-size: 12px; fill: var(--color-muted)}
+        .score-axis { font-size: 12px; fill: var(--color-ink-muted)}
         .score-change { display: block; margin: 16px 0; font-weight: 600; color: var(--color-ink)}
         .score-change textarea { display: block; width: 100%; max-width: 40rem; margin-top: 6px; padding: 10px; font: inherit; font-weight: 400; font-size: max(16px, 1rem); line-height: 1.45; border: 1px solid var(--color-line-strong); border-radius: 6px}
         .chapter-next { margin: 28px 0 8px; font-weight: 700}
         .chapter-next a { color: var(--color-link)}
-        .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--color-line); font-size: 0.85rem; line-height: 1.5; color: var(--color-muted)}
+        .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--color-line); font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
         @media print {
@@ -824,7 +863,7 @@ html.dark {
         .btn-mini:hover { background: var(--color-accent-tint); color: var(--color-link)}
         .script-transcript { margin-top: 12px; font-size: 0.9rem}
         .script-transcript summary { cursor: pointer; font-weight: 600; color: var(--color-link)}
-        .transcript-note { margin: 8px 0; color: var(--color-muted); font-style: italic}
+        .transcript-note { margin: 8px 0; color: var(--color-ink-muted); font-style: italic}
         .transcript-line { margin: 6px 0}
         .transcript-step { color: #6d28d9; font-size: 0.85em}
         blockquote.script-body { margin: 0 0 12px; padding: 0; border: 0; color: inherit}
@@ -835,24 +874,24 @@ html.dark {
         .practice-text { display: block; width: 100%; margin-top: 6px; padding: 10px; font: inherit; font-size: max(16px, 1rem); border: 1px solid var(--color-line-strong); border-radius: 6px}
         .trainer-prompt { font-weight: 700; font-size: 1.05rem}
         .trainer-answer { margin-top: 12px; padding: 12px; background: var(--color-surface); border-radius: 6px}
-        .trainer-score { margin-top: 12px; font-size: 0.85rem; color: var(--color-muted)}
+        .trainer-score { margin-top: 12px; font-size: 0.85rem; color: var(--color-ink-muted)}
 
         /* Teaching widgets: income calculator, speed-to-lead, nurture timeline */
         .calc-field { display: inline-flex; align-items: center; gap: 4px}
-        .calc-prefix { color: var(--color-muted); font-weight: 600}
+        .calc-prefix { color: var(--color-ink-muted); font-weight: 600}
         .calc-input { width: 110px; max-width: 100%; padding: 6px 8px; font-size: max(16px, 1rem); border: 1px solid var(--color-line-strong); border-radius: 4px; background: var(--color-surface)}
         .calc-error { margin-top: 4px; font-size: 0.85rem; font-weight: 600; color: var(--color-danger)}
         .calc-error:empty { display: none}
         .calc-input[aria-invalid="true"] { border-color: var(--color-danger)}
-        .calc-sub { margin-top: 4px; font-size: 0.85rem; color: var(--color-muted)}
+        .calc-sub { margin-top: 4px; font-size: 0.85rem; color: var(--color-ink-muted)}
         .calc-stats { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px}
         .calc-stat { flex: 1 1 120px; padding: 12px; background: #fff; border: 1px solid #a7f3d0; border-radius: 8px; text-align: center}
         .calc-stat-value { font-size: 1.8rem; font-weight: 700; color: #065f46; line-height: 1.2}
         .calc-stat-label { font-size: 0.85rem; color: #475569}
-        .calc-empty { font-style: italic; color: var(--color-muted)}
+        .calc-empty { font-style: italic; color: var(--color-ink-muted)}
         .calc-verdict { margin-bottom: 12px}
         .calc-stress-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px}
-        .calc-note { margin-top: 12px; font-size: 0.85rem; color: var(--color-muted)}
+        .calc-note { margin-top: 12px; font-size: 0.85rem; color: var(--color-ink-muted)}
         .btn-mini[aria-pressed="true"] { background: var(--color-brand); color: var(--color-on-brand); border-color: var(--color-brand)}
         .btn-mini:disabled { opacity: 0.45; cursor: default}
 
@@ -868,16 +907,16 @@ html.dark {
         .speed-curve { fill: none; stroke: var(--color-link); stroke-width: 2.5}
         .speed-guide { stroke: var(--color-link); stroke-width: 1; stroke-dasharray: 3 3}
         .speed-dot { fill: var(--color-link); stroke: var(--color-on-brand); stroke-width: 2}
-        .speed-tick { font-size: 11px; fill: var(--color-muted)}
+        .speed-tick { font-size: 11px; fill: var(--color-ink-muted)}
         .speed-tick.active { fill: var(--color-ink); font-weight: 700}
         .speed-readout { padding: 12px 14px; background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 8px}
-        .speed-when { font-size: 0.85rem; color: var(--color-muted)}
+        .speed-when { font-size: 0.85rem; color: var(--color-ink-muted)}
         .speed-band { font-size: 1.15rem; font-weight: 700}
         .speed-band[data-band="top"] { color: var(--color-success)}
         .speed-band[data-band="strong"] { color: var(--color-warning)}
         .speed-band[data-band="drop"] { color: var(--color-danger)}
         .speed-detail { margin-top: 4px}
-        .speed-caption { margin-top: 8px; font-size: 0.8rem; color: var(--color-muted); font-style: italic}
+        .speed-caption { margin-top: 8px; font-size: 0.8rem; color: var(--color-ink-muted); font-style: italic}
         .timer-clock { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0}
         .timer-results { list-style: none; margin-top: 12px}
         .timer-results li { margin-top: 6px; padding: 8px 10px; background: var(--color-surface); border-radius: 6px; border-left: 4px solid}
@@ -889,7 +928,7 @@ html.dark {
         .nurture-front { fill: var(--color-accent-tint); stroke: var(--color-link)}
         .nurture-front-label { font-size: 12px; fill: var(--color-link); font-weight: 600}
         .nurture-axis { stroke: var(--color-line-strong); stroke-width: 1}
-        .nurture-tick { font-size: 12px; fill: var(--color-muted)}
+        .nurture-tick { font-size: 12px; fill: var(--color-ink-muted)}
         .nurture-dot { fill: var(--color-link); stroke: var(--color-on-brand); stroke-width: 1.5}
         .nurture-dot.value { fill: #f59e0b; stroke: #92400e}
         .nurture-dot.selected { stroke: var(--color-ink); stroke-width: 3}
@@ -901,19 +940,19 @@ html.dark {
         .touch-btn.value { border-bottom: 4px solid var(--color-warning)}
         /* A touch outside the chosen filter fades by surface, border and text color, not opacity: at 0.35 its label fell
            to about 2.3:1 (CR-M5). Muted on tint is 6.9:1 in light mode and 5.7:1 in dark. The selected touch keeps its fill below. */
-        .touch-btn.dim { color: var(--color-muted); background: var(--color-tint); border-color: var(--color-line)}
+        .touch-btn.dim { color: var(--color-ink-muted); background: var(--color-tint); border-color: var(--color-line)}
         .touch-btn.dim .touch-day { opacity: 1}
         .touch-btn[aria-pressed="true"] { background: var(--color-brand); border-color: var(--color-brand); color: var(--color-on-brand)}
         .touch-num { font-size: 1.1rem; font-weight: 700}
         .touch-ch { font-size: 0.75rem}
         .touch-day { font-size: 0.75rem; opacity: 0.8}
-        .nurture-legend { margin: 10px 0; font-size: 0.85rem; color: var(--color-muted)}
+        .nurture-legend { margin: 10px 0; font-size: 0.85rem; color: var(--color-ink-muted)}
         .nurture-detail { padding: 12px 14px; background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 8px}
         .nurture-detail p { margin-top: 8px}
         .nurture-head { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between}
         .nurture-tag { display: inline-block; margin-left: 6px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; background: var(--color-accent-tint); color: var(--color-link); border-radius: 999px}
         .nurture-sample { padding: 8px 10px; background: var(--color-surface); border-left: 4px solid var(--color-link); border-radius: 4px}
-        .nurture-note { font-size: 0.9rem; color: var(--color-muted); font-style: italic}
+        .nurture-note { font-size: 0.9rem; color: var(--color-ink-muted); font-style: italic}
 
         /* Interactive marker and shared widget chrome */
         .interactive-head { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 12px; background: var(--color-accent-tint); border-left: 4px solid var(--color-focus); border-radius: 6px; font-size: 0.9rem; color: var(--color-ink); text-align: left; scroll-margin-top: 16px}
@@ -927,7 +966,7 @@ html.dark {
         @media (prefers-reduced-motion: reduce) { .widget-found { animation: none; outline: 3px solid #ffffff; outline-offset: 3px; box-shadow: 0 0 0 3px #0f172a} }
         .btn-mini, .touch-btn, .term, .score-opt, .drill-option { -webkit-tap-highlight-color: transparent}
         .btn-mini { min-height: 40px}
-        .progress-sub { margin-top: 6px; font-size: 0.75rem; color: var(--color-muted)}
+        .progress-sub { margin-top: 6px; font-size: 0.75rem; color: var(--color-ink-muted)}
 
         /* Checkpoint self-tests */
         .cp-count { margin-left: auto; font-weight: 600; font-size: 0.85rem}
@@ -939,7 +978,7 @@ html.dark {
         .cp-key ul { margin: 6px 0 0 20px}
 
         /* Drills (shared) */
-        .drill-progress { font-size: 0.85rem; color: var(--color-muted); margin-bottom: 8px}
+        .drill-progress { font-size: 0.85rem; color: var(--color-ink-muted); margin-bottom: 8px}
         .drill-tag { display: inline-block; margin-bottom: 6px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; background: var(--color-accent-tint); color: var(--color-ink); border-radius: 999px}
         .drill-prompt { margin: 0 0 12px; padding: 10px 14px; background: var(--color-surface); border-left: 4px solid var(--color-focus); border-radius: 4px; font-size: 1.02rem}
         .drill-options { display: flex; flex-wrap: wrap; gap: 8px}
@@ -975,12 +1014,12 @@ html.dark {
         .cycle-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px}
         .cycle-list { list-style: none; margin: 0; padding: 0; text-align: left}
         .cycle-node { display: grid; gap: 2px; margin-bottom: 14px; padding: 10px 14px; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; position: relative}
-        .cycle-node:not(:last-child)::after { content: "↓"; position: absolute; left: 50%; bottom: -17px; color: var(--color-muted); font-weight: 700}
+        .cycle-node:not(:last-child)::after { content: "↓"; position: absolute; left: 50%; bottom: -17px; color: var(--color-ink-muted); font-weight: 700}
         .cycle-node.is-broken { border-color: var(--color-brand-soft); background: var(--color-brand-tint)}
         .cycle-badge { font-size: 0.8rem; font-weight: 600; color: var(--color-success)}
         .cycle-badge:empty { display: none}
         .cycle-loop, .cycle-status { text-align: left; margin-top: 8px}
-        .cycle-loop { font-weight: 600; color: var(--color-muted)}
+        .cycle-loop { font-weight: 600; color: var(--color-ink-muted)}
         .score-options { display: flex; gap: 8px}
         .score-opt { position: relative; flex: 1; text-align: center}
         .score-opt input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer}
@@ -1018,7 +1057,7 @@ html.dark {
         .range-fill { position: absolute; top: 0; bottom: 0; background: var(--color-focus); border-radius: 7px}
         .range-fill.is-open { background: linear-gradient(90deg, var(--color-focus) 70%, rgba(67, 56, 202, 0.25))}
         .range-label { font-weight: 700; text-align: right; white-space: nowrap}
-        .range-axis { display: flex; justify-content: space-between; margin: 0 70px 0 calc((100% - 78px) * 1.3 / 3.3 + 8px); font-size: 0.75rem; color: var(--color-muted)}
+        .range-axis { display: flex; justify-content: space-between; margin: 0 70px 0 calc((100% - 78px) * 1.3 / 3.3 + 8px); font-size: 0.75rem; color: var(--color-ink-muted)}
         .cost-rate { display: block; font-weight: 600; font-size: 0.9rem; margin: 8px 0}
         .cost-rows, .pipe-rows, .score-rows { display: block}
         .cost-row, .pipe-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 14px; align-items: end}
@@ -1029,12 +1068,12 @@ html.dark {
         .pipe-name { max-width: none}
         .roadmap-panel { margin-bottom: 12px; padding: 12px; background: var(--color-canvas); border: 1px solid var(--color-line); border-radius: 8px; text-align: left}
         .roadmap-status { margin: 8px 0; font-weight: 600}
-        .phase-dates { display: block; margin-top: 2px; font-size: 0.8rem; font-weight: 400; color: var(--color-muted)}
+        .phase-dates { display: block; margin-top: 2px; font-size: 0.8rem; font-weight: 400; color: var(--color-ink-muted)}
         .postclose-list { list-style: none; margin: 12px 0 0; padding: 0; text-align: left}
         .postclose-item { margin-bottom: 8px; padding: 10px 14px; background: var(--color-surface); border: 1px solid var(--color-line); border-left: 4px solid var(--color-focus); border-radius: 6px}
         .postclose-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 4px}
         .postclose-head .nurture-tag { margin: 0}
-        .postclose-purpose { margin-top: 2px; font-size: 0.9rem; color: var(--color-muted)}
+        .postclose-purpose { margin-top: 2px; font-size: 0.9rem; color: var(--color-ink-muted)}
         .term { display: inline; padding: 0; font: inherit; color: inherit; background: none; border: 0; border-bottom: 2px dotted var(--color-focus); cursor: help; text-align: inherit; text-decoration: none}
         .term:hover, .term[aria-expanded="true"] { background: var(--color-accent-tint)}
         .term-pop { position: fixed; z-index: 300; padding: 10px 12px; background: #1e1b4b; color: #fff; border-radius: 8px; font-size: 0.85rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25)}
@@ -1168,9 +1207,9 @@ html.dark {
         .hb-tool { display: block; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--color-surface); color: var(--text-main); text-decoration: none}
         .hb-tool:hover { border-color: var(--accent-color); background: var(--color-canvas)}
         .hb-tool strong { display: block; color: var(--secondary-color); margin-bottom: 4px}
-        .hb-tool span { font-size: 0.92rem; color: var(--color-muted)}
+        .hb-tool span { font-size: 0.92rem; color: var(--color-ink-muted)}
         .hb-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 32px}
-        .hb-part h3 { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-muted); margin: 18px 0 6px}
+        .hb-part h3 { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-ink-muted); margin: 18px 0 6px}
         .hb-part ul { list-style: none; padding: 0; margin: 0}
         .hb-part li { margin-bottom: 4px}
         .hb-read { color: var(--color-brand-soft); font-weight: 700}
@@ -1178,7 +1217,7 @@ html.dark {
         .setup-steps ol { list-style: none; padding: 0; margin: 24px 0 20px; display: flex; flex-wrap: wrap; gap: 8px}
         .setup-steps li { margin: 0}
         .setup-step { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 14px 6px 8px; font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--color-body); background: var(--color-surface); border: 1.5px solid var(--color-line-strong); border-radius: 999px; cursor: pointer}
-        .setup-step[aria-disabled="true"] { color: var(--color-muted); border-style: dashed; cursor: not-allowed; background: var(--color-canvas)}
+        .setup-step[aria-disabled="true"] { color: var(--color-ink-muted); border-style: dashed; cursor: not-allowed; background: var(--color-canvas)}
         .setup-step.current { border-color: var(--accent-color); background: var(--color-accent-tint); color: var(--color-link)}
         .setup-step.done .setup-step-num { background: var(--color-brand-soft); color:var(--color-on-brand-soft)}
         .setup-step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--color-subtle); color: var(--color-ink); display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700}
@@ -1186,7 +1225,7 @@ html.dark {
         .setup-panel { padding: 8px 0 0}
         .setup-panel h2 { margin-top: 4px}
         .setup-panel h2:focus { outline: none}
-        .setup-count { font-size: 0.85rem; font-weight: 700; color: var(--color-muted); margin-bottom: 4px}
+        .setup-count { font-size: 0.85rem; font-weight: 700; color: var(--color-ink-muted); margin-bottom: 4px}
         .setup-field { margin: 16px 0; max-width: 32rem}
         .setup-field label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--primary-color)}
         .setup-field .calc-field { display: flex; align-items: center}
@@ -1199,30 +1238,56 @@ html.dark {
         .setup-presets-lead { flex-basis: 100%; font-size: 0.9rem; font-weight: 600; color: var(--color-body)}
         .setup-presets .btn-mini { padding: 6px 10px; font-weight: 500; white-space: nowrap}
         .setup-field > .setup-hint { margin-top: 8px}
-        .setup-hint { display: block; font-size: 0.9rem; color: var(--color-muted); margin: 4px 0 0}
+        .setup-hint { display: block; font-size: 0.9rem; color: var(--color-ink-muted); margin: 4px 0 0}
         .setup-stats { margin: 20px 0 8px}
         .setup-sources { border: 0; padding: 0; margin: 16px 0 8px; display: grid; gap: 10px}
-        .setup-source { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--border-color); border-radius: 10px; background: var(--color-surface); cursor: pointer}
-        .setup-source input { width: 1.3rem; height: 1.3rem; margin-top: 3px; flex: none}
+        .setup-source { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--color-surface); cursor: pointer}
+        .setup-source:hover { background: var(--color-tint)}
+        .setup-source input { width: 1.1rem; height: 1.1rem; margin-top: 4px; flex: none; accent-color: var(--color-brand)}
+        .setup-source-text { flex: 1}
+        .setup-source-key { flex: none; margin-top: 3px}
         .setup-source.on { border-color: var(--accent-color); background: var(--color-accent-tint)}
         .setup-source.off { opacity: 0.6; cursor: not-allowed}
         .setup-source strong { display: block}
         .setup-split { margin: 16px 0}
         .setup-error { margin: 14px 0; padding: 10px 14px; border-left: 4px solid #b91c1c; background: #fef2f2; color: #7f1d1d; border-radius: 0 6px 6px 0; font-weight: 600; font-size: 0.95rem}
-        .setup-nav { display: flex; gap: 12px; align-items: center; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color)}
+        .setup-nav { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color)}
         .setup-plan { padding: 20px 24px; border: 2px solid var(--border-color); border-radius: 10px; background: var(--color-surface); margin: 16px 0}
         .setup-plan dl { margin: 0}
-        .setup-plan dt { font-size: 0.75rem; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 700; color: var(--color-muted); margin-top: 16px}
+        .setup-plan dt { font-size: 0.75rem; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 700; color: var(--color-ink-muted); margin-top: 16px}
         .setup-plan dt:first-child { margin-top: 0}
         .setup-plan dd { margin: 4px 0 0}
-        .setup-plan dd small { display: block; color: var(--color-muted); font-size: 0.85rem}
+        .setup-plan dd small { display: block; color: var(--color-ink-muted); font-size: 0.85rem}
         .setup-line { display: block}
         .setup-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0 6px}
         .setup-note { min-height: 1.4em; font-size: 0.92rem; color: var(--color-success)}
         .setup-next { margin-top: 20px}
         .setup-next h3 { margin-top: 8px}
+        /* The wizard's sheet (after shadcnuikit's onboarding-screen3): brand header, thin progress bar, one question at a time. */
+        .onboarding-page { max-width: 1100px; margin: 0 auto}
+        .onboarding-crumbs { margin-bottom: 16px}
+        .onboarding { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)}
+        .onboarding-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px}
+        .onboarding-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--color-ink)}
+        .onboarding-brand img { width: 32px; height: 32px; flex: none}
+        .onboarding-header-right { display: flex; align-items: center; gap: 12px}
+        .onboarding .setup-count { margin: 0; white-space: nowrap}
+        .onboarding-body { max-width: 760px; margin: 0 auto; padding: 32px 24px 40px}
+        .onboarding-title { font-size: 1.9rem; margin: 0 0 8px}
+        .onboarding-lede { color: var(--color-body)}
+        .onboarding .setup-steps ol { margin: 20px 0 24px}
+        .onboarding .setup-step { min-height: 36px; padding: 4px 12px 4px 6px; font-size: 0.85rem; border-width: 1px; border-color: var(--color-line); border-radius: 6px}
+        .onboarding .setup-step-num { width: 22px; height: 22px; font-size: 0.75rem}
+        .onboarding-keys { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 14px 0 0; font-size: 0.8rem; color: var(--color-ink-muted)}
+        .onboarding-keys span { display: inline-flex; align-items: center; gap: 6px}
+        @media (max-width: 600px) {
+            .onboarding-header { padding: 12px 16px}
+            .onboarding-brand span { display: none}
+            .onboarding-body { padding: 24px 16px 32px}
+        }
         @media print {
             .setup-no-print { display: none !important}
+            .onboarding { border: 0; box-shadow: none}
             .setup-plan { border: 1px solid #000}
         }
         @media (width <= 600px) {
@@ -1240,4 +1305,57 @@ html.dark {
         .box :is(.cp-key, .trainer-answer, .speed-readout, .drill-prompt, .drill-feedback, .drill-fieldset, .timer-results li, .nurture-detail, .nurture-sample, .roadmap-panel, .postclose-item, .cycle-node, .alloc-verdict, .legend-interactive, .score-opt span) { color: var(--color-body)}
         .box :is(.cp-key, .trainer-answer, .speed-readout, .drill-prompt, .drill-feedback, .drill-fieldset, .nurture-detail, .nurture-sample, .roadmap-panel, .postclose-item, .cycle-node, .alloc-verdict, .legend-interactive) :is(p, li, dd, dt, figcaption, label, h2, h3, h4, h5, strong) { color: inherit}
         .box :is(.cp-key, .trainer-answer, .drill-feedback, .nurture-sample, .postclose-item) a { color: var(--color-link)}
+}
+
+@theme inline {
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }
