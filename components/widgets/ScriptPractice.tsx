@@ -1,4 +1,5 @@
 import { htmlText } from '@/lib/html-text';
+import { mediaUrl } from '@/lib/media';
 import { ScriptBox, type TranscriptLine } from './ScriptBox';
 
 // Wraps one `.box.script` from the page HTML. Server side it only splits the title from the script text, so the
@@ -6,7 +7,7 @@ import { ScriptBox, type TranscriptLine } from './ScriptBox';
 // Role-play recordings, keyed by the widget instance id (page:name#slug). `step` names the move the agent is making.
 const EXAMPLE_AUDIO: Record<string, { src: string; transcript: TranscriptLine[] }> = {
   'ch6:script-practice#objection-i-m-just-looking': {
-    src: '/audio/objection-just-looking-role-play.mp3',
+    src: mediaUrl('audio/objection-just-looking-role-play.mp3'),
     transcript: [
       { who: 'Agent', text: 'Hi, welcome in. Thanks for coming by. Have you seen this neighborhood before, or is this your first time through?' },
       { who: 'Prospect', text: 'First time. We’re just looking.' },
