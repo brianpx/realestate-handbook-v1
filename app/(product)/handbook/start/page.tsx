@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
+import { requireViewer } from '@/lib/auth/dal';
 import { StartSetup } from '@/components/handbook/StartSetup';
 import { ProductCard } from '@/components/shell/ProductCard';
 import { HANDBOOK } from '@/lib/routes';
 
 export const metadata: Metadata = { title: 'Start here: guided setup', alternates: { canonical: `${HANDBOOK}/start` } };
 
-export default function StartPage() {
+export default async function StartPage() {
+  await requireViewer();
   return (
     <ProductCard>
       <p className="part-label">Your first session</p>
