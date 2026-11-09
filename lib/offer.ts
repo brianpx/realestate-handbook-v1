@@ -19,20 +19,20 @@ export const OWNER: {
   postalAddress: string | null;
 } = {
   author: null,
-  supportEmail: null,
+  supportEmail: 'support@findnurturekeep.com',
   businessName: null,
   postalAddress: null,
 };
 
 // Prices and checkout links live with their tiers in lib/tiers.ts.
 export const OFFER: {
-  /** One sentence on how long access lasts, for example "Access to this edition, with its updates." */
+  /** One sentence on how long access lasts (OD-23), shown on the pricing and updates pages. */
   accessTerm: string | null;
-  /** One sentence on what updates are included. */
+  /** One sentence on what updates are included (OD-20), shown beside it. */
   updatesTerm: string | null;
 } = {
-  accessTerm: null,
-  updatesTerm: null,
+  accessTerm: 'Lifetime access to edition 1.0 for one person, not transferable.',
+  updatesTerm: 'Corrections and updates to edition 1.0 are included; a future edition is a separate purchase with a discount for existing buyers.',
 };
 
 // A policy page shows a "draft for owner review" notice until its status is changed to 'approved' here.

@@ -37,8 +37,8 @@ export const FEATURES: readonly Feature[] = [
   { label: 'Print-friendly pages', values: { free: false, basic: true, pro: true } },
   { label: 'Progress saved on this device, with a backup file', values: { free: true, basic: true, pro: true } },
   { label: 'PDF edition', values: { free: false, basic: false, pro: true } },
-  { label: 'Updates', values: { free: false, basic: 'This edition', pro: 'This edition and the next' }, publishedWhen: 'updatesTerm' },
-  { label: 'Email support', values: { free: false, basic: 'Standard', pro: 'Priority' }, publishedWhen: 'supportEmail' },
+  { label: 'Updates', values: { free: false, basic: 'Corrections and updates to this edition', pro: 'Corrections and updates to this edition' }, publishedWhen: 'updatesTerm' },
+  { label: 'Email support', values: { free: false, basic: true, pro: true }, publishedWhen: 'supportEmail' },
 ];
 
 export const paidTiers = (): Tier[] => TIERS.filter(t => t.id !== 'free');

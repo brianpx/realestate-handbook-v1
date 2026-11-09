@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkoutUrlFor, purchaseOpenFor, termPublished } from './offer';
+import { checkoutUrlFor, OFFER, OWNER, purchaseOpen, purchaseOpenFor, termPublished } from './offer';
 import type { Tier } from './tiers';
 
 const tier = (id: Tier['id'], over: Partial<Tier> = {}): Tier => ({ id, name: id, tagline: '', priceDisplay: '$49', checkoutUrl: 'https://pay.example/x', ...over });
@@ -23,14 +23,23 @@ describe('purchaseOpenFor', () => {
 });
 
 describe('the live offer', () => {
-  // lib/tiers.ts ships with no prices and lib/offer.ts with no terms, so these hold until the owner fills them in
-  it('links no checkout, for any tier', () => {
+  // lib/tiers.ts ships with no prices or checkout links, so purchase stays closed whatever else the owner has entered
+  it('stays closed and links no checkout, for any tier', () => {
+    expect(purchaseOpen()).toBe(false);
     expect(checkoutUrlFor('free')).toBeNull();
     expect(checkoutUrlFor('basic')).toBeNull();
     expect(checkoutUrlFor('pro')).toBeNull();
   });
-  it('has published neither the updates term nor a support address', () => {
-    expect(termPublished('updatesTerm')).toBe(false);
-    expect(termPublished('supportEmail')).toBe(false);
+  // the owner's 9 November 2026 inputs (OD-20, OD-23): the terms and the support address, but no price, checkout or postal address
+  it('has published the two terms and the support address', () => {
+    expect(OFFER.accessTerm).toBe('Lifetime access to edition 1.0 for one person, not transferable.');
+    expect(OFFER.updatesTerm).toBe('Corrections and updates to edition 1.0 are included; a future edition is a separate purchase with a discount for existing buyers.');
+    expect(OWNER.supportEmail).toBe('support@findnurturekeep.com');
+    expect(termPublished('updatesTerm')).toBe(true);
+    expect(termPublished('supportEmail')).toBe(true);
+  });
+  it('still has no postal address or business name', () => {
+    expect(OWNER.postalAddress).toBeNull();
+    expect(OWNER.businessName).toBeNull();
   });
 });
