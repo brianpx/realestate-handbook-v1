@@ -31,4 +31,11 @@ describe('rule anchors', () => {
     const known = new Set(CONCEPTS.map(c => c.id));
     for (const [id, rule] of rules) for (const concept of rule.concepts) expect(known.has(concept), `${id} -> ${concept}`).toBe(true);
   });
+
+  it('names, for each rule, the concept that lives where the rule is defined', () => {
+    for (const [id, rule] of rules) {
+      const home = CONCEPTS.filter(c => c.chapter === rule.chapter && c.anchor === rule.anchor).map(c => c.id);
+      expect(rule.concepts.some(c => home.includes(c)), `${id} -> ${rule.chapter}#${rule.anchor}`).toBe(true);
+    }
+  });
 });

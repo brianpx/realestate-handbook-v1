@@ -22,6 +22,11 @@ export function reviewQuestionIds(conceptId: string, bank: readonly Question[] =
   return bank.filter(q => !q.draft && q.concept === conceptId).map(q => q.id);
 }
 
+/** Chapters with at least one reviewed question. A chapter whose questions are all drafts feeds nothing into review yet. */
+export function deckChapters(bank: readonly Question[] = QUESTIONS): string[] {
+  return [...new Set(CONCEPTS.filter(c => reviewQuestionIds(c.id, bank).length > 0).map(c => c.chapter))];
+}
+
 /** Most recent question served for each concept, so the next one can differ. */
 function lastQuestions(attempts: readonly Attempt[]): Map<string, string> {
   const latest = new Map<string, Attempt>();
