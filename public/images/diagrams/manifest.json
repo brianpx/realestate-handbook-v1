@@ -43,13 +43,13 @@
   },
   "fig-listing-timeline": {
     "file": "/images/diagrams/fig-listing-timeline.svg",
-    "title": "Figure 3.2. One listing, five posts, two kinds of leads",
+    "title": "Figure 3.3. One listing, five posts, two kinds of leads",
     "alt": "A timeline of five posts for one listing: coming soon, just listed, open house, under contract, just sold. Blue arrows mark where buyer leads arise and deep-blue arrows mark where seller leads arise. A callout says the just sold post is the best seller-lead post.",
     "caption": "Every stage of a listing is a chance to be seen."
   },
   "fig-content-calendar": {
     "file": "/images/diagrams/fig-content-calendar.svg",
-    "title": "Figure 3.3. Four weeks, eight posts",
+    "title": "Figure 3.2. Four weeks, eight posts",
     "alt": "A grid of four weeks by three rows. Every week has a market note and an educational tip. The third row holds a monthly market update in week one, a quarterly local guide in week three and listing posts as needed in week four.",
     "caption": "A calendar you can keep on your busiest week."
   },
@@ -106,12 +106,6 @@
     "title": "Figure 10.1. How a closing becomes your next lead",
     "alt": "Six steps in a circle: closing day note and gift, one week call, 30 days review request, quarterly calls, home anniversary, and finally an introduction. A heavy arrow from the introduction leads to a New client box that returns to Find and back to closing day.",
     "caption": "Every touch earns the right to the next one."
-  },
-  "fig-postclose-timeline": {
-    "file": "/images/diagrams/fig-postclose-timeline.svg",
-    "title": "Figure 10.2. The first year after closing",
-    "alt": "A timeline from closing day to month twelve: handwritten note and gift on closing day, a call at one week, a call and review request at 30 days, quarterly calls at months 3, 6 and 9, and the home anniversary at month 12. Only closing day and day 30 ask for something. After the first year come an annual event and quarterly calls.",
-    "caption": "Notice how few touches ask."
   },
   "fig-rule-moments": {
     "file": "/images/diagrams/fig-rule-moments.svg",
