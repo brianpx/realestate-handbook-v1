@@ -42,4 +42,37 @@ describe('the live offer', () => {
     expect(OWNER.postalAddress).toBeNull();
     expect(OWNER.businessName).toBeNull();
   });
+
+  it('builds a signed-in checkout link from the env url and stays null while that url is unset', () => {
+    const previous = {
+      basic: process.env.BILLING_CHECKOUT_URL_BASIC,
+      pro: process.env.BILLING_CHECKOUT_URL_PRO,
+    };
+    try {
+      delete process.env.BILLING_CHECKOUT_URL_BASIC;
+      delete process.env.BILLING_CHECKOUT_URL_PRO;
+      expect(checkoutUrlFor({ tierId: 'basic', userId: 'user 1', email: 'a@b.co' })).toBeNull();
+      expect(checkoutUrlFor('basic')).toBeNull();
+      process.env.BILLING_CHECKOUT_URL_BASIC = 'http://pay.example/basic';
+      expect(checkoutUrlFor({ tierId: 'basic', userId: 'user 1', email: 'a@b.co' })).toBeNull();
+      process.env.BILLING_CHECKOUT_URL_BASIC = 'https://pay.example/basic';
+      expect(checkoutUrlFor({ tierId: 'basic', userId: 'user 1', email: 'a@b.co' })).toBe(
+        'https://pay.example/basic?checkout[email]=a%40b.co&checkout[custom][user_id]=user%201',
+      );
+      process.env.BILLING_CHECKOUT_URL_PRO = 'https://pay.example/pro?x=1';
+      expect(checkoutUrlFor({ tierId: 'pro', userId: 'u', email: 'a@b.co' })).toBe(
+        'https://pay.example/pro?x=1&checkout[email]=a%40b.co&checkout[custom][user_id]=u',
+      );
+      expect(checkoutUrlFor({ tierId: 'free', userId: 'u', email: 'a@b.co' })).toBeNull();
+      expect(checkoutUrlFor('pro')).toBeNull();
+    } finally {
+      restore('BILLING_CHECKOUT_URL_BASIC', previous.basic);
+      restore('BILLING_CHECKOUT_URL_PRO', previous.pro);
+    }
+  });
 });
+
+function restore(name: 'BILLING_CHECKOUT_URL_BASIC' | 'BILLING_CHECKOUT_URL_PRO', value: string | undefined) {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}

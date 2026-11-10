@@ -1,7 +1,7 @@
 // Everything the public site needs from the owner, in one place. A null is an open decision: the site then says
-// so plainly instead of showing an invented value. Nothing here switches on payments by itself: each paid tier's
-// `checkoutUrl` in lib/tiers.ts is a link to a hosted checkout the owner creates, and the site has no payment code.
-// See docs/_archive/launch-handoff.md.
+// so plainly instead of showing an invented value. Nothing here switches purchase on by itself. `checkoutUrl` in
+// lib/tiers.ts stays empty while purchase is closed; a signed-in checkout link is built from BILLING_CHECKOUT_URL_*
+// and stays null until that variable is set. See docs/_archive/launch-handoff.md.
 import { BOOK_TITLE } from './pages';
 import { paidTiers, tierById, type PublishedWhen, type Tier, type TierId } from './tiers';
 
@@ -59,8 +59,27 @@ export const purchaseOpenFor = (paid: readonly Tier[], terms: Terms, policies: P
 /** True only when every paid tier has a price and a checkout link, the access and update terms exist, and the terms, refund and update policies are approved. */
 export const purchaseOpen = (): boolean => purchaseOpenFor(paidTiers(), OFFER, POLICY_STATUS);
 
-/** A paid tier's checkout link; null while purchase is closed and for the free tier. */
-export const checkoutUrlFor = (id: TierId): string | null => (purchaseOpen() ? checkoutLink(tierById(id).checkoutUrl) : null);
+/** A paid tier's public checkout link; null while purchase is closed and for the free tier. */
+export function checkoutUrlFor(id: TierId): string | null;
+/**
+ * The signed-in buyer's link. Brackets stay literal: URLSearchParams would encode them and Lemon Squeezy would
+ * not read the custom field. This does not consult purchaseOpen(); it returns null while the env URL is unset
+ * or not https, and the public pricing button keeps using the tier-id form above.
+ */
+export function checkoutUrlFor(buyer: { tierId: TierId; userId: string; email: string }): string | null;
+export function checkoutUrlFor(idOrBuyer: TierId | { tierId: TierId; userId: string; email: string }): string | null {
+  if (typeof idOrBuyer !== 'string') return signedInCheckoutUrl(idOrBuyer);
+  return purchaseOpen() ? checkoutLink(tierById(idOrBuyer).checkoutUrl) : null;
+}
+
+function signedInCheckoutUrl({ tierId, userId, email }: { tierId: TierId; userId: string; email: string }): string | null {
+  if (tierId === 'free') return null;
+  const configured = process.env[tierId === 'basic' ? 'BILLING_CHECKOUT_URL_BASIC' : 'BILLING_CHECKOUT_URL_PRO'];
+  const base = checkoutLink(configured ?? null);
+  if (!base) return null;
+  const join = base.includes('?') ? '&' : '?';
+  return `${base}${join}checkout[email]=${encodeURIComponent(email)}&checkout[custom][user_id]=${encodeURIComponent(userId)}`;
+}
 
 /** Whether the owner has published the term a feature row's promise rests on (see `Feature.publishedWhen`). */
 export const termPublished = (key: PublishedWhen): boolean => (key === 'supportEmail' ? Boolean(OWNER.supportEmail) : Boolean(OFFER.updatesTerm));
