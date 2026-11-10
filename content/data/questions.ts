@@ -543,4 +543,200 @@ export const QUESTIONS: Question[] = [
     answer: 2,
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
+  // ch1
+  // ---- ch1.business-owner
+  {
+    id: 'ch1.business-owner.three-ways', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'According to Chapter 1, what three things does your company need?',
+    options: [
+      'A way to find, stay in touch with and keep customers',
+      'An office, a recognizable brand and a full-time assistant',
+      'A license, a sponsoring broker and a polished website',
+      'Listings, buyers who are ready to move and a lender',
+    ],
+    answer: 0,
+    explain: 'A company needs a way to find customers, a way to stay in touch with them, and a way to keep them. That is the whole structure of the book.',
+  },
+  {
+    id: 'ch1.business-owner.one-product', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'The agents who last think of themselves as owners of a small company with one product. What is that product?',
+    options: [
+      'Listings marketed to as many buyers as possible',
+      'Access to homes before they reach the market',
+      'The lowest commission in the neighborhood',
+      'Guidance through a large financial decision',
+    ],
+    answer: 3,
+    explain: 'The chapter names the one product as trusted guidance through a large financial decision.',
+  },
+  {
+    id: 'ch1.business-owner.costs-first', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter tell you to plan for several months of expenses before your first check?',
+    options: [
+      'Brokers hold back your first few checks',
+      'Your first closing is guaranteed by month two',
+      'A commission business pays only at closing',
+      'New agents cannot take listings at first',
+    ],
+    answer: 2,
+    explain: 'In your first month you will likely pay fees, MLS access, a CRM and some marketing, and a commission business pays only at closing. Ask your broker for a realistic list of month-one costs.',
+  },
+
+  // ---- ch1.work-is-the-win
+  {
+    id: 'ch1.work-is-the-win.one-twentieth', version: 1, concept: 'ch1.work-is-the-win', kind: 'mcq', draft: true,
+    prompt: 'If it takes about 20 conversations to book one appointment, what is each "no"?',
+    options: [
+      'A sign your script needs changing',
+      'One-twentieth of an appointment',
+      'A contact to remove from your list',
+      'A rejection to recover from first',
+    ],
+    answer: 1,
+    explain: 'Think in ratios: each "no" is one-twentieth of an appointment, not a rejection. Hit the daily number and the results follow on their own schedule.',
+  },
+  {
+    id: 'ch1.work-is-the-win.control', version: 1, concept: 'ch1.work-is-the-win', kind: 'blank', draft: true,
+    before: 'You cannot control who says yes. You can control how many real', after: 'you have today.',
+    answer: 'conversations', accept: ['conversations', 'conversation', 'real conversations'],
+    explain: 'The number of real conversations is yours to control, and a "no" still counts toward it.',
+  },
+  {
+    id: 'ch1.work-is-the-win.no-counts', version: 1, concept: 'ch1.work-is-the-win', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A homeowner you call has a real two-way talk with you about selling, then says "no". Does that count toward today\'s conversation number?',
+    options: [
+      'No, only conversations that book an appointment count',
+      'Only once you have scheduled a follow-up with them',
+      'Yes, a "no" still counts toward that number',
+      'Only if they agree to stay on your follow-up plan',
+    ],
+    answer: 2,
+    explain: 'You control how many real conversations you have today, and a "no" still counts toward that number.',
+  },
+
+  // ---- ch1.leading-lagging
+  {
+    id: 'ch1.leading-lagging.lagging', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true,
+    prompt: 'Which of these is a lagging indicator?',
+    options: ['Appointments set', 'Contacts added to your database', 'Commission income', 'Conversations held'],
+    answer: 2,
+    explain: 'A lagging indicator tells you what already happened: closings, commission income and listings held. The other three are activities you control today.',
+  },
+  {
+    id: 'ch1.leading-lagging.start-with', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true,
+    prompt: 'Which three weekly numbers does the chapter tell you to start tracking?',
+    options: [
+      'Closings, listings held, commission income',
+      'Conversations, appointments set, follow-ups completed',
+      'Calls dialed, emails sent, social posts published',
+      'Open houses held, mailers sent, ads run',
+    ],
+    answer: 1,
+    explain: 'Your three weekly numbers to start: conversations, appointments set and follow-ups completed. All three are leading indicators.',
+  },
+  {
+    id: 'ch1.leading-lagging.flat-closings', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your conversations have been up for three weeks running, but no new closings have come in. What does the chapter say to do?',
+    options: [
+      'Reset your goals on closings so you notice the gap',
+      'Drop your lead sources and start over with new ones',
+      'Cut back on activity until the market turns',
+      'Keep goals on activity; closings lag 60 to 120 days',
+    ],
+    answer: 3,
+    explain: 'Closings do not respond for 60 to 120 days. Set your goals on activity, review them weekly, and let the closings arrive on their own schedule.',
+  },
+
+  // ---- ch1.goal-ladder
+  {
+    id: 'ch1.goal-ladder.conversations-year', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq', draft: true,
+    prompt: 'In Table 1.1\'s example, 13 closings at about 3 appointments per closing and about 20 conversations per appointment need about how many conversations in the year?',
+    options: ['39', '260', '780', '1,560'],
+    answer: 2,
+    explain: '13 closings x 3 = 39 appointments, and 39 x 20 = about 780 conversations: about 16 a week over 48 working weeks, or 3 to 4 a day.',
+  },
+  {
+    id: 'ch1.goal-ladder.own-ratio', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'After your first year, your own tracking shows about eight conversations per appointment, not the example\'s 20. What does the chapter say?',
+    options: [
+      'Build your daily plan from your own ratio',
+      'Keep using 20 until your first year is up',
+      'Raise your income goal to match the ratio',
+      'Drop the daily target and track closings',
+    ],
+    answer: 0,
+    explain: 'Use your own local numbers and track your own ratios. If your ratio turns out to be eight conversations per appointment, your daily plan writes itself from that number.',
+  },
+  {
+    id: 'ch1.goal-ladder.worst-day', version: 1, concept: 'ch1.goal-ladder', kind: 'blank', draft: true,
+    before: 'Work backward from income to a daily conversation target you can hit on your', after: 'day.',
+    answer: 'worst', accept: ['worst', 'bad', 'worst day', 'bad day'],
+    explain: 'A daily target you can hit on a bad day is worth more than a heroic target you hit twice and abandon.',
+  },
+
+  // ---- ch1.runway
+  {
+    id: 'ch1.runway.formula', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true,
+    prompt: 'How does Table 1.2 work out the runway you need?',
+    options: [
+      'Monthly business costs times twelve months',
+      'Living costs divided by your average commission',
+      'Your first commission minus a year of costs',
+      '(Business + living costs) x months to first check',
+    ],
+    answer: 3,
+    explain: 'Runway needed is (business costs + living costs) x months to first check. Savings, a working partner or part-time income has to cover it.',
+  },
+  {
+    id: 'ch1.runway.check-order', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true,
+    prompt: 'In what order does the chapter say to divide each commission check?',
+    options: [
+      'Pay yourself, then taxes, then the business',
+      'Taxes first, a tenth to the business, then you',
+      'The business, then pay yourself, then taxes',
+      'Pay and taxes evenly, the business from the rest',
+    ],
+    answer: 1,
+    explain: 'Set aside a share for taxes first (a tax professional sets the share), then a tenth for the business, then pay yourself.',
+  },
+  {
+    id: 'ch1.runway.example', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your business costs are $600 a month, your living costs $3,400 a month, and you plan on 5 months to your first check. What runway does Table 1.2 say you need?',
+    options: ['$3,000', '$4,000', '$17,000', '$20,000'],
+    answer: 3,
+    explain: '($600 + $3,400) x 5 = $20,000. Months to first check is planned at four to six, because closings lag activity and a contract takes another 30 to 45 days to close.',
+  },
+
+  // ---- ch1.crm-headquarters
+  {
+    id: 'ch1.crm-headquarters.first-three', version: 1, concept: 'ch1.crm-headquarters', kind: 'mcq', draft: true,
+    prompt: 'Which are the first three things to check in your CRM each morning?',
+    options: [
+      'Your inbox, social notifications and the MLS',
+      'Last month\'s closings, commission and listings',
+      'Your calendar, your weekly scorecard and your marketing',
+      'Overnight leads, tasks due today, moved Opportunities',
+    ],
+    answer: 3,
+    explain: 'The first three things to check are the new leads that arrived overnight, the tasks due today, and the Opportunities that moved. Chapter 4 builds the full daily rhythm around them.',
+  },
+  {
+    id: 'ch1.crm-headquarters.first-90-days', version: 1, concept: 'ch1.crm-headquarters', kind: 'blank', draft: true,
+    before: 'The habit that matters most in your first', after: 'days is opening your CRM first thing every morning and updating it before you stop working.',
+    answer: '90', accept: ['90', 'ninety'],
+    explain: 'The habit that matters most in your first 90 days is simple: open your CRM first thing every morning and update it before you stop working.',
+  },
+  {
+    id: 'ch1.crm-headquarters.sticky-notes', version: 1, concept: 'ch1.crm-headquarters', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A new agent keeps contacts in their phone, on sticky notes and in their inbox instead of the CRM. What does the chapter predict?',
+    options: [
+      'They will forget contacts and fall behind within a quarter',
+      'It works fine until the database passes a few hundred names',
+      'Nothing, as long as they back up their phone each week',
+      'They will be slower, but no leads will actually be lost',
+    ],
+    answer: 0,
+    explain: 'Contacts that live in your phone, sticky notes and inbox are contacts you will forget. Without the CRM habit you fall behind within a quarter, and the leads you lose are hard to win back.',
+  },
+  // end ch1
 ];
