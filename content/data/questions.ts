@@ -1287,4 +1287,181 @@ export const QUESTIONS: Question[] = [
     explain: 'If the fix points ahead in the book, do its Try It now and return to the chapter later. Then ask your broker, a mentor or an accountability partner to score you too, and compare.',
   },
   // end ch7
+  // ch8
+  // ---- ch8.one-source-of-truth
+  {
+    id: 'ch8.one-source-of-truth.second-list', version: 1, concept: 'ch8.one-source-of-truth', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter warn against keeping a second contact list next to your CRM?',
+    options: [
+      'Your broker\'s data rules forbid any list outside the CRM',
+      'You have two places to check, and one will be wrong',
+      'Your CRM deletes contacts it finds elsewhere',
+      'A paper list cannot hold notes or tasks',
+    ],
+    answer: 1,
+    explain: 'The moment you keep a second list, you have two places to check and one of them will be wrong.',
+  },
+  {
+    id: 'ch8.one-source-of-truth.what-lives', version: 1, concept: 'ch8.one-source-of-truth', kind: 'mcq', draft: true,
+    prompt: 'Which of these belongs in your CRM?',
+    options: [
+      'Only active clients and your hottest leads',
+      'Contacts, with tasks kept in a planner',
+      'The important contacts and your notes on them',
+      'Every contact, note, task and opportunity',
+    ],
+    answer: 3,
+    explain: 'Every contact, note, task and opportunity lives in your CRM. Not some of them. Not the important ones. All of them.',
+  },
+
+  // ---- ch8.morning-block
+  {
+    id: 'ch8.morning-block.same-place', version: 1, concept: 'ch8.morning-block', kind: 'mcq', draft: true,
+    prompt: 'Why does the weekly time block put lead generation in the same place every day?',
+    options: [
+      'So it never depends on how you feel',
+      'So clients know when to book showings',
+      'Because most new leads arrive in the morning',
+      'So your broker can check on your calls',
+    ],
+    answer: 0,
+    explain: 'Table 8.1: lead generation sits in the same place every day so it never depends on how you feel.',
+  },
+  {
+    id: 'ch8.morning-block.tell-people', version: 1, concept: 'ch8.morning-block', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your lender asks to talk at 10:00, in the middle of your prospecting block. What does the chapter suggest?',
+    options: [
+      'Take the call, since lenders are often hard to reach later',
+      'Skip the block today and make it up on Friday',
+      'Say you are with clients until 11:00 and offer 1:00',
+      'Let it ring and call back at the end of the day',
+    ],
+    answer: 2,
+    explain: 'Protect the block by telling people about it. "I\'m with clients until 11:00, can we talk at 1?" trains your sphere, your lender and your family to expect it.',
+  },
+  {
+    id: 'ch8.morning-block.blocks-held', version: 1, concept: 'ch8.morning-block', kind: 'blank', draft: true,
+    before: 'Table 8.2 asks you to hold the 90-minute prospecting block, before 11:00, on at least', after: 'of the five weekdays.',
+    answer: 'four', accept: ['four', '4'],
+    explain: 'The weekly target for morning blocks held (out of 5) is 4+.',
+  },
+
+  // ---- ch8.weekly-targets
+  {
+    id: 'ch8.weekly-targets.first-30-days', version: 1, concept: 'ch8.weekly-targets', kind: 'mcq', draft: true,
+    prompt: 'In your first 30 days, where in each Table 8.2 range should you aim?',
+    options: [
+      'At the top of every range, from the first week',
+      'Wherever you like, as long as closings are on track',
+      'Below every range until your first closing arrives',
+      'At the lower end, raising it as confidence grows',
+    ],
+    answer: 3,
+    explain: 'Start at the lower end of each range in your first 30 days while the habit and the system settle in, then raise them as your confidence grows.',
+  },
+  {
+    id: 'ch8.weekly-targets.not-core', version: 1, concept: 'ch8.weekly-targets', kind: 'mcq', draft: true,
+    prompt: 'Which of these is not one of the five core numbers the chapter suggests tracking when thirteen rows is too many?',
+    options: ['Conversations', 'Outbound calls', 'Morning blocks held', 'New contacts added'],
+    answer: 1,
+    explain: 'The five core numbers are conversations, appointments set, follow-ups completed, new contacts added and morning blocks held. Outbound calls stay on the Appendix A scorecard for when the habit is steady.',
+  },
+  {
+    id: 'ch8.weekly-targets.new-contacts', version: 1, concept: 'ch8.weekly-targets', kind: 'blank', draft: true,
+    before: 'Table 8.2 sets a weekly target of', after: 'new contacts added, each one tagged with a source.',
+    answer: '15', accept: ['15', 'fifteen'],
+    explain: 'New contacts added is one of the five core numbers; review it with the rest every Friday.',
+  },
+
+  // ---- ch8.appointment-ratio
+  {
+    id: 'ch8.appointment-ratio.why-one-or-two', version: 1, concept: 'ch8.appointment-ratio', kind: 'mcq', draft: true,
+    prompt: 'Why is the weekly target for appointments set only 1 to 2?',
+    options: [
+      'About 20 conversations per appointment gives roughly one a week',
+      'New agents should never take on more than two clients at a time',
+      'Brokers cap appointments for agents in their first year',
+      'More appointments would crowd out the morning block',
+    ],
+    answer: 0,
+    explain: 'At about 20 conversations per appointment, 15 to 25 conversations a week produce roughly one appointment a week, so a new agent should aim for one or two, not a handful.',
+  },
+  {
+    id: 'ch8.appointment-ratio.twenty', version: 1, concept: 'ch8.appointment-ratio', kind: 'blank', draft: true,
+    before: 'Unless your own ratio is better, the chapter works from about', after: 'conversations per appointment.',
+    answer: '20', accept: ['20', 'twenty'],
+    explain: 'The appointment target comes from the same method as Chapter 1.',
+  },
+
+  // ---- ch8.leading-indicators
+  {
+    id: 'ch8.leading-indicators.closings-fail', version: 1, concept: 'ch8.leading-indicators', kind: 'mcq', draft: true,
+    prompt: 'Why does a scoreboard of closings alone wear down a new agent\'s motivation?',
+    options: [
+      'Closings are hard to count accurately',
+      'Your broker already tracks closings, so yours adds nothing',
+      'Closings depend only on the market, not on you',
+      'Closings can sit at zero for months while you work',
+    ],
+    answer: 3,
+    explain: 'Motivation fails when you measure the wrong thing. Leading indicators move every day you do the work.',
+  },
+  {
+    id: 'ch8.leading-indicators.friday-review', version: 1, concept: 'ch8.leading-indicators', kind: 'mcq', draft: true,
+    prompt: 'What does the Friday review end with?',
+    options: [
+      'Plan every call for next week, then keep working through Saturday',
+      'Email your numbers to your broker for sign-off',
+      'Decide one thing to do differently, then stop until Monday',
+      'Count closings and compare them with the office',
+    ],
+    answer: 2,
+    explain: 'Compare this week\'s numbers to last week\'s. Decide one thing to do differently. Then stop working on it until Monday.',
+  },
+  {
+    id: 'ch8.leading-indicators.habits', version: 1, concept: 'ch8.leading-indicators', kind: 'mcq', draft: true,
+    prompt: 'Which is one of the three habits the chapter says protect motivation?',
+    options: [
+      'Work through the weekend after a slow week',
+      'Check your closings total every morning',
+      'Celebrate small wins, like a booked appointment',
+      'Keep a private list of your very best leads outside the CRM',
+    ],
+    answer: 2,
+    explain: 'The three habits: celebrate small wins, review every Friday, and stay close to the office.',
+  },
+
+  // ---- ch8.quiet-days
+  {
+    id: 'ch8.quiet-days.first-action', version: 1, concept: 'ch8.quiet-days', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'It is a day with no conversations. What does the chapter say to start with?',
+    options: [
+      'Fifty cold calls in a row, to force at least one conversation',
+      'A text, not a call: the lowest-barrier task',
+      'Rewriting your bio and website copy',
+      'Waiting until the afternoon to try again',
+    ],
+    answer: 1,
+    explain: 'Start with the lowest-barrier task: a text, not a call. One reply is enough to restart the day.',
+  },
+  {
+    id: 'ch8.quiet-days.colleague', version: 1, concept: 'ch8.quiet-days', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'On Friday you hear that a colleague closed first. What should you compare their result to?',
+    options: ['Your closings so far', 'Their lead sources', 'The office average for new agents', 'Your leading indicators'],
+    answer: 3,
+    explain: 'Their closing is the product of work they did months ago. Yours is on the way.',
+  },
+  {
+    id: 'ch8.quiet-days.pitfall', version: 1, concept: 'ch8.quiet-days', kind: 'mcq', draft: true,
+    prompt: 'What mistake turns a slow week into a slow month?',
+    options: [
+      'Waiting for things to pick up on their own',
+      'Calling too many people in a single day',
+      'Telling your broker about the slow week',
+      'Taking the weekend off after the Friday review',
+    ],
+    answer: 0,
+    explain: 'Nothing picks up on its own. Go back to the morning block and the daily number; the market usually responds to activity.',
+  },
+  // end ch8
 ];
