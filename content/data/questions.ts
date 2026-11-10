@@ -543,7 +543,6 @@ export const QUESTIONS: Question[] = [
     answer: 2,
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
-
   // ch7
   {
     id: 'ch7.six-errors.scattered', version: 1, concept: 'ch7.six-errors', kind: 'mcq', draft: true,
@@ -670,7 +669,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'Sam spent Tuesday morning on a logo. Which of the six errors is that closest to?',
     options: ['Under-documenting', 'No system or database hygiene', 'Unstructured days', 'Paying for leads too early'],
     answer: 2,
-    explain: 'Unstructured days look like being busy with errands, social media and email with zero conversations. The fix is a time-blocked daily rhythm (Chapter 8).',
+    explain: 'The chapter leaves Sam\'s week for you to diagnose. A morning on a logo is busy work, not conversations, which matches "Unstructured days" in Table 7.1: busy all day with errands, social media and email; zero conversations. The fix is a time-blocked daily rhythm (Chapter 8).',
   },
   {
     id: 'ch7.diagnose-week.friday', version: 1, concept: 'ch7.diagnose-week', kind: 'mcq', draft: true, scenario: true,
@@ -689,7 +688,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'Sam has closed nothing in 30 days, had no appointment on Thursday and felt low. Which error is Sam at risk of?',
     options: ['Under-documenting', 'Paying for leads too early', 'No system or database hygiene', 'Expecting results too fast'],
     answer: 3,
-    explain: 'Expecting results too fast looks like being discouraged after 30 days with no closing, and then activity drops.',
+    explain: 'The chapter leaves Sam\'s week for you to diagnose. No closing in the first 30 days and feeling low matches "Expecting results too fast" in Table 7.1: discouraged after 30 days with no closing; activity drops.',
   },
 
   {

@@ -30,9 +30,9 @@ Approved questions lose their `draft` flag and join the review deck. They also j
 
 ## Things I would look at first
 
-- **No speed-to-lead or figure-number items.** A parallel lane may trim Chapter 7's speed-to-lead material, so nothing here tests Sam's Monday call, the "Speed-to-lead automation" fix, or "Figure 6" by number.
-- **`ch7.diagnose-week.logo`**: the chapter never says which error Sam's logo morning is. The key ("Unstructured days") is an inference from the table row "Busy all day with errands, social media and email; zero conversations." Confirm you agree.
-- **`ch7.diagnose-week.thirty-days`**: also an inference, but a close one: the table row for "Expecting results too fast" reads "Discouraged after 30 days with no closing; activity drops."
+- **No speed-to-lead or figure-number items.** A parallel lane may trim Chapter 7's speed-to-lead material, so nothing here tests Sam's Monday call, the "Speed-to-lead automation" fix, or the pitfall figure by number (now Figure 7.1).
+- **`ch7.diagnose-week.logo`**: the chapter never says which error Sam's logo morning is. The key ("Unstructured days") is an inference from the table row "Busy all day with errands, social media and email; zero conversations." Confirm you agree. The explanation now states that the chapter leaves the diagnosis to the reader and names the Table 7.1 row it rests on.
+- **`ch7.diagnose-week.thirty-days`**: also an inference, but a close one: the table row for "Expecting results too fast" reads "Discouraged after 30 days with no closing; activity drops." Its explanation gets the same treatment.
 - **`ch7.six-errors.scattered`**: "Under-documenting" is a near neighbour of "No system or database hygiene". The table separates them (scattered contacts, notes and tasks vs. no notes on offers or disclosures). Check the distinction is clear enough.
 - **`ch7.pitfall-cycle.closes-loop`** quotes the figure note ("breaks the loop at its first link"); if that note is trimmed, replace the explanation's second sentence.
 - **Three blanks** (`quitting-cost`, `system-fixes`, `closes-loop`) are close to verbatim sentences. They test key ideas, but say if you would rather have them as multiple choice.
@@ -301,13 +301,13 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 - C. Unstructured days ✓
 - D. Paying for leads too early
 
-Explanation shown to the reader: Unstructured days look like being busy with errands, social media and email with zero conversations. The fix is a time-blocked daily rhythm (Chapter 8).
+Explanation shown to the reader: The chapter leaves Sam's week for you to diagnose. A morning on a logo is busy work, not conversations, which matches "Unstructured days" in Table 7.1: busy all day with errands, social media and email; zero conversations. The fix is a time-blocked daily rhythm (Chapter 8).
 
 Chapter source:
 > Tuesday Sam spent the morning on a logo.
 > Unstructured days | Busy all day with errands, social media and email; zero conversations. | Activity without leading indicators; nothing compounds. | Time-blocked daily rhythm (Ch. 8).
 
-Note: the chapter asks the reader to find the errors and does not give the answer; the key is an inference.
+Note: the chapter asks the reader to find the errors and does not give the answer; the key is an inference, and the explanation now says so and names the Table 7.1 row it rests on. The chapter does not say Sam had zero conversations that morning, so the explanation calls the logo "busy work, not conversations" rather than claiming none happened.
 
 Status: draft, awaiting owner review.
 
@@ -347,11 +347,13 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 - C. No system or database hygiene
 - D. Expecting results too fast ✓
 
-Explanation shown to the reader: Expecting results too fast looks like being discouraged after 30 days with no closing, and then activity drops.
+Explanation shown to the reader: The chapter leaves Sam's week for you to diagnose. No closing in the first 30 days and feeling low matches "Expecting results too fast" in Table 7.1: discouraged after 30 days with no closing; activity drops.
 
 Chapter source:
 > Sam closed no deals in the first 30 days. [...] Thursday Sam had no appointment and felt low.
 > Expecting results too fast | Discouraged after 30 days with no closing; activity drops.
+
+Note: also an inference the chapter leaves to the reader; the explanation says so and names the Table 7.1 row.
 
 Status: draft, awaiting owner review.
 
