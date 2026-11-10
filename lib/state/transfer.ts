@@ -51,7 +51,7 @@ export function parseImport(text: string): ImportResult {
   if (!file.success) return { ok: false, error: 'That file is not a handbook progress file.' };
   // an absent half means "nothing saved there", the same as an empty object
   const state = handbookStateSchema.safeParse(migrate(file.data.handbookState ?? {}));
-  const settings = settingsSchema.safeParse(migrate(file.data.handbookSettings ?? {}));
+  const settings = settingsSchema.safeParse(file.data.handbookSettings ?? {});
   if (!state.success || !settings.success) return { ok: false, error: 'The progress in that file could not be read.' };
   const ok = { ok: true as const, state: state.data, settings: settings.data, summary: summarizeState(state.data) };
   // null and missing both mean "this file has no coach snapshot" (the static site never wrote one)

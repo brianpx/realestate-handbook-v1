@@ -5,7 +5,7 @@ import { z } from '@/lib/zod';
 //
 // `version` is the stored-schema version. The static site wrote none, which we call version 0; its shape is
 // identical to version 1, so that step only stamps the number. Add a step to MIGRATIONS (never edit an old one)
-// whenever a stored shape changes.
+// whenever a stored shape changes. The chain is for handbook state only; settings take the schema alone.
 export const SCHEMA_VERSION = 1;
 const version = z.number().int().nonnegative().catch(SCHEMA_VERSION).default(SCHEMA_VERSION);
 
