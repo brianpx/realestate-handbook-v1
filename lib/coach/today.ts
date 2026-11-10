@@ -11,12 +11,16 @@ export type NextUp = {
   steps: { read: boolean; did: boolean; checked: boolean };
 };
 
-/** The first session still to do, in reading order. Partly done sessions are not "next": only their exercise is open. */
+/**
+ * The first session still to do, by its saved date, with reading order breaking ties. Dates come first because a plan
+ * saved before the reading order changed keeps its old sequence. Partly done sessions are not "next": only their
+ * exercise is open.
+ */
 export function nextUp(sessions: readonly Session[], completions: Completions, today: string): NextUp | undefined {
   const order = new Map(CHAPTERS.map((c, i) => [c.chapter, i]));
   const session = sessions
     .filter(s => sessionStatus(completions[s.id]) === 'todo')
-    .sort((a, b) => (order.get(a.chapter) ?? 0) - (order.get(b.chapter) ?? 0))[0];
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (order.get(a.chapter) ?? 0) - (order.get(b.chapter) ?? 0)))[0];
   if (!session) return undefined;
   const c = completions[session.id];
   const behind = diffDays(session.date, today);

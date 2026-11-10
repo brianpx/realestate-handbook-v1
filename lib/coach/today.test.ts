@@ -29,6 +29,18 @@ describe('nextUp', () => {
     const all = Object.fromEntries(plan.sessions.map(s => [s.id, done]));
     expect(nextUp(plan.sessions, all, '2026-12-01')).toBeUndefined();
   });
+
+  it('follows the saved dates of a plan made in the old reading order (ch1, ch4, ch12, ch2)', () => {
+    const old = ['ch1', 'ch4', 'ch12', 'ch2'].map((id, i) => ({ id, chapter: id, unit: 1, date: `2026-10-${19 + i}`, week: 1 }));
+    expect(nextUp(old, { ch1: done }, '2026-10-20')).toMatchObject({ session: { id: 'ch4' }, when: 'today' });
+    expect(nextUp(old, { ch1: done, ch4: done }, '2026-10-21')).toMatchObject({ session: { id: 'ch12' }, when: 'today' });
+    expect(scheduleRows(old, { ch1: done }, '2026-10-20').filter(r => r.isNext).map(r => r.session.id)).toEqual(['ch4']);
+  });
+
+  it('breaks a date tie by reading order', () => {
+    const tied = ['ch3', 'ch2'].map(id => ({ id, chapter: id, unit: 1, date: '2026-10-20', week: 1 }));
+    expect(nextUp(tied, {}, '2026-10-20')?.session.id).toBe('ch2');
+  });
 });
 
 describe('scheduleRows and progressCounts', () => {
