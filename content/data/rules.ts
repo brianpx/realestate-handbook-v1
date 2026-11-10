@@ -12,7 +12,7 @@ export const RULES = {
     sentence: 'Send automated texts or calls only to people whose consent you have recorded in the CRM, and stop at the first opt-out.',
     chapter: 'ch11',
     anchor: 'texts-and-calls',
-    concepts: ['ch4.text-permission'],
+    concepts: ['ch4.text-permission', 'ch11.consent'],
   },
   speedToLead: {
     sentence: 'Answer every new lead with a live call within five minutes when you can, and always the same day.',
@@ -24,13 +24,13 @@ export const RULES = {
     sentence: 'Before you pay for leads, pass the 9 p.m. test: a lead arriving at 9 p.m. tonight gets an immediate automated reply, a call by the next morning and a 90-day plan, all without you having to remember.',
     chapter: 'ch3',
     anchor: 'paid-advertising',
-    concepts: ['ch2.online-leads'],
+    concepts: ['ch2.online-leads', 'ch3.paid-ads'],
   },
   postClose: {
     sentence: 'The post-close plan is built once, assigned on the day the contract goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
     chapter: 'ch10',
     anchor: 'the-post-close-plan',
-    concepts: ['ch12.pipeline-milestone'],
+    concepts: ['ch12.pipeline-milestone', 'ch10.post-close-plan'],
   },
 } as const;
 

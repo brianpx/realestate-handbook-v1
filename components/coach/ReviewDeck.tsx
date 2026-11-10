@@ -10,7 +10,7 @@ import { attemptInput } from '@/lib/coach/check';
 import { localDate } from '@/lib/coach/dates';
 import { coachStore, recordAttempt, useCoachState } from '@/lib/coach';
 import { pickQuestion } from '@/lib/coach/queue';
-import { buildDeck, dueLabel, requeueMiss, reviewQuestionIds, type Deck, type DeckItem } from '@/lib/coach/review';
+import { buildDeck, deckChapters, dueLabel, requeueMiss, reviewQuestionIds, type Deck, type DeckItem } from '@/lib/coach/review';
 import { isPageId, pageById } from '@/lib/pages';
 import { trackingProgress, useSettings } from '@/lib/state';
 
@@ -66,7 +66,7 @@ export function ReviewDeck() {
 
 function EmptyState({ outlook }: { outlook: Snapshot }) {
   const { deck, today } = outlook;
-  const checked = [...new Set(CONCEPTS.map(c => c.chapter))];
+  const checked = deckChapters();
   return (
     <aside className="box" aria-live="polite">
       {deck.hasHistory ? (
@@ -77,9 +77,9 @@ function EmptyState({ outlook }: { outlook: Snapshot }) {
       ) : (
         <p>
           Nothing to review yet. Answer a chapter&apos;s &ldquo;Test your knowledge&rdquo; questions and the ideas you meet will come back here on a schedule.
-          {' '}Chapters that feed this deck: {checked.map((c, i) => (
+          {checked.length > 0 && <>{' '}Chapters that feed this deck: {checked.map((c, i) => (
             <span key={c}>{i > 0 ? ', ' : ''}<Link href={`/handbook/${c}`}>{chapterLabel(c)}</Link></span>
-          ))}.
+          ))}.</>}
         </p>
       )}
     </aside>
