@@ -2,7 +2,9 @@ import type { Actor } from '@/lib/audit';
 import type { User } from '@/lib/users/types';
 import type { BillingRecord, EventStatus, MirrorInput, NewBillingEvent } from './types';
 
-export type ClaimResult = { claimed: true; id: string } | { claimed: false };
+export type ClaimResult =
+  | { claimed: true; id: string }
+  | { claimed: false; status?: EventStatus; receivedAt?: Date };
 export type MirrorResult = { applied: false } | { applied: true; record: BillingRecord };
 export type ResendWrite = { ok: true } | { ok: false; reason: 'missing' | 'not_paid' };
 
@@ -32,4 +34,6 @@ export interface BillingStore {
   findUserByEmail(email: string): Promise<User | null>;
   /** Inserts `role = reader`, `status = active`, `email_verified_at` null. An existing row is returned unchanged. */
   createReader(email: string, at: Date): Promise<User>;
+  /** Fills a null `user_id` after `linkBilling`. Never moves a record that already has one. */
+  attachUser(recordId: string, userId: string): Promise<void>;
 }

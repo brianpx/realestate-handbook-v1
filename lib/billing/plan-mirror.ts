@@ -70,15 +70,15 @@ export function planMirror(state: PlanState, input: MirrorInput): MirrorPlan {
     : null;
 
   let membership: Membership | null = null;
-  let billing: (BillingAccess & { userId: string | null }) | null = null;
   if (userId) {
     const grants = state.grants.map(g => (grantRevoke && g.billingRecordId === record.id && g.revokedAt === null
       ? { ...g, revokedAt: grantRevoke.at, revokedBy: null, revokeReason: grantRevoke.reason }
       : g));
     if (grantInsert) grants.push(grantInsert);
     membership = projectMembership(userId, grants, state.membership, input.at);
-    billing = billingSlice(record);
   }
+  // Written even when there is no user, so linkBilling can find the order. A null user inserts no grant.
+  const billing = billingSlice(record);
 
   const after = recordSnapshot(record);
   const audit = unchanged(before, after) ? null : {

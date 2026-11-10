@@ -106,6 +106,22 @@ describe('Lemon Squeezy orders', () => {
     expect(mapped.order.customerId).toBe('55');
   });
 
+  it('revokes a refunded order even when the refunded amount is short', () => {
+    const mapped = mapResource(order({ status: 'refunded', refunded_amount: 100 }), NOW);
+    if (mapped.outcome !== 'order') throw new Error('expected an order');
+    expect(mapped.order.status).toBe('refunded');
+    expect(mapped.order.grant).toBe('revoke');
+    expect(mapped.order.accessEndsAt).toEqual(NOW);
+  });
+
+  it('keeps access when a paid order is only partly refunded', () => {
+    const mapped = mapResource(order({ status: 'paid', refunded: true, refunded_amount: 100 }), NOW);
+    if (mapped.outcome !== 'order') throw new Error('expected an order');
+    expect(mapped.order.status).toBe('partially_refunded');
+    expect(mapped.order.grant).toBe('grant');
+    expect(mapped.order.accessEndsAt).toBeNull();
+  });
+
   it('treats a paid order with a smaller refunded_amount as a partial refund that keeps access', () => {
     const mapped = mapResource(order({ refunded_amount: 100, status: 'paid' }), NOW);
     if (mapped.outcome !== 'order') throw new Error('expected an order');

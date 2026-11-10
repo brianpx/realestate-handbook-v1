@@ -103,7 +103,7 @@ describe('MemoryBillingStore', () => {
     const first = await billing.claimEvent(event, NOW);
     expect(first.claimed).toBe(true);
     if (!first.claimed) return;
-    expect(await billing.claimEvent(event, LATER)).toEqual({ claimed: false });
+    expect(await billing.claimEvent(event, LATER)).toEqual({ claimed: false, status: 'received', receivedAt: NOW });
     await billing.setEventStatus(first.id, 'failed', 'BillingFetchFailed', LATER);
     const retry = await billing.claimEvent(event, LATER);
     expect(retry).toEqual({ claimed: true, id: first.id });

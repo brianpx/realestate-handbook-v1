@@ -25,8 +25,8 @@ type PurchaseRow = {
   paidAt: Date | null;
   refundedAt: Date | null;
   manageHref: string | null;
-  /** True when the provider was asked and returned neither a receipt nor a customer portal link. */
-  manageAbsent: boolean;
+  /** `failed` is a refetch error. `absent` is an order with no https receipt or portal link. */
+  manageGap: 'none' | 'absent' | 'failed' | 'unconfigured';
 };
 type Purchases = { kind: 'off' } | { kind: 'failed' } | { kind: 'empty' } | { kind: 'rows'; rows: PurchaseRow[] };
 
@@ -65,14 +65,15 @@ async function loadPurchases(userId: string): Promise<Purchases> {
 
 async function purchaseRow(record: BillingRecord, adapter: ReturnType<typeof billingAdapterFromEnv>): Promise<PurchaseRow> {
   const stored = record.manageUrl?.startsWith('https://') ? record.manageUrl : null;
-  if (stored || !adapter) return { ...rowFacts(record), manageHref: stored, manageAbsent: false };
+  if (stored) return { ...rowFacts(record), manageHref: stored, manageGap: 'none' };
+  if (!adapter) return { ...rowFacts(record), manageHref: null, manageGap: 'unconfigured' };
   try {
     const mapped = await adapter.fetch(record.kind === 'subscription' ? { type: 'subscriptions', id: record.providerObjectId } : { type: 'orders', id: record.providerObjectId });
     const href = mapped.outcome === 'order' ? mapped.order.manageUrl : null;
-    return { ...rowFacts(record), manageHref: href, manageAbsent: !href };
+    return { ...rowFacts(record), manageHref: href, manageGap: href ? 'none' : 'absent' };
   } catch (err) {
     console.error('account: billing link failed', err instanceof Error ? err.name : 'error');
-    return { ...rowFacts(record), manageHref: null, manageAbsent: true };
+    return { ...rowFacts(record), manageHref: null, manageGap: 'failed' };
   }
 }
 
@@ -105,9 +106,11 @@ function PurchasePanel({ purchases }: { purchases: Purchases }) {
             <dd>
               {row.manageHref
                 ? <a href={row.manageHref} data-billing-manage>Open the receipt</a>
-                : row.manageAbsent
-                  ? 'The provider did not include a receipt or customer portal link.'
-                  : 'A manage link is not on file.'}
+                : row.manageGap === 'failed'
+                  ? 'The receipt link could not be loaded just now.'
+                  : row.manageGap === 'absent'
+                    ? 'The provider did not include a receipt or customer portal link.'
+                    : 'A manage link is not on file.'}
             </dd>
           </div>
         </dl>

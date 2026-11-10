@@ -2,6 +2,7 @@ import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { FileAuthStore } from '@/lib/auth/file-store';
 import { FileBillingStore } from './file-store';
 import type { MirrorInput } from './types';
 
@@ -61,5 +62,29 @@ describe('FileBillingStore', () => {
     expect(after.grants[0]?.revokedAt).toBe(LATER.toISOString());
     expect(after.users.find(u => u.email === 'buyer@e2e.test')?.role).toBe('reader');
     expect(after.grants).toHaveLength(1);
+  });
+
+  it('keeps an unlinked order so an administrator can attach it without a grant', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'reh-bill-'));
+    const authFile = path.join(dir, 'auth.json');
+    const billingFile = path.join(dir, 'billing.json');
+    const store = new FileBillingStore(billingFile, authFile);
+    const buyer = await store.createReader('buyer@e2e.test', NOW);
+    expect((await store.commitMirror(paid(buyer.id, { userId: null, grant: 'none' }))).applied).toBe(true);
+    expect(await store.listRecordsForUser(buyer.id)).toHaveLength(0);
+
+    const disk = JSON.parse(await readFile(billingFile, 'utf8')) as { records: { id: string }[] };
+    const recordId = disk.records[0]?.id;
+    if (!recordId) throw new Error('expected a record');
+    const auth = new FileAuthStore(authFile);
+    expect(await auth.linkBilling(recordId, buyer.id, NOW, {
+      at: NOW, actorUserId: null, actorKind: 'admin', action: 'billing.link_user', reason: null, ipHash: null,
+    })).toEqual({ changed: true });
+    await store.attachUser(recordId, buyer.id);
+
+    expect(await store.listRecordsForUser(buyer.id)).toHaveLength(1);
+    const saved = JSON.parse(await readFile(authFile, 'utf8')) as { grants: unknown[]; billing: { userId: string | null }[] };
+    expect(saved.grants).toHaveLength(0);
+    expect(saved.billing[0]?.userId).toBe(buyer.id);
   });
 });

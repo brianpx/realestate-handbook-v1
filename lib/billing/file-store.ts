@@ -50,7 +50,7 @@ export class FileBillingStore implements BillingStore {
         await this.writeBilling(disk);
         return { claimed: true, id: row.id };
       }
-      if (existing.status !== 'failed') return { claimed: false };
+      if (existing.status !== 'failed') return { claimed: false, status: existing.status, receivedAt: existing.receivedAt };
       existing.status = 'received';
       existing.error = null;
       existing.receivedAt = at;
@@ -87,6 +87,18 @@ export class FileBillingStore implements BillingStore {
 
   listRecordsForUser(userId: string) {
     return this.view(async () => (await this.records()).filter(r => r.userId === userId));
+  }
+
+  attachUser(recordId: string, userId: string) {
+    return this.change(async () => {
+      const disk = await this.readBilling();
+      const records = disk.records.map(reviveRecord).filter((r): r is BillingRecord => r !== null);
+      const record = records.find(r => r.id === recordId);
+      if (!record || record.userId !== null) return;
+      record.userId = userId;
+      disk.records = records.map(freezeRecord);
+      await this.writeBilling(disk);
+    });
   }
 
   listNonTerminal() {

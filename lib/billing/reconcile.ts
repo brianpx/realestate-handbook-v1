@@ -29,8 +29,9 @@ export function bearerMatches(header: string | null, secret: string | undefined)
 }
 
 /**
- * The daily pass: finish stuck events, re-read every open record from the provider, send ready emails the
- * webhook did not, then drop old payloads and expired sign-in rows. Mirrors that change something are audited
+ * The daily pass: mark stuck `received` events `failed` so a later delivery can claim them, re-read every open
+ * record from the provider, send ready emails the webhook did not, then drop old payloads and expired sign-in
+ * rows. Mirrors that change something are audited
  * as `billing.event` with actor kind `system` or whatever actor the caller passes (an admin resync).
  */
 export async function reconcileBilling(deps: ReconcileDeps, actor: Actor = { kind: 'system', userId: null }): Promise<ReconcileReport> {

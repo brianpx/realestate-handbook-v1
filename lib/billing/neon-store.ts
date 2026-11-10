@@ -21,6 +21,19 @@ export type { Sql };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 
+function claimFrom(row: Row | undefined): ClaimResult {
+  if (!row || row.id === undefined || row.id === null) return { claimed: false };
+  const claimed = row.claimed === true || row.claimed === 't';
+  if (claimed) return { claimed: true, id: String(row.id) };
+  const status = eventStatus(row.status);
+  const receivedAt = toDateOrNull(row.received_at) ?? undefined;
+  return status ? { claimed: false, status, ...(receivedAt ? { receivedAt } : {}) } : { claimed: false };
+}
+
+function eventStatus(value: unknown): EventStatus | null {
+  return value === 'received' || value === 'processed' || value === 'ignored_stale' || value === 'unmatched' || value === 'failed' ? value : null;
+}
+
 function named(name: string): Error {
   const error = new Error(name);
   error.name = name;
@@ -42,15 +55,29 @@ export class NeonBillingStore implements BillingStore {
 
   async claimEvent(event: NewBillingEvent, at: Date): Promise<ClaimResult> {
     const payload = event.payload === undefined ? null : JSON.stringify(event.payload);
+    // The insert's RETURNING is empty when the row is not `failed`, so the second arm reports that row's status.
+    // A duplicate of `processed` can answer 200. A duplicate of `received` must not.
     const rows = await this.sql`
-      insert into billing_events (provider, provider_event_id, event_type, object_id, event_created_at, status, payload)
-      values (${event.provider}, ${event.providerEventId}, ${event.eventType}, ${event.objectId}, ${iso(event.eventCreatedAt)}::timestamptz, 'received', ${payload}::jsonb)
-      on conflict (provider, provider_event_id) do update
-        set status = 'received', error = null, received_at = ${iso(at)}::timestamptz
-        where billing_events.status = 'failed'
-      returning id`;
-    const id = rows[0]?.id;
-    return id === undefined || id === null ? { claimed: false } : { claimed: true, id: String(id) };
+      with ins as (
+        insert into billing_events (provider, provider_event_id, event_type, object_id, event_created_at, status, payload)
+        values (${event.provider}, ${event.providerEventId}, ${event.eventType}, ${event.objectId}, ${iso(event.eventCreatedAt)}::timestamptz, 'received', ${payload}::jsonb)
+        on conflict (provider, provider_event_id) do update
+          set status = 'received', error = null, received_at = ${iso(at)}::timestamptz
+          where billing_events.status = 'failed'
+        returning id
+      )
+      select billing_events.id, billing_events.status, billing_events.received_at,
+             (billing_events.id in (select id from ins)) as claimed
+      from billing_events
+      where billing_events.id in (select id from ins)
+         or (provider = ${event.provider} and provider_event_id = ${event.providerEventId} and not exists (select 1 from ins))`;
+    return claimFrom(rows[0]);
+  }
+
+  async attachUser(recordId: string, userId: string) {
+    await this.sql`
+      update billing_records set user_id = ${uuidOrNull(userId)}::uuid
+      where id = ${uuidOrNull(recordId)}::uuid and user_id is null`;
   }
 
   async setEventStatus(id: string, status: EventStatus, error: string | null, at: Date) {

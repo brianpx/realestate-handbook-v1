@@ -53,7 +53,7 @@ export class MemoryBillingStore implements BillingStore {
       this.events.push(row);
       return { claimed: true, id: row.id };
     }
-    if (existing.status !== 'failed') return { claimed: false };
+    if (existing.status !== 'failed') return { claimed: false, status: existing.status, receivedAt: existing.receivedAt };
     existing.status = 'received';
     existing.error = null;
     existing.receivedAt = at;
@@ -78,6 +78,11 @@ export class MemoryBillingStore implements BillingStore {
 
   async listRecordsForUser(userId: string) {
     return this.records.filter(r => r.userId === userId);
+  }
+
+  async attachUser(recordId: string, userId: string) {
+    const record = this.records.find(r => r.id === recordId);
+    if (record && record.userId === null) record.userId = userId;
   }
 
   async listNonTerminal() {

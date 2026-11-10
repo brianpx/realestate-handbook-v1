@@ -4,10 +4,11 @@ import { entitlement } from '@/lib/access/entitlement';
 import { MemoryAccessStore } from '@/lib/access/memory-store';
 import { MemoryAuthStore } from '@/lib/auth/memory-store';
 import { sendReadyLink } from '@/lib/auth/mail';
+import type { MailConfig } from '@/lib/leads/mail';
 import { tokenExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryUserStore } from '@/lib/users/store';
-import { LemonSqueezyAdapter } from './adapters/lemonsqueezy';
+import { LemonSqueezyAdapter, providerEventId } from './adapters/lemonsqueezy';
 import { MemoryBillingStore } from './memory-store';
 import { processBillingWebhook, type ProcessDeps, type ProcessResult, type WebhookInput } from './process-event';
 import type { BillingThrowAfter } from './types';
@@ -51,7 +52,7 @@ function isMail(value: unknown): value is { To: { Email?: string }[]; Subject?: 
   return value !== null && typeof value === 'object';
 }
 
-function harness(fetched: () => unknown = () => order({ }, { custom_data: undefined })) {
+function harness(fetched: () => unknown = () => order({ }, { custom_data: undefined }), mail: MailConfig = { provider: 'mailpit', url: 'http://localhost:8025', from: 'handbook@example.test', fromName: 'Handbook', mailingAddress: '' }) {
   const users = new MemoryUserStore();
   const auth = new MemoryAuthStore();
   const access = new MemoryAccessStore({ users, auth });
@@ -67,7 +68,7 @@ function harness(fetched: () => unknown = () => order({ }, { custom_data: undefi
     store,
     adapter,
     now: () => NOW,
-    mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'handbook@example.test', fromName: 'Handbook', mailingAddress: '' },
+    mail,
     fetchImpl,
     issueSignIn: async (email, at) => {
       const raw = newSecret();
@@ -155,6 +156,19 @@ describe('billing webhooks', () => {
     expect(live.sends()).toHaveLength(0);
     expect(live.store.records[0]).toMatchObject({ userId: null, status: 'paid', amountCents: 4321 });
     expect(live.store.events[0]?.status).toBe('processed');
+    expect(live.access.billing).toMatchObject([{ userId: null, status: 'paid' }]);
+    expect(live.access.grants).toHaveLength(0);
+    const reader = await live.store.createReader('owner@e2e.test', NOW);
+    const recordId = live.store.records[0]?.id;
+    if (!recordId) throw new Error('expected a record');
+    expect(await live.access.linkBilling(recordId, reader.id, NOW, {
+      at: NOW, actorUserId: null, actorKind: 'admin', action: 'billing.link_user', reason: null, ipHash: null,
+    })).toEqual({ changed: true });
+    await live.store.attachUser(recordId, reader.id);
+    expect(await live.store.listRecordsForUser(reader.id)).toHaveLength(1);
+    expect(live.access.grants).toHaveLength(0);
+    const snapshot = await live.access.loadAccess(reader.id);
+    expect(entitlement({ status: reader.status, snapshot, now: NOW }).level).toBe('member');
 
     const numeric = harness(() => order({}, { custom_data: { user_id: 42 } }));
     expect(await numeric.process(sign(order({}, { custom_data: { user_id: 42 } })))).toEqual({ status: 200, outcome: 'processed' });
@@ -255,5 +269,38 @@ describe('billing webhooks', () => {
       expect(h.sends()).toHaveLength(step === 'ready' ? 2 : 1);
       expect(h.users.users[0]?.role).toBe('reader');
     }
+  });
+
+  it('answers 500 while a delivery is still received, and reclaims it after the attempt is dead', async () => {
+    const body = order({}, { custom_data: undefined });
+    const h = harness(() => body);
+    const signed = sign(body);
+    await h.store.claimEvent({
+      provider: 'lemonsqueezy',
+      providerEventId: providerEventId('order_created', '99', NOW),
+      eventType: 'order_created',
+      objectId: '99',
+      eventCreatedAt: NOW,
+      payload: { event: 'order_created', objectId: '99' },
+    }, new Date(NOW.getTime() - 30_000));
+    expect(await h.process(signed)).toEqual({ status: 500, error: 'in_progress' });
+    expect(h.store.records).toHaveLength(0);
+    expect(h.auth.tokens).toHaveLength(0);
+    const stuck = h.store.events[0];
+    if (!stuck) throw new Error('expected the event');
+    stuck.receivedAt = new Date(NOW.getTime() - 3 * 60 * 1000);
+    expect(await h.process(signed)).toEqual({ status: 200, outcome: 'processed' });
+    expect(h.store.records).toHaveLength(1);
+    expect(h.sends()).toHaveLength(1);
+    expect(h.auth.tokens).toHaveLength(1);
+  });
+
+  it('does not mint a sign-in token when no mailer is configured', async () => {
+    const body = order({}, { custom_data: undefined });
+    const h = harness(() => body, { provider: 'none' });
+    expect(await h.process(sign(body))).toEqual({ status: 500, error: 'ReadyEmailNotSent' });
+    expect(h.auth.tokens).toHaveLength(0);
+    expect(h.store.records).toHaveLength(1);
+    expect(h.store.events[0]?.status).toBe('failed');
   });
 });

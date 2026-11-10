@@ -111,7 +111,10 @@ async function apply(input: AdminActionInput, { admin, user, actor, now, stores:
     }
     case 'link-billing': {
       const linked = await access.linkBilling(input.billingRecordId, user.id, now, auditBy(actor, 'billing.link_user', now));
-      return linked ? done(linked.changed) : reply(404, 'not_found');
+      if (!linked) return reply(404, 'not_found');
+      // The access store's row is what the audit names. The billing store's copy is what the account page lists.
+      if (billing) await billing.store.attachUser(input.billingRecordId, user.id);
+      return done(linked.changed);
     }
     case 'resync-billing': {
       if (!billing) return reply(501, 'no_billing_provider', 'No billing provider is configured.');

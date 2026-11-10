@@ -45,6 +45,8 @@ export type ProcessDeps = {
 };
 
 const ACTOR = { kind: 'webhook' as const, userId: null };
+/** Longer than the webhook route's 60s limit, so a live attempt is not stolen. A retry after that reclaims a dead one. */
+const ABANDON_RECEIVED_MS = 2 * 60 * 1000;
 
 export async function processBillingWebhook(input: WebhookInput, deps: ProcessDeps): Promise<ProcessResult> {
   const { store, adapter } = deps;
@@ -54,15 +56,24 @@ export async function processBillingWebhook(input: WebhookInput, deps: ProcessDe
   const at = deps.now();
   if (!withinEventWindow(parsed.eventTime, at)) return { status: 400, error: 'stale_timestamp' };
 
-  const claim = await store.claimEvent({
+  const event = {
     provider: BILLING_PROVIDER,
     providerEventId: providerEventId(parsed.eventName, parsed.objectId, parsed.eventTime),
     eventType: parsed.eventName,
     objectId: parsed.objectId,
     eventCreatedAt: parsed.eventTime,
     payload: { event: parsed.eventName, objectId: parsed.objectId },
-  }, at);
-  if (!claim.claimed) return { status: 200, duplicate: true };
+  };
+  let claim = await store.claimEvent(event, at);
+  // A killed attempt leaves `received`. Saying 200 would stop the provider, and the order would never be fetched.
+  if (!claim.claimed && claim.status === 'received' && claim.receivedAt && at.getTime() - claim.receivedAt.getTime() >= ABANDON_RECEIVED_MS) {
+    await store.requeueStuckReceived(new Date(at.getTime() - ABANDON_RECEIVED_MS));
+    claim = await store.claimEvent(event, at);
+  }
+  if (!claim.claimed) {
+    if (claim.status === 'received' || claim.status === 'failed') return { status: 500, error: 'in_progress' };
+    return { status: 200, duplicate: true };
+  }
 
   try {
     return await finishClaimed(parsed, claim.id, at, input.origin, deps);
@@ -183,6 +194,8 @@ export function mirrorFromOrder(order: ProductOrder, over: {
 
 /** Sends the ready link and does not touch the flag. Callers write the flag only after this returns `sent`. */
 export async function sendReadyLinkTo(email: string, at: Date, origin: string, deps: Pick<ProcessDeps, 'issueSignIn' | 'sendReady' | 'mail' | 'fetchImpl'>): Promise<EmailStatus> {
+  // No mailer means the link cannot be delivered. Minting a token would only leave a live secret nobody receives.
+  if (deps.mail.provider === 'none') return 'skipped';
   const raw = await deps.issueSignIn(email, at);
   return deps.sendReady(deps.mail, email, `${origin}${VERIFY_PATH}?token=${raw}`, deps.fetchImpl);
 }

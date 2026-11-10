@@ -11,7 +11,8 @@ import { BILLING_PROVIDER, VARIANT_TIER, type GrantEffect } from '@/lib/billing/
  * passes, because the refund moves `updated_at`.
  *
  * Order statuses there are pending, failed, paid and refunded. A partial refund stays `paid` and sets
- * `refunded_amount` below `total` (cents). There is no dispute status: a chargeback Lemon Squeezy settles by
+ * `refunded_amount` below `total` (cents). Status `refunded` revokes even when that amount is short.
+ * There is no dispute status: a chargeback Lemon Squeezy settles by
  * refunding arrives as a refund and revokes access. `failed` is not a `billing_records.status`, so that order
  * is left unmatched and grants nothing. Subscription events are not a product; they are unmatched too.
  * `billing_events.status` has no `ignored`, so those non-product events are stored as `unmatched`.
@@ -201,11 +202,12 @@ type Effect =
 function effectFor(status: string, refundedFlag: boolean, total: number | null, refundedAmount: number | null, now: Date): Effect {
   if (status === 'failed') return { outcome: 'unmatched', reason: 'failed' };
   const partial = refundedAmount !== null && total !== null && refundedAmount > 0 && refundedAmount < total;
-  if (partial) return { outcome: 'mirror', status: 'partially_refunded', grant: 'grant', revokeReason: null, accessEndsAt: null };
   const fullByAmount = refundedAmount !== null && total !== null && total > 0 && refundedAmount >= total;
-  if (status === 'refunded' || refundedFlag || fullByAmount) {
+  // Status `refunded` is a full refund even when the amount is short. A partial keeps access only while status stays `paid`.
+  if (status === 'refunded' || fullByAmount || (refundedFlag && !partial)) {
     return { outcome: 'mirror', status: 'refunded', grant: 'revoke', revokeReason: 'refund', accessEndsAt: now };
   }
+  if (partial) return { outcome: 'mirror', status: 'partially_refunded', grant: 'grant', revokeReason: null, accessEndsAt: null };
   if (status === 'paid') return { outcome: 'mirror', status: 'paid', grant: 'grant', revokeReason: null, accessEndsAt: null };
   if (status === 'pending') return { outcome: 'mirror', status: 'pending', grant: 'none', revokeReason: null, accessEndsAt: null };
   return { outcome: 'unmatched', reason: 'unknown_status' };

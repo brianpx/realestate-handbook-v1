@@ -97,4 +97,14 @@ describe('NeonBillingStore statements', () => {
     expect(calls[0]?.text).not.toContain('set role');
     expect(calls[0]?.values).toContain('admin');
   });
+
+  it('attaches a user only while the record has none, and does not set a role', async () => {
+    const { sql, calls } = fakeSql([]);
+    const recordId = '11111111-1111-4111-8111-111111111111';
+    await new NeonBillingStore(sql).attachUser(recordId, USER);
+    const text = calls[0]?.text ?? '';
+    expect(text).toContain('user_id is null');
+    expect(text).not.toContain('set role');
+    expect(calls[0]?.values).toEqual([USER, recordId]);
+  });
 });
