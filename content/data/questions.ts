@@ -614,7 +614,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'At which touch does the post-close plan ask the client for a review on your Agent Site?',
     options: ['On closing day, with the note', 'At the one-week check-in call', 'At the 30-day call or visit', 'At the home anniversary card or call'],
     answer: 2,
-    explain: 'At 30 days you call or visit and ask for a review on your Agent Site. Reviews drive online leads, and it is the second referral ask.',
+    explain: 'At 30 days you call or visit and ask for a review on your Agent Site. Reviews drive online leads, and the same call carries the second referral ask.',
   },
   {
     id: 'ch10.touch-purposes.anniversary-estimate', version: 1, concept: 'ch10.touch-purposes', kind: 'mcq', draft: true, scenario: true,
@@ -689,7 +689,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'ch10.reactivation.back-on-plan', version: 1, concept: 'ch10.reactivation', kind: 'blank', draft: true,
     before: 'Put everyone you reach back on the', after: 'plan so the database does not go cold again.',
-    answer: 'quarterly', accept: ['quarterly', 'quarterly call'],
+    answer: 'quarterly', accept: ['quarterly', 'quarterly call', 'quarterly call plan'],
     explain: 'Most people will be glad to hear from you. Putting everyone you reach back on the quarterly plan stops the database going cold again.',
   },
 
@@ -721,7 +721,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'ch10.referrals.referred-by', version: 1, concept: 'ch10.referrals', kind: 'blank', draft: true,
     before: 'Track each referral in your CRM with a', after: 'field, so you can see how many of your leads come from past clients.',
-    answer: 'Referred by', accept: ['referred by'],
+    answer: 'Referred by', accept: ['referred by', 'referred-by'],
     explain: 'Also track referrals received per month. When that number grows, your business becomes less dependent on paid leads every year.',
   },
   // end ch10

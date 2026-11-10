@@ -160,7 +160,7 @@ Status: draft, awaiting owner review.        Decision: ☐ Approve  ☐ Change  
 - C. At the 30-day call or visit ✓
 - D. At the home anniversary card or call
 
-Explanation shown to the reader: At 30 days you call or visit and ask for a review on your Agent Site. Reviews drive online leads, and it is the second referral ask.
+Explanation shown to the reader: At 30 days you call or visit and ask for a review on your Agent Site. Reviews drive online leads, and the same call carries the second referral ask.
 
 Chapter source:
 > 30 days | Call or visit. Ask for a review on your Agent Site. | Reviews drive online leads. Second referral ask.
@@ -288,7 +288,7 @@ Status: draft, awaiting owner review.        Decision: ☐ Approve  ☐ Change  
 
 **Put everyone you reach back on the ______ plan so the database does not go cold again.**
 
-Keyed answer: **quarterly**. Also accepted: quarterly call.
+Keyed answer: **quarterly**. Also accepted: quarterly call, quarterly call plan.
 
 Explanation shown to the reader: Most people will be glad to hear from you. Putting everyone you reach back on the quarterly plan stops the database going cold again.
 
@@ -342,7 +342,7 @@ Status: draft, awaiting owner review.        Decision: ☐ Approve  ☐ Change  
 
 **Track each referral in your CRM with a ______ field, so you can see how many of your leads come from past clients.**
 
-Keyed answer: **Referred by**. Also accepted: referred by (case is ignored).
+Keyed answer: **Referred by**. Also accepted: referred by, referred-by (case is ignored).
 
 Explanation shown to the reader: Also track referrals received per month. When that number grows, your business becomes less dependent on paid leads every year.
 
