@@ -2,6 +2,7 @@ import { grantLive } from '@/lib/access/entitlement';
 import { grantAccess, revokeAccess } from '@/lib/access/grants';
 import { recomputeMembership } from '@/lib/access/membership';
 import { auditBy, type Actor } from '@/lib/audit';
+import { resendReadyForUser, resyncUserRecords, type ReconcileDeps } from '@/lib/billing/reconcile';
 import { MAX_BODY_BYTES } from '@/lib/auth/config';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
 import { signedInUser } from '@/lib/auth/request-user';
@@ -9,7 +10,10 @@ import { hashKey } from '@/lib/auth/token';
 import type { User } from '@/lib/users/types';
 import { adminActionSchema, adminTargetSchema, type AdminActionInput } from './validate';
 
-export type AdminDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'>;
+export type AdminDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & {
+  /** Absent until Lemon Squeezy is configured. Resync and resend then stay 501; every other action ignores it. The request URL supplies the origin. */
+  billing?: Omit<ReconcileDeps, 'origin'> | null;
+};
 /** From the URL: /api/admin/users/[userId]/[action]. Both are checked here, never trusted. */
 export type AdminTarget = { userId: string; action: string };
 
@@ -49,16 +53,24 @@ export async function handleAdminAction(req: AuthRequest, target: AdminTarget, d
     if (!parsed.success) return reply(400, 'invalid_request', parsed.error.issues[0]?.message);
 
     const actor: Actor = { kind: 'admin', userId: admin.id, ipHash: hashKey(req.ip, deps.ipSalt) };
-    return await apply(parsed.data, { admin, user, actor, now, stores: deps.stores });
+    return await apply(parsed.data, { admin, user, actor, now, stores: deps.stores, billing: deps.billing ?? null, origin: new URL(req.url).origin });
   } catch (err) {
     console.error('admin: action failed', err instanceof Error ? err.name : 'error');
     return reply(503, 'unavailable');
   }
 }
 
-type Context = { admin: User; user: User; actor: Actor; now: Date; stores: NonNullable<AdminDeps['stores']> };
+type Context = {
+  admin: User;
+  user: User;
+  actor: Actor;
+  now: Date;
+  stores: NonNullable<AdminDeps['stores']>;
+  billing: Omit<ReconcileDeps, 'origin'> | null;
+  origin: string;
+};
 
-async function apply(input: AdminActionInput, { admin, user, actor, now, stores: { access } }: Context): Promise<AuthReply> {
+async function apply(input: AdminActionInput, { admin, user, actor, now, stores: { access }, billing, origin }: Context): Promise<AuthReply> {
   const self = user.id === admin.id;
   switch (input.action) {
     case 'set-role': {
@@ -101,9 +113,18 @@ async function apply(input: AdminActionInput, { admin, user, actor, now, stores:
       const linked = await access.linkBilling(input.billingRecordId, user.id, now, auditBy(actor, 'billing.link_user', now));
       return linked ? done(linked.changed) : reply(404, 'not_found');
     }
-    case 'resync-billing':
-    case 'resend-ready-email':
-      // no billing provider is wired up yet (M7 phase 5); both answer honestly and write nothing
-      return reply(501, 'no_billing_provider', 'No billing provider is configured.');
+    case 'resync-billing': {
+      if (!billing) return reply(501, 'no_billing_provider', 'No billing provider is configured.');
+      const { changed } = await resyncUserRecords({ ...billing, origin }, user.id, actor);
+      return done(changed);
+    }
+    case 'resend-ready-email': {
+      if (!billing) return reply(501, 'no_billing_provider', 'No billing provider is configured.');
+      const outcome = await resendReadyForUser({ ...billing, origin }, user.id, actor);
+      if (outcome === 'missing') return reply(404, 'not_found');
+      if (outcome === 'not_paid') return reply(400, 'not_paid', 'Only a paid purchase can be resent.');
+      if (outcome === 'not_sent') return reply(503, 'unavailable');
+      return done(true);
+    }
   }
 }

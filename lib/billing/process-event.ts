@@ -1,6 +1,7 @@
 import { VERIFY_PATH } from '@/lib/auth/config';
 import type { MailConfig } from '@/lib/leads/mail';
 import type { EmailStatus } from '@/lib/leads/store';
+import type { Actor } from '@/lib/audit';
 import type { User } from '@/lib/users/types';
 import { providerEventId, withinEventWindow, type LemonSqueezyAdapter, type ParsedWebhook, type ProductOrder } from './adapters/lemonsqueezy';
 import type { BillingStore } from './store';
@@ -103,7 +104,7 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
   const metadataMiss = Boolean(metadataUserId) && !metaUser && !existing?.userId;
   const user = metadataMiss ? null : await resolveUser(store, metaUser, order.email, existing?.userId ?? null, at);
   const refunding = order.grant === 'revoke';
-  const mirrored = await store.commitMirror(mirrorInput(order, {
+  const mirrored = await store.commitMirror(mirrorFromOrder(order, {
     at,
     lastEventAt: parsed.eventTime,
     userId: user?.id ?? null,
@@ -111,6 +112,7 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
     revokeReason: metadataMiss ? null : order.revokeReason,
     accessEndsAt: refunding ? at : order.accessEndsAt,
     refundedAt: refunding ? at : order.refundedAt,
+    actor: ACTOR,
   }));
 
   if (!mirrored.applied) {
@@ -134,7 +136,8 @@ async function resolveUser(store: BillingStore, metaUser: User | null, email: st
   return (await store.findUserByEmail(email)) ?? store.createReader(email, at);
 }
 
-function mirrorInput(order: ProductOrder, over: {
+/** The fetched order, translated into the one mirror the stores know. The caller chooses the actor and the event time. */
+export function mirrorFromOrder(order: ProductOrder, over: {
   at: Date;
   lastEventAt: Date;
   userId: string | null;
@@ -142,6 +145,7 @@ function mirrorInput(order: ProductOrder, over: {
   revokeReason: 'refund' | 'chargeback' | null;
   accessEndsAt: Date | null;
   refundedAt: Date | null;
+  actor: Actor;
 }): MirrorInput {
   return {
     provider: BILLING_PROVIDER,
@@ -172,14 +176,19 @@ function mirrorInput(order: ProductOrder, over: {
     manageUrl: order.manageUrl,
     grant: over.grant,
     revokeReason: over.revokeReason,
-    actor: ACTOR,
+    actor: over.actor,
     at: over.at,
   };
 }
 
-async function sendReadyEmail(email: string, at: Date, origin: string, recordId: string, deps: ProcessDeps): Promise<void> {
+/** Sends the ready link and does not touch the flag. Callers write the flag only after this returns `sent`. */
+export async function sendReadyLinkTo(email: string, at: Date, origin: string, deps: Pick<ProcessDeps, 'issueSignIn' | 'sendReady' | 'mail' | 'fetchImpl'>): Promise<EmailStatus> {
   const raw = await deps.issueSignIn(email, at);
-  const status = await deps.sendReady(deps.mail, email, `${origin}${VERIFY_PATH}?token=${raw}`, deps.fetchImpl);
+  return deps.sendReady(deps.mail, email, `${origin}${VERIFY_PATH}?token=${raw}`, deps.fetchImpl);
+}
+
+async function sendReadyEmail(email: string, at: Date, origin: string, recordId: string, deps: ProcessDeps): Promise<void> {
+  const status = await sendReadyLinkTo(email, at, origin, deps);
   if (status !== 'sent') {
     const error = new Error('ready email');
     error.name = 'ReadyEmailNotSent';
