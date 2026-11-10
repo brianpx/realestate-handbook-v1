@@ -45,7 +45,7 @@ export function ResponseTimer() {
 
   return (
     <aside className="box try-it speed-timer iw">
-      <h3 className="box-title">● TRY IT · TIME YOUR OWN RESPONSE</h3>
+      <h3 className="box-title">TRY IT · TIME YOUR OWN RESPONSE</h3>
       <InteractiveHeader hint="Start the timer, then tap each button as the reply arrives." widgetKey="response-timer" label="Response-time stopwatch" />
       <p>Press Start the moment your friend submits the inquiry, then press each button as the reply arrives.</p>
       <div className="timer-clock" role="timer">{clock}</div>

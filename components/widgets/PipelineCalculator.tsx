@@ -27,7 +27,7 @@ export function PipelineCalculator() {
 
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● CALCULATOR · YOUR PIPELINE VALUE</h3>
+      <h3 className="box-title">CALCULATOR · YOUR PIPELINE VALUE</h3>
       <InteractiveHeader
         hint="List your contacts to total your pipeline value and see who needs a Monday call. Use initials if you prefer. Saved on this device only."
         widgetKey="pipeline-calculator"

@@ -15,7 +15,7 @@ export function KnowledgeCheck({ page }: { page: string }) {
   if (!quiz) throw new Error(`${page}: no knowledge check in content/data/knowledge-checks.ts`);
   return (
     <aside className="box quiz">
-      <BoxTitle>● TEST YOUR KNOWLEDGE</BoxTitle>
+      <BoxTitle>TEST YOUR KNOWLEDGE</BoxTitle>
       <InteractiveHeader hint="Pick an answer, then check it to see right away whether it is correct, and why. Nothing is saved." widgetKey="knowledge-check" label="Test your knowledge" />
       <Round key={round} page={page} quiz={quiz} onRestart={() => setRound(r => r + 1)} />
     </aside>

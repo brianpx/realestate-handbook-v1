@@ -21,7 +21,7 @@ export function LeadSources() {
 
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● EXPLORE · COMPARE YOUR LEAD SOURCES</h3>
+      <h3 className="box-title">EXPLORE · COMPARE YOUR LEAD SOURCES</h3>
       <InteractiveHeader
         hint="See the typical conversion ranges side by side, then enter your own spend, time, appointments and closings to find your cost per appointment and cost per closed deal."
         widgetKey="lead-sources"

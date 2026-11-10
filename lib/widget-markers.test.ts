@@ -94,3 +94,73 @@ it('every shipped page has valid markers', () => {
     .flatMap(f => validateMarkers(f.replace(/\.html$/, ''), readFileSync(`${dir}/${f}`, 'utf8')));
   expect(problems).toEqual([]);
 });
+
+// CR-L19: the "●" before a box title is drawn by `.box-title::before`, not written in the heading. These are the box
+// titles that showed it when it was still text (12df277), page by page; each must still be a .box-title, and so
+// still show it.
+const MARKED_BOX_TITLES: Record<string, string[]> = {
+  ch1: ['h3 FIELD NOTE', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch2: ['h3 PITFALL', 'h3 BEFORE YOU CALL', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch3: ['h3 FIELD NOTE', 'h3 PITFALL', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch4: ['h3 FIELD NOTE', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch5: ['h3 PITFALL', 'h3 FIELD NOTE', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch6: [
+    'div SCRIPT · NEW LEAD BY PHONE (SPEED-TO-LEAD)', 'div SCRIPT · VOICEMAIL (NO ANSWER)', 'div SCRIPT · NEW LEAD BY TEXT',
+    'div SCRIPT · SPHERE ANNOUNCEMENT', 'div SCRIPT · SPHERE REFERRAL ASK', 'div SCRIPT · REFERRAL PARTNER INTRODUCTION (LENDER OR ATTORNEY)',
+    'div SCRIPT · OPEN HOUSE GREETING', 'div SCRIPT · EXPIRED LISTING OR FSBO (ADVANCED)', 'div SCRIPT · BUYER CONSULTATION OPENING',
+    'div SCRIPT · SELLER CONSULTATION OPENING', 'div SCRIPT · OBJECTION: "I\'M JUST LOOKING."', 'div SCRIPT · POST-CLOSE REFERRAL REQUEST',
+    'div SCRIPT · ONE-WEEK CALL (AFTER CLOSING)', 'div SCRIPT · 30-DAY REVIEW REQUEST', 'div SCRIPT · HOME ANNIVERSARY CARD',
+    'div SCRIPT · QUARTERLY CALL (WHOLE DATABASE)', 'h3 TRY IT TODAY', 'div CHECKPOINT',
+  ],
+  ch7: ['h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch8: ['h3 FIELD NOTE', 'h3 PITFALL', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch9: ['div SCRIPT · "WE WANT TO INTERVIEW OTHER AGENTS."', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch10: ['h3 FIELD NOTE', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch11: ['h3 READ THIS FIRST', 'div SCRIPT · WIRE FRAUD WARNING', 'h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch12: ['h3 TRY IT TODAY', 'div CHECKPOINT'],
+  ch13: ['div CHECKPOINT'],
+  pref: ['h3 FIELD NOTE', 'h3 PITFALL', 'div SCRIPT', 'h3 TRY IT TODAY', 'h3 CHECKPOINT', 'h3 LEGAL'],
+};
+
+// Box titles the tools render themselves, per file, that showed the marker. ScriptBox and CheckpointBox take theirs
+// from the page. BoxTitle.tsx is the component itself; registry.tsx's locked-tool note never had one (CSS skips it).
+const MARKED_TOOL_TITLES: Record<string, number> = {
+  'coach/PlanSetup.tsx': 1, 'coach/ReviewDeck.tsx': 2, 'coach/TodayCard.tsx': 2,
+  'widgets/CheckpointBox.tsx': 1, 'widgets/CoachCheck.tsx': 1, 'widgets/ConsultationLab.tsx': 1, 'widgets/ErrorScoreCard.tsx': 1,
+  'widgets/FairHousingDrill.tsx': 1, 'widgets/GoalCalculator.tsx': 1, 'widgets/KnowledgeCheck.tsx': 1, 'widgets/LeadSources.tsx': 1,
+  'widgets/ObjectionCard.tsx': 1, 'widgets/PipelineCalculator.tsx': 1, 'widgets/PostCloseCard.tsx': 1, 'widgets/QualifyCard.tsx': 1,
+  'widgets/ResponseTimer.tsx': 1, 'widgets/ScriptBox.tsx': 1, 'widgets/TimeBlockPlanner.tsx': 1,
+  'widgets/BoxTitle.tsx': 1, 'widgets/registry.tsx': 1,
+};
+
+describe('box title markers', () => {
+  it('every page shows the marker on the same box titles as before, and none writes it', () => {
+    const dir = 'content/pages';
+    const found: Record<string, string[]> = {};
+    for (const f of readdirSync(dir).filter(f => f.endsWith('.html'))) {
+      const html = readFileSync(`${dir}/${f}`, 'utf8');
+      expect(html, f).not.toContain('●');
+      const titles = [...html.matchAll(/<(h3|div) class="box-title">([^<]*)<\/\1>/g)].map(m => `${m[1]} ${m[2]}`);
+      expect(html.match(/class="box-title"/g)?.length ?? 0, `${f}: a box title this check cannot read`).toBe(titles.length);
+      if (titles.length) found[f.replace(/\.html$/, '')] = titles;
+    }
+    expect(found).toEqual(MARKED_BOX_TITLES);
+  });
+
+  it('the tools keep their box titles, without the marker in the text', () => {
+    const found: Record<string, number> = {};
+    for (const f of readdirSync('components', { recursive: true, encoding: 'utf8' }).filter(f => f.endsWith('.tsx'))) {
+      const src = readFileSync(`components/${f}`, 'utf8');
+      expect(src, f).not.toMatch(/(className="box-title"|<BoxTitle)[^>]*>\s*●/);
+      const n = src.match(/className="box-title"|<BoxTitle\b/g)?.length ?? 0;
+      if (n) found[f] = n;
+    }
+    expect(found).toEqual(MARKED_TOOL_TITLES);
+  });
+
+  it('the stylesheet draws it, out of the accessible name, except on the locked-tool note', () => {
+    const css = readFileSync('app/globals.css', 'utf8');
+    expect(css).toMatch(/\.box-title::before \{[^}]*content: "● " \/ "";/);
+    expect(css).toContain('.tool-locked .box-title::before { content: none}');
+  });
+});

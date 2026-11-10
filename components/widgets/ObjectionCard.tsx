@@ -44,7 +44,7 @@ export function ObjectionCard({ items }: { items: Objection[] }) {
 
   return (
     <aside className="box try-it objection-trainer iw">
-      <h3 className="box-title">● PRACTICE · OBJECTION TRAINER</h3>
+      <h3 className="box-title">PRACTICE · OBJECTION TRAINER</h3>
       <InteractiveHeader hint="Read the objection, answer in your own words, reveal the framework, then rate yourself." widgetKey="objection-trainer" label="Objection trainer" />
       <p className="trainer-prompt" aria-live="polite">Client says: {current.objection}</p>
       <label className="practice-label">

@@ -29,5 +29,7 @@ export function ScriptPractice({ id, html }: { id: string; html?: string }) {
   if (html === undefined) throw new Error(`${id}: script-practice must wrap the script box's HTML`);
   const m = /^\s*<div class="box-title">([\s\S]*?)<\/div>([\s\S]*)$/.exec(html);
   if (!m) throw new Error(`${id}: script-practice expects a .box-title first`);
-  return <ScriptBox titleHtml={m[1]!} bodyHtml={m[2]!} storageKey={htmlText(m[1]!)} example={EXAMPLE_AUDIO[id]} />;
+  // The marker is drawn by CSS now, but practice already saved (here and on the static site) is keyed by the title
+  // text as it read with the marker, so the key keeps it.
+  return <ScriptBox titleHtml={m[1]!} bodyHtml={m[2]!} storageKey={`● ${htmlText(m[1]!)}`} example={EXAMPLE_AUDIO[id]} />;
 }

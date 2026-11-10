@@ -27,7 +27,7 @@ function CoachCheck({ page }: { page: string }) {
       : 'Say how sure you are, then answer. Progress tracking is off in Settings, so nothing here is saved.';
   return (
     <aside className="box quiz">
-      <h3 className="box-title">● TEST YOUR KNOWLEDGE</h3>
+      <h3 className="box-title">TEST YOUR KNOWLEDGE</h3>
       <InteractiveHeader
         hint={hint}
         widgetKey="knowledge-check"
