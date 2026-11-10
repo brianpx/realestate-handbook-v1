@@ -543,4 +543,186 @@ export const QUESTIONS: Question[] = [
     answer: 2,
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
+  // ch3
+  // ---- ch3.home-base
+  {
+    id: 'ch3.home-base.links', version: 1, concept: 'ch3.home-base', kind: 'mcq', draft: true,
+    prompt: 'Where should every link on your social profiles and email signature point?',
+    options: [
+      'Your brokerage\'s main home page',
+      'Your Agent Site, your home base',
+      'Whichever listing you posted last',
+      'A different page for each platform',
+    ],
+    answer: 1,
+    explain: 'Your Agent Site and Client App are the places you send everyone, so check that every social and signature link points to your Agent Site.',
+  },
+  {
+    id: 'ch3.home-base.reviews', version: 1, concept: 'ch3.home-base', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Another new agent offers to write you a glowing review if you write one for them. What does the chapter say?',
+    options: [
+      'Accept: any review helps a new agent',
+      'Accept, but post it only on Google',
+      'Decline: never write or trade reviews',
+      'Accept, as long as you reply to it',
+    ],
+    answer: 2,
+    explain: 'Ask only people you have actually served, never write or trade reviews, and reply to every one.',
+  },
+  {
+    id: 'ch3.home-base.not-write', version: 1, concept: 'ch3.home-base', kind: 'blank', draft: true,
+    before: 'Reviews are marketing you do not', after: '.',
+    answer: 'write', accept: ['write'],
+    explain: 'An online lead reads them before deciding whether to answer your call, and three honest reviews make a new agent look established.',
+  },
+
+  // ---- ch3.brand-promise
+  {
+    id: 'ch3.brand-promise.definition', version: 1, concept: 'ch3.brand-promise', kind: 'mcq', draft: true,
+    prompt: 'For a new agent, what does the chapter say a brand is?',
+    options: [
+      'A promise stated in one sentence, plus proof',
+      'A logo, a color scheme and a tagline',
+      'A custom website and printed business cards',
+      'A large following on two social platforms',
+    ],
+    answer: 0,
+    explain: 'Fill in "I help [who] [do what] in [where]" and use that sentence in your bio, your profile and your first post.',
+  },
+  {
+    id: 'ch3.brand-promise.no-sales', version: 1, concept: 'ch3.brand-promise', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You have no sold homes of your own yet. Where does the chapter suggest you find proof for your promise?',
+    options: [
+      'Stock photos of homes that sold in the region',
+      'Nowhere: hold off posting until your first closing',
+      'Your brokerage\'s total sales, presented as yours',
+      'A colleague\'s sale (with permission) or a local place',
+    ],
+    answer: 3,
+    explain: 'Until you have your own, borrow a colleague\'s with their permission, or profile a local business, a school or a park. Credibility starts with knowing the place.',
+  },
+  {
+    id: 'ch3.brand-promise.proof', version: 1, concept: 'ch3.brand-promise', kind: 'blank', draft: true,
+    before: 'Once your one-sentence promise is in your bio, profile and first post, every post after that is', after: 'of the sentence.',
+    answer: 'proof', accept: ['proof'],
+    explain: 'A brand is a promise stated in one sentence, plus proof.',
+  },
+
+  // ---- ch3.content-calendar
+  {
+    id: 'ch3.content-calendar.busy-week', version: 1, concept: 'ch3.content-calendar', kind: 'mcq', draft: true,
+    prompt: 'How does the chapter say to choose your content schedule?',
+    options: [
+      'Post every day for a month to build momentum',
+      'Post only when you have something polished',
+      'Pick one you can keep on a busy week, then keep it',
+      'Copy the schedule of the top agent in your market',
+    ],
+    answer: 2,
+    explain: 'People hire the agent they remember. A modest, consistent content schedule beats bursts of brilliance.',
+  },
+  {
+    id: 'ch3.content-calendar.market-numbers', version: 1, concept: 'ch3.content-calendar', kind: 'mcq', draft: true,
+    prompt: 'Which three numbers go in the monthly market update?',
+    options: [
+      'Listings taken, homes closed and commission earned',
+      'Median price, days on market and months of inventory',
+      'Mortgage rates, price per square foot and new builds',
+      'Showings, offers received and price reductions',
+    ],
+    answer: 1,
+    explain: 'The monthly market update goes out as an email newsletter via your CRM and as a mailer to your farm.',
+  },
+  {
+    id: 'ch3.content-calendar.batch', version: 1, concept: 'ch3.content-calendar', kind: 'blank', draft: true,
+    before: 'Batch-create a', after: 'of posts in one sitting.',
+    answer: 'month', accept: ['month', 'a month'],
+    explain: 'The Try It asks for next month\'s eight posts, two a week for four weeks, written in one sitting and scheduled.',
+  },
+
+  // ---- ch3.listing-marketing
+  {
+    id: 'ch3.listing-marketing.two-leads', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'Besides selling the house, what does good listing marketing generate?',
+    options: [
+      'A higher commission on the sale',
+      'Free placement from the portals',
+      'Referrals from other agents',
+      'Buyers who call and neighbor sellers',
+    ],
+    answer: 3,
+    explain: 'It generates buyers (who call about it) and sellers (neighbors who see you working). Every listing should produce buyers and future sellers, not only a closing.',
+  },
+  {
+    id: 'ch3.listing-marketing.nearest-homes', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'Before the open house, mailers or door-knocks should reach how many of the nearest homes?',
+    options: ['10', '25', '50', '200'],
+    answer: 2,
+    explain: 'The minimum for every listing includes mailers or door-knocks to the 50 nearest homes before the open house.',
+  },
+  {
+    id: 'ch3.listing-marketing.post-order', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'In what order do the five posts for one listing go out?',
+    options: [
+      'Coming soon, just listed, open house, under contract, just sold',
+      'Just listed, coming soon, open house, just sold, under contract',
+      'Open house, coming soon, just listed, under contract, just sold',
+      'Coming soon, open house, just listed, just sold, under contract',
+    ],
+    answer: 0,
+    explain: 'The "just sold" update, with a line about how many showings or offers it received, is the single best seller-lead post you can make.',
+  },
+
+  // ---- ch3.paid-ads
+  {
+    id: 'ch3.paid-ads.nine-pm', version: 1, concept: 'ch3.paid-ads', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A 9 p.m. lead gets an instant automated reply, but there is no 90-day plan and the morning call depends on your memory. Are you ready to pay for leads?',
+    options: [
+      'Yes: the immediate automated reply is what counts',
+      'No: all three must happen without you remembering',
+      'Yes, as long as you make the call sometime that week',
+      'Only for portal placements, not for social media ads',
+    ],
+    answer: 1,
+    explain: 'The 9 p.m. test needs an immediate automated reply, a call by the next morning and a 90-day plan, all without you having to remember. You build all three in Chapters 4 and 5.',
+  },
+  {
+    id: 'ch3.paid-ads.start-small', version: 1, concept: 'ch3.paid-ads', kind: 'mcq', draft: true,
+    prompt: 'Once your system passes the test, how does the chapter say to start paid advertising?',
+    options: [
+      'Run every source at once and keep whichever wins',
+      'Spend the full budget in the first month for speed',
+      'Copy the ads a top agent in your market is running',
+      'Start small, one source at a time for 90 days',
+    ],
+    answer: 3,
+    explain: 'Track cost per appointment and cost per closed deal before scaling.',
+  },
+  {
+    id: 'ch3.paid-ads.leak', version: 1, concept: 'ch3.paid-ads', kind: 'blank', draft: true,
+    before: 'Buying leads before your follow-up system can catch and nurture them is buying a', after: '.',
+    answer: 'leak', accept: ['leak', 'a leak'],
+    explain: 'Paid ads amplify a system. They cannot replace one.',
+  },
+
+  // ---- ch3.calendar-budget
+  {
+    id: 'ch3.calendar-budget.pitfall', version: 1, concept: 'ch3.calendar-budget', kind: 'mcq', draft: true,
+    prompt: 'Which spending does the chapter\'s pitfall warn against?',
+    options: [
+      'Branding before spending time on conversations',
+      'Professional photography for every listing',
+      'Mailers to the homes nearest your listing',
+      'A small, tracked test of one paid source',
+    ],
+    answer: 0,
+    explain: 'Logos, car magnets and a custom website produce nothing on their own.',
+  },
+  {
+    id: 'ch3.calendar-budget.calendar', version: 1, concept: 'ch3.calendar-budget', kind: 'blank', draft: true,
+    before: 'Your first marketing budget is your', after: '.',
+    answer: 'calendar', accept: ['calendar'],
+    explain: 'Be easy to find, easy to remember and easy to trust without spending money you do not yet need to spend.',
+  },
+  // end ch3
 ];
