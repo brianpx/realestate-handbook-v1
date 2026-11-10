@@ -15,7 +15,7 @@ export function QualifyCard({ phrasing }: { phrasing: Record<string, string> }) 
   // each lead starts fresh: the key remounts the form so ticks and the chosen stage clear
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● PRACTICE · QUALIFY AND STAGE A LEAD</h3>
+      <h3 className="box-title">PRACTICE · QUALIFY AND STAGE A LEAD</h3>
       <InteractiveHeader hint="Read each lead, tick the questions already answered, then choose where the lead belongs." widgetKey="qualifying-drill" label="Qualifying drill" />
       <div className="drill">
         <div className="drill-progress">Lead {index + 1} of {QUALIFY_SCENARIOS.length} · {Object.keys(saved).length} done</div>

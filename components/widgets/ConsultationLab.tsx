@@ -11,7 +11,7 @@ export function ConsultationLab() {
   const { total, share, ok, text } = allocSummary(minutes);
   return (
     <aside className="box try-it iw">
-      <h3 className="box-title">● LAB · THE FIVE-STEP CONSULTATION</h3>
+      <h3 className="box-title">LAB · THE FIVE-STEP CONSULTATION</h3>
       <InteractiveHeader hint="Rebalance a meeting, then spot where four sample consultations went wrong." widgetKey="consultation-lab" label="Consultation lab" />
       <div className="alloc">
         <h4 className="lab-title">1. Spend the meeting well</h4>

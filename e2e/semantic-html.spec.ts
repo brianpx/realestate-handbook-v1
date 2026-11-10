@@ -27,6 +27,9 @@ test('a chapter has one h1, real landmarks, and the previous heading sizes', asy
   const note = page.locator('aside.box.field-note');
   await expect(note.locator('h3.box-title')).toHaveCSS('font-size', '12px');
   await expect(note.locator('h3.box-title')).toHaveCSS('color', 'rgb(3, 105, 161)');
+  // the marker is drawn, not announced: the heading is named by its words alone
+  await expect(note.getByRole('heading', { level: 3, name: 'FIELD NOTE', exact: true })).toBeVisible();
+  expect(await note.locator('h3.box-title').evaluate(el => getComputedStyle(el, '::before').content)).toContain('●');
   await expect(page.locator('aside.box.try-it ul li')).toHaveCount(5);
 
   await expect(page.locator('table caption').first()).toContainText('Table 1.1');

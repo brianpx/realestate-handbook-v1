@@ -94,3 +94,30 @@ it('every shipped page has valid markers', () => {
     .flatMap(f => validateMarkers(f.replace(/\.html$/, ''), readFileSync(`${dir}/${f}`, 'utf8')));
   expect(problems).toEqual([]);
 });
+
+// CR-L19: the "●" before a box title is drawn by `.box-title::before`, not written in the heading, so screen readers
+// don't announce it. Any .box-title shows it; writing it in the text as well would show it twice.
+describe('box title markers', () => {
+  it('no page writes the marker, and every box title is one this check can read', () => {
+    const dir = 'content/pages';
+    for (const f of readdirSync(dir).filter(f => f.endsWith('.html'))) {
+      const html = readFileSync(`${dir}/${f}`, 'utf8');
+      expect(html, f).not.toContain('●');
+      const readable = html.match(/<(h[2-4]|div) class="box-title">[^<]*<\/\1>/g)?.length ?? 0;
+      expect(html.match(/class="box-title"/g)?.length ?? 0, `${f}: a box title this check cannot read`).toBe(readable);
+    }
+  });
+
+  it('no tool writes the marker at the start of a box title', () => {
+    for (const f of readdirSync('components', { recursive: true, encoding: 'utf8' }).filter(f => f.endsWith('.tsx'))) {
+      expect(readFileSync(`components/${f}`, 'utf8'), f).not.toMatch(/(className="box-title"|<BoxTitle)[^>]*>\s*●/);
+    }
+  });
+
+  it('the stylesheet draws it, out of the accessible name, except on the locked-tool note', () => {
+    const css = readFileSync('app/globals.css', 'utf8');
+    expect(css).toMatch(/\.box-title::before\s*\{[^}]*content:\s*"●\s*"\s*\/\s*""\s*;/);
+    expect(css).toMatch(/\.tool-locked\s+\.box-title::before\s*\{\s*content:\s*none\s*;?\s*\}/);
+  });
+});
+

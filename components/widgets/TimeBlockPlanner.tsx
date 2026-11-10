@@ -20,7 +20,7 @@ export function TimeBlockPlanner() {
 
   return (
     <aside className="box try-it iw">
-      <BoxTitle>● PLANNER · YOUR WEEKLY TIME BLOCKS</BoxTitle>
+      <BoxTitle>PLANNER · YOUR WEEKLY TIME BLOCKS</BoxTitle>
       <InteractiveHeader
         hint="Set your own start time and block lengths, check that lead generation lands before noon, then add the blocks to your calendar."
         widgetKey="timeblock-planner"

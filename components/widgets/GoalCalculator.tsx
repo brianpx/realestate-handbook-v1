@@ -137,7 +137,7 @@ export function GoalCalculator() {
         </div>
       </dialog>
       <aside className="box try-it calc-panel iw">
-        <BoxTitle>● CALCULATOR · YOUR DAILY TARGET</BoxTitle>
+        <BoxTitle>CALCULATOR · YOUR DAILY TARGET</BoxTitle>
         <div className="calc-stats" role="status">
           {shown ? (
             <>

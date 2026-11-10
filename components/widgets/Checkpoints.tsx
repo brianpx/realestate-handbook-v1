@@ -13,6 +13,6 @@ export function Checkpoints({ page, html }: { page: string; html?: string }) {
   if (questions.length !== answers.length) {
     throw new Error(`${page}: ${questions.length} checkpoint questions but ${answers.length} answers. Questions are matched to answers by position.`);
   }
-  const title = /<div class="box-title">([\s\S]*?)<\/div>/.exec(html)?.[1] ?? '● CHECKPOINT';
+  const title = /<div class="box-title">([\s\S]*?)<\/div>/.exec(html)?.[1] ?? 'CHECKPOINT';
   return <CheckpointBox page={page} titleHtml={title} questions={questions} answers={answers} />;
 }

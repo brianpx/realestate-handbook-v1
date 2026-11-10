@@ -3,7 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 // Parity checks for script practice (ch6, ch9, ch11, preface) and the objection trainer (ch9). Assertions were
 // read off setupScriptPractice and setupObjectionTrainer in legacy/js/interactive.js, not observed by running
 // the static site.
-const KEY = '● SCRIPT · NEW LEAD BY PHONE (SPEED-TO-LEAD)';
+const TITLE = 'SCRIPT · NEW LEAD BY PHONE (SPEED-TO-LEAD)';
+// Saved practice keeps the key it had when the title text carried the marker (now drawn by CSS).
+const KEY = `● ${TITLE}`;
 const state = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem('handbookState') ?? '{}'));
 const firstBox = (page: Page) => page.locator('.box.script').first();
 
@@ -13,7 +15,7 @@ test.describe('script practice', () => {
     await expect(page.locator('.box.script')).toHaveCount(16);
     await expect(page.locator('.script-actions .interactive-pill')).toHaveCount(16);
     const box = firstBox(page);
-    await expect(box.locator('.box-title')).toHaveText(KEY);
+    await expect(box.locator('.box-title')).toHaveText(TITLE);
     await expect(box.locator('.script-body')).toContainText('Hi [Name], this is [Your Name] with [Your Brokerage].');
     await expect(box.getByRole('button', { name: 'Copy script' })).toBeVisible();
     await expect(box.locator('.practice-area')).toBeHidden();

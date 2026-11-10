@@ -17,7 +17,7 @@ export function ErrorScoreCard({ errors }: { errors: ErrorRow[] }) {
   const chapterHref = isPageId(chapterId) ? pageHref(chapterId) : null;
   return (
     <aside className="box try-it iw">
-      <BoxTitle>● SELF-SCORE · THE SIX ERRORS</BoxTitle>
+      <BoxTitle>SELF-SCORE · THE SIX ERRORS</BoxTitle>
       <InteractiveHeader hint="Rate how often each error shows up in your week, from 1 (never) to 5 (every day)." widgetKey="error-self-score" label="Six-errors self-score" />
       <div className="score-rows">
         {errors.map((err, i) => (

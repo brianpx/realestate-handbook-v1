@@ -24,7 +24,7 @@ const steps = (page: Page) => nextCard(page).locator('li');
 async function startPlan(page: Page) {
   await page.goto('/handbook/plan');
   await page.getByRole('button', { name: 'Start my plan' }).click();
-  await expect(nextCard(page).locator('.box-title')).toHaveText('● TODAY');
+  await expect(nextCard(page).locator('.box-title')).toHaveText('TODAY');
 }
 
 // ch1 has no tagged questions, so all three steps are buttons on the card.
@@ -60,7 +60,7 @@ test.describe('starting a plan', () => {
   test('previews the schedule from today, saves it, and shows only the first session', async ({ page }) => {
     await page.goto('/handbook/plan');
     const form = page.locator('form.box');
-    await expect(form.locator('.box-title')).toHaveText('● START YOUR READING PLAN');
+    await expect(form.locator('.box-title')).toHaveText('START YOUR READING PLAN');
     await expect(page.getByLabel('Start date')).toHaveValue('2026-11-20');
     await expect(page.getByLabel('Start date')).toHaveAttribute('min', '2026-11-20');
     await expect(page.getByRole('radio', { name: '4-week plan (recommended)' })).toBeChecked();
@@ -71,7 +71,7 @@ test.describe('starting a plan', () => {
     await expect(form).not.toContainText('Heads up');
 
     await page.getByRole('button', { name: 'Start my plan' }).click();
-    await expect(nextCard(page).locator('.box-title')).toHaveText('● TODAY');
+    await expect(nextCard(page).locator('.box-title')).toHaveText('TODAY');
     await expect(nextCard(page)).toContainText('1. Mindset & Foundations');
     await expect(steps(page)).toHaveText([
       '○ Read the chapter. Open it Mark read',
@@ -87,7 +87,7 @@ test.describe('starting a plan', () => {
     expect(saved.plan).toMatchObject({ startDate: '2026-11-20', pace: 'default', studyDays: [1, 2, 3, 4, 5], time: '08:00' });
     expect(saved.plan.sessions.map((s: { id: string }) => s.id)).toEqual(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13']);
     await page.reload();
-    await expect(nextCard(page).locator('.box-title')).toHaveText('● TODAY');
+    await expect(nextCard(page).locator('.box-title')).toHaveText('TODAY');
   });
 
   test('a sprint on two days a week warns and stretches; no study day means no plan', async ({ page }) => {
@@ -114,7 +114,7 @@ test('marking read, exercise and questions completes the session and moves on to
   await expect(steps(page).nth(1)).toHaveText('✓ Do the exercise (“Try it today”).');
   await page.getByRole('button', { name: 'I answered them' }).click();
 
-  await expect(nextCard(page).locator('.box-title')).toHaveText('● NEXT · MON, NOV 23');
+  await expect(nextCard(page).locator('.box-title')).toHaveText('NEXT · MON, NOV 23');
   await expect(nextCard(page)).toContainText('2. Finding Clients');
   await expect(steps(page).last()).toHaveText('○ Answer the questions at the end of the chapter. Go to the questions'); // ch2 has tagged questions
   await expect(page.getByRole('link', { name: 'Go to the questions' })).toHaveAttribute('href', '/handbook/ch2');
@@ -148,14 +148,14 @@ test.describe('the review deck', () => {
     await page.getByRole('link', { name: '1 idea is due for review' }).click();
     await expect(page).toHaveURL(/\/handbook\/review$/);
     const card = page.locator('aside.box');
-    await expect(card.locator('.box-title')).toHaveText('● REVIEW · 1 OF 1');
+    await expect(card.locator('.box-title')).toHaveText('REVIEW · 1 OF 1');
     await expect(card.locator('.quiz-sentence em')).toHaveText('The daily rhythm: open and close in the CRM, follow-ups before prospecting');
     await expect(card.locator('legend')).toHaveText('In the daily rhythm, why do follow-ups come before prospecting?');
     await answer(card, 'Think so', 2);
     await expect(card.locator('.drill-feedback')).toHaveText('✓ Correct. The day opens and closes in your CRM, and the order matters because of this reason.');
     await expect(card).toContainText('Next review: in 3 days.');
     await page.getByRole('button', { name: 'Finish' }).click();
-    await expect(card.locator('.box-title')).toHaveText('● DONE FOR NOW');
+    await expect(card.locator('.box-title')).toHaveText('DONE FOR NOW');
     await expect(card).toContainText('1 of 1 right on the first try.');
     await expect(card).toContainText('Nothing else is due. Your next review is in 3 days.');
     const attempts = (await coach(page)).attempts;
@@ -169,7 +169,7 @@ test.describe('the review deck', () => {
     await page.clock.setFixedTime(DAY2);
     await page.goto('/handbook/review');
     const card = page.locator('aside.box');
-    await expect(card.locator('.box-title')).toHaveText('● REVIEW · 1 OF 1');
+    await expect(card.locator('.box-title')).toHaveText('REVIEW · 1 OF 1');
     await answer(card, 'Guessing', 1);
     await expect(card.locator('.drill-feedback')).toContainText('✗ Not quite.');
     await expect(card.getByRole('link', { name: 'Read the passage in 4. Your CRM and daily operating system' })).toHaveAttribute('href', '/handbook/ch4#the-daily-rhythm');
@@ -177,12 +177,12 @@ test.describe('the review deck', () => {
     await expect(card).toContainText('You will see this idea again in a few questions.');
     await page.getByRole('button', { name: 'Next question' }).click();
 
-    await expect(card.locator('.box-title')).toHaveText('● REVIEW · 2 OF 2 · ONE MORE TRY');
+    await expect(card.locator('.box-title')).toHaveText('REVIEW · 2 OF 2 · ONE MORE TRY');
     await answer(card, 'Sure', 2);
     await expect(card.locator('.drill-feedback')).toContainText('✓ Correct.');
     await expect(card).not.toContainText('Next review:'); // the retest is practice and does not move the due date
     await page.getByRole('button', { name: 'Finish' }).click();
-    await expect(card.locator('.box-title')).toHaveText('● DONE FOR NOW');
+    await expect(card.locator('.box-title')).toHaveText('DONE FOR NOW');
     await expect(card).toContainText('0 of 1 right on the first try.');
     await expect(card).toContainText('Ideas to look at again:');
     await expect(card.getByRole('link', { name: 'The daily rhythm: open and close in the CRM, follow-ups before prospecting' })).toHaveAttribute('href', '/handbook/ch4#the-daily-rhythm');
@@ -214,19 +214,19 @@ test('Download my progress carries the plan, its steps and the attempts to a fre
     await other.clock.setFixedTime(DAY1);
     await other.goto('/handbook/plan');
     await waitForHydration(other);
-    await expect(other.locator('form.box .box-title')).toHaveText('● START YOUR READING PLAN');
+    await expect(other.locator('form.box .box-title')).toHaveText('START YOUR READING PLAN');
     await other.locator('details.settings summary').click();
     await other.setInputFiles('#settingImportFile', { name: download.suggestedFilename(), mimeType: 'application/json', buffer: Buffer.from(text) });
     await other.getByRole('button', { name: 'Replace my progress' }).click();
     await expect(other.locator('#settingTransferNote')).toHaveText('Progress restored.');
 
-    await expect(nextCard(other).locator('.box-title')).toHaveText('● NEXT · MON, NOV 23');
+    await expect(nextCard(other).locator('.box-title')).toHaveText('NEXT · MON, NOV 23');
     await expect(other.getByText('1 of 13 sessions complete. On pace.')).toBeVisible();
     expect(await coach(other)).toEqual(file.handbookCoach);
     await other.clock.setFixedTime(DAY2);
     await other.goto('/handbook/review');
     await waitForHydration(other);
-    await expect(other.locator('aside.box .box-title')).toHaveText('● REVIEW · 1 OF 1');
+    await expect(other.locator('aside.box .box-title')).toHaveText('REVIEW · 1 OF 1');
     await expect(other.locator('aside.box .quiz-sentence em')).toHaveText('The daily rhythm: open and close in the CRM, follow-ups before prospecting');
   } finally {
     await fresh.close();

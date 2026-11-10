@@ -6,7 +6,7 @@ import { blankVerdict, checkpointConfident, parseCheckpointQuestions, rollupText
 
 describe('parseCheckpointQuestions', () => {
   it('reads bullets split on <br>, without the title', () => {
-    const html = '\n<div class="box-title">● CHECKPOINT</div>\n • First <em>one</em>?<br>\n • Second?<br>\n • Third?\n';
+    const html = '\n<div class="box-title">CHECKPOINT</div>\n • First <em>one</em>?<br>\n • Second?<br>\n • Third?\n';
     expect(parseCheckpointQuestions(html)).toEqual(['First one?', 'Second?', 'Third?']);
   });
 });
