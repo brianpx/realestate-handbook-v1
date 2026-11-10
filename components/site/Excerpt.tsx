@@ -22,8 +22,8 @@ const PREVIEW_WIDGETS: Partial<Record<WidgetName, ComponentType<WidgetProps>>> =
   'script-practice': ScriptPractice,
   'timeblock-planner': TimeBlockPlanner,
   checkpoints: Checkpoints,
-  // the plain quiz, not KnowledgeCheckEntry: the sample must never switch to the coach's version, which writes
-  // coach attempts, when Chapter 1 or 7 questions gain concept tags
+  // the plain quiz, not KnowledgeCheckEntry: Chapters 1 and 7 have tagged questions, and the sample must never
+  // switch to the coach's version, which writes coach attempts
   'knowledge-check': KnowledgeCheck,
   'pitfall-cycle': PitfallCycle,
   'error-self-score': ErrorSelfScore,

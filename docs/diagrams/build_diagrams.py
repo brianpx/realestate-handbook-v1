@@ -603,7 +603,7 @@ items = [(40, 110, "1", "Measure activity, not closings: 3 to 4 conversations a 
          (40, 340, "3", "Your CRM is the only list. Open it first, update it last."),
          (860, 110, "4", "Respond to new leads in minutes. Then follow up 13 times over 90 days."),
          (860, 225, "5", "Ask, listen, present, agree. Objections are questions."),
-         (860, 340, "6", "Every client is assigned the post-close plan when the contract goes under contract, and it starts on closing day.")]
+         (860, 340, "6", "Every client is assigned the post-close plan when the client goes under contract, and it starts on closing day.")]
 for x, y, n, t in items:
     b.append(box(x, y, 380, 96, t, "pale", fs=18, bold=False))
     b.append(f'<circle cx="{x+380 if x<400 else x}" cy="{y+48}" r="19" fill="{BLUE}"/>')

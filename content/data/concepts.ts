@@ -493,7 +493,7 @@ export const CONCEPTS: Concept[] = [
     id: 'ch10.post-close-plan',
     chapter: 'ch10',
     title: 'Every closed client goes on the post-close plan: seven dated touches in the first year',
-    summary: 'Built once, assigned on the day the contract goes under contract, activated on closing day; after the first year the client stays on the Quarterly Call Plan.',
+    summary: 'Built once, assigned on the day the client goes under contract, activated on closing day; after the first year the client stays on the Quarterly Call Plan.',
     anchor: 'the-post-close-plan',
     version: 1,
   },
@@ -627,6 +627,14 @@ export const CONCEPTS: Concept[] = [
     title: 'Write one implementation intention for next Monday morning',
     summary: 'In the form "On [day], at [time], I will [action]."',
     anchor: 'plan-the-next-90-days',
+    version: 1,
+  },
+  {
+    id: 'ch13.one-card',
+    chapter: 'ch13',
+    title: 'The whole handbook on one card: seven lines that are the system',
+    summary: 'Measure activity, work your sphere first, keep the CRM as the only list, respond in minutes and follow up 13 times over 90 days, ask before presenting, assign the post-close plan, review every Friday.',
+    anchor: 'the-whole-handbook-on-one-card',
     version: 1,
   },
   // end ch13

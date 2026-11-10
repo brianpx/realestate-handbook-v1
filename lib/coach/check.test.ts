@@ -1,32 +1,46 @@
 import { describe, expect, it } from 'vitest';
+import { CONCEPTS } from '../../content/data/concepts';
 import { KNOWLEDGE_CHECKS } from '../../content/data/knowledge-checks';
-import { QUESTIONS } from '../../content/data/questions';
+import { QUESTIONS, type Question } from '../../content/data/questions';
 import { attemptInput, chapterCheck, hasCoachCheck, isCorrect } from './check';
 
+const CHAPTER_OF = new Map(CONCEPTS.map(c => [c.id, c.chapter]));
+
+// The chapter's shipped quiz leads: its three multiple-choice questions come first, word for word and in order, and
+// its blank is the first blank. Anything approved later follows them within its kind.
+function expectShippedFirst(chapter: string, questions: Question[]) {
+  const legacy = KNOWLEDGE_CHECKS[chapter]!;
+  const mcq = questions.flatMap(q => (q.kind === 'mcq' ? [q] : []));
+  const blank = questions.flatMap(q => (q.kind === 'blank' ? [q] : []));
+  expect(mcq.slice(0, 3).map(q => ({ prompt: q.prompt, options: q.options, answer: q.answer, explain: q.explain })))
+    .toEqual(legacy.mcq.map(m => ({ prompt: m.q, options: m.options, answer: m.answer, explain: m.explain })));
+  expect(blank[0]).toMatchObject({ before: legacy.blank.before, after: legacy.blank.after, answer: legacy.blank.answer, accept: legacy.blank.accept, explain: legacy.blank.explain });
+  for (const q of [...mcq.slice(0, 3), blank[0]!]) expect({ id: q.id, version: q.version, draft: q.draft }).toEqual({ id: q.id, version: 1, draft: undefined });
+}
+
 describe('chapterCheck', () => {
-  it('asks the same four questions the chapter shipped with, in the same order', () => {
-    const legacy = KNOWLEDGE_CHECKS.ch4!;
-    const check = chapterCheck('ch4');
-    expect(check.map(q => q.kind)).toEqual(['mcq', 'mcq', 'mcq', 'blank']);
-    check.slice(0, 3).forEach((q, i) => {
-      if (q.kind !== 'mcq') throw new Error('expected mcq');
-      expect({ prompt: q.prompt, options: q.options, answer: q.answer, explain: q.explain })
-        .toEqual({ prompt: legacy.mcq[i]!.q, options: legacy.mcq[i]!.options, answer: legacy.mcq[i]!.answer, explain: legacy.mcq[i]!.explain });
-    });
-    const blank = check[3]!;
-    if (blank.kind !== 'blank') throw new Error('expected blank');
-    expect(blank).toMatchObject({ before: legacy.blank.before, after: legacy.blank.after, answer: legacy.blank.answer, accept: legacy.blank.accept, explain: legacy.blank.explain });
+  const chapters = Object.keys(KNOWLEDGE_CHECKS);
+
+  it.each(chapters)('%s opens with the four questions the chapter shipped with, in the same order', chapter => {
+    const check = chapterCheck(chapter);
+    expect(check.slice(0, 3).map(q => q.kind)).toEqual(['mcq', 'mcq', 'mcq']);
+    expectShippedFirst(chapter, check);
+  });
+
+  it.each(chapters)('%s still opens with them once every draft is approved', chapter => {
+    expectShippedFirst(chapter, QUESTIONS.filter(q => CHAPTER_OF.get(q.concept) === chapter));
   });
 
   it('leaves draft questions out', () => {
-    expect(chapterCheck('ch4').some(q => q.draft)).toBe(false);
+    for (const chapter of chapters) expect(chapterCheck(chapter).some(q => q.draft), chapter).toBe(false);
     expect(QUESTIONS.some(q => q.draft)).toBe(true);
   });
 
-  it('is empty for an untagged chapter, which keeps the plain check', () => {
-    expect(chapterCheck('ch1')).toEqual([]);
-    expect(hasCoachCheck('ch1')).toBe(false);
-    expect(hasCoachCheck('ch4')).toBe(true);
+  it('gives all 13 chapters a coach check and nothing to a page without tagged questions', () => {
+    expect(chapters).toHaveLength(13);
+    for (const chapter of chapters) expect(hasCoachCheck(chapter), chapter).toBe(true);
+    expect(chapterCheck('app-a')).toEqual([]);
+    expect(hasCoachCheck('app-a')).toBe(false);
   });
 });
 

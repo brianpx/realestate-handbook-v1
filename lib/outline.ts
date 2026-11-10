@@ -27,10 +27,14 @@ function attrId(attrs: string): string | null {
   return /\bid="([^"]+)"/.exec(attrs)?.[1] ?? null;
 }
 
-/** Section headings (h2s that carry an id), in order. Empty when the page has fewer than OUTLINE_MIN of them. */
+/**
+ * Section headings (h2s that carry an id), in order. Empty when the page has fewer than OUTLINE_MIN of them.
+ * Key takeaways stay out even with an id: Chapter 13's one-card heading has one only as a review-deck anchor.
+ */
 export function collectOutline(html: string): OutlineItem[] {
   const items: OutlineItem[] = [];
-  for (const match of html.matchAll(H2)) {
+  const body = html.replace(/<section class="key-takeaways">[\s\S]*?<\/section>/g, '');
+  for (const match of body.matchAll(H2)) {
     const id = attrId(match[1] ?? '');
     const text = headingText(match[2] ?? '');
     if (!id || !text) continue;

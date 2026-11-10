@@ -2,6 +2,7 @@
 // (version 1); `draft` marks questions written for the review bank that still need an accuracy review by
 // someone who has worked as an agent. Every answer must come from the chapter text.
 // Bump `version` on any edit to the prompt, options or answer.
+// Keep each chapter's shipped block ahead of its drafts: chapterCheck() asks questions in file order within each kind.
 export type QuestionBase = {
   id: string;
   version: number;
@@ -16,6 +17,50 @@ export type BlankQuestion = QuestionBase & { kind: 'blank'; before: string; afte
 export type Question = McqQuestion | BlankQuestion;
 
 export const QUESTIONS: Question[] = [
+  // ---- ch4: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch4.daily-rhythm.followups-first', version: 1, concept: 'ch4.daily-rhythm', kind: 'mcq',
+    prompt: 'In the daily rhythm, why do follow-ups come before prospecting?',
+    options: [
+      'Prospecting calls work better in the afternoon',
+      'Follow-ups take longer, so they go first',
+      'A lead you already have is worth more than one you have not met yet',
+      'Your CRM will not let you prospect first',
+    ],
+    answer: 2,
+    explain: 'The day opens and closes in your CRM, and the order matters because of this reason.',
+  },
+  {
+    id: 'ch4.speed-to-lead.two-layers', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq',
+    prompt: 'What are the two layers of the speed-to-lead standard?',
+    options: [
+      'A live call within one minute and an email within a day',
+      'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
+      'A voicemail within an hour and a text within a day',
+      'A personal email within 30 minutes and a call within a week',
+    ],
+    answer: 1,
+    explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.',
+  },
+  {
+    id: 'ch4.optional-tools.when', version: 1, concept: 'ch4.optional-tools', kind: 'mcq',
+    prompt: 'When should you add optional tools such as AI texting assistants or dialers?',
+    options: [
+      'In your first week',
+      'As soon as a competitor has one',
+      'Whenever a vendor offers a free trial',
+      'When your basic CRM system runs cleanly and your lead volume means the tool pays for itself',
+    ],
+    answer: 3,
+    explain: 'A tool you have not mastered is one more place for a lead to get lost.',
+  },
+  {
+    id: 'ch4.speed-to-lead.five-minutes', version: 1, concept: 'ch4.speed-to-lead', kind: 'blank',
+    before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
+    answer: '5', accept: ['5', 'five'],
+    explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4.3 is an illustrative shape, not measured data.',
+  },
+
   // ---- ch4.crm-setup
   {
     id: 'ch4.crm-setup.profile-first', version: 1, concept: 'ch4.crm-setup', kind: 'mcq', draft: true,
@@ -57,18 +102,6 @@ export const QUESTIONS: Question[] = [
 
   // ---- ch4.daily-rhythm
   {
-    id: 'ch4.daily-rhythm.followups-first', version: 1, concept: 'ch4.daily-rhythm', kind: 'mcq',
-    prompt: 'In the daily rhythm, why do follow-ups come before prospecting?',
-    options: [
-      'Prospecting calls work better in the afternoon',
-      'Follow-ups take longer, so they go first',
-      'A lead you already have is worth more than one you have not met yet',
-      'Your CRM will not let you prospect first',
-    ],
-    answer: 2,
-    explain: 'The day opens and closes in your CRM, and the order matters because of this reason.',
-  },
-  {
     id: 'ch4.daily-rhythm.protect-blocks', version: 1, concept: 'ch4.daily-rhythm', kind: 'mcq', draft: true,
     prompt: 'Which blocks does Table 4.1 say to protect before you accept any appointment?',
     options: [
@@ -100,24 +133,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch4.speed-to-lead
-  {
-    id: 'ch4.speed-to-lead.two-layers', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq',
-    prompt: 'What are the two layers of the speed-to-lead standard?',
-    options: [
-      'A live call within one minute and an email within a day',
-      'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
-      'A voicemail within an hour and a text within a day',
-      'A personal email within 30 minutes and a call within a week',
-    ],
-    answer: 1,
-    explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.',
-  },
-  {
-    id: 'ch4.speed-to-lead.five-minutes', version: 1, concept: 'ch4.speed-to-lead', kind: 'blank',
-    before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
-    answer: '5', accept: ['5', 'five'],
-    explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4.3 is an illustrative shape, not measured data.',
-  },
   {
     id: 'ch4.speed-to-lead.showing', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq', draft: true, scenario: true,
     prompt: 'A new inquiry arrives while you are showing a house. What is the right plan?',
@@ -188,18 +203,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch4.optional-tools
-  {
-    id: 'ch4.optional-tools.when', version: 1, concept: 'ch4.optional-tools', kind: 'mcq',
-    prompt: 'When should you add optional tools such as AI texting assistants or dialers?',
-    options: [
-      'In your first week',
-      'As soon as a competitor has one',
-      'Whenever a vendor offers a free trial',
-      'When your basic CRM system runs cleanly and your lead volume means the tool pays for itself',
-    ],
-    answer: 3,
-    explain: 'A tool you have not mastered is one more place for a lead to get lost.',
-  },
   {
     id: 'ch4.optional-tools.second-crm', version: 1, concept: 'ch4.optional-tools', kind: 'mcq', draft: true, scenario: true,
     prompt: 'An agent has a working CRM setup and about 30 leads a month. Should they add a second CRM?',
@@ -322,7 +325,7 @@ export const QUESTIONS: Question[] = [
     explain: 'The three: when did I last have a real two-way conversation, what is the next step and is it scheduled, and is this person in the right stage.',
   },
 
-  // ---- ch12.phases
+  // ---- ch12: the four questions the chapter shipped with, reviewed (version 1)
   {
     id: 'ch12.phases.three-phases', version: 1, concept: 'ch12.phases', kind: 'mcq',
     prompt: 'What are the three 30-day phases of the first 90 days?',
@@ -331,11 +334,27 @@ export const QUESTIONS: Question[] = [
     explain: 'Days 1 to 30 install the system, 31 to 60 build the rhythm, and 61 to 90 grow the pipeline.',
   },
   {
+    id: 'ch12.pipeline-milestone.five-active', version: 1, concept: 'ch12.pipeline-milestone', kind: 'mcq',
+    prompt: 'By days 61 to 90, how many active opportunities should your pipeline review show?',
+    options: ['1', '3', '5 or more', '20'],
+    answer: 2,
+    explain: 'Also by day 90: your first contract written, the post-close plan built and lead sources evaluated with data.',
+  },
+  {
+    id: 'ch12.scorecard.which-list', version: 1, concept: 'ch12.scorecard', kind: 'mcq',
+    prompt: 'Which list is the weekly scorecard?',
+    options: ['Closings, commission, listings and referrals', 'Appendix A, the same rows as Table 8.2', 'Calls, emails, posts and mailers', 'Showings, offers, contracts and closings'],
+    answer: 1,
+    explain: 'Fill in Appendix A every Friday. Table 8.2 is that same list, not a shorter one.',
+  },
+  {
     id: 'ch12.phases.closings-follow', version: 1, concept: 'ch12.phases', kind: 'blank',
     before: 'Closings usually follow in the', after: '90 days.',
     answer: 'second', accept: ['second', '2nd'],
     explain: 'The first 90 days are for installing the system and building a pipeline, so do not worry about closings yet.',
   },
+
+  // ---- ch12.phases
   {
     id: 'ch12.phases.fifty-conversations', version: 1, concept: 'ch12.phases', kind: 'mcq', draft: true,
     prompt: 'In days 1 to 30, at least how many real conversations should you have with your sphere?',
@@ -345,13 +364,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch12.pipeline-milestone
-  {
-    id: 'ch12.pipeline-milestone.five-active', version: 1, concept: 'ch12.pipeline-milestone', kind: 'mcq',
-    prompt: 'By days 61 to 90, how many active opportunities should your pipeline review show?',
-    options: ['1', '3', '5 or more', '20'],
-    answer: 2,
-    explain: 'Also by day 90: your first contract written, the post-close plan built and lead sources evaluated with data.',
-  },
   {
     id: 'ch12.pipeline-milestone.by-day-90', version: 1, concept: 'ch12.pipeline-milestone', kind: 'mcq', draft: true,
     prompt: 'Which of these belongs to days 61 to 90?',
@@ -366,13 +378,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch12.scorecard
-  {
-    id: 'ch12.scorecard.which-list', version: 1, concept: 'ch12.scorecard', kind: 'mcq',
-    prompt: 'Which list is the weekly scorecard?',
-    options: ['Closings, commission, listings and referrals', 'Appendix A, the same rows as Table 8.2', 'Calls, emails, posts and mailers', 'Showings, offers, contracts and closings'],
-    answer: 1,
-    explain: 'Fill in Appendix A every Friday. Table 8.2 is that same list, not a shorter one.',
-  },
   {
     id: 'ch12.scorecard.core-numbers', version: 1, concept: 'ch12.scorecard', kind: 'blank', draft: true,
     before: 'If the full scorecard is too much at first, start with the', after: 'core numbers from Chapter 8.',
@@ -427,9 +432,44 @@ export const QUESTIONS: Question[] = [
     explain: 'The compliance card comes from Chapter 11.',
   },
 
+  // ---- ch2: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch2.sphere.highest-return', version: 1, concept: 'ch2.sphere', kind: 'mcq',
+    prompt: 'Why does the chapter call your sphere the highest-return lead source for most agents?',
+    options: [
+      'Sphere contacts never need follow-up',
+      'Trust is already built, the cost is only your time, and it often converts far better than a portal lead',
+      'Portal leads are always too expensive to be worth it',
+      'Friends are obliged to use you as their agent',
+    ],
+    answer: 1,
+    explain: 'A portal inquirer has no relationship with you and has often inquired with several agents at once. The awkwardness of calling friends fades after the tenth call; the ad bill does not.',
+  },
+  {
+    id: 'ch2.sphere-order.order', version: 1, concept: 'ch2.sphere-order', kind: 'mcq',
+    prompt: 'What is the right order for working your sphere?',
+    options: ['Ask, give, announce, repeat', 'Give, ask, announce, repeat', 'Announce, ask, give, repeat', 'Announce, give, ask, repeat'],
+    answer: 3,
+    explain: 'Announce that you are in real estate, give something useful, ask for introductions after two or three helpful touches, then repeat so nobody hears from you only when you want something.',
+  },
+  {
+    id: 'ch2.open-house.follow-up', version: 1, concept: 'ch2.open-house', kind: 'mcq',
+    prompt: 'What is the follow-up standard after an open house?',
+    options: ['Within 24 hours: a text that evening and a call the next morning', 'Within a week, by mailed postcard', 'Only for visitors who ask you to', 'Within a month, once you have a listing to offer'],
+    answer: 0,
+    explain: 'Follow up with every visitor within 24 hours, and put every visitor on a follow-up plan. The visitor who was "just looking" is often the buyer in four months.',
+  },
+  {
+    id: 'ch2.track-sources.cost-per-deal', version: 1, concept: 'ch2.track-sources', kind: 'blank',
+    before: 'For each lead source, the number you want is cost per closed', after: ', which includes your time at a rate you choose.',
+    answer: 'deal', accept: ['deal', 'a deal'],
+    explain: 'Count contacts added, appointments held, closings and dollars spent by source each month. After six months you will know which sources deserve more of your week.',
+  },
+
   // ---- ch2.sphere
   // The knowledge check's old "five to ten times" question was not in the chapter text (it says "often converts far
-  // better") and was retired in M4 step 3; these two cover the concept instead.
+  // better") and was retired in M4 step 3. Its shipped replacement, ch2.sphere.highest-return, is in the block above;
+  // these two drafts cover the concept in the review deck.
   {
     id: 'ch2.sphere.why-best', version: 1, concept: 'ch2.sphere', kind: 'mcq', draft: true,
     prompt: 'Why is your sphere of influence, for most agents, the highest-return lead source?',
@@ -451,13 +491,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch2.sphere-order
-  {
-    id: 'ch2.sphere-order.order', version: 1, concept: 'ch2.sphere-order', kind: 'mcq',
-    prompt: 'What is the right order for working your sphere?',
-    options: ['Ask, give, announce, repeat', 'Give, ask, announce, repeat', 'Announce, ask, give, repeat', 'Announce, give, ask, repeat'],
-    answer: 3,
-    explain: 'Announce that you are in real estate, give something useful, ask for introductions after two or three helpful touches, then repeat so nobody hears from you only when you want something.',
-  },
   {
     id: 'ch2.sphere-order.announce-how', version: 1, concept: 'ch2.sphere-order', kind: 'mcq', draft: true,
     prompt: 'How should you send the announcement that you are in real estate?',
@@ -488,13 +521,6 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch2.open-house
-  {
-    id: 'ch2.open-house.follow-up', version: 1, concept: 'ch2.open-house', kind: 'mcq',
-    prompt: 'What is the follow-up standard after an open house?',
-    options: ['Within 24 hours: a text that evening and a call the next morning', 'Within a week, by mailed postcard', 'Only for visitors who ask you to', 'Within a month, once you have a listing to offer'],
-    answer: 0,
-    explain: 'Follow up with every visitor within 24 hours, and put every visitor on a follow-up plan. The visitor who was "just looking" is often the buyer in four months.',
-  },
   {
     id: 'ch2.open-house.during', version: 1, concept: 'ch2.open-house', kind: 'mcq', draft: true,
     prompt: 'During an open house, what is the goal?',
@@ -531,12 +557,6 @@ export const QUESTIONS: Question[] = [
 
   // ---- ch2.track-sources
   {
-    id: 'ch2.track-sources.cost-per-deal', version: 1, concept: 'ch2.track-sources', kind: 'blank',
-    before: 'For each lead source, the number you want is cost per closed', after: ', which includes your time at a rate you choose.',
-    answer: 'deal', accept: ['deal', 'a deal'],
-    explain: 'Count contacts added, appointments held, closings and dollars spent by source each month. After six months you will know which sources deserve more of your week.',
-  },
-  {
     id: 'ch2.track-sources.worked-example', version: 1, concept: 'ch2.track-sources', kind: 'mcq', draft: true, scenario: true,
     prompt: 'An open house source costs $120 in materials plus 24 hours at $25 an hour and produces one closing. What is the cost per closed deal?',
     options: ['$120', '$600', '$720', '$3,000'],
@@ -544,6 +564,39 @@ export const QUESTIONS: Question[] = [
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
   // ch1
+  // ---- ch1: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch1.leading-lagging.which-leading', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq',
+    prompt: 'Which of these is a leading indicator?',
+    options: ['Closings this quarter', 'Commission income', 'Follow-up tasks completed this week', 'Number of listings you hold'],
+    answer: 2,
+    explain: 'Closings, commission income and listings held are lagging: they report work that is already weeks or months old. Follow-up tasks are an activity you control today.',
+  },
+  {
+    id: 'ch1.goal-ladder.closings-needed', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq',
+    prompt: 'Using the chapter\'s example ($80,000 income goal, $6,500 average commission per closed side), how many closings do you need?',
+    options: ['13', '39', '48', '780'],
+    answer: 0,
+    explain: '$80,000 ÷ $6,500 is about 12.3, so plan for 13 closings. The 39 is appointments, the 48 is working weeks and the 780 is conversations.',
+  },
+  {
+    id: 'ch1.goal-ladder.what-counts', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq',
+    prompt: 'What counts as a "conversation" in Table 1.1?',
+    options: [
+      'Any voicemail you leave',
+      'A real two-way exchange about real estate with someone who could buy, sell or refer',
+      'Every email you send to your database',
+      'A like or comment on a social post',
+    ],
+    answer: 1,
+    explain: 'The table says a conversation is a real two-way exchange with a person who could buy, sell or refer, "not a voicemail".',
+  },
+  {
+    id: 'ch1.leading-lagging.set-goals', version: 1, concept: 'ch1.leading-lagging', kind: 'blank',
+    before: 'Set your goals on', after: 'indicators, review them weekly, and let the closings arrive on their own schedule.',
+    answer: 'leading', accept: ['leading', 'leading indicators'],
+    explain: 'Closings do not respond for 60 to 120 days, so goals set only on closings discourage new agents.',
+  },
   // ---- ch1.business-owner
   {
     id: 'ch1.business-owner.three-ways', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
@@ -740,6 +793,44 @@ export const QUESTIONS: Question[] = [
   },
   // end ch1
   // ch3
+  // ---- ch3: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch3.brand-promise.two-feelings', version: 1, concept: 'ch3.brand-promise', kind: 'mcq',
+    prompt: 'Which two things should your marketing make people feel?',
+    options: [
+      'You are the cheapest agent, and you are always available',
+      'You are the local expert, and you are the person who will take care of them',
+      'You are everywhere, and you are famous',
+      'You are creative, and you are different',
+    ],
+    answer: 1,
+    explain: 'The chapter opens with these two feelings. Consistency beats perfection.',
+  },
+  {
+    id: 'ch3.listing-marketing.just-sold', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq',
+    prompt: 'Which listing post does the chapter call the single best seller-lead post you can make?',
+    options: ['Coming soon', 'Just listed', 'Open house', 'Just sold'],
+    answer: 3,
+    explain: 'A "just sold" update with a line about how many showings or offers the home received shows neighbors what you can do for them.',
+  },
+  {
+    id: 'ch3.paid-ads.late-lead', version: 1, concept: 'ch3.paid-ads', kind: 'mcq',
+    prompt: 'What should happen if a new lead arrives at 9 p.m. before you start paying for ads?',
+    options: [
+      'It waits in a portal queue until Monday',
+      'You reply by hand and then forget it until next week',
+      'They get an immediate automated reply, a call by the next morning and a 90-day plan',
+      'You raise the ad budget to attract more leads',
+    ],
+    answer: 2,
+    explain: 'If your system cannot do that without you having to remember, "buying leads is buying a leak."',
+  },
+  {
+    id: 'ch3.paid-ads.amplify', version: 1, concept: 'ch3.paid-ads', kind: 'blank',
+    before: 'Paid ads amplify a', after: '. They cannot replace one.',
+    answer: 'system', accept: ['system', 'a system'],
+    explain: 'Ads are worth it only when your follow-up system is already catching and nurturing leads reliably.',
+  },
   // ---- ch3.home-base
   {
     id: 'ch3.home-base.links', version: 1, concept: 'ch3.home-base', kind: 'mcq', draft: true,
@@ -922,6 +1013,44 @@ export const QUESTIONS: Question[] = [
   },
   // end ch3
   // ch6
+  // ---- ch6: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch6.three-rules.one-of-three', version: 1, concept: 'ch6.three-rules', kind: 'mcq',
+    prompt: 'Which is one of the three rules for any script?',
+    options: ['Avoid mentioning what they asked about', 'Ask one question at the end', 'Keep talking until they interrupt', 'Never use their name'],
+    answer: 1,
+    explain: 'The three rules: say their name and the specific thing they asked about, ask one question at the end, then stop talking. A message with no question rarely gets a reply.',
+  },
+  {
+    id: 'ch6.next-step.referral-win', version: 1, concept: 'ch6.next-step', kind: 'mcq',
+    prompt: 'What counts as a win on the sphere referral ask?',
+    options: [
+      'A signed listing agreement',
+      'A five-star review',
+      'A name and permission to reach out, or "I\'ll keep you in mind"',
+      'A promise to call you next month',
+    ],
+    answer: 2,
+    explain: 'Either outcome is a win. Thank them and keep in touch.',
+  },
+  {
+    id: 'ch6.next-step.when-worked', version: 1, concept: 'ch6.next-step', kind: 'mcq',
+    prompt: 'According to the chapter, when has a script worked?',
+    options: [
+      'When you said every word as written',
+      'When the call lasted at least ten minutes',
+      'When the person thanked you',
+      'When it reached its next step, even if you said none of the exact words',
+    ],
+    answer: 3,
+    explain: 'Scripts are starting points, not lines to recite. Read it, rewrite it in your own words, then say it out loud.',
+  },
+  {
+    id: 'ch6.three-rules.stop-talking', version: 1, concept: 'ch6.three-rules', kind: 'blank',
+    before: 'The third rule for any script is to stop', after: '. After the question, wait.',
+    answer: 'talking', accept: ['talking', 'talk'],
+    explain: 'Silence is where the other person decides to engage.',
+  },
   // ---- ch6.next-step
   {
     id: 'ch6.next-step.worked', version: 1, concept: 'ch6.next-step', kind: 'mcq', draft: true,
@@ -1115,6 +1244,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch6
   // ch7
+  // ---- ch7: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch7.pitfall-cycle.reinforce', version: 1, concept: 'ch7.pitfall-cycle', kind: 'mcq',
+    prompt: 'How do the six new-agent errors relate to each other?',
+    options: [
+      'They are unrelated, so fix them one by one',
+      'They reinforce one another in a cycle',
+      'Only the first one matters',
+      'They only happen in the first month',
+    ],
+    answer: 1,
+    explain: 'Slow follow-up loses leads, an empty pipeline is discouraging, discouragement makes days unstructured, and unstructured days produce slow follow-up. That is why a bad month can become a bad year.',
+  },
+  {
+    id: 'ch7.pitfall-cycle.first-link', version: 1, concept: 'ch7.pitfall-cycle', kind: 'mcq',
+    prompt: 'Which error starts the pitfall cycle in Figure 7.1?',
+    options: ['Under-documenting', 'Unstructured days', 'Relying only on portal leads', 'Slow or inconsistent follow-up'],
+    answer: 3,
+    explain: 'Installing a simple system breaks the loop at its first link: follow-up becomes automatic.',
+  },
+  {
+    id: 'ch7.one-correction.not-willpower', version: 1, concept: 'ch7.one-correction', kind: 'mcq',
+    prompt: 'What does the chapter say you need instead of willpower?',
+    options: ['A system that makes the errors hard to commit', 'More leads', 'A bigger marketing budget', 'A second CRM'],
+    answer: 0,
+    explain: 'Your CRM and follow-up plans, a protected daily block, activity tracking and a Friday review. The system does the remembering.',
+  },
+  {
+    id: 'ch7.one-correction.activity-not-closings', version: 1, concept: 'ch7.one-correction', kind: 'blank',
+    before: 'Track activity, not', after: '. You can see progress every week, so the 90-day wait is bearable.',
+    answer: 'closings', accept: ['closings', 'closing'],
+    explain: 'This is one of the four parts of the one correction.',
+  },
   {
     id: 'ch7.six-errors.scattered', version: 1, concept: 'ch7.six-errors', kind: 'mcq', draft: true,
     prompt: 'Your contacts are in your phone, your notes are in email and your tasks are in your head. Which of the six errors is that?',
@@ -1288,6 +1450,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch7
   // ch8
+  // ---- ch8: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch8.morning-block.sacred', version: 1, concept: 'ch8.morning-block', kind: 'mcq',
+    prompt: 'Why does the chapter call the morning block sacred?',
+    options: [
+      'Clients prefer to meet in the morning',
+      'It is the only time of day nobody else wants',
+      'Lenders only answer calls before noon',
+      'Mornings are when leads arrive',
+    ],
+    answer: 1,
+    explain: 'Clients, lenders and inspectors will all ask for afternoons. Give them afternoons.',
+  },
+  {
+    id: 'ch8.weekly-targets.conversations', version: 1, concept: 'ch8.weekly-targets', kind: 'mcq',
+    prompt: 'What is the weekly target for conversations in Table 8.2?',
+    options: ['1 to 2', '40 to 60', '15 to 25', '30 to 50'],
+    answer: 2,
+    explain: 'Conversations are actual two-way talks. 40 to 60 is outbound calls, 30 to 50 is follow-ups completed, and 1 to 2 is appointments set.',
+  },
+  {
+    id: 'ch8.one-source-of-truth.not-logged', version: 1, concept: 'ch8.one-source-of-truth', kind: 'mcq',
+    prompt: 'A conversation happened but is not in your CRM. What do you do?',
+    options: ['Nothing; you will remember it', 'Write it in a notebook', 'Mention it at the Friday review', 'Treat it as not having happened and log it now'],
+    answer: 3,
+    explain: 'The moment you keep a second list, you have two places to check and one of them will be wrong.',
+  },
+  {
+    id: 'ch8.leading-indicators.until-monday', version: 1, concept: 'ch8.leading-indicators', kind: 'blank',
+    before: 'Each Friday, compare this week to last week, decide one thing to do differently, then stop working on it until', after: '.',
+    answer: 'Monday', accept: ['monday'],
+    explain: 'The Friday review is one of three habits that protect motivation, along with celebrating small wins and staying close to the office.',
+  },
   // ---- ch8.one-source-of-truth
   {
     id: 'ch8.one-source-of-truth.second-list', version: 1, concept: 'ch8.one-source-of-truth', kind: 'mcq', draft: true,
@@ -1465,6 +1660,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch8
   // ch9
+  // ---- ch9: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch9.consultation-steps.sequence', version: 1, concept: 'ch9.consultation-steps', kind: 'mcq',
+    prompt: 'What is the five-step consultation sequence?',
+    options: [
+      'Frame, ask, listen, present, agree',
+      'Present, ask, frame, listen, agree',
+      'Ask, present, listen, frame, agree',
+      'Frame, present, ask, agree, listen',
+    ],
+    answer: 0,
+    explain: 'Agents who skip the asking and go straight to presenting lose the client\'s trust before they have earned it.',
+  },
+  {
+    id: 'ch9.objection-pattern.four-steps', version: 1, concept: 'ch9.objection-pattern', kind: 'mcq',
+    prompt: 'What are the four steps for handling an objection?',
+    options: ['Defend, discount, close, repeat', 'Agree, apologize, offer, close', 'Acknowledge, clarify, respond, check', 'Wait, repeat, persuade, close'],
+    answer: 2,
+    explain: 'Acknowledge that you heard, clarify the real concern, respond with facts, a story or a demonstration, then check that it addressed the concern and stop talking.',
+  },
+  {
+    id: 'ch9.objection-responses.fee-means', version: 1, concept: 'ch9.objection-responses', kind: 'mcq',
+    prompt: '"Your fee is too high" usually means what?',
+    options: ['The client will not hire anyone', 'Show me what I get for it', 'Cut your fee right now', 'They want a different agent'],
+    answer: 1,
+    explain: 'Most objections are requests for more information or reassurance. Shift from fee to outcome, and confirm the compensation conversation with your broker.',
+  },
+  {
+    id: 'ch9.ask-before-presenting.at-least-half', version: 1, concept: 'ch9.ask-before-presenting', kind: 'blank',
+    before: 'Steps 2 and 3, asking and listening, should take at least', after: 'of the meeting.',
+    answer: 'half', accept: ['half', '50%', '1/2', 'one half'],
+    explain: 'Table 9.1 says steps 2 and 3 should take at least half the meeting.',
+  },
   // ---- ch9.consultation-steps
   {
     id: 'ch9.consultation-steps.order', version: 1, concept: 'ch9.consultation-steps', kind: 'mcq', draft: true,
@@ -1635,6 +1863,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch9
   // ch10
+  // ---- ch10: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch10.remembered.how-soon', version: 1, concept: 'ch10.remembered', kind: 'mcq',
+    prompt: 'How soon does the average homeowner move again, according to the chapter?',
+    options: ['Within one to two years', 'Within three to four years', 'Within a decade or two', 'Never; most stay in the home for life'],
+    answer: 2,
+    explain: 'Most homeowners move again within a decade or two, and know several people who will move before then. Being remembered is a schedule, not an accident.',
+  },
+  {
+    id: 'ch10.value-test.every-touch', version: 1, concept: 'ch10.value-test', kind: 'mcq',
+    prompt: 'What is the test for every touch you send a past client?',
+    options: [
+      'Does it mention a listing?',
+      'Is it free to send?',
+      'Does it include your phone number?',
+      'Would they be glad to receive it if they were never going to move again?',
+    ],
+    answer: 3,
+    explain: 'A furnace-filter reminder or a contractor list passes. "Thinking of selling?" every month does not.',
+  },
+  {
+    id: 'ch10.post-close-plan.when-on-plan', version: 1, concept: 'ch10.post-close-plan', kind: 'mcq',
+    prompt: 'When does a closed client go on the post-close plan?',
+    options: ['The day of closing', 'After the 30-day call', 'When they mention moving', 'One year after closing'],
+    answer: 0,
+    explain: 'Build the plan once, assign it the day the client goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.',
+  },
+  {
+    id: 'ch10.touch-purposes.value-update', version: 1, concept: 'ch10.touch-purposes', kind: 'blank',
+    before: 'Once a year, unprompted, send each past client a home', after: 'update. Sellers come from this.',
+    answer: 'value', accept: ['value'],
+    explain: 'Home anniversaries and value updates are where seller conversations begin. Homeowners love knowing.',
+  },
   // ---- ch10.remembered
   {
     id: 'ch10.remembered.move-again', version: 1, concept: 'ch10.remembered', kind: 'mcq', draft: true,
@@ -1666,7 +1927,7 @@ export const QUESTIONS: Question[] = [
       'Assigned on closing day, started at the home anniversary',
     ],
     answer: 2,
-    explain: 'The post-close plan is built once, assigned on the day the contract goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
+    explain: 'The post-close plan is built once, assigned on the day the client goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
   },
   {
     id: 'ch10.post-close-plan.seven-touches', version: 1, concept: 'ch10.post-close-plan', kind: 'blank', draft: true,
@@ -1817,6 +2078,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch10
   // ch11
+  // ---- ch11: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch11.agency-disclosure.first-contact', version: 1, concept: 'ch11.agency-disclosure', kind: 'mcq',
+    prompt: 'When does agency disclosure usually need to happen?',
+    options: ['At closing', 'At first substantive contact, though your state sets the form and timing', 'Only if the client asks', 'After the first showing'],
+    answer: 1,
+    explain: 'Learn your state\'s form and timing in your first week, and keep the signed copy in your transaction system.',
+  },
+  {
+    id: 'ch11.fair-housing.problem-phrase', version: 1, concept: 'ch11.fair-housing', kind: 'mcq',
+    prompt: 'Which phrase in a listing is a Fair Housing problem?',
+    options: ['Four bedrooms, fenced yard, two blocks from the park', 'Corner lot with a new roof', 'Perfect for young professionals', 'Walkable to the park'],
+    answer: 2,
+    explain: 'Describe the property, not the ideal buyer. "Great for families" and "perfect for young professionals" are both problems.',
+  },
+  {
+    id: 'ch11.fair-housing.same-sources', version: 1, concept: 'ch11.fair-housing', kind: 'mcq',
+    prompt: 'A client asks, "Is this a good area?" What do you do?',
+    options: [
+      'Give every client the same third-party sources, without editorializing',
+      'Describe who lives there',
+      'Tell them what you would do',
+      'Change the subject',
+    ],
+    answer: 0,
+    explain: 'Same sources for every client. Do not describe who lives there, and confirm the wording with your broker.',
+  },
+  {
+    id: 'ch11.fair-housing.never-people', version: 1, concept: 'ch11.fair-housing', kind: 'blank',
+    before: 'Describe the property, never', after: '. Treat every inquiry identically.',
+    answer: 'people', accept: ['people'],
+    explain: 'This is the chapter\'s Fair Housing takeaway. Your speed-to-lead automation helps because it treats everyone identically.',
+  },
   // ---- ch11.agency-disclosure
   {
     id: 'ch11.agency-disclosure.when', version: 1, concept: 'ch11.agency-disclosure', kind: 'mcq', draft: true,
@@ -2004,6 +2298,39 @@ export const QUESTIONS: Question[] = [
   },
   // end ch11
   // ch13
+  // ---- ch13: the four questions the chapter shipped with, reviewed (version 1)
+  {
+    id: 'ch13.two-habits.which-two', version: 1, concept: 'ch13.two-habits', kind: 'mcq',
+    prompt: 'Which two habits does the chapter say matter most?',
+    options: [
+      'A custom website and branded car magnets',
+      'Daily social posts and monthly mailers',
+      'Speed-to-lead and multi-touch follow-up',
+      'Open houses and farming',
+    ],
+    answer: 2,
+    explain: 'Answer every new lead to the Chapter 4 standard (an automated reply in a minute, a live call in minutes), and stay in touch for 90 days and then forever.',
+  },
+  {
+    id: 'ch13.two-habits.thirteen-times', version: 1, concept: 'ch13.one-card', kind: 'mcq',
+    prompt: 'How many times does the one-card summary say to follow up with a new lead over 90 days?',
+    options: ['2 to 3', '13', '30 to 40', 'Once a week, forever'],
+    answer: 1,
+    explain: 'Respond to new leads in minutes, then follow up 13 times over 90 days.',
+  },
+  {
+    id: 'ch13.broker-before.who-and-when', version: 1, concept: 'ch13.broker-before', kind: 'mcq',
+    prompt: 'Who do you ask about anything legal, contractual or unusual, and when?',
+    options: ['Your lender, after you act', 'A friend in the business, if time allows', 'Nobody; use your judgment', 'Your broker, before you act'],
+    answer: 3,
+    explain: 'The chapter says: "Before, not after."',
+  },
+  {
+    id: 'ch13.two-habits.crm-first', version: 1, concept: 'ch13.one-card', kind: 'blank',
+    before: 'Your CRM is the only list. Open it', after: ', update it last.',
+    answer: 'first', accept: ['first'],
+    explain: 'This is the third line of the whole-handbook card.',
+  },
   {
     id: 'ch13.two-habits.when-stalled', version: 1, concept: 'ch13.two-habits', kind: 'mcq', draft: true, scenario: true,
     prompt: 'Your results have stalled. Which two habits does Chapter 13 say to check first?',

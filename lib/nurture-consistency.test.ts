@@ -136,6 +136,14 @@ describe('each rule is stated verbatim where the handbook defines it', () => {
     expect(step3).toContain(RULES.postClose.sentence);
     for (const id of ['ch5', 'ch12', 'pref', 'app-c']) expect(htmlText(page(id)), id).toContain(RULES.postClose.sentence);
   });
+  it('the post-close plan is assigned when the client goes under contract, never "the contract"', () => {
+    expect(RULES.postClose.sentence).toContain('assigned on the day the client goes under contract');
+    const files = [
+      ...readdirSync('content/pages').filter(f => f.endsWith('.html')).map(f => `content/pages/${f}`),
+      ...readdirSync('content/data').filter(f => f.endsWith('.ts')).map(f => `content/data/${f}`),
+    ];
+    expect(files.filter(file => readFileSync(file, 'utf8').includes('contract goes under contract'))).toEqual([]);
+  });
   it('the consent rule is in the preface quick start, which a free reader can open', () => {
     expect(isFreePage('pref')).toBe(true);
     expect(section(page('pref'), 'before-your-first-outreach')).toContain(RULES.consent.sentence);

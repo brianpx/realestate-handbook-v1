@@ -9,6 +9,8 @@ const VERSION_OF = new Map(CONCEPTS.map(c => [c.id, c.version]));
 /**
  * The questions a chapter's end-of-chapter check asks: its reviewed (non-draft) questions, multiple-choice first and
  * then the fill-in-the-blank. Draft questions stay out until someone who has worked as an agent has signed them off.
+ * Each chapter's four shipped questions come first in questions.ts, so an approved draft joins the check after them
+ * within its kind (check.test.ts pins this).
  */
 export function chapterCheck(chapter: string): Question[] {
   const own = QUESTIONS.filter(q => !q.draft && CHAPTER_OF.get(q.concept) === chapter);

@@ -9,9 +9,9 @@ const focusInfo = (page: Page) => page.evaluate(() => {
 });
 
 test.describe('quiz keyboard', () => {
-  // The chapter check without coach questions (plain KnowledgeCheck).
-  test('a chapter quiz commits only on Check answer, and keeps focus after it', async ({ page }) => {
-    await page.goto('/handbook/ch1');
+  // The plain KnowledgeCheck, which only the /preview sample still serves (Chapter 1's quiz comes first).
+  test('the /preview plain quiz commits only on Check answer, and keeps focus after it', async ({ page }) => {
+    await page.goto('/preview');
     const fs = page.locator('.box.quiz fieldset.quiz-item').first();
     const radios = fs.getByRole('radio');
     await radios.first().focus();
