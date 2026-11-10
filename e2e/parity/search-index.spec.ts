@@ -25,6 +25,7 @@ test('the build-time index matches what the browser would find in each page', as
       const doc = new DOMParser().parseFromString(src, 'text/html');
       // deliberate difference: a line break is a space, so "House<br>Online" is two words (textContent glued them)
       doc.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+      // deliberate difference: a .visually-hidden block (a screen-reader-only caption) is left out (the filter below), unlike the static site
       const SELECTOR = 'h1, h2, h3, h4, dt, caption, figcaption, .diagram-title, p, li';
       const HEADING = new Set(['H1', 'H2', 'H3', 'H4', 'DT']);
       const seen: Record<string, number> = {};

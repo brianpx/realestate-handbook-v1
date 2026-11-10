@@ -3,24 +3,20 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CONCEPTS } from '@/content/data/concepts';
-import { QUESTIONS, type Question } from '@/content/data/questions';
+import { QUESTIONS } from '@/content/data/questions';
 import { QuestionItem } from '@/components/widgets/QuestionItem';
 import { browserTimeZone, deriveConceptStates } from '@/lib/coach/actions';
 import { attemptInput } from '@/lib/coach/check';
 import { localDate } from '@/lib/coach/dates';
 import { coachStore, recordAttempt, useCoachState } from '@/lib/coach';
 import { pickQuestion } from '@/lib/coach/queue';
-import { buildDeck, dueLabel, requeueMiss, reviewQuestionIds, type Deck, type DeckItem } from '@/lib/coach/review';
+import { buildDeck, deckChapters, dueLabel, requeueMiss, reviewQuestionIds, type Deck, type DeckItem } from '@/lib/coach/review';
 import { isPageId, pageById } from '@/lib/pages';
 import { trackingProgress, useSettings } from '@/lib/state';
 
 const CONCEPT = new Map(CONCEPTS.map(c => [c.id, c]));
 const QUESTION = new Map(QUESTIONS.map(q => [q.id, q]));
 const chapterLabel = (chapter: string) => (isPageId(chapter) ? pageById(chapter).label : chapter);
-
-/** Chapters with at least one reviewed question. A chapter whose questions are all drafts feeds nothing into review yet. */
-export const deckChapters = (bank: readonly Question[] = QUESTIONS): string[] =>
-  [...new Set(CONCEPTS.filter(c => reviewQuestionIds(c.id, bank).length > 0).map(c => c.chapter))];
 
 type Snapshot = { deck: Deck; tz: string; today: string };
 type Run = Snapshot & { items: DeckItem[]; index: number; firstPass: Record<string, boolean> };

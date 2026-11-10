@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Question } from '../../content/data/questions';
-import { buildDeck, dueLabel, requeueMiss, reviewQuestionIds } from './review';
+import { CONCEPTS } from '../../content/data/concepts';
+import { QUESTIONS, type Question } from '../../content/data/questions';
+import { hasCoachCheck } from './check';
+import { buildDeck, deckChapters, dueLabel, requeueMiss, reviewQuestionIds } from './review';
 import { newConceptState, type Attempt, type ConceptState } from './types';
 
 const T = '2026-10-20';
@@ -18,6 +20,19 @@ describe('reviewQuestionIds', () => {
   it('leaves draft questions out', () => {
     expect(reviewQuestionIds('ch4.speed-to-lead', bank)).toEqual(['a1', 'a2']);
     expect(reviewQuestionIds('ch4.crm-setup', bank)).toEqual([]);
+  });
+});
+
+describe('deckChapters, the chapters the empty review deck points to', () => {
+  it('leaves out a chapter whose questions are all drafts', () => {
+    const reviewed = CONCEPTS.find(c => c.chapter === 'ch4')!;
+    const draftOnly = CONCEPTS.find(c => c.chapter === 'ch5')!;
+    expect(deckChapters([mcq('r1', reviewed.id), mcq('d1', draftOnly.id, true), mcq('d2', draftOnly.id, true)])).toEqual(['ch4']);
+  });
+
+  it('lists exactly the chapters with an end-of-chapter coach check', () => {
+    const chapters = [...new Set(CONCEPTS.map(c => c.chapter))];
+    expect(deckChapters(QUESTIONS)).toEqual(chapters.filter(hasCoachCheck));
   });
 });
 
