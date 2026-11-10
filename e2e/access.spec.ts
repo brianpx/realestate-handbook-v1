@@ -72,6 +72,12 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await page.goto('/admin');
     await expect(page).toHaveURL(`${BASE_URL}/handbook`);
   });
+
+  test('the account page offers the profile section; the file store has no profile table, and says so', async ({ page }) => {
+    await page.goto('/account');
+    await expect(page.getByRole('heading', { level: 2, name: 'Your profile' })).toBeVisible();
+    await expect(page.getByText('Profile editing needs the account database')).toBeVisible();
+  });
 });
 
 test.describe('signed out', () => {
