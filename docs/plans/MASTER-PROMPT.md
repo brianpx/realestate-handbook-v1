@@ -19,6 +19,7 @@ Citations look like `[CR-H1]` (finding), `[CC-§2]` (section), `[CC-A]` (decisio
 - Work top to bottom through **section 6 (milestones)**. Each milestone lists preconditions, steps with source tags and files, verification, and exit criteria.
 - **Section 4 (decision register)** is the only list of owner decisions. When the owner answers, record the answer there with the date, then tick the steps it unblocks.
 - **Section 7 (file collision map)** says which files more than one workstream edits. Partition agents by it so no two agents touch the same file (AGENTS.md, Parallelism).
+- **The order of the remaining work is in `docs/plans/COMPLETION-PLAN.md`** (waves, parallel lanes and their file partitions, written 10 November 2026); it adds no steps and changes no decision.
 - **Progress lives in `docs/plans/PROGRESS.md`.** Read it before starting (its "Where things stand" paragraph, milestone table, active collisions and open blockers are the current state). When a step lands, tick it here, then append a step-log entry there with the commit hash and the verification commands and results. When a decision is answered, fill the Answer column in section 4, then append to the decision log there. End every session with a hand-off note there.
 - This file does not replace the Vercel migration prompt. For that work, hand `docs/_archive/vercel-pro-migration-meded.md` to the session verbatim; section 6, milestone M3 says when and what must be true first.
 
