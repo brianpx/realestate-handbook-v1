@@ -377,7 +377,7 @@ export const QUESTIONS: Question[] = [
     id: 'ch12.scorecard.core-numbers', version: 1, concept: 'ch12.scorecard', kind: 'blank', draft: true,
     before: 'If the full scorecard is too much at first, start with the', after: 'core numbers from Chapter 8.',
     answer: 'five', accept: ['five', '5'],
-    explain: 'Conversations, appointments set, follow-ups completed, new contacts added and morning blocks held. Then name the one number you will move next week.',
+    explain: 'Conversations, appointments set, follow-ups completed, new contacts added and morning blocks held. Then decide one thing to do differently next week.',
   },
 
   // ---- ch12.monthly-review
