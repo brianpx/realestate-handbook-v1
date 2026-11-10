@@ -31,3 +31,11 @@ it('ignores a stored text size it does not know, and keeps the other settings', 
   expect(textSize(settingsStore.get())).toBe('medium');
   expect(settingsStore.get().dark).toBe(true);
 });
+
+it('loads settings the static site saved without backing them up (CR-L6)', () => {
+  const saved = JSON.stringify({ dark: true, fullWidth: false });
+  window.localStorage.setItem('handbookSettings', saved);
+  settingsStore.invalidate();
+  expect(settingsStore.get().dark).toBe(true);
+  expect(window.localStorage.getItem('handbookSettings.backup')).toBeNull();
+});
