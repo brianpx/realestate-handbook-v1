@@ -280,4 +280,54 @@ export const CONCEPTS: Concept[] = [
     version: 1,
   },
   // end ch3
+  // ch6
+  {
+    id: 'ch6.next-step',
+    chapter: 'ch6',
+    title: 'A script succeeds when it reaches its next step, not when you say it word for word',
+    summary: 'Every script has a purpose and a next step; reach the next step and the script worked, even with none of the exact words.',
+    anchor: 'how-to-use-a-script',
+    version: 1,
+  },
+  {
+    id: 'ch6.rehearsal',
+    chapter: 'ch6',
+    title: 'Rehearse out loud and on recording: reading is not rehearsal',
+    summary: 'Read, rewrite in your own words, say aloud, record, listen, repeat, until you do not need the paper.',
+    anchor: 'how-to-use-a-script',
+    version: 1,
+  },
+  {
+    id: 'ch6.three-rules',
+    chapter: 'ch6',
+    title: 'Three rules for every script: be specific, ask one question, stop talking',
+    summary: 'Say their name and the thing they asked about, end on one question, then wait in silence for them to engage.',
+    anchor: 'three-rules-to-read-every-script-by',
+    version: 1,
+  },
+  {
+    id: 'ch6.new-lead-openers',
+    chapter: 'ch6',
+    title: 'Open a new lead by phone, voicemail or text by naming what they asked about',
+    summary: 'Name the address or area, say "following up" when calling after the same day, and keep the no-answer voicemail under 20 seconds.',
+    anchor: 'three-rules-to-read-every-script-by',
+    version: 1,
+  },
+  {
+    id: 'ch6.give-before-asking',
+    chapter: 'ch6',
+    title: 'Give before you ask: the sphere announcement, the referral ask and partner introductions',
+    summary: 'Announce without asking for business, ask for introductions only after two or three helpful touches, and offer referral partners a two-way relationship.',
+    anchor: 'three-rules-to-read-every-script-by',
+    version: 1,
+  },
+  {
+    id: 'ch6.after-the-sale',
+    chapter: 'ch6',
+    title: 'Keep the relationship going after closing: the one-week call, the 30-day ask and the quarterly call',
+    summary: 'Each after-closing script aims at its own next step: a vendor introduction or "all good" at one week, a posted review at 30 days, and a logged life change from the quarterly call.',
+    anchor: 'three-rules-to-read-every-script-by',
+    version: 1,
+  },
+  // end ch6
 ];

@@ -921,4 +921,197 @@ export const QUESTIONS: Question[] = [
     explain: 'Be easy to find, easy to remember and easy to trust without spending money you do not yet need to spend.',
   },
   // end ch3
+  // ch6
+  // ---- ch6.next-step
+  {
+    id: 'ch6.next-step.worked', version: 1, concept: 'ch6.next-step', kind: 'mcq', draft: true,
+    prompt: 'How do you know a script worked?',
+    options: [
+      'You said every word exactly as it is written',
+      'The conversation reached the script\'s next step',
+      'You got through the whole script without a pause',
+      'The other person stayed on the line to the end',
+    ],
+    answer: 1,
+    explain: 'Each script has a purpose and a next step. If you reach the next step, the script worked, even if you said none of the exact words.',
+  },
+  {
+    id: 'ch6.next-step.keep-in-mind', version: 1, concept: 'ch6.next-step', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You use the sphere referral ask on a friend, who answers "I\'ll keep you in mind" but gives no name. How did the script do?',
+    options: [
+      'It failed, because the purpose was a name',
+      'It failed, so ask again until you get a name',
+      'It worked only if you also booked a coffee',
+      'It worked: that reply is one of its next steps',
+    ],
+    answer: 3,
+    explain: 'The referral ask\'s next step is a name and permission to reach out, or "I\'ll keep you in mind." Either is a win. Thank them and keep in touch.',
+  },
+
+  // ---- ch6.rehearsal
+  {
+    id: 'ch6.rehearsal.record', version: 1, concept: 'ch6.rehearsal', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter have you record yourself saying a script and listen back?',
+    options: [
+      'To send your broker proof that you practiced',
+      'To save one voicemail you can reuse for every lead',
+      'You will hear every place where you rush or apologize',
+      'To learn the script word for word before using it',
+    ],
+    answer: 2,
+    explain: 'Record yourself on your phone and listen back; you will hear every place where you rush or apologize.',
+  },
+  {
+    id: 'ch6.rehearsal.read-five-times', version: 1, concept: 'ch6.rehearsal', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You have read the new-lead script five times and feel ready to call. What does the chapter say is still missing?',
+    options: [
+      'Nothing: five careful reads are enough to know it',
+      'Memorizing it until you can recite each word exactly',
+      'A printed copy to read from while you are on the call',
+      'Saying it aloud in your own words and recording it',
+    ],
+    answer: 3,
+    explain: 'Practice out loud and on recording. Reading is not rehearsal. The loop is read, rewrite, say aloud, record, listen, repeat.',
+  },
+  {
+    id: 'ch6.rehearsal.no-paper', version: 1, concept: 'ch6.rehearsal', kind: 'blank', draft: true,
+    before: 'Read a script, rewrite it in your own words, then say it out loud until you do not need the', after: '.',
+    answer: 'paper', accept: ['paper', 'the paper', 'page', 'the page'],
+    explain: 'The aim is to say it in your own words, not to read it: the checkpoint asks whether you can deliver the seller consultation opening without looking at the page.',
+  },
+
+  // ---- ch6.three-rules
+  {
+    id: 'ch6.three-rules.which', version: 1, concept: 'ch6.three-rules', kind: 'mcq', draft: true,
+    prompt: 'Which three rules does the chapter say to read every script by?',
+    options: [
+      'Be specific, ask one question, stop talking',
+      'Be brief, be friendly, be persistent',
+      'Open warmly, state your value, close firmly',
+      'Ask permission, give value, ask for business',
+    ],
+    answer: 0,
+    explain: 'Every script follows them: name, specific detail, one question, then silence.',
+  },
+  {
+    id: 'ch6.three-rules.one-question', version: 1, concept: 'ch6.three-rules', kind: 'mcq', draft: true,
+    prompt: 'Why should every message you write end on one question?',
+    options: [
+      'Several questions in a row make you look unprepared',
+      'A message with no question rarely gets a reply',
+      'A question lets you skip their name and the detail',
+      'A question keeps the call short enough to be polite',
+    ],
+    answer: 1,
+    explain: 'Ask one question at the end. A message with no question rarely gets a reply.',
+  },
+  {
+    id: 'ch6.three-rules.silence', version: 1, concept: 'ch6.three-rules', kind: 'blank', draft: true,
+    before: 'After you ask your one question, stop talking and wait.', after: 'is where the other person decides to engage.',
+    answer: 'Silence', accept: ['silence'],
+    explain: 'The third rule is to stop talking: after the question, wait.',
+  },
+
+  // ---- ch6.new-lead-openers
+  {
+    id: 'ch6.new-lead-openers.late-call', version: 1, concept: 'ch6.new-lead-openers', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You are calling a new lead two days after the inquiry came in. What does the chapter say to change in the phone script?',
+    options: [
+      'Drop the address and ask about their budget instead',
+      'Switch to an automated text, since the call is late',
+      'Say "following up on your inquiry" instead of "I just saw"',
+      'Apologize for the delay before you give your name',
+    ],
+    answer: 2,
+    explain: 'If you are calling later than the same day, say "following up on your inquiry" instead of "I just saw".',
+  },
+  {
+    id: 'ch6.new-lead-openers.voicemail-length', version: 1, concept: 'ch6.new-lead-openers', kind: 'mcq', draft: true,
+    prompt: 'How long should a no-answer voicemail to a new lead be?',
+    options: [
+      'About a minute, so you can cover your services',
+      'As long as it takes to name three listings',
+      'No voicemail at all: hang up and text instead',
+      'Under 20 seconds, so it stays easy to answer',
+    ],
+    answer: 3,
+    explain: 'Purpose: be specific and easy to answer. Next step: a callback, or your next scheduled touch. Keep it under 20 seconds.',
+  },
+  {
+    id: 'ch6.new-lead-openers.name-the-property', version: 1, concept: 'ch6.new-lead-openers', kind: 'mcq', draft: true,
+    prompt: 'The new-lead call, voicemail and text all name the address or area the lead asked about. Why?',
+    options: [
+      'It proves you read their inquiry',
+      'It shows how many listings you have',
+      'It replaces the need to ask a question',
+      'It is what makes a text legal to send',
+    ],
+    answer: 0,
+    explain: 'Say their name and the specific thing they asked about. Specificity proves you read the inquiry.',
+  },
+
+  // ---- ch6.give-before-asking
+  {
+    id: 'ch6.give-before-asking.announcement', version: 1, concept: 'ch6.give-before-asking', kind: 'mcq', draft: true,
+    prompt: 'What is the purpose of the sphere announcement?',
+    options: [
+      'Ask each person for the name of someone buying now',
+      'Book a listing appointment with anyone thinking of selling',
+      'Collect an email address for your monthly newsletter',
+      'Tell people warmly, without asking for business',
+    ],
+    answer: 3,
+    explain: 'Purpose: tell people, warmly, without asking for business. Next step: a real conversation, logged as a conversation, not a pitch.',
+  },
+  {
+    id: 'ch6.give-before-asking.when-to-ask', version: 1, concept: 'ch6.give-before-asking', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Someone on your sphere list has just heard your announcement. When does the chapter say to use the referral ask with them?',
+    options: [
+      'In the same conversation, while you have their attention',
+      'After you have given them two or three helpful touches',
+      'Only once they have bought or sold a home with you',
+      'Before you send them anything, so they know your goal',
+    ],
+    answer: 1,
+    explain: 'Use the sphere referral ask after you have given two or three helpful touches (Chapter 2).',
+  },
+  {
+    id: 'ch6.give-before-asking.referral-fees', version: 1, concept: 'ch6.give-before-asking', kind: 'blank', draft: true,
+    before: 'Before any money or favors change hands with a lender or attorney you refer clients to, ask your', after: 'about referral-fee rules.',
+    answer: 'broker', accept: ['broker', 'your broker'],
+    explain: 'The referral partner introduction opens a two-way relationship by giving first; the money side is a question for your broker.',
+  },
+
+  // ---- ch6.after-the-sale
+  {
+    id: 'ch6.after-the-sale.one-week-next-step', version: 1, concept: 'ch6.after-the-sale', kind: 'mcq', draft: true,
+    prompt: 'What next step does the one-week call after closing aim for?',
+    options: [
+      'A review on your Agent Site while the move is still fresh',
+      'The name of a friend who might be thinking of moving',
+      'An introduction from your vendor list, or "all good"',
+      'A signed agreement to list their next home with you',
+    ],
+    answer: 2,
+    explain: 'Purpose: catch problems while you can still help. Next step: an introduction from your vendor list, or "all good" and the 30-day call stays on the calendar. Ask for nothing on this call.',
+  },
+  {
+    id: 'ch6.after-the-sale.thirty-day-next-step', version: 1, concept: 'ch6.after-the-sale', kind: 'mcq', draft: true,
+    prompt: 'What next step does the 30-day review request aim for?',
+    options: [
+      'A review posted within a week, or a named reason why not',
+      'A listing appointment for the home they just moved out of',
+      'A review you write for them to approve and post as theirs',
+      'A sign-up for your monthly market newsletter by email',
+    ],
+    answer: 0,
+    explain: 'Purpose: turn a happy client into public proof. Next step: a review posted within a week, or a named reason why not. Ask only clients you served, and never write or trade reviews.',
+  },
+  {
+    id: 'ch6.after-the-sale.quarterly', version: 1, concept: 'ch6.after-the-sale', kind: 'blank', draft: true,
+    before: 'The quarterly call to your whole database has one reason, one fact and one', after: '.',
+    answer: 'question', accept: ['question'],
+    explain: 'Stay useful to the whole database four times a year, with a reason each time. Next step: a life change you log in your CRM, or next quarter\'s call stays scheduled.',
+  },
+  // end ch6
 ];
