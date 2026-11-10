@@ -543,6 +543,384 @@ export const QUESTIONS: Question[] = [
     answer: 2,
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
+  // ch1
+  // ---- ch1.business-owner
+  {
+    id: 'ch1.business-owner.three-ways', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'According to Chapter 1, what three things does your company need?',
+    options: [
+      'A way to find, stay in touch with and keep customers',
+      'An office, a recognizable brand and a full-time assistant',
+      'A license, a sponsoring broker and a polished website',
+      'Listings, buyers who are ready to move and a lender',
+    ],
+    answer: 0,
+    explain: 'A company needs a way to find customers, a way to stay in touch with them, and a way to keep them. That is the whole structure of the book.',
+  },
+  {
+    id: 'ch1.business-owner.one-product', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'The agents who last think of themselves as owners of a small company with one product. What is that product?',
+    options: [
+      'Listings marketed to as many buyers as possible',
+      'Access to homes before they reach the market',
+      'The lowest commission in the neighborhood',
+      'Guidance through a large financial decision',
+    ],
+    answer: 3,
+    explain: 'The chapter names the one product as trusted guidance through a large financial decision.',
+  },
+  {
+    id: 'ch1.business-owner.costs-first', version: 1, concept: 'ch1.business-owner', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter tell you to plan for several months of expenses before your first check?',
+    options: [
+      'Brokers hold back your first few checks',
+      'Your first closing is guaranteed by month two',
+      'A commission business pays only at closing',
+      'New agents cannot take listings at first',
+    ],
+    answer: 2,
+    explain: 'In your first month you will likely pay fees, MLS access, a CRM and some marketing, and a commission business pays only at closing. Ask your broker for a realistic list of month-one costs.',
+  },
+
+  // ---- ch1.work-is-the-win
+  {
+    id: 'ch1.work-is-the-win.one-twentieth', version: 1, concept: 'ch1.work-is-the-win', kind: 'mcq', draft: true,
+    prompt: 'If it takes about 20 conversations to book one appointment, what is each "no"?',
+    options: [
+      'A sign your script needs changing',
+      'One-twentieth of an appointment',
+      'A contact to remove from your list',
+      'A rejection to recover from first',
+    ],
+    answer: 1,
+    explain: 'Think in ratios: each "no" is one-twentieth of an appointment, not a rejection. Hit the daily number and the results follow on their own schedule.',
+  },
+  {
+    id: 'ch1.work-is-the-win.control', version: 1, concept: 'ch1.work-is-the-win', kind: 'blank', draft: true,
+    before: 'You cannot control who says yes. You can control how many real', after: 'you have today.',
+    answer: 'conversations', accept: ['conversations', 'conversation', 'real conversations'],
+    explain: 'The number of real conversations is yours to control, and a "no" still counts toward it.',
+  },
+  {
+    id: 'ch1.work-is-the-win.no-counts', version: 1, concept: 'ch1.work-is-the-win', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A homeowner you call has a real two-way talk with you about selling, then says "no". Does that count toward today\'s conversation number?',
+    options: [
+      'No, only conversations that book an appointment count',
+      'Only once you have scheduled a follow-up with them',
+      'Yes, a "no" still counts toward that number',
+      'Only if they agree to stay on your follow-up plan',
+    ],
+    answer: 2,
+    explain: 'You control how many real conversations you have today, and a "no" still counts toward that number.',
+  },
+
+  // ---- ch1.leading-lagging
+  {
+    id: 'ch1.leading-lagging.lagging', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true,
+    prompt: 'Which of these is a lagging indicator?',
+    options: ['Appointments set', 'Contacts added to your database', 'Commission income', 'Conversations held'],
+    answer: 2,
+    explain: 'A lagging indicator tells you what already happened: closings, commission income and listings held. The other three are activities you control today.',
+  },
+  {
+    id: 'ch1.leading-lagging.start-with', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true,
+    prompt: 'Which three weekly numbers does the chapter tell you to start tracking?',
+    options: [
+      'Closings, listings held, commission income',
+      'Conversations, appointments set, follow-ups completed',
+      'Calls dialed, emails sent, social posts published',
+      'Open houses held, mailers sent, ads run',
+    ],
+    answer: 1,
+    explain: 'Your three weekly numbers to start: conversations, appointments set and follow-ups completed. All three are leading indicators.',
+  },
+  {
+    id: 'ch1.leading-lagging.flat-closings', version: 1, concept: 'ch1.leading-lagging', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your conversations have been up for three weeks running, but no new closings have come in. What does the chapter say to do?',
+    options: [
+      'Reset your goals on closings so you notice the gap',
+      'Drop your lead sources and start over with new ones',
+      'Cut back on activity until the market turns',
+      'Keep goals on activity; closings lag 60 to 120 days',
+    ],
+    answer: 3,
+    explain: 'Closings do not respond for 60 to 120 days. Set your goals on activity, review them weekly, and let the closings arrive on their own schedule.',
+  },
+
+  // ---- ch1.goal-ladder
+  {
+    id: 'ch1.goal-ladder.conversations-year', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq', draft: true,
+    prompt: 'In Table 1.1\'s example, 13 closings at about 3 appointments per closing and about 20 conversations per appointment need about how many conversations in the year?',
+    options: ['39', '260', '780', '1,560'],
+    answer: 2,
+    explain: '13 closings x 3 = 39 appointments, and 39 x 20 = about 780 conversations: about 16 a week over 48 working weeks, or 3 to 4 a day.',
+  },
+  {
+    id: 'ch1.goal-ladder.own-ratio', version: 1, concept: 'ch1.goal-ladder', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'After your first year, your own tracking shows about eight conversations per appointment, not the example\'s 20. What does the chapter say?',
+    options: [
+      'Build your daily plan from your own ratio',
+      'Keep using 20 until your first year is up',
+      'Raise your income goal to match the ratio',
+      'Drop the daily target and track closings',
+    ],
+    answer: 0,
+    explain: 'Use your own local numbers and track your own ratios. If your ratio turns out to be eight conversations per appointment, your daily plan writes itself from that number.',
+  },
+  {
+    id: 'ch1.goal-ladder.worst-day', version: 1, concept: 'ch1.goal-ladder', kind: 'blank', draft: true,
+    before: 'Work backward from income to a daily conversation target you can hit on your', after: 'day.',
+    answer: 'worst', accept: ['worst', 'bad', 'worst day', 'bad day'],
+    explain: 'A daily target you can hit on a bad day is worth more than a heroic target you hit twice and abandon.',
+  },
+
+  // ---- ch1.runway
+  {
+    id: 'ch1.runway.formula', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true,
+    prompt: 'How does Table 1.2 work out the runway you need?',
+    options: [
+      'Monthly business costs times twelve months',
+      'Living costs divided by your average commission',
+      'Your first commission minus a year of costs',
+      '(Business + living costs) x months to first check',
+    ],
+    answer: 3,
+    explain: 'Runway needed is (business costs + living costs) x months to first check. Savings, a working partner or part-time income has to cover it.',
+  },
+  {
+    id: 'ch1.runway.check-order', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true,
+    prompt: 'In what order does the chapter say to divide each commission check?',
+    options: [
+      'Pay yourself, then taxes, then the business',
+      'Taxes first, a tenth to the business, then you',
+      'The business, then pay yourself, then taxes',
+      'Pay and taxes evenly, the business from the rest',
+    ],
+    answer: 1,
+    explain: 'Set aside a share for taxes first (a tax professional sets the share), then a tenth for the business, then pay yourself.',
+  },
+  {
+    id: 'ch1.runway.example', version: 1, concept: 'ch1.runway', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your business costs are $600 a month, your living costs $3,400 a month, and you plan on 5 months to your first check. What runway does Table 1.2 say you need?',
+    options: ['$3,000', '$4,000', '$17,000', '$20,000'],
+    answer: 3,
+    explain: '($600 + $3,400) x 5 = $20,000. Months to first check is planned at four to six, because closings lag activity and a contract takes another 30 to 45 days to close.',
+  },
+
+  // ---- ch1.crm-headquarters
+  {
+    id: 'ch1.crm-headquarters.first-three', version: 1, concept: 'ch1.crm-headquarters', kind: 'mcq', draft: true,
+    prompt: 'Which are the first three things to check in your CRM each morning?',
+    options: [
+      'Your inbox, social notifications and the MLS',
+      'Last month\'s closings, commission and listings',
+      'Your calendar, your weekly scorecard and your marketing',
+      'Overnight leads, tasks due today, moved Opportunities',
+    ],
+    answer: 3,
+    explain: 'The first three things to check are the new leads that arrived overnight, the tasks due today, and the Opportunities that moved. Chapter 4 builds the full daily rhythm around them.',
+  },
+  {
+    id: 'ch1.crm-headquarters.first-90-days', version: 1, concept: 'ch1.crm-headquarters', kind: 'blank', draft: true,
+    before: 'The habit that matters most in your first', after: 'days is opening your CRM first thing every morning and updating it before you stop working.',
+    answer: '90', accept: ['90', 'ninety'],
+    explain: 'The habit that matters most in your first 90 days is simple: open your CRM first thing every morning and update it before you stop working.',
+  },
+  {
+    id: 'ch1.crm-headquarters.sticky-notes', version: 1, concept: 'ch1.crm-headquarters', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A new agent keeps contacts in their phone, on sticky notes and in their inbox instead of the CRM. What does the chapter predict?',
+    options: [
+      'They will forget contacts and fall behind within a quarter',
+      'It works fine until the database passes a few hundred names',
+      'Nothing, as long as they back up their phone each week',
+      'They will be slower, but no leads will actually be lost',
+    ],
+    answer: 0,
+    explain: 'Contacts that live in your phone, sticky notes and inbox are contacts you will forget. Without the CRM habit you fall behind within a quarter, and the leads you lose are hard to win back.',
+  },
+  // end ch1
+  // ch3
+  // ---- ch3.home-base
+  {
+    id: 'ch3.home-base.links', version: 1, concept: 'ch3.home-base', kind: 'mcq', draft: true,
+    prompt: 'Where should every link on your social profiles and email signature point?',
+    options: [
+      'Your brokerage\'s main home page',
+      'Your Agent Site, your home base',
+      'Whichever listing you posted last',
+      'A different page for each platform',
+    ],
+    answer: 1,
+    explain: 'Your Agent Site and Client App are the places you send everyone, so check that every social and signature link points to your Agent Site.',
+  },
+  {
+    id: 'ch3.home-base.reviews', version: 1, concept: 'ch3.home-base', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Another new agent offers to write you a glowing review if you write one for them. What does the chapter say?',
+    options: [
+      'Accept: any review helps a new agent',
+      'Accept, but post it only on Google',
+      'Decline: never write or trade reviews',
+      'Accept, as long as you reply to it',
+    ],
+    answer: 2,
+    explain: 'Ask only people you have actually served, never write or trade reviews, and reply to every one.',
+  },
+  {
+    id: 'ch3.home-base.not-write', version: 1, concept: 'ch3.home-base', kind: 'blank', draft: true,
+    before: 'Reviews are marketing you do not', after: '.',
+    answer: 'write', accept: ['write'],
+    explain: 'An online lead reads them before deciding whether to answer your call, and three honest reviews make a new agent look established.',
+  },
+
+  // ---- ch3.brand-promise
+  {
+    id: 'ch3.brand-promise.definition', version: 1, concept: 'ch3.brand-promise', kind: 'mcq', draft: true,
+    prompt: 'For a new agent, what does the chapter say a brand is?',
+    options: [
+      'A promise stated in one sentence, plus proof',
+      'A logo, a color scheme and a tagline',
+      'A custom website and printed business cards',
+      'A large following on two social platforms',
+    ],
+    answer: 0,
+    explain: 'Fill in "I help [who] [do what] in [where]" and use that sentence in your bio, your profile and your first post.',
+  },
+  {
+    id: 'ch3.brand-promise.no-sales', version: 1, concept: 'ch3.brand-promise', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You have no sold homes of your own yet. Where does the chapter suggest you find proof for your promise?',
+    options: [
+      'Stock photos of homes that sold in the region',
+      'Nowhere: hold off posting until your first closing',
+      'Your brokerage\'s total sales, presented as yours',
+      'A colleague\'s sale (with permission) or a local place',
+    ],
+    answer: 3,
+    explain: 'Until you have your own, borrow a colleague\'s with their permission, or profile a local business, a school or a park. Credibility starts with knowing the place.',
+  },
+  {
+    id: 'ch3.brand-promise.proof', version: 1, concept: 'ch3.brand-promise', kind: 'blank', draft: true,
+    before: 'Once your one-sentence promise is in your bio, profile and first post, every post after that is', after: 'of the sentence.',
+    answer: 'proof', accept: ['proof'],
+    explain: 'A brand is a promise stated in one sentence, plus proof.',
+  },
+
+  // ---- ch3.content-calendar
+  {
+    id: 'ch3.content-calendar.busy-week', version: 1, concept: 'ch3.content-calendar', kind: 'mcq', draft: true,
+    prompt: 'How does the chapter say to choose your content schedule?',
+    options: [
+      'Post every day for a month to build momentum',
+      'Post only when you have something polished',
+      'Pick one you can keep on a busy week, then keep it',
+      'Copy the schedule of the top agent in your market',
+    ],
+    answer: 2,
+    explain: 'People hire the agent they remember. A modest, consistent content schedule beats bursts of brilliance.',
+  },
+  {
+    id: 'ch3.content-calendar.market-numbers', version: 1, concept: 'ch3.content-calendar', kind: 'mcq', draft: true,
+    prompt: 'Which three numbers go in the monthly market update?',
+    options: [
+      'Listings taken, homes closed and commission earned',
+      'Median price, days on market and months of inventory',
+      'Mortgage rates, price per square foot and new builds',
+      'Showings, offers received and price reductions',
+    ],
+    answer: 1,
+    explain: 'The monthly market update goes out as an email newsletter via your CRM and as a mailer to your farm.',
+  },
+  {
+    id: 'ch3.content-calendar.batch', version: 1, concept: 'ch3.content-calendar', kind: 'blank', draft: true,
+    before: 'Batch-create a', after: 'of posts in one sitting.',
+    answer: 'month', accept: ['month', 'a month'],
+    explain: 'The Try It asks for next month\'s eight posts, two a week for four weeks, written in one sitting and scheduled.',
+  },
+
+  // ---- ch3.listing-marketing
+  {
+    id: 'ch3.listing-marketing.two-leads', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'Besides selling the house, what does good listing marketing generate?',
+    options: [
+      'A higher commission on the sale',
+      'Free placement from the portals',
+      'Referrals from other agents',
+      'Buyers who call and neighbor sellers',
+    ],
+    answer: 3,
+    explain: 'It generates buyers (who call about it) and sellers (neighbors who see you working). Every listing should produce buyers and future sellers, not only a closing.',
+  },
+  {
+    id: 'ch3.listing-marketing.nearest-homes', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'Before the open house, mailers or door-knocks should reach how many of the nearest homes?',
+    options: ['10', '25', '50', '200'],
+    answer: 2,
+    explain: 'The minimum for every listing includes mailers or door-knocks to the 50 nearest homes before the open house.',
+  },
+  {
+    id: 'ch3.listing-marketing.post-order', version: 1, concept: 'ch3.listing-marketing', kind: 'mcq', draft: true,
+    prompt: 'In what order do the five posts for one listing go out?',
+    options: [
+      'Coming soon, just listed, open house, under contract, just sold',
+      'Just listed, coming soon, open house, just sold, under contract',
+      'Open house, coming soon, just listed, under contract, just sold',
+      'Coming soon, open house, just listed, just sold, under contract',
+    ],
+    answer: 0,
+    explain: 'The "just sold" update, with a line about how many showings or offers it received, is the single best seller-lead post you can make.',
+  },
+
+  // ---- ch3.paid-ads
+  {
+    id: 'ch3.paid-ads.nine-pm', version: 1, concept: 'ch3.paid-ads', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A 9 p.m. lead gets an instant automated reply, but there is no 90-day plan and the morning call depends on your memory. Are you ready to pay for leads?',
+    options: [
+      'Yes: the immediate automated reply is what counts',
+      'No: all three must happen without you remembering',
+      'Yes, as long as you make the call sometime that week',
+      'Only for portal placements, not for social media ads',
+    ],
+    answer: 1,
+    explain: 'The 9 p.m. test needs an immediate automated reply, a call by the next morning and a 90-day plan, all without you having to remember. You build all three in Chapters 4 and 5.',
+  },
+  {
+    id: 'ch3.paid-ads.start-small', version: 1, concept: 'ch3.paid-ads', kind: 'mcq', draft: true,
+    prompt: 'Once your system passes the test, how does the chapter say to start paid advertising?',
+    options: [
+      'Run every source at once and keep whichever wins',
+      'Spend the full budget in the first month for speed',
+      'Copy the ads a top agent in your market is running',
+      'Start small, one source at a time for 90 days',
+    ],
+    answer: 3,
+    explain: 'Track cost per appointment and cost per closed deal before scaling.',
+  },
+  {
+    id: 'ch3.paid-ads.leak', version: 1, concept: 'ch3.paid-ads', kind: 'blank', draft: true,
+    before: 'Buying leads before your follow-up system can catch and nurture them is buying a', after: '.',
+    answer: 'leak', accept: ['leak', 'a leak'],
+    explain: 'Paid ads amplify a system. They cannot replace one.',
+  },
+
+  // ---- ch3.calendar-budget
+  {
+    id: 'ch3.calendar-budget.pitfall', version: 1, concept: 'ch3.calendar-budget', kind: 'mcq', draft: true,
+    prompt: 'Which spending does the chapter\'s pitfall warn against?',
+    options: [
+      'Branding before spending time on conversations',
+      'Professional photography for every listing',
+      'Mailers to the homes nearest your listing',
+      'A small, tracked test of one paid source',
+    ],
+    answer: 0,
+    explain: 'Logos, car magnets and a custom website produce nothing on their own.',
+  },
+  {
+    id: 'ch3.calendar-budget.calendar', version: 1, concept: 'ch3.calendar-budget', kind: 'blank', draft: true,
+    before: 'Your first marketing budget is your', after: '.',
+    answer: 'calendar', accept: ['calendar'],
+    explain: 'Be easy to find, easy to remember and easy to trust without spending money you do not yet need to spend.',
+  },
+  // end ch3
   // ch6
   // ---- ch6.next-step
   {
