@@ -127,7 +127,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
             { q: 'How do the six new-agent errors relate to each other?',
                 options: ['They are unrelated, so fix them one by one', 'They reinforce one another in a cycle', 'Only the first one matters', 'They only happen in the first month'], answer: 1,
                 explain: 'Slow follow-up loses leads, an empty pipeline is discouraging, discouragement makes days unstructured, and unstructured days produce slow follow-up. That is why a bad month can become a bad year.' },
-            { q: 'Which error starts the pitfall cycle in Figure 6?',
+            { q: 'Which error starts the pitfall cycle in Figure 7.1?',
                 options: ['Under-documenting', 'Unstructured days', 'Relying only on portal leads', 'Slow or inconsistent follow-up'], answer: 3,
                 explain: 'Installing a simple system breaks the loop at its first link: follow-up becomes automatic.' },
             { q: 'What does the chapter say you need instead of willpower?',
@@ -234,7 +234,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
         mcq: [
             { q: 'Which two habits does the chapter say matter most?',
                 options: ['A custom website and branded car magnets', 'Daily social posts and monthly mailers', 'Speed-to-lead and multi-touch follow-up', 'Open houses and farming'], answer: 2,
-                explain: 'Respond in minutes, not hours, and stay in touch for 90 days and then forever. Everything else in the book exists to make them easy.' },
+                explain: 'Answer every new lead to the Chapter 4 standard (an automated reply in a minute, a live call in minutes), and stay in touch for 90 days and then forever.' },
             { q: 'How many times does the one-card summary say to follow up with a new lead over 90 days?',
                 options: ['2 to 3', '13', '30 to 40', 'Once a week, forever'], answer: 1,
                 explain: 'Respond to new leads in minutes, then follow up 13 times over 90 days.' },
