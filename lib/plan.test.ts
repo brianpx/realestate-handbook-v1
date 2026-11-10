@@ -1,11 +1,49 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { UNITS } from '@/content/data/plan';
 import { isoDate } from './dates';
+import { htmlText } from './html-text';
+import { PAGE_IDS } from './pages';
 import {
   fmtClock, fmtSpan, phaseSummary, planBlocks, plannerVerdict, postCloseEvents, postCloseNote, postCloseSchedule, roadmapEvents, roadmapStatus,
   ROADMAP_PHASES, TIMEBLOCK_DEFAULTS, timeblockEvents, toMinutes, type PostCloseRows,
 } from './plan';
 
 const d = (y: number, m: number, day: number) => new Date(y, m - 1, day);
+const page = (id: string) => readFileSync(`content/pages/${id}.html`, 'utf8');
+
+describe('reading plan', () => {
+  const order = UNITS.flatMap(u => u.chapters);
+  const readBefore = (earlier: string, later: string) => order.indexOf(earlier) < order.indexOf(later);
+
+  it('lists the same weeks and chapters in the preface as content/data/plan.ts', () => {
+    const weeks = [...page('pref').matchAll(/<li><strong>Week (\d+):<\/strong> Chapters ([^.]+)\./g)]
+      .map(m => ({ unit: Number(m[1]), chapters: m[2]!.split(/, | and /).map(n => `ch${n}`) }));
+    expect(weeks).toEqual(UNITS);
+  });
+  it('reads every chapter once, in book order (OD-03)', () => {
+    expect(order).toEqual(PAGE_IDS.filter(id => /^ch\d+$/.test(id)));
+  });
+  // A chapter may point ahead ("Chapter 5 explains it"), but a sentence that assumes the reader has done the work
+  // must name a chapter the plan has already scheduled.
+  it('only looks back at chapters the plan has already scheduled', () => {
+    const bad = order.flatMap(id =>
+      [...htmlText(page(id)).matchAll(/\byou (?:built|wrote|made|set up|did) in Chapters? (\d+)(?: to (\d+))?/gi)].flatMap(m => {
+        const from = Number(m[1]);
+        const to = Number(m[2] ?? m[1]);
+        return Array.from({ length: to - from + 1 }, (_, i) => `ch${from + i}`).filter(ch => !readBefore(ch, id)).map(ch => `${id}: "${m[0]}" (${ch})`);
+      }));
+    expect(bad).toEqual([]);
+  });
+  it('schedules Chapter 2 before Chapter 4, whose Try It imports the Chapter 2 sphere list', () => {
+    expect(htmlText(page('ch4'))).toContain('Start by importing the sphere list you built in Chapter 2.');
+    expect(readBefore('ch2', 'ch4')).toBe(true);
+  });
+  it('schedules Chapter 12, which says the reader has met every part of the system, after Chapters 1 to 11', () => {
+    expect(htmlText(page('ch12'))).toContain('You have now met every part of the system.');
+    expect(order.slice(0, order.indexOf('ch12'))).toEqual(order.filter(id => Number(id.slice(2)) < 12));
+  });
+});
 
 describe('roadmap', () => {
   const start = d(2026, 11, 2);

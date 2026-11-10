@@ -16,7 +16,7 @@ const perWeek = (p: { week: number }[]) => p.reduce<Record<number, number>>((m, 
 
 describe('buildPlan', () => {
   it('flattens the preface units in order', () => {
-    expect(CHAPTERS.map(c => c.chapter)).toEqual(['ch1', 'ch4', 'ch12', 'ch2', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch3', 'ch10', 'ch11', 'ch13']);
+    expect(CHAPTERS.map(c => c.chapter)).toEqual(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13']);
   });
 
   it.each(['sprint', 'default', 'relaxed'] as const)('places every chapter exactly once, in order, at %s pace', pace => {
@@ -93,9 +93,9 @@ describe('reflow', () => {
   const original = buildPlan(input());
 
   it('leaves completed sessions exactly where they were', () => {
-    const completions = { ch1: done, ch4: done };
+    const completions = { ch1: done, ch2: done };
     const next = reflow(input(), original.sessions, completions, '2026-11-09');
-    for (const id of ['ch1', 'ch4']) {
+    for (const id of ['ch1', 'ch2']) {
       expect(next.sessions.find(s => s.id === id)).toEqual(original.sessions.find(s => s.id === id));
     }
   });
@@ -115,14 +115,14 @@ describe('reflow', () => {
   });
 
   it('keeps the weekly cap across frozen and re-placed sessions together', () => {
-    const next = reflow(input(), original.sessions, { ch1: done, ch4: done, ch12: done }, '2026-10-22');
+    const next = reflow(input(), original.sessions, { ch1: done, ch2: done, ch3: done }, '2026-10-22');
     expect(Math.max(...Object.values(perWeek(next.sessions)))).toBeLessThanOrEqual(PACES.default.perWeek);
     expect(Math.max(...Object.values(perDay(next.sessions.map(s => s.date))))).toBe(1);
   });
 
   it('does not use a day already taken by a session finished early', () => {
-    const early = original.sessions.map(s => (s.id === 'ch2' ? { ...s, date: '2026-10-22' } : s));
-    const next = reflow(input(), early, { ch2: done }, '2026-10-20');
+    const early = original.sessions.map(s => (s.id === 'ch4' ? { ...s, date: '2026-10-22' } : s));
+    const next = reflow(input(), early, { ch4: done }, '2026-10-20');
     expect(next.sessions.filter(s => s.date === '2026-10-22')).toHaveLength(1);
   });
 
@@ -153,14 +153,14 @@ describe('plan helpers', () => {
 
   it('picks the first todo session as next and measures days behind as a plain number', () => {
     const next = nextSession(plan.sessions, { ch1: done });
-    expect(next?.id).toBe('ch4');
+    expect(next?.id).toBe('ch2');
     expect(daysBehind(next, '2026-10-20')).toBe(0);
     expect(daysBehind(next, '2026-10-28')).toBe(8);
     expect(daysBehind(undefined, '2026-10-28')).toBe(0);
   });
 
   it('skips partly done sessions when choosing the next one', () => {
-    expect(nextSession(plan.sessions, { ch1: partly, ch4: done })?.id).toBe('ch12');
+    expect(nextSession(plan.sessions, { ch1: partly, ch2: done })?.id).toBe('ch3');
   });
 
   it('flags sessions over the time limit only when minutes exist', () => {
