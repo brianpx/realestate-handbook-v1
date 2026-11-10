@@ -1,4 +1,7 @@
-// Speed-to-lead bands and the stopwatch format. Ported from legacy/js/widgets.js (Ch. 4).
+// Speed-to-lead bands and the stopwatch format. Ported from legacy/js/widgets.js (Ch. 4). The live-call limit is the
+// handbook standard in rules.ts.
+import { LIVE_CALL_MINUTES } from '@/content/data/rules';
+
 // y is a relative height for drawing only. The handbook gives three bands, not percentages.
 export const SPEED_STOPS = [
   { label: '1 min', minutes: 1, y: 100 },
@@ -30,7 +33,7 @@ export const SPEED_BANDS: Record<SpeedBand, { name: string; detail: string }> = 
 };
 
 export function speedBand(minutes: number): SpeedBand {
-  if (minutes < 5) return 'top';
+  if (minutes < LIVE_CALL_MINUTES) return 'top';
   if (minutes <= 30) return 'strong';
   return 'drop';
 }
@@ -43,7 +46,7 @@ export function formatElapsed(ms: number): string {
 export const RESPONSE_TOUCHES = [
   { key: 'text', label: 'Text arrived', name: 'Text', limitMin: 1, standard: 'automated first touch within 1 minute' },
   { key: 'email', label: 'Email arrived', name: 'Email', limitMin: 1, standard: 'automated first touch within 1 minute' },
-  { key: 'call', label: 'Call arrived', name: 'Call', limitMin: 5, standard: 'live call within 5 minutes' },
+  { key: 'call', label: 'Call arrived', name: 'Call', limitMin: LIVE_CALL_MINUTES, standard: `live call within ${LIVE_CALL_MINUTES} minutes` },
 ] as const;
 
 /** The line shown under the stopwatch when a reply is stamped at `ms` elapsed. */

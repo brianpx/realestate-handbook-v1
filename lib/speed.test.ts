@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { formatElapsed, RESPONSE_TOUCHES, speedBand, stampResult } from './speed';
+import { LIVE_CALL_MINUTES } from '@/content/data/rules';
+import { formatElapsed, RESPONSE_TOUCHES, SPEED_BANDS, speedBand, stampResult } from './speed';
+
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
+describe('SPEED_BANDS', () => {
+  it('names the live-call limit from rules.ts in the top and strong band details', () => {
+    for (const band of ['top', 'strong'] as const) expect(SPEED_BANDS[band].detail, band).toContain(`${WORDS[LIVE_CALL_MINUTES]} minutes`);
+  });
+});
 
 describe('speedBand', () => {
   it.each([[1, 'top'], [4.99, 'top'], [5, 'strong'], [30, 'strong'], [30.01, 'drop'], [1440, 'drop']] as const)('%s min -> %s', (m, band) => {

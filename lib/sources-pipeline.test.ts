@@ -13,6 +13,16 @@ describe('sourceResults', () => {
     expect(r.find(x => x.key === 'idx')!.text).toBe('$300 invested, no closings yet');
     expect(r.find(x => x.key === 'open')).toMatchObject({ entered: false, text: '' });
   });
+  it('prices appointments as the early measure, with or without a closing', () => {
+    const r = sourceResults({ open: { spend: 120, hours: 24, appointments: 6 }, sphere: { hours: 20, appointments: 5, closings: 1 } }, 25);
+    expect(r.find(x => x.key === 'open')).toMatchObject({ total: 720, perAppointment: 120, per: undefined, text: '$720 invested → $120 per appointment, no closings yet' });
+    expect(r.find(x => x.key === 'sphere')).toMatchObject({ perAppointment: 100, per: 500, text: '$500 invested → $100 per appointment, $500 per closed deal' });
+  });
+  it('falls back to cost per appointment when fewer than two sources have closed', () => {
+    const r = sourceResults({ open: { spend: 600, appointments: 6 }, zillow: { spend: 1000, appointments: 4, closings: 1 } }, 0);
+    expect(sourceSummary(r, 25)).toBe('Lowest cost per appointment: Open houses ($100). Highest: Zillow Premier Agent ($250). Cost per closed deal will confirm this once each source has a closing. ');
+    expect(sourceSummary(sourceResults({ open: { spend: 600, appointments: 6 } }, 0), 0)).toBe('Enter a second source to compare.');
+  });
   it('compares only sources that closed a deal, and nudges for a time rate', () => {
     const none = sourceResults({}, 0);
     expect(sourceSummary(none, 0)).toBe('');

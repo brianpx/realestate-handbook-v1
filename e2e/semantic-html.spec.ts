@@ -27,9 +27,9 @@ test('a chapter has one h1, real landmarks, and the previous heading sizes', asy
   const note = page.locator('aside.box.field-note');
   await expect(note.locator('h3.box-title')).toHaveCSS('font-size', '12px');
   await expect(note.locator('h3.box-title')).toHaveCSS('color', 'rgb(3, 105, 161)');
-  await expect(page.locator('aside.box.try-it ul li')).toHaveCount(4);
+  await expect(page.locator('aside.box.try-it ul li')).toHaveCount(5);
 
-  await expect(page.locator('table caption')).toContainText('Table 1.1');
+  await expect(page.locator('table caption').first()).toContainText('Table 1.1');
   await expect(page.locator('figure.diagram-box img')).toBeVisible();
 });
 

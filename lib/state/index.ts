@@ -7,7 +7,8 @@ import { createStore } from './store';
 import { buildExport, type ImportResult } from './transfer';
 
 export const stateStore = createStore({ key: STATE_KEY, schema: handbookStateSchema, migrate });
-export const settingsStore = createStore({ key: SETTINGS_KEY, schema: settingsSchema, migrate });
+// settings have no stored-shape history, so no migration: the handbook-state chain would stamp and back them up (CR-L6)
+export const settingsStore = createStore({ key: SETTINGS_KEY, schema: settingsSchema });
 
 export const useHandbookState = (): HandbookState =>
   useSyncExternalStore(stateStore.subscribe, stateStore.get, stateStore.getServerSnapshot);
@@ -81,12 +82,12 @@ export function updateWidget(name: string, recipe: (slice: Record<string, unknow
   stateStore.update(s => { recipe((s.widgets[name] ??= {})); });
 }
 
-/** The reader's lead-source cost inputs: an hourly rate plus per-source spend, hours and closings. */
+/** The reader's lead-source cost inputs: an hourly rate plus per-source spend, hours, appointments and closings. */
 export function setSourceRate(rate: number | undefined): void {
   updateWidget('sourceCost', w => { if (rate === undefined) delete w.rate; else w.rate = rate; });
 }
 
-export function setSourceField(source: string, field: 'spend' | 'hours' | 'closings', value: number | undefined): void {
+export function setSourceField(source: string, field: 'spend' | 'hours' | 'appointments' | 'closings', value: number | undefined): void {
   updateWidget('sourceCost', w => {
     const rows = (w.rows && typeof w.rows === 'object' ? w.rows : (w.rows = {})) as Record<string, Record<string, unknown>>;
     const row = (rows[source] ??= {});

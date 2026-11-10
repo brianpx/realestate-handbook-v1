@@ -1,15 +1,17 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { WEEKLY_TARGETS, type WeeklyTargetId } from '@/content/data/rules';
 import { SCORE_ROWS, SCORECARD_CAPTION } from '@/content/data/scorecard';
 import { htmlText, tableRows } from './html-text';
 import { TIMEBLOCK_DEFAULTS } from './plan';
 
 // One weekly scorecard: Appendix A. Table 8.2 and Chapter 12 are the same list, so these tests tie the prose, the
-// answer keys and the planner to SCORE_ROWS, which the scorecard widget is built from.
+// answer keys, the planner and SCORE_ROWS (which the scorecard widget is built from) to WEEKLY_TARGETS in rules.ts,
+// which records Table 8.2 as the chapter states it.
 const read = (file: string) => readFileSync(file, 'utf8');
 const page = (id: string) => read(`content/pages/${id}.html`);
 const text = (id: string) => htmlText(page(id));
-const targets = Object.fromEntries(SCORE_ROWS.map(r => [r.id, r.target]));
+const target = (id: WeeklyTargetId) => WEEKLY_TARGETS[id].target;
 
 /** Body rows of the table in `html` whose header contains `marker`, as plain-text cells. */
 function tableWith(html: string, marker: string): string[][] {
@@ -24,11 +26,18 @@ const sources = [
 
 describe('Table 8.2 is the Appendix A list', () => {
   const rows = tableWith(page('ch8'), 'WEEKLY TARGET');
-  it('has one row per scorecard row, in order', () => {
+  it('has one row per scorecard row, in order, and rules.ts records the same rows', () => {
     expect(rows).toHaveLength(SCORE_ROWS.length);
+    expect(Object.keys(WEEKLY_TARGETS)).toEqual(SCORE_ROWS.map(r => r.id));
   });
-  it('gives each row the scorecard target (the events row may add its ramp-up)', () => {
-    SCORE_ROWS.forEach((row, i) => expect(rows[i]![1]!.startsWith(row.target), `${row.id}: "${rows[i]![1]}" vs "${row.target}"`).toBe(true));
+  it('states every target exactly as rules.ts records it', () => {
+    expect(rows.map(r => r[1])).toEqual(SCORE_ROWS.map(r => target(r.id)));
+  });
+  it('gives each row the scorecard target and threshold (the events row may add its ramp-up)', () => {
+    for (const row of SCORE_ROWS) {
+      expect(target(row.id).startsWith(row.target), `${row.id}: "${target(row.id)}" vs "${row.target}"`).toBe(true);
+      expect(row.min, row.id).toBe(WEEKLY_TARGETS[row.id].min);
+    }
   });
   it('says it is the same list as Appendix A, and Appendix A says it matches', () => {
     expect(text('ch8')).toContain('These are the same rows as Appendix A');
@@ -42,16 +51,16 @@ describe('the answer keys give the scorecard numbers', () => {
   const ch12Key = keys.split('ch12: [')[1]!;
   it('Chapter 8 lists the first five targets as the scorecard does', () => {
     for (const [label, id] of [['calls', 'calls'], ['conversations', 'conversations'], ['follow-ups', 'followups'], ['appointments set', 'appts-set']] as const) {
-      expect(ch8Key, `${label} ${targets[id]}`).toContain(`${label} ${targets[id]}`);
+      expect(ch8Key, `${label} ${target(id)}`).toContain(`${label} ${target(id)}`);
     }
-    expect(ch8Key).toContain(`appointments held ${targets['appts-held']!.replace('+', ' or more')}`);
+    expect(ch8Key).toContain(`appointments held ${target('appts-held').replace('+', ' or more')}`);
   });
   it('Chapter 12 points at Appendix A and Table 8.2 as one list', () => {
     expect(ch12Key).toContain('Appendix A, and Table 8.2 is the same list');
     expect(text('ch12')).toContain('Do not keep a second, shorter scorecard');
   });
   it('Chapter 12 quotes the same conversation and appointment targets', () => {
-    expect(text('ch12')).toContain(`${targets.conversations} conversations a week and ${targets['appts-set']} appointments set`);
+    expect(text('ch12')).toContain(`${target('conversations')} conversations a week and ${target('appts-set')} appointments set`);
   });
 });
 
