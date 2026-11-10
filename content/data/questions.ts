@@ -1114,4 +1114,177 @@ export const QUESTIONS: Question[] = [
     explain: 'Stay useful to the whole database four times a year, with a reason each time. Next step: a life change you log in your CRM, or next quarter\'s call stays scheduled.',
   },
   // end ch6
+  // ch7
+  {
+    id: 'ch7.six-errors.scattered', version: 1, concept: 'ch7.six-errors', kind: 'mcq', draft: true,
+    prompt: 'Your contacts are in your phone, your notes are in email and your tasks are in your head. Which of the six errors is that?',
+    options: ['Under-documenting', 'Unstructured days', 'No system or database hygiene', 'Slow or inconsistent follow-up'],
+    answer: 2,
+    explain: 'It costs lost leads, missed anniversaries and no way to measure. The fix is everything in your CRM, every day (Chapter 4).',
+  },
+  {
+    id: 'ch7.six-errors.fee-in-writing', version: 1, concept: 'ch7.six-errors', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A client says "you told me the fee was negotiable," and you have nothing in writing. Which error caught up with you?',
+    options: ['Expecting results too fast', 'Under-documenting', 'Slow or inconsistent follow-up', 'Unstructured days'],
+    answer: 1,
+    explain: 'Under-documenting costs risk, disputes and forgotten details that lose trust. The fix is notes in your CRM after every conversation (Chapter 11).',
+  },
+  {
+    id: 'ch7.six-errors.quitting-cost', version: 1, concept: 'ch7.six-errors', kind: 'blank', draft: true,
+    before: 'Expecting results too fast costs you this: quitting at the exact point the', after: 'would have paid.',
+    answer: 'pipeline', accept: ['pipeline', 'the pipeline', 'your pipeline'],
+    explain: 'It looks like being discouraged after 30 days with no closing, so activity drops. The fix is tracking leading indicators, reviewing weekly and a 90-day horizon.',
+  },
+
+  {
+    id: 'ch7.belief-not-habit.different', version: 1, concept: 'ch7.belief-not-habit', kind: 'mcq', draft: true,
+    prompt: 'Five of the six errors are habits. What makes "expecting results too fast" different?',
+    options: [
+      'It only affects agents who buy online leads',
+      'It is a habit that only willpower can fix',
+      'It is a belief, and information is what fixes it',
+      'It fixes itself once the first closing arrives',
+    ],
+    answer: 2,
+    explain: 'A system fixes habits. This one is a belief, and what fixes it is information: the 90-day timeline in Chapter 12.',
+  },
+  {
+    id: 'ch7.belief-not-habit.system-fixes', version: 1, concept: 'ch7.belief-not-habit', kind: 'blank', draft: true,
+    before: 'Five of the six errors are habits, and a', after: 'fixes habits.',
+    answer: 'system', accept: ['system'],
+    explain: 'The correction works not because you become a different person, but because the system does the remembering.',
+  },
+  {
+    id: 'ch7.belief-not-habit.information', version: 1, concept: 'ch7.belief-not-habit', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You are 30 days in with no closing and starting to think this is not working. What does the chapter say fixes that belief?',
+    options: [
+      'Buying more leads so a closing comes sooner',
+      'The 90-day timeline in Chapter 12',
+      'Working longer days until a contract arrives',
+      'Switching to a different CRM',
+    ],
+    answer: 1,
+    explain: 'Expecting results too fast is a belief, not a habit, and what fixes it is information, namely the 90-day timeline in Chapter 12.',
+  },
+
+  {
+    id: 'ch7.pitfall-cycle.order', version: 1, concept: 'ch7.pitfall-cycle', kind: 'mcq', draft: true,
+    prompt: 'Which sequence matches the loop the chapter describes?',
+    options: [
+      'Unstructured days, then paying for leads, then under-documenting, then slow follow-up',
+      'Lost leads, then under-documenting, then paying for leads, then discouragement',
+      'Slow follow-up, then lost leads, then an empty pipeline, then discouragement',
+      'Discouragement, then paying for leads, then slow follow-up, then an empty pipeline',
+    ],
+    answer: 2,
+    explain: 'Slow follow-up loses leads, lost leads mean an empty pipeline, an empty pipeline is discouraging, discouragement makes the day unstructured, and an unstructured day produces slow follow-up.',
+  },
+  {
+    id: 'ch7.pitfall-cycle.bad-year', version: 1, concept: 'ch7.pitfall-cycle', kind: 'mcq', draft: true,
+    prompt: 'Why can a bad month turn into a bad year, according to the chapter?',
+    options: [
+      'Each error takes about a year to unlearn',
+      'Leads from a slow month stay cold for a year',
+      'Brokers stop helping agents who start slowly',
+      'The errors reinforce one another in a loop',
+    ],
+    answer: 3,
+    explain: 'New agents fall into the same six traps and they reinforce one another. The loop runs on its own once it starts.',
+  },
+  {
+    id: 'ch7.pitfall-cycle.closes-loop', version: 1, concept: 'ch7.pitfall-cycle', kind: 'blank', draft: true,
+    before: 'Discouragement makes the day unstructured, and an unstructured day produces slow', after: ', which starts the loop again.',
+    answer: 'follow-up', accept: ['follow-up', 'follow up', 'followup', 'follow-ups', 'follow ups'],
+    explain: 'These are not six separate problems. The loop runs on its own once it starts, which is why installing a simple system breaks it at its first link.',
+  },
+
+  {
+    id: 'ch7.one-correction.not-a-part', version: 1, concept: 'ch7.one-correction', kind: 'mcq', draft: true,
+    prompt: 'Which of these is not one of the four parts of the one correction?',
+    options: [
+      'Buy a larger batch of online leads',
+      'Install your CRM and follow-up plans',
+      'Protect a daily prospecting and follow-up block',
+      'Review every Friday',
+    ],
+    answer: 0,
+    explain: 'The four parts: install your CRM and follow-up plans, protect a daily prospecting and follow-up block, track activity not closings, and review every Friday.',
+  },
+  {
+    id: 'ch7.one-correction.structure', version: 1, concept: 'ch7.one-correction', kind: 'mcq', draft: true,
+    prompt: 'Why does a protected daily prospecting and follow-up block help, according to the chapter?',
+    options: [
+      'It adds hours to your working day',
+      'Structure replaces willpower',
+      'Clients stop calling during that time',
+      'It lets you skip the Friday review',
+    ],
+    answer: 1,
+    explain: 'You do not need willpower. You need a system that makes the errors hard to commit, and a protected block is part of it.',
+  },
+  {
+    id: 'ch7.one-correction.track-activity', version: 1, concept: 'ch7.one-correction', kind: 'mcq', draft: true,
+    prompt: 'What does tracking activity instead of closings give you while you wait for results?',
+    options: [
+      'A guarantee of at least one closing within 30 days',
+      'A reason to skip the daily block when busy',
+      'Proof for your broker that you need more leads',
+      'Weekly progress you can see, so the wait is bearable',
+    ],
+    answer: 3,
+    explain: 'Track activity, not closings. You can see progress every week, so the 90-day wait is bearable.',
+  },
+
+  {
+    id: 'ch7.diagnose-week.logo', version: 1, concept: 'ch7.diagnose-week', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Sam spent Tuesday morning on a logo. Which of the six errors is that closest to?',
+    options: ['Under-documenting', 'No system or database hygiene', 'Unstructured days', 'Paying for leads too early'],
+    answer: 2,
+    explain: 'The chapter leaves Sam\'s week for you to diagnose. A morning on a logo is busy work, not conversations, which matches "Unstructured days" in Table 7.1: busy all day with errands, social media and email; zero conversations. The fix is a time-blocked daily rhythm (Chapter 8).',
+  },
+  {
+    id: 'ch7.diagnose-week.friday', version: 1, concept: 'ch7.diagnose-week', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Sam skipped the pipeline review on Friday. Which part of the one correction is missing?',
+    options: [
+      'Review every Friday',
+      'Install your CRM and follow-up plans',
+      'Track activity, not closings',
+      'Protect a daily prospecting and follow-up block',
+    ],
+    answer: 0,
+    explain: 'Review every Friday: small drifts get corrected before they become habits.',
+  },
+  {
+    id: 'ch7.diagnose-week.thirty-days', version: 1, concept: 'ch7.diagnose-week', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Sam has closed nothing in 30 days, had no appointment on Thursday and felt low. Which error is Sam at risk of?',
+    options: ['Under-documenting', 'Paying for leads too early', 'No system or database hygiene', 'Expecting results too fast'],
+    answer: 3,
+    explain: 'The chapter leaves Sam\'s week for you to diagnose. No closing in the first 30 days and feeling low matches "Expecting results too fast" in Table 7.1: discouraged after 30 days with no closing; activity drops.',
+  },
+
+  {
+    id: 'ch7.self-score.how', version: 1, concept: 'ch7.self-score', kind: 'mcq', draft: true,
+    prompt: 'How does the chapter\'s Try It ask you to score yourself on the six errors?',
+    options: [
+      'Pass or fail on each error over the last year',
+      '1 (never) to 5 (every day) over the last two weeks',
+      '1 to 10 on how you feel about this week',
+      'By counting your closings in the last 30 days',
+    ],
+    answer: 1,
+    explain: 'Score yourself honestly on each of the six errors from 1 (never) to 5 (every day), using the last two weeks, and write one example beside each score.',
+  },
+  {
+    id: 'ch7.self-score.highest', version: 1, concept: 'ch7.self-score', kind: 'mcq', draft: true,
+    prompt: 'You have scored yourself. What does the chapter say to do with your highest score?',
+    options: [
+      'Do the exercise in the chapter its Fix column names',
+      'Work on all six errors at once, starting this week',
+      'Wait for your first closing, then come back to it',
+      'Leave it unless your broker gives you the same score',
+    ],
+    answer: 0,
+    explain: 'If the fix points ahead in the book, do its Try It now and return to the chapter later. Then ask your broker, a mentor or an accountability partner to score you too, and compare.',
+  },
+  // end ch7
 ];
