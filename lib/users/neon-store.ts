@@ -1,5 +1,5 @@
 import { toDate, toDateOrNull, type Sql } from '@/lib/db/sql';
-import type { UserStore, VerifiedSignIn } from './store';
+import type { Page, UserStore, VerifiedSignIn } from './store';
 import type { Role, User, UserStatus } from './types';
 
 export function rowToUser(row: Record<string, unknown>): User {
@@ -65,5 +65,24 @@ export class NeonUserStore implements UserStore {
   async touchSignIn(id: string, at: Date) {
     const atIso = at.toISOString();
     await this.sql`update users set last_sign_in_at = ${atIso}, updated_at = ${atIso} where id = ${id}`;
+  }
+
+  async list({ offset, limit }: Page) {
+    // the count and the page in one round trip, so the two agree on a listing that is being written to
+    const [counted, rows] = await this.sql.transaction([
+      this.sql`select count(*)::int as n from users`,
+      this.sql`
+        select id, email, email_verified_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+        from users order by created_at desc, id desc limit ${limit} offset ${offset}`,
+    ]);
+    return { users: rows!.map(rowToUser), total: Number(counted![0]?.n ?? 0) };
+  }
+
+  async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    const rows = await this.sql`
+      select id, email, email_verified_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+      from users where id = any(${ids}::uuid[])`;
+    return rows.map(rowToUser);
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboardIcon, UsersIcon } from 'lucide-react';
+import { ContactIcon, LayoutDashboardIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BreadcrumbPage } from '@/components/ui/breadcrumb';
@@ -9,7 +9,9 @@ import { ADMIN } from '@/lib/routes';
 
 const ITEMS = [
   { title: 'Overview', href: ADMIN, icon: LayoutDashboardIcon },
-  { title: 'Leads', href: `${ADMIN}/leads`, icon: UsersIcon },
+  { title: 'Leads', href: `${ADMIN}/leads`, icon: ContactIcon },
+  { title: 'Users', href: `${ADMIN}/users`, icon: UsersIcon },
+  { title: 'Audit log', href: `${ADMIN}/audit`, icon: ScrollTextIcon },
 ] as const;
 
 // Overview is the group's root, so only an exact match lights it up; the others own their sub-paths.

@@ -87,7 +87,8 @@ export function AdminPage({ title, description, children }: { title: string; des
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">{title}</h1>
+        {/* a title can be an email address with nothing to break on; it must wrap rather than widen the page */}
+        <h1 className="font-heading text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]">{title}</h1>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {children}

@@ -1,5 +1,15 @@
 export type PageItem = number | 'gap';
 
+/** Rows per page of the server-paged lists (users, audit); the leads table pages in the browser. */
+export const PAGE_SIZE = 25;
+
+/** The zero-based page a `?page=` value names (one-based in the URL, so the first page has no query); anything odd is the first page. */
+export function pageIndexFrom(value: string | string[] | undefined): number {
+  const n = Number.parseInt((Array.isArray(value) ? value[0] : value) ?? '', 10);
+  // a safe integer, or the database would refuse the offset (bigint) and the page would throw
+  return Number.isSafeInteger(n) && n >= 1 ? n - 1 : 0;
+}
+
 /**
  * Which page numbers to show: the first, the last, the current one and its neighbours, with a gap where pages are
  * left out. Zero-based in and out. A listing of 5000 leads at 10 a page must not render 500 buttons.

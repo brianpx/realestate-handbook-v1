@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { pageItems } from './pagination';
+import { pageIndexFrom, pageItems } from './pagination';
+
+describe('pageIndexFrom', () => {
+  it('reads a one-based page from the query and falls back to the first page', () => {
+    expect(pageIndexFrom(undefined)).toBe(0);
+    expect(pageIndexFrom('1')).toBe(0);
+    expect(pageIndexFrom('3')).toBe(2);
+    expect(pageIndexFrom(['4', '9'])).toBe(3);
+    expect(pageIndexFrom('0')).toBe(0);
+    expect(pageIndexFrom('-2')).toBe(0);
+    expect(pageIndexFrom('abc')).toBe(0);
+    expect(pageIndexFrom('10000000000000000000000')).toBe(0); // past the safe integers: the database would refuse the offset
+  });
+});
 
 describe('pageItems', () => {
   it('is empty for no pages and lists every page when there are few', () => {

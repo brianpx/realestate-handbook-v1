@@ -1,8 +1,8 @@
 import { MAX_BODY_BYTES } from '@/lib/auth/config';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
+import { signedInUser } from '@/lib/auth/request-user';
 import { EMPTY_PROFILE, profileFields, profileInputSchema, type Profile } from '@/lib/users/profile';
 import type { ProfileStore } from '@/lib/users/profile-store';
-import { signedInUser } from './handler';
 
 export type ProfileDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'now'> & { profiles: ProfileStore | null };
 
@@ -19,7 +19,7 @@ const shown = (profile: Profile | null): AuthReply => ({ status: 200, body: { ok
 export async function handleReadProfile(req: AuthRequest, deps: ProfileDeps): Promise<AuthReply> {
   if (!deps.stores || !deps.profiles) return reply(503, 'unavailable');
   try {
-    const user = await signedInUser(req, deps, deps.now());
+    const user = await signedInUser(req.sessionId, deps.stores, deps.now());
     if (!user) return reply(401, 'unauthorized');
     return shown(await deps.profiles.find(user.id));
   } catch (err) {
@@ -39,7 +39,7 @@ export async function handleSaveProfile(req: AuthRequest, deps: ProfileDeps): Pr
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
   try {
     const now = deps.now();
-    const user = await signedInUser(req, deps, now);
+    const user = await signedInUser(req.sessionId, deps.stores, now);
     if (!user) return reply(401, 'unauthorized');
     let json: unknown;
     try { json = JSON.parse(req.body); } catch { return reply(400, 'invalid_request'); }
