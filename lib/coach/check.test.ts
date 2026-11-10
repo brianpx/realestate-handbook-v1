@@ -4,9 +4,11 @@ import { QUESTIONS } from '../../content/data/questions';
 import { attemptInput, chapterCheck, hasCoachCheck, isCorrect } from './check';
 
 describe('chapterCheck', () => {
-  it('asks the same four questions the chapter shipped with, in the same order', () => {
-    const legacy = KNOWLEDGE_CHECKS.ch4!;
-    const check = chapterCheck('ch4');
+  const chapters = Object.keys(KNOWLEDGE_CHECKS);
+
+  it.each(chapters)('%s asks the same four questions the chapter shipped with, in the same order', chapter => {
+    const legacy = KNOWLEDGE_CHECKS[chapter]!;
+    const check = chapterCheck(chapter);
     expect(check.map(q => q.kind)).toEqual(['mcq', 'mcq', 'mcq', 'blank']);
     check.slice(0, 3).forEach((q, i) => {
       if (q.kind !== 'mcq') throw new Error('expected mcq');
@@ -16,17 +18,19 @@ describe('chapterCheck', () => {
     const blank = check[3]!;
     if (blank.kind !== 'blank') throw new Error('expected blank');
     expect(blank).toMatchObject({ before: legacy.blank.before, after: legacy.blank.after, answer: legacy.blank.answer, accept: legacy.blank.accept, explain: legacy.blank.explain });
+    expect(check.every(q => q.version === 1)).toBe(true);
   });
 
   it('leaves draft questions out', () => {
-    expect(chapterCheck('ch4').some(q => q.draft)).toBe(false);
+    for (const chapter of chapters) expect(chapterCheck(chapter).some(q => q.draft), chapter).toBe(false);
     expect(QUESTIONS.some(q => q.draft)).toBe(true);
   });
 
-  it('is empty for an untagged chapter, which keeps the plain check', () => {
-    expect(chapterCheck('ch1')).toEqual([]);
-    expect(hasCoachCheck('ch1')).toBe(false);
-    expect(hasCoachCheck('ch4')).toBe(true);
+  it('gives all 13 chapters a coach check and nothing to a page without tagged questions', () => {
+    expect(chapters).toHaveLength(13);
+    for (const chapter of chapters) expect(hasCoachCheck(chapter), chapter).toBe(true);
+    expect(chapterCheck('app-a')).toEqual([]);
+    expect(hasCoachCheck('app-a')).toBe(false);
   });
 });
 

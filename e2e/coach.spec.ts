@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from './fixtures';
 import { waitForHydration } from './hydration';
+import { chapterCheck } from '../lib/coach/check';
 
 // The reading-plan coach: /handbook/plan, the coach version of ch4's "Test your knowledge", and /handbook/review.
 // Today is pinned to Fri 20 Nov 2026 so the schedule and the review due dates are stable. Assertions were read off
@@ -27,11 +28,35 @@ async function startPlan(page: Page) {
   await expect(nextCard(page).locator('.box-title')).toHaveText('TODAY');
 }
 
-// ch1 has no tagged questions, so all three steps are buttons on the card.
+// Every chapter has tagged questions, so the third step is a link to the chapter check, which ticks it once every
+// question is answered.
+async function answerCh1Check(page: Page) {
+  const quiz = page.locator('aside.box.quiz');
+  const items = quiz.locator('.quiz-item');
+  for (const [i, q] of chapterCheck('ch1').entries()) {
+    if (q.kind === 'mcq') {
+      await answer(items.nth(i), 'Sure', q.answer);
+    } else {
+      await items.nth(i).getByRole('button', { name: 'Sure' }).click();
+      await items.nth(i).getByLabel('Your answer for the blank').fill(q.answer);
+      await items.nth(i).getByRole('button', { name: 'Check answer' }).click();
+    }
+  }
+  await expect(quiz.locator('.quiz-score')).toHaveText('You got 3 of 3 multiple-choice questions right. All questions answered.');
+}
+
+// Answering ch1's check would also put its concepts in tomorrow's deck, and the tests built on a finished first
+// session want a deck holding only the ch4 miss, so this writes the third tick directly.
 async function finishFirstSession(page: Page) {
   await page.getByRole('button', { name: 'Mark read' }).click();
   await page.getByRole('button', { name: 'I did this' }).click();
-  await page.getByRole('button', { name: 'I answered them' }).click();
+  await expect(steps(page).nth(1)).toHaveText('✓ Do the exercise (“Try it today”).');
+  await page.evaluate(at => {
+    const saved = JSON.parse(localStorage.getItem('handbookCoach') ?? 'null');
+    saved.completions.ch1.checked = at;
+    localStorage.setItem('handbookCoach', JSON.stringify(saved));
+  }, DAY1.toISOString());
+  await page.reload();
   await expect(page.getByText('1 of 13 sessions complete. On pace.')).toBeVisible();
 }
 
@@ -76,7 +101,7 @@ test.describe('starting a plan', () => {
     await expect(steps(page)).toHaveText([
       '○ Read the chapter. Open it Mark read',
       '○ Do the exercise (“Try it today”). I did this',
-      '○ Answer the questions at the end of the chapter. I answered them',
+      '○ Answer the questions at the end of the chapter. Go to the questions',
     ]);
     await expect(page.getByText('0 of 13 sessions complete. On pace.')).toBeVisible();
     await expect(page.getByText('Nothing is due for review.')).toBeVisible();
@@ -112,7 +137,11 @@ test('marking read, exercise and questions completes the session and moves on to
   await expect(steps(page).first()).toHaveText('✓ Read the chapter. Open it');
   await page.getByRole('button', { name: 'I did this' }).click();
   await expect(steps(page).nth(1)).toHaveText('✓ Do the exercise (“Try it today”).');
-  await page.getByRole('button', { name: 'I answered them' }).click();
+  await expect(page.getByRole('link', { name: 'Go to the questions' })).toHaveAttribute('href', '/handbook/ch1');
+  await page.getByRole('link', { name: 'Go to the questions' }).click();
+  await expect(page).toHaveURL(/\/handbook\/ch1$/);
+  await answerCh1Check(page);
+  await page.goto('/handbook/plan');
 
   await expect(nextCard(page).locator('.box-title')).toHaveText('NEXT · MON, NOV 23');
   await expect(nextCard(page)).toContainText('2. Finding Clients');

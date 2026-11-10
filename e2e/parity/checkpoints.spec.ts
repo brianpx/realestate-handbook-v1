@@ -86,15 +86,17 @@ test.describe('checkpoint self-tests', () => {
 });
 
 test.describe('test your knowledge', () => {
+  // Every chapter page now serves the coach check (e2e/coach.spec.ts); the plain check runs only in the /preview
+  // sample, whose first quiz is Chapter 1's.
   const ch1 = KNOWLEDGE_CHECKS.ch1!;
 
   test('adds three questions and a blank after the key takeaways, saving nothing', async ({ page }) => {
-    await page.goto('/handbook/ch1');
-    const quiz = page.locator('.box.quiz');
+    await page.goto('/preview');
+    const quiz = page.locator('.box.quiz').first();
     await expect(quiz.locator('[data-widget="knowledge-check"]')).toBeVisible();
     await expect(quiz.locator('fieldset.quiz-item')).toHaveCount(3);
     await expect(quiz.locator('legend').first()).toHaveText(`1. ${ch1.mcq[0]!.q}`);
-    const takeaways = await page.locator('.key-takeaways').boundingBox();
+    const takeaways = await page.locator('.key-takeaways').first().boundingBox();
     const quizBox = await quiz.boundingBox();
     expect(quizBox!.y).toBeGreaterThan(takeaways!.y + takeaways!.height - 1); // the quiz follows the key takeaways
     await quiz.locator('fieldset').first().getByRole('radio').first().check();
@@ -102,8 +104,8 @@ test.describe('test your knowledge', () => {
   });
 
   test('marks right and wrong picks, locks the question and scores after the third', async ({ page }) => {
-    await page.goto('/handbook/ch1');
-    const quiz = page.locator('.box.quiz');
+    await page.goto('/preview');
+    const quiz = page.locator('.box.quiz').first();
     const wrongFor = (answer: number) => (answer === 0 ? 1 : 0);
     // first question wrong, the other two right
     const fs = quiz.locator('fieldset.quiz-item');
@@ -123,8 +125,8 @@ test.describe('test your knowledge', () => {
   });
 
   test('the blank is graded when the answer is shown, and Start over clears everything', async ({ page }) => {
-    await page.goto('/handbook/ch1');
-    const quiz = page.locator('.box.quiz');
+    await page.goto('/preview');
+    const quiz = page.locator('.box.quiz').first();
     await quiz.getByRole('button', { name: 'Show answer' }).click();
     await expect(quiz.locator('.cp-key')).toContainText(`The answer is "${ch1.blank.answer}".`);
     await expect(quiz.locator('.cp-key strong')).not.toContainText('Correct');
