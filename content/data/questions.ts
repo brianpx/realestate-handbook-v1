@@ -1464,4 +1464,174 @@ export const QUESTIONS: Question[] = [
     explain: 'Nothing picks up on its own. Go back to the morning block and the daily number; the market usually responds to activity.',
   },
   // end ch8
+  // ch9
+  // ---- ch9.consultation-steps
+  {
+    id: 'ch9.consultation-steps.order', version: 1, concept: 'ch9.consultation-steps', kind: 'mcq', draft: true,
+    prompt: 'In what order do the five steps of a buyer or seller consultation run?',
+    options: ['Frame, present, ask, listen, agree', 'Frame, ask, listen, present, agree', 'Ask, listen, frame, agree, present', 'Present, frame, ask, agree, listen'],
+    answer: 1,
+    explain: 'Both buyer and seller consultations follow the same shape: set the frame, ask, listen, present, agree on next steps.',
+  },
+  {
+    id: 'ch9.consultation-steps.seller-present', version: 1, concept: 'ch9.consultation-steps', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'In a seller consultation, you walk through comparable sales, your pricing recommendation and the reasoning, and your marketing plan. Which step is that?',
+    options: ['Frame', 'Ask', 'Agree', 'Present'],
+    answer: 3,
+    explain: 'In a seller consultation, Present covers comparable sales, your pricing recommendation and the reasoning, your marketing plan and what happens week by week.',
+  },
+  {
+    id: 'ch9.consultation-steps.buyer-agree', version: 1, concept: 'ch9.consultation-steps', kind: 'blank', draft: true,
+    before: 'A buyer consultation ends at the Agree step with a buyer representation agreement, a lender introduction and a first', after: 'date.',
+    answer: 'showing', accept: ['showing'],
+    explain: 'Agree for a buyer: buyer representation agreement, lender introduction, first showing date. For a seller: listing agreement, price, photography date, go-live date.',
+  },
+
+  // ---- ch9.ask-before-presenting
+  {
+    id: 'ch9.ask-before-presenting.half', version: 1, concept: 'ch9.ask-before-presenting', kind: 'mcq', draft: true,
+    prompt: 'How much of a consultation should the Ask and Listen steps take?',
+    options: ['A few minutes before you present', 'Whatever time is left after presenting', 'At least half the meeting', 'Only the last few minutes'],
+    answer: 2,
+    explain: 'Steps 2 and 3, Ask and Listen, should take at least half the meeting.',
+  },
+  {
+    id: 'ch9.ask-before-presenting.skip', version: 1, concept: 'ch9.ask-before-presenting', kind: 'mcq', draft: true,
+    prompt: 'What does the chapter say happens to agents who skip the asking and go straight to presenting?',
+    options: [
+      'They lose the client\'s trust before earning it',
+      'They win the client by showing expertise early',
+      'They save time for a longer agreement step',
+      'Nothing, if the presentation is thorough enough',
+    ],
+    answer: 0,
+    explain: 'Agents who skip the asking and go straight to presenting lose the client\'s trust before they have earned it. A consultation is a conversation, not a pitch.',
+  },
+  {
+    id: 'ch9.ask-before-presenting.repeat-back', version: 1, concept: 'ch9.ask-before-presenting', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A buyer says the school district is the priority and a yard matters more than square footage. What does the Listen step ask you to do next?',
+    options: ['Book showings that fit those needs', 'Repeat back what you heard', 'Explain how offers work in this market', 'Ask them to sign the agreement'],
+    answer: 1,
+    explain: 'Listen means repeating back what you heard: "So the priority is the school district, and a yard matters more than square footage."',
+  },
+
+  // ---- ch9.objection-pattern
+  {
+    id: 'ch9.objection-pattern.steps', version: 1, concept: 'ch9.objection-pattern', kind: 'mcq', draft: true,
+    prompt: 'What are the four steps for answering an objection, in order?',
+    options: ['Clarify, defend, respond, close', 'Acknowledge, respond, agree, stop', 'Acknowledge, clarify, respond, check', 'Respond, clarify, acknowledge, check'],
+    answer: 2,
+    explain: 'Acknowledge ("That makes sense"), clarify ("Can I ask what\'s behind that?"), respond to the real concern, and check ("Does that address it?").',
+  },
+  {
+    id: 'ch9.objection-pattern.which-step', version: 1, concept: 'ch9.objection-pattern', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A client says your fee is too high. You reply, "Can I ask what you\'re comparing it to?" Which step is that line?',
+    options: ['Acknowledge', 'Clarify', 'Respond', 'Check'],
+    answer: 1,
+    explain: 'Clarify finds the real concern: another agent\'s quote, a net figure, or a general worry. You respond only once you know which it is.',
+  },
+  {
+    id: 'ch9.objection-pattern.stop', version: 1, concept: 'ch9.objection-pattern', kind: 'blank', draft: true,
+    before: 'The last step is to check: "Does that address it?" Then stop', after: '.',
+    answer: 'talking', accept: ['talking'],
+    explain: 'Most objections are requests for more information or reassurance. Once you have answered the real concern and checked, let the client respond.',
+  },
+
+  // ---- ch9.objection-responses
+  {
+    id: 'ch9.objection-responses.buyer-agreement', version: 1, concept: 'ch9.objection-responses', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A buyer asks, "Why do I have to sign an agreement before you show me homes?" What is the goal of your response?',
+    options: [
+      'Show a few homes first, then raise the agreement',
+      'Call it a formality and move on to scheduling',
+      'Offer to skip the agreement for the first showings',
+      'Make it a clear expectation and sign before touring',
+    ],
+    answer: 3,
+    explain: 'Explain the rule and what they get: the agreement spells out what you will do and how you are paid. Turn a requirement into a clear expectation, and sign before the first showing. Chapter 11 has the rule; your broker has the form and the timing.',
+  },
+  {
+    id: 'ch9.objection-responses.fee', version: 1, concept: 'ch9.objection-responses', kind: 'mcq', draft: true,
+    prompt: 'What does the response framework for "Your fee is too high" focus on?',
+    options: [
+      'Value and net proceeds, confirmed with your broker',
+      'Matching the lowest quote the client has heard',
+      'The rate printed on your old listing form',
+      'Defending your rate as the standard in your market',
+    ],
+    answer: 0,
+    explain: 'Compensation is something you agree in writing before you start. Show how you work and what they would net, and confirm the structure with your broker: shift from fee to outcome, and do not quote an old listing form.',
+  },
+  {
+    id: 'ch9.objection-responses.think-about-it', version: 1, concept: 'ch9.objection-responses', kind: 'mcq', draft: true,
+    prompt: 'A client says, "I need to think about it." What is the goal of the response?',
+    options: ['Set a deadline for their decision', 'Agree and wait for them to call', 'Uncover the real objection', 'Offer a lower fee to close now'],
+    answer: 2,
+    explain: 'Clarify the real concern: "Of course. What specifically would you like to think through? I\'m happy to answer any questions that would help."',
+  },
+
+  // ---- ch9.conversation-note
+  {
+    id: 'ch9.conversation-note.contents', version: 1, concept: 'ch9.conversation-note', kind: 'mcq', draft: true,
+    prompt: 'What goes in the CRM note you write after a client conversation?',
+    options: [
+      'A word-for-word record of everything that was said',
+      'Only the numbers: budget, price and fee discussed',
+      'The client\'s name and your opinion of the meeting',
+      'Date, who, what was discussed, decided, what\'s next',
+    ],
+    answer: 3,
+    explain: 'Date, who, what was discussed, what was decided, what happens next. Write it after every consultation, offer discussion, price change or disclosure conversation.',
+  },
+  {
+    id: 'ch9.conversation-note.length', version: 1, concept: 'ch9.conversation-note', kind: 'blank', draft: true,
+    before: 'A good conversation note is', after: 'lines or fewer.',
+    answer: '5', accept: ['5', 'five'],
+    explain: 'Two minutes of typing is enough, and every conversation gets its note in your CRM the same day.',
+  },
+  {
+    id: 'ch9.conversation-note.why', version: 1, concept: 'ch9.conversation-note', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter say the two minutes spent writing a note are worth it?',
+    options: [
+      'They protect you from "but you said" and make follow-up specific',
+      'They are how your broker decides your commission split each year',
+      'They replace the need to send the client anything else in writing',
+      'They let you skip the weekly client update while under contract',
+    ],
+    answer: 0,
+    explain: 'Two minutes of typing protects you from "but you said" months later and makes your follow-up specific. Chapter 11 covers what to document for legal protection.',
+  },
+
+  // ---- ch9.keep-informed
+  {
+    id: 'ch9.keep-informed.under-contract', version: 1, concept: 'ch9.keep-informed', kind: 'mcq', draft: true,
+    prompt: 'Between the signed agreement and the closing table, what does every client get from you?',
+    options: [
+      'A call whenever there is news, and quiet otherwise',
+      'Updates from whoever on the team is free that week',
+      'You as one contact, weekly updates, deadline calls',
+      'One summary email sent the week before closing day',
+    ],
+    answer: 2,
+    explain: 'One named point of contact (you), a short update every week even when nothing has changed, and a call before every deadline, each logged in your CRM. A client who is well informed becomes a past client who refers.',
+  },
+  {
+    id: 'ch9.keep-informed.weekly', version: 1, concept: 'ch9.keep-informed', kind: 'blank', draft: true,
+    before: 'Between the signed agreement and closing, send every client a short update once a', after: ', even when nothing has changed.',
+    answer: 'week', accept: ['week'],
+    explain: 'Give every client a short update every week even when nothing has changed, and log it in your CRM.',
+  },
+  {
+    id: 'ch9.keep-informed.closing-table', version: 1, concept: 'ch9.keep-informed', kind: 'mcq', draft: true,
+    prompt: 'The after-closing habit starts at the closing table. What three things do you do there?',
+    options: [
+      'Hand over the keys, ask for a review, then close out the file',
+      'Thank them, ask for a new listing, send your fee invoice',
+      'Ask for an online review, give a gift, archive the contact',
+      'Thank them, ask for the introduction, say you\'ll be in touch',
+    ],
+    answer: 3,
+    explain: 'Thank them, ask for the introduction, and tell them to expect to hear from you. Chapter 10 shows the post-close plan that follows.',
+  },
+  // end ch9
 ];
