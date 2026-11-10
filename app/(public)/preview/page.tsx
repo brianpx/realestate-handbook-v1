@@ -54,7 +54,7 @@ export default function PreviewPage() {
         <h2 className="pub-h2" id="script-practice" style={{ marginTop: 56 }}>Practice a script</h2>
         <p>Chapter 6 gives you the words for every first contact. Hide the script, say it out loud from memory, then reveal it and check yourself.</p>
         <div className="pub-sample">
-          <Excerpt page="ch6" from="<h2>Three rules to read every script by</h2>" to="<!--widget:script-practice#voicemail-no-answer-->" />
+          <Excerpt page="ch6" from={'<h2 id="three-rules-to-read-every-script-by">'} to="<!--widget:script-practice#voicemail-no-answer-->" />
         </div>
 
         <h2 className="pub-h2" id="timeblock-planner" style={{ marginTop: 56 }}>Plan your week</h2>
