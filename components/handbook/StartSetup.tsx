@@ -349,11 +349,11 @@ function Review({ headingRef }: { headingRef: RefObject<HTMLHeadingElement | nul
       <p className="setup-note setup-no-print" role="status">{note || (setup.completedAt ? 'Marked as finished. You can come back and change any step.' : '')}</p>
       <div className="setup-next setup-no-print">
         <h3>What to read next</h3>
-        <p>The handbook’s first week is Chapters 1, 4 and 12: your goal, your CRM, and the 90-day plan.</p>
+        <p>The handbook’s first week is Chapters 1, 2 and 3: your daily number, your sphere list, and your home base.</p>
         <ul>
-          <li><Link href={pageHref('ch4')}>Chapter 4: your CRM and daily operating system</Link></li>
           <li><Link href={pageHref('ch1')}>Chapter 1: mindset and business foundations</Link></li>
-          <li><Link href={pageHref('ch12')}>Chapter 12: your first 90 days</Link></li>
+          <li><Link href={pageHref('ch2')}>Chapter 2: finding clients</Link></li>
+          <li><Link href={pageHref('ch3')}>Chapter 3: marketing and brand presence</Link></li>
         </ul>
         <p className="setup-hint">Want a copy of everything you have saved? <Link href="/account">Download your progress file</Link>.</p>
       </div>

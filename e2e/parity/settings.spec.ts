@@ -82,7 +82,7 @@ test.describe('chapter end parity', () => {
     await expect(next).toHaveText(/^Next: /);
     await expect(page.locator('.chapter-foot p')).toHaveText([
       'Not legal advice. Confirm forms, compensation, and prospecting rules with your broker.',
-      'For new agents. Worked examples use Keller Williams Command names. In another CRM, use your website, client search app, pipeline stages, and drip campaigns.',
+      'For new agents. Worked examples use Keller Williams Command screens and terms, and each is labeled. In another CRM, use your website, client search app, pipeline stages, and branding settings.',
       'v1.0 · October 2026',
     ]);
   });
