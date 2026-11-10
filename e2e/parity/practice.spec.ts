@@ -23,7 +23,7 @@ test.describe('script practice', () => {
   });
 
   test('also wraps the scripts in chapters 9 and 11 and the preface sample', async ({ page }) => {
-    for (const [path, count] of [['/ch9', 1], ['/ch11', 1], ['/pref', 1]] as const) {
+    for (const [path, count] of [['/ch9', 2], ['/ch11', 1], ['/pref', 1]] as const) {
       await page.goto(path);
       await expect(page.locator('.box.script')).toHaveCount(count);
     }
