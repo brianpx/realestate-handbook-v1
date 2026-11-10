@@ -18,7 +18,7 @@ export const GLOSSARY_TERMS: Term[] = [
 export const NO_GLOSSARY_PAGES: readonly string[] = ['cover', 'app-d'];
 
 const SKIP_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'button', 'textarea', 'input', 'select', 'label', 'a', 'th']);
-const SKIP_CLASSES = new Set(['box-title', 'iw', 'term', 'interactive-head', 'glossary', 'part-label', 'diagram-title', 'checklist', 'read-sentinel', 'scorecard']);
+const SKIP_CLASSES = new Set(['box-title', 'iw', 'term', 'interactive-head', 'glossary', 'part-label', 'diagram-title', 'checklist', 'read-sentinel', 'scorecard', 'visually-hidden']);
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

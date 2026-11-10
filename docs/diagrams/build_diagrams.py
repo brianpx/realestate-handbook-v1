@@ -133,8 +133,8 @@ def diamond(cx, cy, w, h, text, fs=16, kind="white"):
             + block(cx, cy, [(text, fs, "600", tc)], w * 0.56))
 
 
-# The interactive widgets already draw these three, so no static copy is shipped.
-SKIP = {"fig-nurture-timeline", "fig-pitfall-cycle", "fig-response-window"}
+# The interactive widgets already draw these four, so no static copy is shipped.
+SKIP = {"fig-nurture-timeline", "fig-pitfall-cycle", "fig-response-window", "fig-roadmap-90"}
 
 
 def page(name, title, caption, body, alt, w=1280, h=720, cap_color=SLATE):
@@ -168,7 +168,7 @@ b += [arrow(400, 235, 478, 235), arrow(800, 235, 878, 235),
       path("M1040,332 L1040,430 L240,430 L240,334", "deep", width=6),
       label(640, 468, "Referrals send new people back to Find", 22, DEEP, wt="700"),
       box(80, 510, 1120, 90, ("Your CRM", "Where every contact, task and follow-up plan lives"), "grey", fs=24)]
-page("fig-lifecycle", "Figure 1. The client lifecycle", "Every chapter serves one of these three jobs.", "".join(b),
+page("fig-lifecycle", "Figure P.1. The client lifecycle", "Every chapter serves one of these three jobs.", "".join(b),
      "Three boxes in a loop: Find, Nurture, Keep. An arrow labelled Referrals leads from Keep back to Find. A bar beneath, labelled Your CRM, holds all three.")
 
 cols = [("PART I", "Foundations", "Ch. 1", "Set a number"),
@@ -190,7 +190,7 @@ for (s, e, name, kind, y) in [(1, 3, "Find", "blue", 140), (3, 5, "Nurture", "de
     b.append(f'<rect x="{xs}" y="{y}" width="{xe-xs}" height="28" rx="14" fill="{fill}" stroke="{stroke}"/>')
     b.append(label((xs + xe) / 2, y + 20, name, 17, tc, wt="700"))
 b.append(box(46, 535, 1188, 64, "Appendices A–F: scorecard, plan kits, checklists, glossary, tools, links", "grey", fs=19, bold=False))
-page("fig-book-map", "How the handbook is organized", "Seven parts, three jobs: find, nurture, keep.", "".join(b),
+page("fig-book-map", "Figure P.2. How the handbook is organized", "Seven parts, three jobs: find, nurture, keep.", "".join(b),
      "Seven columns for Parts I to VII with their chapters and what the reader does. Brackets above show Find spanning Parts II to IV, Nurture spanning IV to VI, and Keep at Part VI. A bar below lists the appendices.")
 
 # ---------------------------------------------------------------- ch1
@@ -222,7 +222,7 @@ for x, y, t, k in [(590, 505, "Sphere and referrals", "blue"), (590, 440, "Open 
                    (170, 160, "Portal leads", "deep")]:
     b.append(box(x, y, 320 if "Expired" in t else 250, 46, t, k, fs=19, r=23))
 b.append(box(930, 250, 310, 130, "Conversion rates vary by market and agent. Track your own.", "warn", fs=19, bold=False))
-page("fig-lead-tradeoff", "Figure 2.1. Every lead source trades time for money",
+page("fig-lead-tradeoff", "Figure 2.3. Every lead source trades time for money",
      "Costs are relative. Replace this picture with your own cost per closed deal.", "".join(b),
      "A plot of your time against your money. Sphere, open houses and expired listings sit at high time and low money. Own website and ads sit in the middle. Portal leads sit at low time and high money. The high-time, low-money corner is shaded as where new agents start.")
 
@@ -238,7 +238,7 @@ for i, (t, d) in enumerate([("1  Announce", "One personal message, not a blast")
 b += [path("M1120,342 L1120,440 L480,440 L480,344", "blue", width=4),
       label(800, 480, "Back to Give, not Announce. You announce only once.", 20, BLUE, wt="600"),
       box(35, 530, 1210, 70, "Two to three gives before one ask.", "deep", fs=26)]
-page("fig-sphere-method", "Figure 2.2. Working your sphere", "Announce, give, ask, repeat.", "".join(b),
+page("fig-sphere-method", "Figure 2.1. Working your sphere", "Announce, give, ask, repeat.", "".join(b),
      "Four boxes in a row: Announce, Give, Ask, Repeat. An arrow returns from Repeat to Give, not to Announce. A bar below says two to three gives before one ask.")
 
 b = []
@@ -254,7 +254,7 @@ for i, (t, items) in enumerate(zones):
     if i < 2:
         b.append(arrow(x + 372, 305, x + 408, 305, width=3))
 b.append(box(300, 520, 680, 74, "Then measure it: cost per closed deal for this source", "light", fs=21))
-page("fig-open-house", "Figure 2.3. The open house is a three-day event", "Preparation and follow-up are where the leads are made.", "".join(b),
+page("fig-open-house", "Figure 2.2. The open house is a three-day event", "Preparation and follow-up are where the leads are made.", "".join(b),
      "A three-stage timeline. Before: preview the home, invite neighbors, set up digital sign-in. During: greet, capture contact details, offer a next step. After: text that evening, call next morning, start a follow-up plan, log the lead source. A final box says to measure cost per closed deal.")
 
 # ---------------------------------------------------------------- ch3
@@ -320,7 +320,7 @@ b += [path(f"M{xs[1][0]},212 L{xs[3][0]+xs[3][1]},212", "amber", head=False, wid
       label((xs[1][0] + xs[3][0] + xs[3][1]) / 2, 192, "Protect these three before you accept an appointment", 19, AMBER, wt="700"),
       path(f"M{xs[5][0]+60},384 L{xs[5][0]+60},470 L{xs[0][0]+60},470 L{xs[0][0]+60},386", "blue", width=4),
       label(640, 510, "Tomorrow's top three", 21, BLUE, wt="700")]
-page("fig-crm-day", "Figure 3. Your day opens and closes in your CRM", "Follow-ups come before new prospecting.", "".join(b),
+page("fig-crm-day", "Figure 4.2. Your day opens and closes in your CRM", "Follow-ups come before new prospecting.", "".join(b),
      "A left-to-right sequence: open your CRM, review the dashboard (15 minutes), clear follow-up tasks (45 to 60 minutes), prospect (60 to 90 minutes), appointments, then close your CRM. A return arrow labelled Tomorrow's top three leads back to the start. A bracket marks the first three blocks as protected.")
 
 b = [f'<rect x="160" y="120" width="260" height="420" fill="#DBEAFE"/><rect x="420" y="120" width="300" height="420" fill="#EFF6FF"/><rect x="720" y="120" width="400" height="420" fill="#E2E8F0"/>',
@@ -335,7 +335,7 @@ b += [label(640, 604, "Minutes after the inquiry", 20, SLATE, wt="600"),
       f'<text transform="translate(88,330) rotate(-90)" text-anchor="middle" font-size="19" font-weight="600" fill="{SLATE}">Chance of a conversation</text>',
       box(176, 398, 232, 100, "Layer 1: automated reply within 1 minute", "blue", fs=17),
       box(436, 430, 266, 100, "Layer 2: your live call, within 5 minutes when possible", "deep", fs=17)]
-page("fig-response-window", "Figure 4.2. The sooner you answer, the better your chance",
+page("fig-response-window", "Figure 4.3. The sooner you answer, the better your chance",
      "Illustrative shape, not measured data. Add a source before treating it as a statistic.", "".join(b),
      "A falling curve of chance of a conversation against minutes since the inquiry, in three bands: highest in the first five minutes, still strong from five to thirty, and a sharp drop after thirty. Callouts mark the automated reply at one minute and the live call at five. The shape is illustrative.", cap_color=AMBER)
 
@@ -354,7 +354,7 @@ for i, (t, d) in enumerate(steps):
     b.append(label(240, y - 4, t, 24, NAVY, "start", "700"))
     b.append(label(240, y + 24, d, 18, SLATE, "start"))
 b.append(box(900, 250, 320, 160, ("One week", "Do these in order. Appendix C turns them into a checklist."), "light", fs=26))
-page("fig-crm-setup", "Figure 4.3. Six steps, one week", "Set it up completely once, then let it run your day.", "".join(b),
+page("fig-crm-setup", "Figure 4.1. Six steps, one week", "Set it up completely once, then let it run your day.", "".join(b),
      "A vertical path of six numbered steps: profile, import and tag contacts, follow-up plans, lead routing for teams only, pipeline stages, and mobile app with notifications. A side box says to do them in order in one week.")
 
 # ---------------------------------------------------------------- ch5
@@ -603,7 +603,7 @@ items = [(40, 110, "1", "Measure activity, not closings: 3 to 4 conversations a 
          (40, 340, "3", "Your CRM is the only list. Open it first, update it last."),
          (860, 110, "4", "Respond to new leads in minutes. Then follow up 13 times over 90 days."),
          (860, 225, "5", "Ask, listen, present, agree. Objections are questions."),
-         (860, 340, "6", "Every closed client goes on a post-close plan the day of closing.")]
+         (860, 340, "6", "Every client is assigned the post-close plan when the contract goes under contract, and it starts on closing day.")]
 for x, y, n, t in items:
     b.append(box(x, y, 380, 96, t, "pale", fs=18, bold=False))
     b.append(f'<circle cx="{x+380 if x<400 else x}" cy="{y+48}" r="19" fill="{BLUE}"/>')
@@ -616,7 +616,7 @@ b += [link(rects["Find"], rects["Nurture"]), link(rects["Nurture"], rects["Keep"
       f'<circle cx="640" cy="250" r="38" fill="#FFFFFF" stroke="{BLUE}" stroke-width="3"/>', label(640, 257, "CRM", 20, BLUE, wt="700"),
       box(40, 470, 1200, 96, "7   Review every Friday and change one thing. Ask your broker before anything unusual.", "light", fs=22)]
 page("fig-handbook-card", "Figure 13.1. The whole handbook on one card", "Print it. Put it where you work.", "".join(b),
-     "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan for every client, and review every Friday.")
+     "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan assigned under contract, and review every Friday.")
 
 (OUT / "manifest.json").write_text(json.dumps(MANIFEST, indent=2), encoding="utf-8")
 print(f"wrote {len(MANIFEST)} diagrams to {OUT}")

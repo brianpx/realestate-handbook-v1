@@ -1,13 +1,13 @@
 {
   "fig-lifecycle": {
     "file": "/images/diagrams/fig-lifecycle.svg",
-    "title": "Figure 1. The client lifecycle",
+    "title": "Figure P.1. The client lifecycle",
     "alt": "Three boxes in a loop: Find, Nurture, Keep. An arrow labelled Referrals leads from Keep back to Find. A bar beneath, labelled Your CRM, holds all three.",
     "caption": "Every chapter serves one of these three jobs."
   },
   "fig-book-map": {
     "file": "/images/diagrams/fig-book-map.svg",
-    "title": "How the handbook is organized",
+    "title": "Figure P.2. How the handbook is organized",
     "alt": "Seven columns for Parts I to VII with their chapters and what the reader does. Brackets above show Find spanning Parts II to IV, Nurture spanning IV to VI, and Keep at Part VI. A bar below lists the appendices.",
     "caption": "Seven parts, three jobs: find, nurture, keep."
   },
@@ -19,19 +19,19 @@
   },
   "fig-lead-tradeoff": {
     "file": "/images/diagrams/fig-lead-tradeoff.svg",
-    "title": "Figure 2.1. Every lead source trades time for money",
+    "title": "Figure 2.3. Every lead source trades time for money",
     "alt": "A plot of your time against your money. Sphere, open houses and expired listings sit at high time and low money. Own website and ads sit in the middle. Portal leads sit at low time and high money. The high-time, low-money corner is shaded as where new agents start.",
     "caption": "Costs are relative. Replace this picture with your own cost per closed deal."
   },
   "fig-sphere-method": {
     "file": "/images/diagrams/fig-sphere-method.svg",
-    "title": "Figure 2.2. Working your sphere",
+    "title": "Figure 2.1. Working your sphere",
     "alt": "Four boxes in a row: Announce, Give, Ask, Repeat. An arrow returns from Repeat to Give, not to Announce. A bar below says two to three gives before one ask.",
     "caption": "Announce, give, ask, repeat."
   },
   "fig-open-house": {
     "file": "/images/diagrams/fig-open-house.svg",
-    "title": "Figure 2.3. The open house is a three-day event",
+    "title": "Figure 2.2. The open house is a three-day event",
     "alt": "A three-stage timeline. Before: preview the home, invite neighbors, set up digital sign-in. During: greet, capture contact details, offer a next step. After: text that evening, call next morning, start a follow-up plan, log the lead source. A final box says to measure cost per closed deal.",
     "caption": "Preparation and follow-up are where the leads are made."
   },
@@ -55,13 +55,13 @@
   },
   "fig-crm-day": {
     "file": "/images/diagrams/fig-crm-day.svg",
-    "title": "Figure 3. Your day opens and closes in your CRM",
+    "title": "Figure 4.2. Your day opens and closes in your CRM",
     "alt": "A left-to-right sequence: open your CRM, review the dashboard (15 minutes), clear follow-up tasks (45 to 60 minutes), prospect (60 to 90 minutes), appointments, then close your CRM. A return arrow labelled Tomorrow's top three leads back to the start. A bracket marks the first three blocks as protected.",
     "caption": "Follow-ups come before new prospecting."
   },
   "fig-crm-setup": {
     "file": "/images/diagrams/fig-crm-setup.svg",
-    "title": "Figure 4.3. Six steps, one week",
+    "title": "Figure 4.1. Six steps, one week",
     "alt": "A vertical path of six numbered steps: profile, import and tag contacts, follow-up plans, lead routing for teams only, pipeline stages, and mobile app with notifications. A side box says to do them in order in one week.",
     "caption": "Set it up completely once, then let it run your day."
   },
@@ -119,12 +119,6 @@
     "alt": "A flow starting at something feels unusual. If it involves money, a contract, a disclosure or a protected class, stop and ask your broker. Otherwise, if the agent would not be comfortable with the broker reading the note, also ask the broker. Otherwise proceed and log it in the CRM today.",
     "caption": "Two questions, asked in order."
   },
-  "fig-roadmap-90": {
-    "file": "/images/diagrams/fig-roadmap-90.svg",
-    "title": "Figure 12.1. Install, build rhythm, grow pipeline",
-    "alt": "A three-phase roadmap. Days 1 to 30 install the system, days 31 to 60 build the rhythm, and days 61 to 90 grow the pipeline, each with its milestones and a flag at days 30, 60 and 90. A bar below says to fill in the scorecard every Friday and hold a monthly review.",
-    "caption": "Thirty days each. Date it on your calendar."
-  },
   "fig-review-loops": {
     "file": "/images/diagrams/fig-review-loops.svg",
     "title": "Figure 12.2. Two loops: weekly and monthly",
@@ -134,7 +128,7 @@
   "fig-handbook-card": {
     "file": "/images/diagrams/fig-handbook-card.svg",
     "title": "Figure 13.1. The whole handbook on one card",
-    "alt": "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan for every client, and review every Friday.",
+    "alt": "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan assigned under contract, and review every Friday.",
     "caption": "Print it. Put it where you work."
   }
 }

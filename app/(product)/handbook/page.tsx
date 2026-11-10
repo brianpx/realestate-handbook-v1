@@ -49,7 +49,7 @@ export default async function HandbookHome() {
       <ol className="hb-how">
         <li><strong>Do the guided setup once.</strong> It gives you a daily number, two lead sources and a scheduled week. <Link href={`${HANDBOOK}/start`}>Start here</Link>.</li>
         <li><strong>Follow the first-week reading.</strong> Chapters 1, 2 and 3 set your daily number, build your sphere list and set up your home base. The overview has the four-week reading plan.</li>
-        <li><strong>Review every Friday.</strong> Fill in the scorecard, check your pipeline and name the one number to move next week.</li>
+        <li><strong>Review every Friday.</strong> Fill in the scorecard, check your pipeline and decide one thing to do differently next week.</li>
       </ol>
       <p>Everything you enter is saved in this browser on this device. See <Link href="/account">Account and saved progress</Link> to back it up or move it.</p>
 

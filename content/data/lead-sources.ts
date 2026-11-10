@@ -1,4 +1,4 @@
-// Illustrative conversion ranges for Figure 2, copied unchanged from legacy/js/widgets-practice.js.
+// Illustrative conversion ranges for Figure 2.4, copied unchanged from legacy/js/widgets-practice.js.
 export type LeadSource = { key: string; name: string; lo: number; hi: number; open?: boolean; label: string };
 export const LEAD_SOURCES: LeadSource[] = [
     { key: 'sphere', name: 'Sphere of influence and referrals', lo: 15, hi: 30, open: true, label: '15–30%+' },

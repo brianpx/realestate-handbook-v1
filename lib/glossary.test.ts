@@ -41,6 +41,11 @@ describe('wrapGlossary', () => {
       '<dl class="glossary"><dt>CRM</dt></dl>', '<div class="x iw"><p>CRM</p></div>',
     ]) expect(wrap(html), html).toBe(html);
   });
+  it('skips visually hidden text, so a term there never becomes an invisible tab stop', () => {
+    const used = new Set<string>();
+    expect(wrap('<table><caption class="visually-hidden">CRM plans</caption></table>', used)).toBe('<table><caption class="visually-hidden">CRM plans</caption></table>');
+    expect(wrap('<p>Your CRM</p>', used)).toContain('class="term"'); // the hidden use did not spend the first-use slot
+  });
   it('resumes after a skipped element closes, even with unclosed paragraphs and list items inside', () => {
     const out = wrap('<ul><li>no CRM here</li></ul><a href="#">one<br>two</a> then the IDX feed');
     expect(out).toContain(`${btn('CRM', 'CRM', 'The system &amp; database you work from.')}`);
