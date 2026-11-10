@@ -466,13 +466,13 @@
             font-weight: 800}
         /* The marker is drawn here, not written in the heading, so screen readers stop announcing "black circle"
            before every box title. The empty alt text keeps it out of the accessible name (browsers without the
-           syntax take the first declaration). The trailing space plus the margin that cancels the flex gap gives
-           back the spacing the old "● " text had. */
+           syntax take the first declaration). `display: contents` keeps it out of the flex row: it joins the
+           title's text as one item, so it spaces and wraps as the old "● " text did, on the first line with no
+           hanging indent. */
         .box-title::before {
             content: "● ";
             content: "● " / "";
-            white-space: pre;
-            margin-inline-end: -6px}
+            display: contents}
         .tool-locked .box-title::before { content: none}
 
         .box.field-note { border-color: #0369a1; background-color: #f0f9ff}
