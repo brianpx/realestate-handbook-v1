@@ -19,7 +19,7 @@ export function faqs(): Faq[] {
     },
     {
       q: 'Does it work if I am not at Keller Williams?',
-      a: 'Yes. The method is CRM-neutral: set up your profile, import and tag contacts, run follow-up plans, keep honest pipeline stages and use the mobile app. The worked examples use Keller Williams Command screens and terms, and each is labeled as an example. In another CRM, use the equivalent: your website, client search app, pipeline stages and drip campaigns. Using Keller Williams Command as the example is not an endorsement.',
+      a: 'Yes. The method is CRM-neutral: set up your profile, import and tag contacts, run follow-up plans, keep honest pipeline stages and use the mobile app. The worked examples use Keller Williams Command screens and terms, and each is labeled as an example. In another CRM, use the equivalent: your website, client search app, pipeline stages and branding settings. Using Keller Williams Command as the example is not an endorsement.',
     },
     {
       q: 'What experience level is it for?',

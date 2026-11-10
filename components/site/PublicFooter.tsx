@@ -39,7 +39,7 @@ export function PublicFooter() {
         </div>
         <p className="pub-legal">
           Training material, not legal advice. Confirm forms, compensation and prospecting rules with your broker. Worked examples use
-          Keller Williams Command; that is an example, not an endorsement.
+          Keller Williams Command screens and terms, and each is labeled; that is an example, not an endorsement.
           {OWNER.businessName ? ` © ${new Date().getFullYear()} ${OWNER.businessName}.` : ''}
         </p>
       </div>
