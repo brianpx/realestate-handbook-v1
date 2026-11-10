@@ -31,7 +31,7 @@ Chapter 9 had no tagged questions before this bank, so it keeps its plain end-of
 - **`ch9.objection-responses.buyer-agreement`**: the newest row in Table 9.2. The chapter defers the rule to Chapter 11 and the form and timing to your broker; check the question does not imply more than "sign before the first showing".
 - **`ch9.objection-responses.fee`**: the keyed option compresses "focus on value and net proceeds ... confirm the structure with my broker". Check the compression is fair.
 - **`ch9.keep-informed.closing-table`**: tests content under "After the transaction", while the concept's review link points at `#between-yes-and-closing`, the heading just above it.
-- Option lengths were evened out deliberately (the ch4 review found the keyed answer was usually the longest). Two keyed options are still slightly the longest (`ch9.keep-informed.under-contract`, `ch9.conversation-note.why`).
+- Option lengths were evened out deliberately (the ch4 review found the keyed answer was usually the longest), and again after the cross-chapter review. The keyed option is still the longest in three questions: by one character in `ch9.objection-responses.buyer-agreement` and `ch9.conversation-note.contents`, and in the one-word `ch9.consultation-steps.seller-present` ("Present"). In `ch9.conversation-note.why` and `ch9.keep-informed.closing-table` a distractor is now the longest option.
 
 ## The questions
 
@@ -259,14 +259,14 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 - A. Value and net proceeds, confirmed with your broker ✓
 - B. Matching the lowest quote the client has heard
 - C. The rate printed on your old listing form
-- D. Moving the talk away from money to your marketing
+- D. Defending your rate as the standard in your market
 
 Explanation shown to the reader: Compensation is something you agree in writing before you start. Show how you work and what they would net, and confirm the structure with your broker: shift from fee to outcome, and do not quote an old listing form.
 
 Chapter source (Table 9.2):
 > "Your fee is too high." Focus on value and net proceeds. "I understand. Compensation is something we agree in writing before we start. Let me show you how I work and what you'd net, and I'll confirm the structure with my broker." Chapter 11 has the short version of that rule. Shift from fee to outcome, and do not quote an old listing form.
 
-Note: option D is close to "shift from fee to outcome" in spirit; check it reads as clearly wrong (it moves to marketing, not to net proceeds).
+Note: option D was changed after the cross-chapter review. The earlier distractor ("Moving the talk away from money to your marketing") was arguably right given "Shift from fee to outcome"; "Defending your rate as the standard in your market" is the opposite of focusing on value and net proceeds.
 
 Status: draft, awaiting owner review.
 
@@ -342,9 +342,9 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 **Why does the chapter say the two minutes spent writing a note are worth it?**
 
 - A. They protect you from "but you said" and make follow-up specific ✓
-- B. They are how your broker decides your commission split
-- C. They replace the need to send the client anything in writing
-- D. They let you skip the weekly update while under contract
+- B. They are how your broker decides your commission split each year
+- C. They replace the need to send the client anything else in writing
+- D. They let you skip the weekly client update while under contract
 
 Explanation shown to the reader: Two minutes of typing protects you from "but you said" months later and makes your follow-up specific. Chapter 11 covers what to document for legal protection.
 
@@ -362,10 +362,10 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 **Between the signed agreement and the closing table, what does every client get from you?**
 
-- A. A call when there is news, and quiet otherwise
-- B. An update from whoever on the team is free
-- C. One contact (you), weekly updates, a call before deadlines ✓
-- D. A single summary email the week before closing
+- A. A call whenever there is news, and quiet otherwise
+- B. Updates from whoever on the team is free that week
+- C. You as one contact, weekly updates, deadline calls ✓
+- D. One summary email sent the week before closing day
 
 Explanation shown to the reader: One named point of contact (you), a short update every week even when nothing has changed, and a call before every deadline, each logged in your CRM. A client who is well informed becomes a past client who refers.
 
@@ -379,9 +379,9 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 ---
 
 ### 17. `ch9.keep-informed.weekly`
-*From yes to closing and after · fill in the blank · scenario*
+*From yes to closing and after · fill in the blank*
 
-**Nothing has changed on your client's file this week. You still send a short update, because the standard is an update every ______ .**
+**Between the signed agreement and closing, send every client a short update once a ______ , even when nothing has changed.**
 
 Keyed answer: **week**. Also accepted: none.
 
@@ -390,7 +390,7 @@ Explanation shown to the reader: Give every client a short update every week eve
 Chapter source:
 > give every client one named point of contact (you), a short update every week even when nothing has changed, and a call before every deadline. Log each of those in your CRM.
 
-Note: the stem says "this week", which hints the answer. Consider rewording if it is too easy.
+Note: reworded after the cross-chapter review; the earlier stem said "this week" and gave the answer away. One accepted word.
 
 Status: draft, awaiting owner review.
 
@@ -403,9 +403,9 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 **The after-closing habit starts at the closing table. What three things do you do there?**
 
-- A. Hand over the keys, collect a review, close the file
-- B. Thank them, ask for a listing, send your fee invoice
-- C. Ask for a review, give a gift, archive the contact
+- A. Hand over the keys, ask for a review, then close out the file
+- B. Thank them, ask for a new listing, send your fee invoice
+- C. Ask for an online review, give a gift, archive the contact
 - D. Thank them, ask for the introduction, say you'll be in touch ✓
 
 Explanation shown to the reader: Thank them, ask for the introduction, and tell them to expect to hear from you. Chapter 10 shows the post-close plan that follows.
