@@ -283,7 +283,7 @@ for x in (365, 580, 1010):
     b += [arrow(x, 390, x, 458, "deep", width=4), label(x, 490, "Seller leads", 18, DEEP, wt="700")]
 b += [box(70, 530, 590, 62, "Mail or knock on the 50 nearest homes before the open house", "pale", fs=19, bold=False),
       box(880, 520, 340, 90, "Best seller-lead post: say how many showings or offers it received", "warnfill", fs=18, bold=False)]
-page("fig-listing-timeline", "Figure 3.2. One listing, five posts, two kinds of leads", "Every stage of a listing is a chance to be seen.", "".join(b),
+page("fig-listing-timeline", "Figure 3.3. One listing, five posts, two kinds of leads", "Every stage of a listing is a chance to be seen.", "".join(b),
      "A timeline of five posts for one listing: coming soon, just listed, open house, under contract, just sold. Blue arrows mark where buyer leads arise and deep-blue arrows mark where seller leads arise. A callout says the just sold post is the best seller-lead post.")
 
 b = []
@@ -301,7 +301,7 @@ for r, (lab, cells) in enumerate(labels):
         x = cx0 + w * (cwid + cgap)
         b.append(box(x, y, cwid, 116, c or "—", "light" if c else "pale", fs=17, bold=False, r=10))
 b.append(box(40, 560, 1200, 56, "Eight posts a month, plus the monthly update. Batch the whole month in one sitting.", "deep", fs=21))
-page("fig-content-calendar", "Figure 3.3. Four weeks, eight posts", "A calendar you can keep on your busiest week.", "".join(b),
+page("fig-content-calendar", "Figure 3.2. Four weeks, eight posts", "A calendar you can keep on your busiest week.", "".join(b),
      "A grid of four weeks by three rows. Every week has a market note and an educational tip. The third row holds a monthly market update in week one, a quarterly local guide in week three and listing posts as needed in week four.")
 
 # ---------------------------------------------------------------- ch4
@@ -534,22 +534,6 @@ b += [link(rects[5], (114, 153, 180, 66), "deep", width=5), link((114, 153, 180,
 page("fig-referral-flywheel", "Figure 10.1. How a closing becomes your next lead", "Every touch earns the right to the next one.", "".join(b),
      "Six steps in a circle: closing day note and gift, one week call, 30 days review request, quarterly calls, home anniversary, and finally an introduction. A heavy arrow from the introduction leads to a New client box that returns to Find and back to closing day.")
 
-b = [f'<path d="M80,350 L1190,350" stroke="{GREY}" stroke-width="5"/>']
-tl = [(110, "Closing day", "Handwritten note and gift. Ask for an introduction.", "deep"), (260, "Week 1", "Call: how is the move going?", "blue"),
-      (410, "Day 30", "Call or visit. Ask for a review. Second referral ask.", "deep"), (560, "Month 3", "Call with a reason: market, season.", "blue"),
-      (710, "Month 6", "Call with a reason.", "blue"), (860, "Month 9", "Call with a reason.", "blue"),
-      (1010, "Month 12", "Home anniversary: card or call with an updated home value.", "blue")]
-for x, t, d, k in tl:
-    b.append(f'<circle cx="{x}" cy="350" r="15" fill="{DEEP if k=="deep" else BLUE}"/>')
-    b.append(arrow(x, 332, x, 296, "grey", width=2))
-    b.append(box(x - 70, 140, 140, 154, d, "pale", fs=16, bold=False, r=10))
-    b.append(label(x, 392, t, 18, NAVY, wt="700"))
-b += [arrow(1190, 350, 1250, 350, "grey"), box(960, 430, 290, 74, "Then: an annual appreciation event and quarterly calls, indefinitely", "grey", fs=16, bold=False),
-      '<circle cx="110" cy="590" r="13" fill="#1E3A8A"/>', label(134, 596, "Touches that ask for something", 18, SLATE, "start"),
-      '<circle cx="470" cy="590" r="13" fill="#2563EB"/>', label(494, 596, "Touches that only give", 18, SLATE, "start")]
-page("fig-postclose-timeline", "Figure 10.2. The first year after closing", "Notice how few touches ask.", "".join(b),
-     "A timeline from closing day to month twelve: handwritten note and gift on closing day, a call at one week, a call and review request at 30 days, quarterly calls at months 3, 6 and 9, and the home anniversary at month 12. Only closing day and day 30 ask for something. After the first year come an annual event and quarterly calls.")
-
 # ---------------------------------------------------------------- ch11
 b = [f'<path d="M110,170 L1170,170" stroke="{GREY}" stroke-width="5"/>']
 stops = [(140, "First inquiry", "Consent before automated texts. Honor every opt-out."),
@@ -630,7 +614,7 @@ for k, r in rects.items():
     b.append(box(r[0] - 75, r[1] - 27, 150, 54, k, "deep", fs=21, r=27))
 b += [link(rects["Find"], rects["Nurture"]), link(rects["Nurture"], rects["Keep"]), link(rects["Keep"], rects["Find"]),
       f'<circle cx="640" cy="250" r="38" fill="#FFFFFF" stroke="{BLUE}" stroke-width="3"/>', label(640, 257, "CRM", 20, BLUE, wt="700"),
-      box(40, 470, 1200, 96, "7   Review every Friday. Fix one thing a month. Ask your broker before anything unusual.", "light", fs=22)]
+      box(40, 470, 1200, 96, "7   Review every Friday and change one thing. Ask your broker before anything unusual.", "light", fs=22)]
 page("fig-handbook-card", "Figure 13.1. The whole handbook on one card", "Print it. Put it where you work.", "".join(b),
      "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan for every client, and review every Friday.")
 
