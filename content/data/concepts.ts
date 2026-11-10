@@ -112,7 +112,7 @@ export const CONCEPTS: Concept[] = [
     id: 'ch12.scorecard',
     chapter: 'ch12',
     title: 'One weekly scorecard: Appendix A, the same rows as Table 8.2',
-    summary: 'Fill it in every Friday, start with the five core numbers if the full list is too much, and name the one number to move next week.',
+    summary: 'Fill it in every Friday, start with the five core numbers if the full list is too much, and decide one thing to do differently next week.',
     anchor: 'measure-every-week',
     version: 1,
   },
