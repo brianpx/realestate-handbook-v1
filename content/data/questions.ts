@@ -1634,4 +1634,186 @@ export const QUESTIONS: Question[] = [
     explain: 'Thank them, ask for the introduction, and tell them to expect to hear from you. Chapter 10 shows the post-close plan that follows.',
   },
   // end ch9
+  // ch10
+  // ---- ch10.remembered
+  {
+    id: 'ch10.remembered.move-again', version: 1, concept: 'ch10.remembered', kind: 'mcq', draft: true,
+    prompt: 'Why does the chapter say staying in touch after closing pays off?',
+    options: [
+      'Brokerages rank agents by the number of cards they send',
+      'Most homeowners move again within a decade or two',
+      'Most past clients will move again within their first year',
+      'A closing gift alone is enough to earn every future referral',
+    ],
+    answer: 1,
+    explain: 'Most homeowners move again within a decade or two, and know several people who will move before then. The agent they remember gets those transactions.',
+  },
+  {
+    id: 'ch10.remembered.cheapest', version: 1, concept: 'ch10.remembered', kind: 'blank', draft: true,
+    before: 'A database of past clients and sphere contacts who hear from you regularly is the most valuable asset you will build, and the', after: 'one to maintain.',
+    answer: 'cheapest', accept: ['cheapest'],
+    explain: 'Being remembered is a schedule, not an accident. The chapter makes "still being there" a schedule instead of a hope.',
+  },
+
+  // ---- ch10.post-close-plan
+  {
+    id: 'ch10.post-close-plan.assign-activate', version: 1, concept: 'ch10.post-close-plan', kind: 'mcq', draft: true,
+    prompt: 'When is the post-close plan assigned to a client, and when does it start running?',
+    options: [
+      'Assigned at the listing appointment, started at the first offer',
+      'Assigned and started together at the 30-day call',
+      'Assigned under contract, activated on closing day',
+      'Assigned on closing day, started at the home anniversary',
+    ],
+    answer: 2,
+    explain: 'The post-close plan is built once, assigned on the day the contract goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
+  },
+  {
+    id: 'ch10.post-close-plan.seven-touches', version: 1, concept: 'ch10.post-close-plan', kind: 'blank', draft: true,
+    before: 'In the first year, the post-close plan runs', after: 'dated touches, starting with the closing-day note.',
+    answer: 'seven', accept: ['seven', '7'],
+    explain: 'Build the plan once as a follow-up plan and apply it at every closing. The annual appreciation event or gift is yours to schedule once a year, not a separate dated touch per client.',
+  },
+  {
+    id: 'ch10.post-close-plan.after-year', version: 1, concept: 'ch10.post-close-plan', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A client has finished their first year on the post-close plan. What happens next?',
+    options: [
+      'They come off your list until they call you',
+      'They start the post-close plan again from closing day',
+      'They move onto the 90-day new-lead plan',
+      'They stay on the Quarterly Call Plan',
+    ],
+    answer: 3,
+    explain: 'After the first year, the client stays on the Quarterly Call Plan, where quarterly calls keep you useful and let you hear about life changes early.',
+  },
+
+  // ---- ch10.touch-purposes
+  {
+    id: 'ch10.touch-purposes.one-week', version: 1, concept: 'ch10.touch-purposes', kind: 'mcq', draft: true,
+    prompt: 'What is the one-week call after closing for?',
+    options: [
+      'Catch problems early and offer vendor introductions',
+      'Ask for a review on your Agent Site and a referral',
+      'Deliver an updated value for the home',
+      'Invite them to your client appreciation event',
+    ],
+    answer: 0,
+    explain: 'The one-week call ("How\'s the move going? Anything you need?") is there to catch problems early and offer vendor introductions.',
+  },
+  {
+    id: 'ch10.touch-purposes.review-ask', version: 1, concept: 'ch10.touch-purposes', kind: 'mcq', draft: true,
+    prompt: 'At which touch does the post-close plan ask the client for a review on your Agent Site?',
+    options: ['On closing day, with the note', 'At the one-week check-in call', 'At the 30-day call or visit', 'At the home anniversary card or call'],
+    answer: 2,
+    explain: 'At 30 days you call or visit and ask for a review on your Agent Site. Reviews drive online leads, and the same call carries the second referral ask.',
+  },
+  {
+    id: 'ch10.touch-purposes.anniversary-estimate', version: 1, concept: 'ch10.touch-purposes', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'For a client\'s home anniversary you pull an updated value from an automated estimate. What should you tell them about it?',
+    options: [
+      'That it is as reliable as a full market analysis of the home',
+      'Nothing; the number speaks for itself',
+      'That they should list now while values are up',
+      'That an automated estimate is not a market analysis',
+    ],
+    answer: 3,
+    explain: 'Send a card or call with an updated home value. An automated estimate is not a market analysis; say so. The anniversary is the most natural seller conversation you will ever have.',
+  },
+
+  // ---- ch10.value-test
+  {
+    id: 'ch10.value-test.which-passes', version: 1, concept: 'ch10.value-test', kind: 'mcq', draft: true,
+    prompt: 'Which of these touches passes the chapter\'s test for adding value?',
+    options: [
+      'A "Thinking of selling?" note every month',
+      'A reminder to change the furnace filters',
+      'A flyer for your newest listing',
+      'A note reminding them that you are still an agent',
+    ],
+    answer: 1,
+    explain: 'Would they be glad to receive it if they were never going to move again? Local insights, a furnace-filter reminder, trusted contractors, a property tax deadline or a neighborhood event pass. "Thinking of selling?" every month does not.',
+  },
+  {
+    id: 'ch10.value-test.never-move', version: 1, concept: 'ch10.value-test', kind: 'blank', draft: true,
+    before: 'Before you send a touch, ask: would the person be glad to receive it if they were never going to', after: 'again?',
+    answer: 'move', accept: ['move'],
+    explain: 'This is the test for every touch. A card for a new baby, a promotion or a graduation beats a market update.',
+  },
+  {
+    id: 'ch10.value-test.vendor-intro', version: 1, concept: 'ch10.value-test', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A past client asks you to recommend a plumber. How does the chapter say to make the introduction?',
+    options: [
+      'Accept a small thank-you fee from the plumber',
+      'Insist they use your plumber so you can vouch for the work',
+      'Take nothing for it, and say they may choose anyone',
+      'Decline, since vendor introductions are not an agent\'s job',
+    ],
+    answer: 2,
+    explain: 'Introducing a vendor you trust is a gift that costs you nothing, as long as you accept nothing of value for it and tell the client they are free to choose anyone (Chapter 11).',
+  },
+
+  // ---- ch10.reactivation
+  {
+    id: 'ch10.reactivation.first-step', version: 1, concept: 'ch10.reactivation', kind: 'mcq', draft: true,
+    prompt: 'You have let your database go cold. What does the chapter say to do first?',
+    options: [
+      'Send one useful piece of market information to everyone',
+      'Send everyone an apology for being out of touch so long',
+      'Call every contact in one long day',
+      'Buy a fresh batch of online leads instead',
+    ],
+    answer: 0,
+    explain: 'Do not apologize for the silence. Send one useful piece of market information to everyone, then start calling in small batches.',
+  },
+  {
+    id: 'ch10.reactivation.pace', version: 1, concept: 'ch10.reactivation', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your useful market message has gone out to the whole database. How should you work through the calls?',
+    options: [
+      'Everyone in one weekend, working down the list alphabetically',
+      'Only the people who replied to you within the last month',
+      'The oldest contacts first, as many as you can reach in a day',
+      '10 a day, starting with those who liked your last message',
+    ],
+    answer: 3,
+    explain: 'Call in small batches with a simple "thinking of you" and one question about how things are. A workable pace is a batch of 10 a day, starting with the people who liked your last message.',
+  },
+  {
+    id: 'ch10.reactivation.back-on-plan', version: 1, concept: 'ch10.reactivation', kind: 'blank', draft: true,
+    before: 'Put everyone you reach back on the', after: 'plan so the database does not go cold again.',
+    answer: 'quarterly', accept: ['quarterly', 'quarterly call', 'quarterly call plan'],
+    explain: 'Most people will be glad to hear from you. Putting everyone you reach back on the quarterly plan stops the database going cold again.',
+  },
+
+  // ---- ch10.referrals
+  {
+    id: 'ch10.referrals.three-moments', version: 1, concept: 'ch10.referrals', kind: 'mcq', draft: true,
+    prompt: 'When does the chapter say to ask a client for a referral?',
+    options: [
+      'Only once a year, at the home anniversary card or call',
+      'At closing, at the 30-day call, and when thanked unprompted',
+      'In every monthly email, so nobody forgets who you are',
+      'At the first appointment, at the offer, and again at closing',
+    ],
+    answer: 1,
+    explain: 'Ask at those three moments, plainly, using the script from Chapter 6, and then stop.',
+  },
+  {
+    id: 'ch10.referrals.thank', version: 1, concept: 'ch10.referrals', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A past client sends you a friend, and the friend decides not to buy. What do you owe the past client?',
+    options: [
+      'A thank-you within a day, by phone or a handwritten note',
+      'A thank-you, but only if the friend goes on to buy later',
+      'A thank-you, saved for the card at their home anniversary',
+      'Nothing; a referral that does not close needs no thanks',
+    ],
+    answer: 0,
+    explain: 'Thank every referral within a day, by phone or a handwritten note, whether or not it becomes a transaction.',
+  },
+  {
+    id: 'ch10.referrals.referred-by', version: 1, concept: 'ch10.referrals', kind: 'blank', draft: true,
+    before: 'Track each referral in your CRM with a', after: 'field, so you can see how many of your leads come from past clients.',
+    answer: 'Referred by', accept: ['referred by', 'referred-by'],
+    explain: 'Also track referrals received per month. When that number grows, your business becomes less dependent on paid leads every year.',
+  },
+  // end ch10
 ];
