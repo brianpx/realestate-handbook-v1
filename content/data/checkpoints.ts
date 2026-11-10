@@ -12,7 +12,7 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
             'Check three things first: new leads overnight, tasks due today and Opportunities that moved. Chapter 4 builds the daily rhythm around them.']
     ],
     ch2: [
-        ['Trust is already built, and the cost is only your time.', 'Sphere contacts convert at five to ten times the rate of a portal lead.',
+        ['Trust is already built, and the cost is only your time.', 'Your sphere often converts far better than a portal lead.',
             'Portal inquirers have no relationship with you and have often inquired with several agents at once.'],
         ['Do not buy online leads until your follow-up system is built and tested on your sphere. Speed and a long nurture are what make those leads pay off after that, and Chapter 3 has the test for turning ads on.'],
         ['Follow up with every visitor within 24 hours.', 'A text the same evening and a call the next morning is the standard.',
@@ -23,18 +23,18 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Coming soon.', 'Just listed.', 'Open house.', 'Under contract.', 'Just sold (the best seller-lead post you can make).'],
         // Question changed after the static site shipped; key points are from the chapter's paid-leads section.
         ['Start small: run one source at a time for 90 days.', 'Track cost per appointment and cost per closed deal before scaling.',
-            'Only add paid ads once the 9 p.m. test passes: an immediate automated reply, a call before 9 a.m., and a 90-day plan.']
+            'Only add paid ads once the 9 p.m. test passes: an immediate automated reply, a call by the next morning and a 90-day plan, all without you having to remember.']
     ],
     ch4: [
         // Added after the static site shipped: the page gained this question at the front, so the answers below it moved down one.
         ['First minute: the automated first touch goes out on its own (an email, and a text only if you have permission to text).',
-            'First five minutes when possible: step out and make the live call. If you are with a client, the automated first touch buys you time.',
+            'First five minutes when you can: step out and make the live call. If you are with a client, the automated first touch buys you time.',
             'If you cannot call within the hour: send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about.',
             'Same day, always: the live call.'],
         ['Profile and Marketing Profile.', 'Import and tag contacts (deduplicate; tag by relationship and source).', 'Create or download follow-up plans.',
             'Set lead routing rules if you are on a team.', 'Customize the Opportunities pipeline.', 'Install the mobile app and turn on notifications.'],
         ['A lead you already have is worth more than one you have not met yet.'],
-        ['An automated first touch (text and email) within one minute.', 'A live call within five minutes when possible, and always the same day.']
+        ['An automated first touch (text and email) within one minute.', 'Answer every new lead with a live call within five minutes when you can, and always the same day.']
     ],
     ch5: [
         // Added after the static site shipped, so the answers below it moved down one.

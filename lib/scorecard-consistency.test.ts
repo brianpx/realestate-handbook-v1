@@ -33,9 +33,9 @@ describe('Table 8.2 is the Appendix A list', () => {
   it('states every target exactly as rules.ts records it', () => {
     expect(rows.map(r => r[1])).toEqual(SCORE_ROWS.map(r => target(r.id)));
   });
-  it('gives each row the scorecard target and threshold (the events row may add its ramp-up)', () => {
+  it('gives each row the scorecard target and threshold', () => {
     for (const row of SCORE_ROWS) {
-      expect(target(row.id).startsWith(row.target), `${row.id}: "${target(row.id)}" vs "${row.target}"`).toBe(true);
+      expect(row.target, row.id).toBe(target(row.id));
       expect(row.min, row.id).toBe(WEEKLY_TARGETS[row.id].min);
     }
   });

@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CHECKPOINT_ANSWERS } from '@/content/data/checkpoints';
 import { NURTURE_TOUCHES } from '@/content/data/nurture';
 import { NURTURE_STATIC_HTML } from '@/content/data/nurture-static';
 import { LIVE_CALL_MINUTES, NINE_PM_TEST_HOUR, NURTURE_PLAN_DAYS, POST_CLOSE_TOUCHES_PHRASE, POST_CLOSE_TOUCHES_YEAR_ONE, RULES } from '@/content/data/rules';
@@ -104,9 +105,36 @@ describe('the post-close plan is six steps and seven dated touches in year one',
   });
 });
 
-// The signed sentences in rules.ts and the numbers beside them must agree with each other, and the chapter that
-// defines each rule must state the values the sentence fixes. The sentences themselves are not yet in the chapter
-// text (M4 steps 3 to 5), so only the values are asserted here.
+/** Plain text of the section under the h2 or h3 with `id`, up to the next heading of the same level. */
+function section(html: string, id: string): string {
+  const start = html.search(new RegExp(`<h[23]\\s[^>]*\\bid="${id}"`));
+  if (start < 0) throw new Error(`no heading #${id}`);
+  const rest = html.slice(start);
+  const level = /^<h([23])/.exec(rest)![1];
+  const next = rest.slice(1).search(new RegExp(`<h${level}\\b`));
+  return htmlText(next < 0 ? rest : rest.slice(0, next + 1));
+}
+
+// Each signed sentence in rules.ts appears verbatim under the heading that defines the rule, and again where the
+// plans and checklists apply it; the numbers beside the sentences agree with them and with the plan data.
+describe('each rule is stated verbatim where the handbook defines it', () => {
+  for (const [id, rule] of Object.entries(RULES)) {
+    it(`${id}: ${rule.chapter}#${rule.anchor}`, () => {
+      expect(section(page(rule.chapter), rule.anchor)).toContain(rule.sentence);
+    });
+  }
+  it('the consent rule is restated verbatim beside the plans that automate texts', () => {
+    for (const id of ['ch4', 'ch5', 'app-b']) expect(htmlText(page(id)), id).toContain(RULES.consent.sentence);
+  });
+  it('the 9 p.m. test is restated verbatim in Appendix C', () => {
+    expect(htmlText(page('app-c'))).toContain(RULES.ninePmTest.sentence);
+  });
+  it('the speed-to-lead standard is the Chapter 4 checkpoint answer, verbatim', () => {
+    const keyPoints = CHECKPOINT_ANSWERS.ch4!.flatMap(a => (Array.isArray(a) ? a : []));
+    expect(keyPoints).toContain(RULES.speedToLead.sentence);
+  });
+});
+
 describe('the signed rules agree with their numbers and the plan data', () => {
   it('the speed-to-lead standard: the live call is the stopwatch limit, the same day, and the plan\'s second touch', () => {
     const rule = RULES.speedToLead.sentence;

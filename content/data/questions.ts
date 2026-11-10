@@ -105,7 +105,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'What are the two layers of the speed-to-lead standard?',
     options: [
       'A live call within one minute and an email within a day',
-      'An automated text and email within one minute, then a live call within five minutes when possible, and always the same day',
+      'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
       'A voicemail within an hour and a text within a day',
       'A personal email within 30 minutes and a call within a week',
     ],
@@ -114,9 +114,9 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'ch4.speed-to-lead.five-minutes', version: 1, concept: 'ch4.speed-to-lead', kind: 'blank',
-    before: 'In the speed-to-lead window, conversion is highest when you respond in under', after: 'minutes.',
+    before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
     answer: '5', accept: ['5', 'five'],
-    explain: 'Figure 4: under five minutes is the highest conversion window, five to 30 minutes is still strong, and after 30 minutes there is a sharp drop-off.',
+    explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4 is an illustrative shape, not measured data.',
   },
   {
     id: 'ch4.speed-to-lead.showing', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq', draft: true, scenario: true,
@@ -182,9 +182,9 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'ch4.text-permission.opt-out', version: 1, concept: 'ch4.text-permission', kind: 'blank', draft: true,
-    before: 'Honor quiet hours and stop on the first', after: '.',
+    before: 'Honor quiet hours and stop at the first', after: '.',
     answer: 'opt-out', accept: ['opt-out', 'opt out', 'optout'],
-    explain: 'The automated first touch should honor quiet hours and stop on the first opt-out.',
+    explain: 'The automated first touch should honor quiet hours and stop at the first opt-out.',
   },
 
   // ---- ch4.optional-tools
@@ -222,7 +222,7 @@ export const QUESTIONS: Question[] = [
   // ---- ch5.multi-touch
   {
     id: 'ch5.multi-touch.fifth-to-twelfth', version: 1, concept: 'ch5.multi-touch', kind: 'mcq',
-    prompt: 'Industry follow-up data says most conversions happen between which contacts?',
+    prompt: 'Many agents and industry trainers report that most conversions happen between which contacts?',
     options: ['The first and second', 'The third and fourth', 'The fifth and twelfth', 'The fifteenth and twentieth'],
     answer: 2,
     explain: 'Most new agents stop after one or two attempts, so they abandon the leads that would have closed for the agent who kept going.',
@@ -428,8 +428,8 @@ export const QUESTIONS: Question[] = [
   },
 
   // ---- ch2.sphere
-  // The knowledge check's old "five to ten times" question is not in the chapter text (it says "often converts far
-  // better"), so it is not carried over; these two replace it.
+  // The knowledge check's old "five to ten times" question was not in the chapter text (it says "often converts far
+  // better") and was retired in M4 step 3; these two cover the concept instead.
   {
     id: 'ch2.sphere.why-best', version: 1, concept: 'ch2.sphere', kind: 'mcq', draft: true,
     prompt: 'Why is your sphere of influence, for most agents, the highest-return lead source?',
