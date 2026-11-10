@@ -664,10 +664,10 @@ export const QUESTIONS: Question[] = [
     id: 'ch13.own-numbers.which-three', version: 1, concept: 'ch13.own-numbers', kind: 'mcq', draft: true,
     prompt: 'Which three of the book\'s example numbers does the chapter ask you to replace with your own?',
     options: [
-      'Calls per day, average sale price, listings per year',
-      'Open houses per month, ad spend, website visits',
+      'Calls made per day, average sale price, listings taken per year',
+      'Open houses held per month, ad spend per month, website visits per week',
       'Conversations per appointment, conversion by source, touches before a reply',
-      'Closings per quarter, commission per deal, referral count',
+      'Closings per quarter, commission per closed deal, referrals per year',
     ],
     answer: 2,
     explain: 'Conversations per appointment (Chapter 1), conversion by source (Chapter 2) and touches before a reply (Chapter 5).',
@@ -684,7 +684,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'Which of these is written in the implementation-intention form the chapter gives?',
     options: [
       'I will make prospecting calls more often this quarter.',
-      'On Monday, at 8 a.m., I will call my sphere contacts.',
+      'On Monday, at 9:30 a.m., I will call my sphere contacts.',
       'My goal is to close more deals than last year.',
       'Sometime soon I should update every contact in my CRM.',
     ],

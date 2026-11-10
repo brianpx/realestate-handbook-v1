@@ -15,7 +15,7 @@ You have worked as an agent, so the useful things only you can judge are below. 
 
 Every keyed answer is traceable to a sentence in `../../content/pages/ch13.html`; the quoted passages below were copied from that file. That shows the question matches the **book**. It does not show the book is right.
 
-Deliberately not tested: "Do these this week", the speed-to-lead sentence in "The two habits that matter most", the card's Friday line ("Review every Friday. Fix one thing a month.") and the figure, because a parallel lane is trimming those passages (MASTER-PROMPT M4 step 10).
+Deliberately not tested: "Do these this week", the speed-to-lead sentence in "The two habits that matter most", the card's Friday line and the figure, because a parallel lane trimmed those passages (MASTER-PROMPT M4 step 10, PR #32). The quotes below use the wording after PR #32: "Speed-to-lead: answer every new lead to the standard in Chapter 4." and "Review every Friday and change one thing. Ask your broker before anything unusual."
 
 ## How approved questions get used
 
@@ -32,9 +32,9 @@ Approved questions lose their `draft` flag and join the review deck. `chapterChe
 
 ## Things I would look at first
 
-- **`ch13.two-habits.when-stalled`**: the keyed option names speed-to-lead. If the trim lane cuts the Chapter 13 speed-to-lead sentence to a pointer, check that the section still names it as one of the two habits.
-- **`ch13.own-numbers.which-three`**: the keyed option is the longest (73 vs 50 to 57 characters); even out the lengths if you keep it.
-- **`ch13.implementation-intention.form`**: the keyed option's "8 a.m." is an illustrative example of the form, not a time the chapter states.
+- **`ch13.two-habits.when-stalled`**: the keyed option names speed-to-lead. After PR #32 the section still names it as one of the two habits ("Speed-to-lead: answer every new lead to the standard in Chapter 4."), and the explanation quotes only the unchanged "first things to check when results stall" sentence.
+- **`ch13.own-numbers.which-three`**: the distractors were lengthened after the cross-chapter review; the keyed option is still the longest, but only just (75 characters against 63, 71 and 68).
+- **`ch13.implementation-intention.form`**: the keyed option's "9:30 a.m." is an illustrative example of the form, matching the start of the prospecting block in Table 8.1; Chapter 13 itself states no time.
 - **`ch13.help-network.partner-tag`** and **`ch13.broker-before.kinds`**: one-word blanks close to the chapter's wording; they reward recall of the line.
 
 ## The questions
@@ -52,7 +52,7 @@ Approved questions lose their `draft` flag and join the review deck. `chapterChe
 Explanation shown to the reader: Speed-to-lead and multi-touch follow-up are the two habits that matter most. The seven lines on the card are the system; these two are the first things to check when results stall.
 
 Chapter source:
-> If you remember nothing else from this handbook, remember these two. Speed-to-lead: respond in minutes, not hours. Multi-touch follow-up: stay in touch for 90 days and then forever. [...] The seven lines on the card below are the system; these two are the first things to check when results stall.
+> If you remember nothing else from this handbook, remember these two. Speed-to-lead: answer every new lead to the standard in Chapter 4. Multi-touch follow-up: stay in touch for 90 days and then forever. [...] The seven lines on the card below are the system; these two are the first things to check when results stall.
 
 Status: draft, awaiting owner review.
 
@@ -297,17 +297,17 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 **Which three of the book's example numbers does the chapter ask you to replace with your own?**
 
-- A. Calls per day, average sale price, listings per year
-- B. Open houses per month, ad spend, website visits
+- A. Calls made per day, average sale price, listings taken per year
+- B. Open houses held per month, ad spend per month, website visits per week
 - C. Conversations per appointment, conversion by source, touches before a reply ✓
-- D. Closings per quarter, commission per deal, referral count
+- D. Closings per quarter, commission per closed deal, referrals per year
 
 Explanation shown to the reader: Conversations per appointment (Chapter 1), conversion by source (Chapter 2) and touches before a reply (Chapter 5).
 
 Chapter source:
 > Replace three of the book's example numbers with your own: conversations per appointment (Chapter 1), conversion by source (Chapter 2), touches before a reply (Chapter 5). Write the new ratio next to the old one.
 
-Note: the keyed option is the longest.
+Note: the keyed option is still the longest (75 characters against 63, 71 and 68) after the distractors were lengthened in review.
 
 Status: draft, awaiting owner review.
 
@@ -338,7 +338,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 **Which of these is written in the implementation-intention form the chapter gives?**
 
 - A. I will make prospecting calls more often this quarter.
-- B. On Monday, at 8 a.m., I will call my sphere contacts. ✓
+- B. On Monday, at 9:30 a.m., I will call my sphere contacts. ✓
 - C. My goal is to close more deals than last year.
 - D. Sometime soon I should update every contact in my CRM.
 
@@ -347,7 +347,7 @@ Explanation shown to the reader: The form is "On [day], at [time], I will [actio
 Chapter source:
 > Write one implementation intention: "On [day], at [time], I will [action]." Make it next Monday morning.
 
-Note: "8 a.m." is an illustrative filling of the template, not a time the chapter recommends.
+Note: "9:30 a.m." is an illustrative filling of the template, chosen to match the start of the prospecting block in Table 8.1; Chapter 13 states no time.
 
 Status: draft, awaiting owner review.
 
