@@ -1,6 +1,6 @@
 # Chapter 8 question bank: draft questions for review
 
-Prepared 9 November 2026. Seventeen questions across six new concepts were written from the Chapter 8 text for the spaced-review bank (`../../content/data/questions.ts`, each marked `draft: true`; the concepts are in `../../content/data/concepts.ts`). **None of them is shown to readers yet.** The four questions that already ship with the chapter's knowledge check (`../../content/data/knowledge-checks.ts`) are unchanged, were not moved into the bank, and are not listed here.
+Prepared 9 November 2026. Sixteen questions across six new concepts were written from the Chapter 8 text for the spaced-review bank (`../../content/data/questions.ts`, each marked `draft: true`; the concepts are in `../../content/data/concepts.ts`). **None of them is shown to readers yet.** The four questions that already ship with the chapter's knowledge check (`../../content/data/knowledge-checks.ts`) are unchanged, were not moved into the bank, and are not listed here.
 
 Status of every item below: **draft, awaiting owner review** (OD-30: the owner reviews and clears drafts until a working agent is named).
 
@@ -17,14 +17,14 @@ Every keyed answer is traceable to a sentence in `../../content/pages/ch8.html`;
 
 ## How approved questions get used
 
-Approved questions lose their `draft` flag and join the review deck. They also join the end-of-chapter check: `chapterCheck()` in `../../lib/coach/check.ts` serves every non-draft question for the chapter, and once Chapter 8 has one, its check switches from the four legacy questions to the tagged bank. Approving all 17 would make a 17-question chapter quiz, so decide whether to migrate the four shipped questions first (as Chapters 4, 5 and 12 did) and approve a few per concept.
+Approved questions lose their `draft` flag and join the review deck. They also join the end-of-chapter check: `chapterCheck()` in `../../lib/coach/check.ts` serves every non-draft question for the chapter, and once Chapter 8 has one, its check switches from the four legacy questions to the tagged bank. Approving all 16 would make a 16-question chapter quiz, so decide whether to migrate the four shipped questions first (as Chapters 4, 5 and 12 did) and approve a few per concept.
 
 | Concept | Anchor | Reviewed now | Draft awaiting you |
 | --- | --- | --- | --- |
 | Your CRM is the only list: a conversation not logged did not happen | `#one-source-of-truth` | 0 | 2 |
 | Lead generation goes first in the day, in the same place every day | `#time-blocking-the-week` | 0 | 3 |
 | Table 8.2 sets the weekly targets: start low, or track the five core numbers | `#weekly-activity-targets` | 0 | 3 |
-| The appointment target follows from your conversations-per-appointment ratio | `#weekly-activity-targets` | 0 | 3 |
+| The appointment target follows from your conversations-per-appointment ratio | `#weekly-activity-targets` | 0 | 2 |
 | Score leading indicators, not closings, and keep the three motivation habits | `#motivation-that-lasts` | 0 | 3 |
 | Decide in advance what you do on a slow day | `#when-it-is-quiet` | 0 | 3 |
 
@@ -35,6 +35,7 @@ Approved questions lose their `draft` flag and join the review deck. They also j
 - **`ch8.morning-block.tell-people`**: the field note's script says "I'm with clients until 11:00" during a prospecting block. The chapter calls that true; check you are comfortable teaching it.
 - **Blanks** accept only the listed forms: "four"/"4", "15"/"fifteen", "20"/"twenty". "4+" or "at least four" would be marked wrong.
 - **Option length**: the keyed option is never the single longest; in `ch8.appointment-ratio.why-one-or-two` it ties with a distractor.
+- **Cross-chapter review (9 November 2026)**: `ch8.leading-indicators.closings-fail` no longer keys on "60 to 90 days" (Chapter 1 says 60 to 120); `ch8.leading-indicators.which-one` was replaced by `ch8.leading-indicators.friday-review` because it duplicated Chapter 1 items; `ch8.appointment-ratio.better-ratio` was dropped because it overlapped `ch1.goal-ladder.own-ratio`.
 
 ## The questions
 
@@ -222,28 +223,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 10. `ch8.appointment-ratio.better-ratio`
-*The appointment target follows from your ratio · multiple choice, scenario*
-
-**In your warm sphere you set one appointment for every five conversations. What does the chapter say to do with your appointment target?**
-
-- A. Keep it at 1 to 2, because the table is fixed
-- B. Lower it, so the extra appointments do not overbook your week
-- C. Replace the 20 with your number and raise the target ✓
-- D. Cut your conversations to match the old target
-
-Explanation shown to the reader: If your own ratio is better, replace the 20 with your number and raise the target to match.
-
-Chapter source:
-> If your own ratio is better, say one appointment for every five or eight conversations in a warm sphere, replace the 20 with your number and raise the target to match.
-
-Status: draft, awaiting owner review.
-
-Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
-
----
-
-### 11. `ch8.appointment-ratio.twenty`
+### 10. `ch8.appointment-ratio.twenty`
 *The appointment target follows from your ratio · fill in the blank*
 
 **Unless your own ratio is better, the chapter works from about ____ conversations per appointment.**
@@ -261,49 +241,52 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 12. `ch8.leading-indicators.closings-fail`
+### 11. `ch8.leading-indicators.closings-fail`
 *Score leading indicators, not closings · multiple choice*
 
 **Why does a scoreboard of closings alone wear down a new agent's motivation?**
 
 - A. Closings are hard to count accurately
-- B. Your broker already tracks closings for you
+- B. Your broker already tracks closings, so yours adds nothing
 - C. Closings depend only on the market, not on you
-- D. You can go 60 to 90 days with a score of zero ✓
+- D. Closings can sit at zero for months while you work ✓
 
 Explanation shown to the reader: Motivation fails when you measure the wrong thing. Leading indicators move every day you do the work.
 
 Chapter source:
 > Motivation fails when you measure the wrong thing. If the only scoreboard is closings, you will go 60 to 90 days with a score of zero, and nobody stays motivated through that. Keep a scoreboard of leading indicators instead: calls, conversations, follow-ups completed, appointments set. Those numbers move every day you do the work.
 
+Note: the keyed option deliberately states no number. Chapter 8 says "60 to 90 days" while Chapter 1 says "60 to 120 days" (another item keys on that), so the item stays clear of the conflict. The chapters themselves still disagree; that is a content fix, not a question fix.
+
 Status: draft, awaiting owner review.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 13. `ch8.leading-indicators.which-one`
+### 12. `ch8.leading-indicators.friday-review`
 *Score leading indicators, not closings · multiple choice*
 
-**Which of these is a leading indicator on the chapter's scoreboard?**
+**What does the Friday review end with?**
 
-- A. Appointments set ✓
-- B. Closings this quarter
-- C. Commission paid this month
-- D. Listings sold
+- A. Plan every call for next week, then keep working through Saturday
+- B. Email your numbers to your broker for sign-off
+- C. Decide one thing to do differently, then stop until Monday ✓
+- D. Count closings and compare them with the office
 
-Explanation shown to the reader: The leading indicators are calls, conversations, follow-ups completed and appointments set. Those numbers move every day you do the work.
+Explanation shown to the reader: Compare this week's numbers to last week's. Decide one thing to do differently. Then stop working on it until Monday.
 
-Chapter source:
-> Keep a scoreboard of leading indicators instead: calls, conversations, follow-ups completed, appointments set. Those numbers move every day you do the work.
+Chapter source (checked on main and on this branch):
+> Review every Friday. Compare this week's numbers to last week's. Decide one thing to do differently. Then stop working on it until Monday.
+
+Note: replaces `ch8.leading-indicators.which-one`, which duplicated the shipped Chapter 1 check and `ch1.leading-lagging.lagging`. The shipped Chapter 8 knowledge check's blank also ends on "until Monday"; this item asks for the whole closing step as a multiple choice.
 
 Status: draft, awaiting owner review.
 
 Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
-
 ---
 
-### 14. `ch8.leading-indicators.habits`
+### 13. `ch8.leading-indicators.habits`
 *Score leading indicators, not closings · multiple choice*
 
 **Which is one of the three habits the chapter says protect motivation?**
@@ -329,7 +312,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 15. `ch8.quiet-days.first-action`
+### 14. `ch8.quiet-days.first-action`
 *Decide in advance what you do on a slow day · multiple choice, scenario*
 
 **It is a day with no conversations. What does the chapter say to start with?**
@@ -352,7 +335,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 16. `ch8.quiet-days.colleague`
+### 15. `ch8.quiet-days.colleague`
 *Decide in advance what you do on a slow day · multiple choice, scenario*
 
 **On Friday you hear that a colleague closed first. What should you compare their result to?**
@@ -373,7 +356,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 17. `ch8.quiet-days.pitfall`
+### 16. `ch8.quiet-days.pitfall`
 *Decide in advance what you do on a slow day · multiple choice*
 
 **What mistake turns a slow week into a slow month?**
