@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CONCEPTS } from '@/content/data/concepts';
-import { QUESTIONS } from '@/content/data/questions';
+import { QUESTIONS, type Question } from '@/content/data/questions';
 import { QuestionItem } from '@/components/widgets/QuestionItem';
 import { browserTimeZone, deriveConceptStates } from '@/lib/coach/actions';
 import { attemptInput } from '@/lib/coach/check';
@@ -17,6 +17,10 @@ import { trackingProgress, useSettings } from '@/lib/state';
 const CONCEPT = new Map(CONCEPTS.map(c => [c.id, c]));
 const QUESTION = new Map(QUESTIONS.map(q => [q.id, q]));
 const chapterLabel = (chapter: string) => (isPageId(chapter) ? pageById(chapter).label : chapter);
+
+/** Chapters with at least one reviewed question. A chapter whose questions are all drafts feeds nothing into review yet. */
+export const deckChapters = (bank: readonly Question[] = QUESTIONS): string[] =>
+  [...new Set(CONCEPTS.filter(c => reviewQuestionIds(c.id, bank).length > 0).map(c => c.chapter))];
 
 type Snapshot = { deck: Deck; tz: string; today: string };
 type Run = Snapshot & { items: DeckItem[]; index: number; firstPass: Record<string, boolean> };
@@ -66,7 +70,7 @@ export function ReviewDeck() {
 
 function EmptyState({ outlook }: { outlook: Snapshot }) {
   const { deck, today } = outlook;
-  const checked = [...new Set(CONCEPTS.map(c => c.chapter))];
+  const checked = deckChapters();
   return (
     <aside className="box" aria-live="polite">
       {deck.hasHistory ? (
@@ -77,9 +81,9 @@ function EmptyState({ outlook }: { outlook: Snapshot }) {
       ) : (
         <p>
           Nothing to review yet. Answer a chapter&apos;s &ldquo;Test your knowledge&rdquo; questions and the ideas you meet will come back here on a schedule.
-          {' '}Chapters that feed this deck: {checked.map((c, i) => (
+          {checked.length > 0 && <>{' '}Chapters that feed this deck: {checked.map((c, i) => (
             <span key={c}>{i > 0 ? ', ' : ''}<Link href={`/handbook/${c}`}>{chapterLabel(c)}</Link></span>
-          ))}.
+          ))}.</>}
         </p>
       )}
     </aside>
