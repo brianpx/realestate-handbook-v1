@@ -31,6 +31,7 @@ export default function PreviewPage() {
           <ul>
             <li>Chapter 1, Mindset and business foundations, in full: leading and lagging indicators, working backward from an income goal with the income goal calculator, and why your CRM comes first.</li>
             <li>Chapter 7, Common errors and pitfalls of new agents, in full: the six errors, the pitfall cycle explorer, and a self-score that points you at the chapter that fixes your worst habit.</li>
+            <li>The four checks from the quick start to make before your first outreach: consent, fair housing, agency disclosure and do-not-call.</li>
             <li>One script from Chapter 6 with the practice mode.</li>
             <li>The weekly time-block planner from Chapter 8, including calendar export.</li>
           </ul>
@@ -44,6 +45,12 @@ export default function PreviewPage() {
         {/* The chapter's own title is the heading here; Excerpt demotes it to an h2 under the page's h1. */}
         <div className="pub-sample" id="goal-calculator">
           <Excerpt page="ch1" />
+        </div>
+
+        <h2 className="pub-h2" id="outreach-safeguards" style={{ marginTop: 56 }}>Four checks before you reach out</h2>
+        <p>Before the daily target above turns into calls and texts, check these. The handbook's quick start puts them ahead of everything else.</p>
+        <div className="pub-sample">
+          <Excerpt page="pref" from={'<h3 id="before-your-first-outreach">'} to={'<h2 id="what-the-boxes-mean">'} />
         </div>
 
         <p style={{ marginTop: 56 }}>Chapter 7 sits later in the book, after the system has been built. It is here because it tells you which trap is yours, and which chapter to read first.</p>

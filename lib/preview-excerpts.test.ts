@@ -21,7 +21,7 @@ const excerpts = [...source.matchAll(/<Excerpt\b[\s\S]*?\/>/g)].map(([tag]) => (
 
 describe('the /preview excerpts', () => {
   it('are all read from the page source', () => {
-    expect(excerpts.map(e => e.page)).toEqual(['ch1', 'ch7', 'ch6', 'ch8']);
+    expect(excerpts.map(e => e.page)).toEqual(['ch1', 'pref', 'ch7', 'ch6', 'ch8']);
   });
 
   it.each(excerpts.filter(e => e.from !== undefined || e.to !== undefined))('$page: both markers exist, in order', ({ page, from, to }) => {
