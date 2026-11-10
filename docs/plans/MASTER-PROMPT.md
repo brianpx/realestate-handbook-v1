@@ -213,7 +213,7 @@ Steps:
 - [x] 2. Fix the stale line in `free-sample-decision.md:30` (now `docs/_archive/free-sample-decision.md`) (the recommended set lists the Preface; resolution #1): the Preface belongs to the signed-in free set, not to `/preview` [CR-L15]. Include in the same commit.
 - [x] 3. Commit `AGENTS.md` on its own: `docs(agents): add project instructions`. Keep the managed Next.js block byte for byte.
 - [x] 4. The content session finishes its Phase 2 work, runs `pnpm typecheck`, `pnpm test` and `pnpm e2e` (its own spec changes expect 16 scripts and 9 objections), and commits on its branch with Conventional Commits, one commit per logical change where practical. Tick the matching M4 steps here with the hashes. *Done: committed and merged in PR #16 (`f3358dd`, 9 November, 22:49 UTC).*
-- [ ] 5. Decide the untracked root `downloads/` folder (OD-17). Until answered it stays untracked, so every session keeps seeing `?? downloads/` in `git status`; that is expected. Do not add it to `.gitignore` and do not commit it until the decision is recorded in section 4.
+- [x] 5. Decide the untracked root `downloads/` folder (OD-17). Until answered it stays untracked, so every session keeps seeing `?? downloads/` in `git status`; that is expected. Do not add it to `.gitignore` and do not commit it until the decision is recorded in section 4. *Done 10 November: the owner said delete; the PDF was removed from the root checkout (it was untracked, so no commit).*
 
 Exit: `git status` clean apart from `downloads/`; `main` untouched until the owner asks to merge.
 
