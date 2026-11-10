@@ -96,7 +96,7 @@ export const QUESTIONS: Question[] = [
     id: 'ch4.daily-rhythm.opens-closes', version: 1, concept: 'ch4.daily-rhythm', kind: 'blank', draft: true,
     before: 'The day opens and closes in your', after: '.',
     answer: 'CRM', accept: ['crm', 'your crm'],
-    explain: 'Figure 3: start by reviewing the dashboard and tasks, end with the update in your CRM.',
+    explain: 'Figure 4.2: start by reviewing the dashboard and tasks, end with the update in your CRM.',
   },
 
   // ---- ch4.speed-to-lead
@@ -116,7 +116,7 @@ export const QUESTIONS: Question[] = [
     id: 'ch4.speed-to-lead.five-minutes', version: 1, concept: 'ch4.speed-to-lead', kind: 'blank',
     before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
     answer: '5', accept: ['5', 'five'],
-    explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4 is an illustrative shape, not measured data.',
+    explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4.3 is an illustrative shape, not measured data.',
   },
   {
     id: 'ch4.speed-to-lead.showing', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq', draft: true, scenario: true,
@@ -144,7 +144,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'ch4.speed-to-lead.figure-4', version: 1, concept: 'ch4.speed-to-lead', kind: 'mcq', draft: true,
-    prompt: 'How does the chapter describe the response-window shape in Figure 4?',
+    prompt: 'How does the chapter describe the response-window shape in Figure 4.3?',
     options: [
       'Measured data from a national study',
       'A guarantee of conversion within five minutes',

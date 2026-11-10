@@ -27,7 +27,7 @@ describe('Appendix B.1 matches the plan data', () => {
   });
 });
 
-describe('the no-JavaScript Figure 5', () => {
+describe('the no-JavaScript Figure 5.1', () => {
   const items = [...NURTURE_STATIC_HTML.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => htmlText(m[1]!));
   it('has one line per touch, on the same days', () => {
     expect(items.map(line => Number(/^Day (\d+)\./.exec(line)?.[1]))).toEqual(NURTURE_TOUCHES.map(t => t.day));

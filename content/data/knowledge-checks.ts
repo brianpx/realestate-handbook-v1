@@ -81,7 +81,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
         blank: {
             before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
             answer: '5', accept: ['5', 'five'],
-            explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4 is an illustrative shape, not measured data.'
+            explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4.3 is an illustrative shape, not measured data.'
         }
     },
     ch5: {

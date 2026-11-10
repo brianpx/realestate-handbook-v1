@@ -49,9 +49,9 @@ describe('introCut', () => {
     const intro = html.slice(0, cut);
     const rest = html.slice(cut);
     expect(intro).toContain('learning-objectives');
-    expect(intro).not.toContain('fig-roadmap-90');
-    expect(rest.startsWith('\n') || rest.includes('fig-roadmap-90')).toBe(true);
-    expect(rest.indexOf('fig-roadmap-90')).toBeLessThan(rest.indexOf('id="days-1-to-30"'));
+    expect(intro).not.toContain('widget:crm-checklists');
+    expect(rest.startsWith('\n') || rest.includes('widget:crm-checklists')).toBe(true);
+    expect(rest.indexOf('widget:crm-checklists')).toBeLessThan(rest.indexOf('id="days-1-to-30"'));
   });
 
   it('puts the preface outline after the title, because the objectives sit inside the first section', () => {

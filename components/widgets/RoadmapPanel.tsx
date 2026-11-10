@@ -10,7 +10,7 @@ import { InteractiveHeader } from './InteractiveHeader';
 // `roadmapStatus` ignores its date when no start is saved, so this sentence is the same on the server and the client.
 const UNDATED_STATUS = roadmapStatus(null, new Date(0));
 
-// Day 1 picker and calendar export above the Figure 7 checklists. The phase dates beside each checklist title
+// Day 1 picker and calendar export above the Figure 12.1 checklists. The phase dates beside each checklist title
 // are drawn by Checklists, which owns the ticks.
 export function RoadmapPanel({ items }: { items: readonly (readonly string[])[] }) {
   const saved = widgetOf(useHandbookState(), 'roadmap');

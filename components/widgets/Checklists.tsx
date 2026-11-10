@@ -19,7 +19,7 @@ export function Checklists({ page }: { page: string }) {
   const [today, setToday] = useState<Date | null>(null);
   useEffect(() => { setToday(new Date()); }, []);
   if (!config) return null;
-  // Chapter 12's three lists are the Figure 7 roadmap: they carry the Day 1 picker and a dated summary on each title.
+  // Chapter 12's three lists are the Figure 12.1 roadmap: they carry the Day 1 picker and a dated summary on each title.
   const roadmap = page === 'ch12' && !plain && config.groups.length === ROADMAP_PHASES.length;
   const roadmapStart = parseIso(typeof widgetOf(state, 'roadmap').start === 'string' ? (widgetOf(state, 'roadmap').start as string) : undefined);
   const Title = config.titleTag;

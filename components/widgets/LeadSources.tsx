@@ -28,7 +28,7 @@ export function LeadSources() {
         label="Lead source comparison"
       />
       <div className="range-chart">
-        <h4 className="lab-title">Illustrative ranges (Figure 2). Not comparable across sources.</h4>
+        <h4 className="lab-title">Illustrative ranges (Figure 2.4). Not comparable across sources.</h4>
         {LEAD_SOURCES.map(s => (
           <div key={s.key} className="range-row">
             <span className="range-name">{s.name}</span>
