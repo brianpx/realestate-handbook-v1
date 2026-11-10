@@ -32,7 +32,7 @@ The chapter has only two content headings, and every script box sits under the s
 
 ## Things I would look at first
 
-- **`ch6.new-lead-openers.automated-text`** restates the consent rule; it says "personal, non-automated text unless their consent to texts is recorded in your CRM", which matches the signed sentence in `content/data/rules.ts`.
+- **`ch6.new-lead-openers.voicemail-length`**, **`ch6.after-the-sale.one-week-next-step`** and **`ch6.after-the-sale.thirty-day-next-step`** were rewritten after the cross-chapter review: the first replaces a third copy of the consent rule, and the other two test the scripts' own next steps so they do not repeat Chapter 10's post-close questions.
 - **`ch6.rehearsal.no-paper`**, **`ch6.three-rules.silence`** and **`ch6.after-the-sale.quarterly`** are blanks built on a line of the chapter; they reward remembering the wording. Consider dropping any you find too verbatim.
 - **`ch6.next-step.keep-in-mind`** asks the reader to count "I'll keep you in mind" as success. That is what the chapter says; confirm it is the habit you want.
 
@@ -227,20 +227,22 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 10. `ch6.new-lead-openers.automated-text`
+### 10. `ch6.new-lead-openers.voicemail-length`
 *Open a new lead by naming what they asked about · multiple choice*
 
-**When may the new-lead text go out as an automated message rather than a personal one?**
+**How long should a no-answer voicemail to a new lead be?**
 
-- A. Whenever the inquiry came in through a property portal
-- B. Only when their consent to texts is recorded in your CRM ✓
-- C. Any time in the first hour, while the lead is still fresh
-- D. Only after they have replied to your first personal email
+- A. About a minute, so you can cover your services
+- B. As long as it takes to name three listings
+- C. No voicemail at all: hang up and text instead
+- D. Under 20 seconds, so it stays easy to answer ✓
 
-Explanation shown to the reader: Send it as a personal, non-automated text unless their consent to texts is recorded in your CRM (the consent rule in Chapter 11).
+Explanation shown to the reader: Purpose: be specific and easy to answer. Next step: a callback, or your next scheduled touch. Keep it under 20 seconds.
 
 Chapter source:
-> Send this as a personal, non-automated text unless their consent to texts is recorded in your CRM (the consent rule in Chapter 11).
+> Purpose: be specific and easy to answer. Next step: a callback, or your next scheduled touch. Keep it under 20 seconds.
+
+Note: Replaces an earlier draft on when the new-lead text may be automated; the cross-chapter review found it a third copy of the consent rule, which Chapter 4 and Chapter 11 already test.
 
 Status: draft, awaiting owner review.
 
@@ -330,20 +332,22 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 15. `ch6.after-the-sale.one-week`
+### 15. `ch6.after-the-sale.one-week-next-step`
 *Keep the relationship going after closing · multiple choice*
 
-**What do you ask your client for on the one-week call after closing?**
+**What next step does the one-week call after closing aim for?**
 
-- A. A review on your Agent Site, while the move is fresh
+- A. A review on your Agent Site while the move is still fresh
 - B. The name of a friend who might be thinking of moving
-- C. Nothing: the call is to catch problems while you can help ✓
-- D. Permission to add them to your monthly newsletter
+- C. An introduction from your vendor list, or "all good" ✓
+- D. A signed agreement to list their next home with you
 
-Explanation shown to the reader: Purpose: catch problems while you can still help. Ask for nothing on this call.
+Explanation shown to the reader: Purpose: catch problems while you can still help. Next step: an introduction from your vendor list, or "all good" and the 30-day call stays on the calendar. Ask for nothing on this call.
 
 Chapter source:
-> Table 10.1, week one. Purpose: catch problems while you can still help. ... Ask for nothing on this call.
+> Table 10.1, week one. Purpose: catch problems while you can still help. Next step: an introduction from your vendor list, or "all good" and the 30-day call stays on the calendar. Ask for nothing on this call.
+
+Note: Re-angled after the cross-chapter review to the script's own next step; Chapter 10's questions own the post-close schedule and what each touch is for.
 
 Status: draft, awaiting owner review.
 
@@ -351,21 +355,22 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 16. `ch6.after-the-sale.thirty-day`
-*Keep the relationship going after closing · multiple choice · scenario*
+### 16. `ch6.after-the-sale.thirty-day-next-step`
+*Keep the relationship going after closing · multiple choice*
 
-**You are making the 30-day call to a happy client. Which two asks does the chapter put in that one call?**
+**What next step does the 30-day review request aim for?**
 
-- A. A review, then the second referral ask ✓
-- B. A review, then a request to list their old home
-- C. A referral, then a request to join your newsletter
-- D. Nothing yet: asks wait until the first anniversary
+- A. A review posted within a week, or a named reason why not ✓
+- B. A listing appointment for the home they just moved out of
+- C. A review you write for them to approve and post as theirs
+- D. A sign-up for your monthly market newsletter by email
 
-Explanation shown to the reader: The 30-day script asks for a review from clients you served, and the second referral ask follows in the same call. The first referral ask was at the closing table.
+Explanation shown to the reader: Purpose: turn a happy client into public proof. Next step: a review posted within a week, or a named reason why not. Ask only clients you served, and never write or trade reviews.
 
 Chapter source:
-> Table 10.1, day 30. Purpose: turn a happy client into public proof ... Ask only clients you served, and never write or trade reviews. The second referral ask (the box above) follows in the same call.
-> Ask at the closing table and again at the 30-day check-in.
+> Table 10.1, day 30. Purpose: turn a happy client into public proof (Chapter 3 says where your reviews live). Next step: a review posted within a week, or a named reason why not. Ask only clients you served, and never write or trade reviews.
+
+Note: Re-angled after the cross-chapter review, for the same reason as question 15. Option C is wrong because the chapter says never to write reviews.
 
 Status: draft, awaiting owner review.
 
