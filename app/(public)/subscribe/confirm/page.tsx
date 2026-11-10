@@ -4,7 +4,7 @@ import { AutoSubmit } from '@/components/auth/AutoSubmit';
 import { PageHead } from '@/components/site/Draft';
 import { isSecretShape } from '@/lib/auth/token';
 
-export const metadata: Metadata = { title: 'Confirm your email', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Confirming your email', robots: { index: false, follow: false } };
 
 type Props = { searchParams: Promise<Record<'token' | 'done' | 'error', string | string[] | undefined>> };
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
