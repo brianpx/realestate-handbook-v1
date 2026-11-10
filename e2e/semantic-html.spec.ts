@@ -33,6 +33,15 @@ test('a chapter has one h1, real landmarks, and the previous heading sizes', asy
   await expect(page.locator('figure.diagram-box img')).toBeVisible();
 });
 
+test('every reference table is named by a caption, including the sortable ones', async ({ page }) => {
+  for (const [id, tables] of [['app-b', 6], ['app-e', 1], ['app-f', 1], ['ch2', 1], ['ch9', 2]] as const) {
+    await page.goto(`/handbook/${id}`);
+    const table = page.locator('#content-container table');
+    await expect(table).toHaveCount(tables);
+    for (let i = 0; i < tables; i++) await expect(table.nth(i).locator('caption')).not.toBeEmpty();
+  }
+});
+
 test('the plan page title is the only h1 and keeps the old title size', async ({ page }) => {
   await page.goto('/handbook/plan');
   await expect(page.locator('h1')).toHaveCount(1);
