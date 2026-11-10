@@ -629,5 +629,13 @@ export const CONCEPTS: Concept[] = [
     anchor: 'plan-the-next-90-days',
     version: 1,
   },
+  {
+    id: 'ch13.one-card',
+    chapter: 'ch13',
+    title: 'The whole handbook on one card: seven lines that are the system',
+    summary: 'Measure activity, work your sphere first, keep the CRM as the only list, respond in minutes and follow up 13 times over 90 days, ask before presenting, assign the post-close plan, review every Friday.',
+    anchor: 'the-whole-handbook-on-one-card',
+    version: 1,
+  },
   // end ch13
 ];

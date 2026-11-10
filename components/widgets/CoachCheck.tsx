@@ -11,8 +11,8 @@ import { KnowledgeCheck } from './KnowledgeCheck';
 import { QuestionItem } from './QuestionItem';
 
 // The registry entry for "Test your knowledge": chapters with tagged questions get the coach version (confidence
-// first; answers recorded only when the reading plan is on). Every other chapter keeps the plain check until its
-// questions are tagged.
+// first; answers recorded only when the reading plan is on). Every chapter has them now; the plain check is the
+// fallback for a page without tagged questions, and only the /preview sample uses KnowledgeCheck directly.
 export function KnowledgeCheckEntry({ page }: { page: string }) {
   return hasCoachCheck(page) ? <CoachCheck page={page} /> : <KnowledgeCheck page={page} />;
 }

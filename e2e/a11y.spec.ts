@@ -10,7 +10,7 @@ const focusInfo = (page: Page) => page.evaluate(() => {
 
 test.describe('quiz keyboard', () => {
   // The plain KnowledgeCheck, which only the /preview sample still serves (Chapter 1's quiz comes first).
-  test('a chapter quiz commits only on Check answer, and keeps focus after it', async ({ page }) => {
+  test('the /preview plain quiz commits only on Check answer, and keeps focus after it', async ({ page }) => {
     await page.goto('/preview');
     const fs = page.locator('.box.quiz fieldset.quiz-item').first();
     const radios = fs.getByRole('radio');

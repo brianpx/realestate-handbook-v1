@@ -5,7 +5,7 @@ import { PAGE_IDS } from './pages';
 import { collectOutline, headingSlug, introCut, OUTLINE_MIN } from './outline';
 
 const page = (id: string) => readFileSync(join(process.cwd(), 'content/pages', `${id}.html`), 'utf8');
-// Objectives and takeaways are h2s with no ids, so they stay out of the outline.
+// Objectives are h2s with no ids, so they stay out of the outline; takeaways stay out even when they carry an id.
 const sectionHeadings = (html: string) => {
   const body = html
     .replace(/<section class="learning-objectives">[\s\S]*?<\/section>/, '')
@@ -21,6 +21,13 @@ describe('collectOutline', () => {
       'expired-and-fsbo', 'referral-partners', 'track-every-source',
     ]);
     expect(items[0]?.text).toBe('Sphere of influence and referrals');
+  });
+
+  it('leaves Chapter 13\'s one-card takeaways out although its heading has an id', () => {
+    expect(page('ch13')).toContain('<h2 id="the-whole-handbook-on-one-card">');
+    expect(collectOutline(page('ch13')).map(i => i.id)).toEqual([
+      'do-these-this-week', 'where-to-get-help', 'the-two-habits-that-matter-most', 'plan-the-next-90-days',
+    ]);
   });
 
   it('returns nothing for a short page and for Appendix C', () => {
