@@ -603,7 +603,7 @@ items = [(40, 110, "1", "Measure activity, not closings: 3 to 4 conversations a 
          (40, 340, "3", "Your CRM is the only list. Open it first, update it last."),
          (860, 110, "4", "Respond to new leads in minutes. Then follow up 13 times over 90 days."),
          (860, 225, "5", "Ask, listen, present, agree. Objections are questions."),
-         (860, 340, "6", "Every closed client goes on a post-close plan the day of closing.")]
+         (860, 340, "6", "Every client is assigned the post-close plan when the contract goes under contract, and it starts on closing day.")]
 for x, y, n, t in items:
     b.append(box(x, y, 380, 96, t, "pale", fs=18, bold=False))
     b.append(f'<circle cx="{x+380 if x<400 else x}" cy="{y+48}" r="19" fill="{BLUE}"/>')
@@ -616,7 +616,7 @@ b += [link(rects["Find"], rects["Nurture"]), link(rects["Nurture"], rects["Keep"
       f'<circle cx="640" cy="250" r="38" fill="#FFFFFF" stroke="{BLUE}" stroke-width="3"/>', label(640, 257, "CRM", 20, BLUE, wt="700"),
       box(40, 470, 1200, 96, "7   Review every Friday and change one thing. Ask your broker before anything unusual.", "light", fs=22)]
 page("fig-handbook-card", "Figure 13.1. The whole handbook on one card", "Print it. Put it where you work.", "".join(b),
-     "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan for every client, and review every Friday.")
+     "The Find, Nurture, Keep loop with your CRM at the center, surrounded by seven numbered rules: measure activity, work your sphere first, your CRM is the only list, respond in minutes and follow up 13 times, ask-listen-present-agree, post-close plan assigned under contract, and review every Friday.")
 
 (OUT / "manifest.json").write_text(json.dumps(MANIFEST, indent=2), encoding="utf-8")
 print(f"wrote {len(MANIFEST)} diagrams to {OUT}")
