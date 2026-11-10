@@ -10,8 +10,8 @@ const firstBox = (page: Page) => page.locator('.box.script').first();
 test.describe('script practice', () => {
   test('every script box gets Copy and Practice, and keeps its words visible', async ({ page }) => {
     await page.goto('/handbook/ch6');
-    await expect(page.locator('.box.script')).toHaveCount(11);
-    await expect(page.locator('.script-actions .interactive-pill')).toHaveCount(11);
+    await expect(page.locator('.box.script')).toHaveCount(16);
+    await expect(page.locator('.script-actions .interactive-pill')).toHaveCount(16);
     const box = firstBox(page);
     await expect(box.locator('.box-title')).toHaveText(KEY);
     await expect(box.locator('.script-body')).toContainText('Hi [Name], this is [Your Name] with [Your Brokerage].');
@@ -82,15 +82,16 @@ test.describe('script practice', () => {
 });
 
 const OBJECTIONS = ['"I\'m just looking."', '"We\'re not ready yet."', '"I already have an agent."', '"Your fee is too high."',
+  '"Why do I have to sign an agreement before you show me homes?"',
   '"I want to wait for the market to improve."', '"I need to think about it."', '"Can you just send me listings?"', '"You\'re new, aren\'t you?"'];
 
 test.describe('objection trainer', () => {
   test('keeps the quick-reference table and adds a card with a prompt and a score', async ({ page }) => {
     await page.goto('/handbook/ch9');
     await expect(page.locator('[data-widget="objection-trainer"]')).toBeVisible();
-    await expect(page.locator('table', { has: page.getByRole('columnheader', { name: 'OBJECTION' }) }).locator('tbody tr')).toHaveCount(8);
+    await expect(page.locator('table', { has: page.getByRole('columnheader', { name: 'OBJECTION' }) }).locator('tbody tr')).toHaveCount(9);
     await expect(page.locator('.trainer-prompt')).toHaveText(/^Client says: ".+"$/);
-    await expect(page.locator('.trainer-score')).toHaveText('0 of 8 objections mastered');
+    await expect(page.locator('.trainer-score')).toHaveText('0 of 9 objections mastered');
     await expect(page.locator('.trainer-answer')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Nailed it' })).toBeHidden();
   });
@@ -114,7 +115,7 @@ test.describe('objection trainer', () => {
     await page.locator('.objection-trainer .practice-text').fill('my answer');
     await page.getByRole('button', { name: 'Show framework' }).click();
     await page.getByRole('button', { name: 'Nailed it' }).click();
-    await expect(page.locator('.trainer-score')).toHaveText('1 of 8 objections mastered');
+    await expect(page.locator('.trainer-score')).toHaveText('1 of 9 objections mastered');
     const objection = before.replace(/^Client says: /, '');
     expect(OBJECTIONS).toContain(objection);
     expect((await state(page)).objections).toEqual({ [objection]: true });
@@ -127,17 +128,17 @@ test.describe('objection trainer', () => {
   test('Needs work un-masters an objection', async ({ page }) => {
     await page.addInitScript(o => {
       if (!localStorage.getItem('handbookState')) localStorage.setItem('handbookState', JSON.stringify({ objections: Object.fromEntries(o.map(x => [x, true])) }));
-    }, OBJECTIONS.slice(0, 7));
+    }, OBJECTIONS.slice(0, 8));
     await page.goto('/handbook/ch9');
-    // seven mastered, so the only open objection is the last one
-    await expect(page.locator('.trainer-prompt')).toHaveText(`Client says: ${OBJECTIONS[7]}`);
-    await expect(page.locator('.trainer-score')).toHaveText('7 of 8 objections mastered');
+    // eight mastered, so the only open objection is the last one
+    await expect(page.locator('.trainer-prompt')).toHaveText(`Client says: ${OBJECTIONS[8]}`);
+    await expect(page.locator('.trainer-score')).toHaveText('8 of 9 objections mastered');
     await page.getByRole('button', { name: 'Show framework' }).click();
     await page.getByRole('button', { name: 'Needs work' }).click();
-    await expect(page.locator('.trainer-score')).toHaveText('7 of 8 objections mastered');
+    await expect(page.locator('.trainer-score')).toHaveText('8 of 9 objections mastered');
     await page.getByRole('button', { name: 'Show framework' }).click();
     await page.getByRole('button', { name: 'Nailed it' }).click();
-    await expect(page.locator('.trainer-score')).toHaveText('8 of 8 objections mastered');
+    await expect(page.locator('.trainer-score')).toHaveText('9 of 9 objections mastered');
     // all mastered: it keeps cycling through everything
     await page.getByRole('button', { name: 'Next objection' }).click();
     await expect(page.locator('.trainer-prompt')).toHaveText(/^Client says: /);

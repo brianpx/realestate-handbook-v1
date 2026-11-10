@@ -148,16 +148,58 @@
 .pub-plan dd small { display: block; color: var(--pub-muted); font-size: 0.85rem}
 
 /* ---- tools ---- */
-.pub-tool { display: flex; flex-direction: column}
-.pub-tool .pub-tool-visual { margin: 14px 0 16px; padding: 12px; border: 1px dashed var(--color-line); border-radius: 10px; background: var(--color-canvas); font-size: 0.86rem; color: var(--pub-body); flex: 1}
-.pub-tool-visual b { color: var(--pub-ink)}
-.pub-tool-visual ul { padding-left: 18px}
-.pub-tool-visual li { margin-bottom: 4px}
-.pub-blocks { list-style: none}
-.pub-blocks li { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--color-line); margin: 0} /* over .pub-tool-visual li */
+/* Each tile opens with a small, fixed-height "screen" from the tool itself, then the chapter, title, copy and a link
+   pinned to the bottom. Same height on every preview so the four cards read as one row, not four different lists. */
+/* subgrid lines the preview, chapter, title, copy and link rows up across the row; without it each tile is a plain grid */
+.pub-tools .pub-tool { grid-row: span 5}
+.pub-tool { display: grid; grid-template-rows: subgrid; row-gap: 0; align-content: start; padding: 16px 16px 22px; transition: border-color 0.15s, box-shadow 0.15s}
+.pub-tool:hover { border-color: var(--color-line-strong); box-shadow: 0 10px 28px -18px rgba(15,23,42,0.35)}
+.pub-tool .pub-tool-visual { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 184px; align-self: stretch; margin: 0 0 18px; padding: 16px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-canvas); font-size: 0.86rem; line-height: 1.4; color: var(--pub-body); overflow-wrap: normal; word-break: normal}
+.pub .pub-tool-caption { font-size: 0.78rem; color: var(--pub-muted); margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap}
+.pub-tool-pill { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--color-surface); border: 1px solid var(--color-line); color: var(--pub-muted)}
+.pub-tool-pill.is-ok { color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 35%, transparent); background: var(--pub-tint)}
+.pub .pub-tool-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pub-muted); margin: 0 0 8px}
+.pub-tool-free { color: var(--pub-green); padding-left: 8px; border-left: 1px solid var(--color-line)}
+.pub-tool .pub-h3 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance}
+.pub-tool .pub-h3 + p { margin-top: 0}
+.pub-tool .pub-link { font-weight: 700; align-self: end; justify-self: start; padding-top: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px}
+.pub-tool .pub-link::after { content: "→"; transition: transform 0.15s}
+.pub-tool .pub-link:hover { text-decoration: underline}
+.pub-tool .pub-link:hover::after { transform: translateX(3px)}
+
+/* calculator: goal → closings → conversations → per day */
+.pub-funnel { margin: 0; display: grid; gap: 4px}
+.pub-funnel > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 3px 0; border-bottom: 1px solid var(--color-line)}
+.pub-funnel > div:last-child { border-bottom: 0}
+.pub-funnel dt { color: var(--pub-muted); margin: 0}
+.pub-funnel dd { margin: 0; font-family: var(--pub-serif); font-size: 1.15rem; font-weight: 700; color: var(--pub-ink); font-variant-numeric: tabular-nums}
+.pub-funnel .is-result { margin-top: 2px; padding: 6px 10px; border-radius: 8px; background: var(--pub-navy); border: 0}
+.pub-funnel .is-result dt { color: var(--color-on-brand); opacity: 0.85}
+.pub-funnel .is-result dd { color: var(--color-on-brand); font-size: 1.4rem}
+
+/* script practice: the bracketed words are hidden, as they are in the practice mode */
+.pub .pub-script { font-family: var(--pub-serif); font-size: 0.98rem; line-height: 1.65; color: var(--pub-ink); margin: 0}
+.pub-mask { display: inline-block; min-width: 3.2em; padding: 0 0.3em; border-radius: 4px; background: var(--color-subtle); color: transparent; user-select: none; vertical-align: baseline; line-height: 1.15}
+
+/* planner: the morning rows */
+.pub-blocks { list-style: none; margin: 0; padding: 0}
+.pub-blocks li { display: flex; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--color-line); margin: 0}
 .pub-blocks li:last-child { border-bottom: 0}
-.pub-blocks time { flex: none; width: 4.4rem; color: var(--pub-muted); font-variant-numeric: tabular-nums}
-.pub-tool .pub-link { font-weight: 700; margin-top: auto}
+.pub-blocks time { flex: none; width: 4.2rem; color: var(--pub-muted); font-variant-numeric: tabular-nums}
+.pub-blocks span { color: var(--pub-ink); font-weight: 600; min-width: 0}
+
+/* roadmap: three milestones on a rail */
+.pub-milestones { list-style: none; margin: 0; padding: 0 0 0 20px; position: relative}
+.pub-milestones::before { content: ""; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 2px; background: var(--color-line); border-radius: 1px}
+.pub-milestones li { position: relative; padding: 0 0 18px; display: flex; flex-direction: column}
+.pub-milestones li:last-child { padding-bottom: 0}
+.pub-milestones li::before { content: ""; position: absolute; left: -20px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-surface); border: 2.5px solid var(--pub-green)}
+.pub-milestones li:last-child::before { background: var(--pub-green)}
+.pub-milestones time { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pub-muted)}
+.pub-milestones span { color: var(--pub-ink); font-weight: 600; font-size: 0.95rem}
+
+@media (width <= 1000px) and (width > 700px) { .pub-tool .pub-tool-visual { min-height: 170px} }
+@media (width <= 700px) { .pub-tool .pub-tool-visual { min-height: 0} }
 
 /* ---- phases ---- */
 .pub-phases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); overflow: hidden; background: var(--color-surface)}

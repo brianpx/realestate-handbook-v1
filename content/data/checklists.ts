@@ -72,7 +72,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
         id: "app-c-smartplans",
         title: "Follow-up plans",
         items: [
-          "New online lead plan built (Appendix B.1), with day-0 automated text and email only after the lead has agreed to texts.",
+          "New online lead plan built (Appendix B.1); the day-0 automated text goes only to leads whose consent is recorded in the CRM (the Chapter 11 consent rule).",
           "8x8 sphere plan built (B.2).",
           "Quarterly database plan built (B.3) and applied to the whole database.",
           "Post-close plan built (B.4).",
@@ -94,7 +94,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
         items: [
           "CRM mobile app installed.",
           "Notifications on for new leads and due tasks.",
-          "Speed-to-lead test completed (friend submits inquiry at 8 p.m.; times recorded).",
+          "Speed-to-lead test completed (a friend submits an inquiry at 9 p.m.; times recorded).",
           "Friday review block and monthly review on the calendar.",
         ],
       },

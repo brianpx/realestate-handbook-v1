@@ -13,5 +13,5 @@ export const QUALIFY_SCENARIOS: QualifyScenario[] = [
         why: 'All four answers are in: a short timeline, funds ready and no competing agent. Nothing is left to ask. Call and offer a consultation.' },
     { quote: '“I requested a home value report out of curiosity. We might sell in a couple of years, but nothing is definite.”',
         answered: ['Timeline'], stage: 'nurture',
-        why: 'A potential seller a couple of years out is a long-term nurture contact (Seller Long-Term Nurture in Table 5.1). Start with motivation, then fill in the rest naturally over later conversations.' }
+        why: 'A potential seller a couple of years out is a long-term nurture contact (Seller Long-Term Nurture in Table 5.1, built from Appendix B.7). Start with motivation, using the seller column of Table 5.2, then fill in the rest naturally over later conversations.' }
 ];

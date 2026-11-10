@@ -9,10 +9,10 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Work backward: goal ÷ average commission = closings, then × appointments per closing, × conversations per appointment, ÷ working weeks.',
             'With the book\'s example ($80,000 goal, $6,500 commission) that is about 16 conversations a week, or 3 to 4 a day. The calculator above does it with your numbers.'],
         ['Open your CRM first, every morning, and update it before you stop working.',
-            'Chapter 4 adds what to look at first: new leads overnight, tasks due today and Opportunities that moved.']
+            'Check three things first: new leads overnight, tasks due today and Opportunities that moved. Chapter 4 builds the daily rhythm around them.']
     ],
     ch2: [
-        ['Trust is already built, and the cost is only your time.', 'Sphere contacts convert at five to ten times the rate of a portal lead.',
+        ['Trust is already built, and the cost is only your time.', 'Your sphere often converts far better than a portal lead.',
             'Portal inquirers have no relationship with you and have often inquired with several agents at once.'],
         ['Do not buy online leads until your follow-up system is built and tested on your sphere. Speed and a long nurture are what make those leads pay off after that, and Chapter 3 has the test for turning ads on.'],
         ['Follow up with every visitor within 24 hours.', 'A text the same evening and a call the next morning is the standard.',
@@ -23,18 +23,18 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Coming soon.', 'Just listed.', 'Open house.', 'Under contract.', 'Just sold (the best seller-lead post you can make).'],
         // Question changed after the static site shipped; key points are from the chapter's paid-leads section.
         ['Start small: run one source at a time for 90 days.', 'Track cost per appointment and cost per closed deal before scaling.',
-            'Only add paid ads once the 9 p.m. test passes: an immediate automated reply, a call before 9 a.m., and a 90-day plan.']
+            'Only add paid ads once the 9 p.m. test passes: an immediate automated reply, a call by the next morning and a 90-day plan, all without you having to remember.']
     ],
     ch4: [
         // Added after the static site shipped: the page gained this question at the front, so the answers below it moved down one.
         ['First minute: the automated first touch goes out on its own (an email, and a text only if you have permission to text).',
-            'First five minutes when possible: step out and make the live call. If you are with a client, the automated first touch buys you time.',
+            'First five minutes when you can: step out and make the live call. If you are with a client, the automated first touch buys you time.',
             'If you cannot call within the hour: send a personal voice note or, if you have permission to text them, a short text that names the property or area they asked about.',
             'Same day, always: the live call.'],
         ['Profile and Marketing Profile.', 'Import and tag contacts (deduplicate; tag by relationship and source).', 'Create or download follow-up plans.',
             'Set lead routing rules if you are on a team.', 'Customize the Opportunities pipeline.', 'Install the mobile app and turn on notifications.'],
         ['A lead you already have is worth more than one you have not met yet.'],
-        ['An automated first touch (text and email) within one minute.', 'A live call within five minutes when possible, and always the same day.']
+        ['An automated first touch (text and email) within one minute.', 'Answer every new lead with a live call within five minutes when you can, and always the same day.']
     ],
     ch5: [
         // Added after the static site shipped, so the answers below it moved down one.
@@ -49,9 +49,12 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['New lead by phone: a 10-minute conversation now, or a scheduled call today.', 'Voicemail: a callback, or your next scheduled touch.',
             'New lead by text: a time for a call.', 'Sphere announcement: a real conversation.', 'Open house greeting: their name, phone and email, and one concrete follow-up offer.',
             'Expired listing or FSBO: listen, then offer a short conversation.',
-            'Sphere referral ask: a name and permission to reach out, or "I\'ll keep you in mind."', 'Buyer consultation opening: their agreement, then your questions.',
+            'Sphere referral ask: a name and permission to reach out, or "I\'ll keep you in mind."',
+            'Referral partner introduction: a meeting on the calendar, or how they like to receive a client.', 'Buyer consultation opening: their agreement, then your questions.',
             'Seller consultation opening: their goals, then comparables, your marketing plan, then the listing agreement.',
-            '"I\'m just looking": their email and a follow-up plan.', 'Post-close referral request: a name, or a review on your Agent Site.'],
+            '"I\'m just looking": their email and a follow-up plan.', 'Post-close referral request: a name, or a review on your Agent Site.',
+            'One-week call: a vendor introduction, or "all good" and the 30-day call stays scheduled.', '30-day review request: a review posted within a week, or a named reason why not.',
+            'Home anniversary card: a reply, or your call a week after it lands.', 'Quarterly call: a life change logged in your CRM, or next quarter\'s call stays scheduled.'],
         ['Say their name and the specific thing they asked about.', 'Ask one question at the end.', 'Stop talking after the question and wait.'],
         { reflect: 'Use the Practice button on the seller opening to hide the script and say it in your own words. Reading is not rehearsal.' }
     ],
@@ -67,7 +70,10 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Every contact, note and task lives in your CRM.', 'If a conversation happened and it is not logged, treat it as not having happened and log it now.'],
         ['The morning is the only time of day nobody else wants. Clients, lenders and inspectors will ask for afternoons.',
             'Putting it in the same place every day means it never depends on how you feel.'],
-        ['The same rows as Appendix A and Table 8.2: calls 40 to 60, conversations 15 to 25, follow-ups 30 to 50, appointments set 1 to 2, appointments held 1 or more, one open house or event, database updated 5 days, 15 new contacts, 2 posts, morning blocks 4 or more days, pipeline count and value growing, referrals tracked.']
+        ['The same rows as Appendix A and Table 8.2: calls 40 to 60, conversations 15 to 25, follow-ups 30 to 50, appointments set 1 to 2, appointments held 1 or more, one open house or event, database updated 5 days, 15 new contacts, 2 posts, morning blocks 4 or more days, pipeline count and value growing, referrals tracked.'],
+        ['Start with the lowest-barrier task: a text, not a call. One reply restarts the day.',
+            'Compare their result to your leading indicators, not your closings. Their closing came from work done months ago; yours is on the way.',
+            'Then the Friday rule: decide one thing to do differently and stop working on it until Monday.']
     ],
     ch9: [
         ['Frame, ask, listen, present, agree.', 'Asking and listening (steps 2 and 3) should take at least half the meeting.'],
@@ -85,7 +91,9 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
     ch11: [
         ['Usually at first substantive contact, but your state sets the form and the timing.', 'Look both up in your first week and confirm with your broker.'],
         ['Race, color, religion, national origin, sex, familial status and disability.', 'Many states and cities add further protected classes. Ask your broker for yours.'],
-        ['Give every client the same third-party sources on schools, crime statistics and amenities. Do not editorialize or describe who lives there. Confirm the wording with your broker.']
+        ['Give every client the same third-party sources on schools, crime statistics and amenities. Do not editorialize or describe who lives there. Confirm the wording with your broker.'],
+        ['Agency disclosure given and signed. Every offer and counteroffer, with the client\'s instruction. Pricing conversations and the decision. Disclosures delivered, and when. Inspection findings and the client\'s choices. Advice the client declined. Referrals to lenders, inspectors or attorneys, noting the client chose freely.',
+            'Every note carries the date, the parties, what was said or delivered, and what was decided.']
     ],
     ch12: [
         ['Day 30: CRM set up, contacts tagged, follow-up plans live, 50 sphere conversations, 1 open house, speed-to-lead tested.',
@@ -94,6 +102,11 @@ export const CHECKPOINT_ANSWERS: Record<string, CheckpointAnswer[]> = {
         ['Appendix A, and Table 8.2 is the same list: calls, conversations, follow-ups, appointments set and held, one event, database days, new contacts, posts, morning blocks, pipeline count, pipeline value and referrals.'],
         ['Which source produced the most appointments per hour spent?', 'Which follow-up plan got the most replies?', 'Where did leads stall in the pipeline?',
             'What one change will I make this month?']
+    ],
+    ch13: [
+        { reflect: 'Read down Appendix A for the twelve weeks. A row you hit most weeks is a habit; a row you never hit is next quarter\'s one thing. Put both in your day-90 note.' },
+        { reflect: 'Conversations per appointment (Chapter 1), conversion by source (Chapter 2) and touches before a reply (Chapter 5). Write each ratio of yours beside the book\'s example and plan the next 90 days from yours.' },
+        { reflect: 'One mentor, one class, one lender, one attorney or title contact. Each gets a "Partner" tag in your CRM and a dated first conversation. Chapter 6 has the introduction script.' }
     ]
 };
 

@@ -1,5 +1,5 @@
-// Three multiple-choice questions and one fill-in-the-blank per chapter, copied unchanged from
-// legacy/js/widgets-practice.js. Every answer comes from the chapter text.
+// Three multiple-choice questions and one fill-in-the-blank per chapter, copied from legacy/js/widgets-practice.js
+// and realigned to the chapter text where the two had drifted (M4 step 3). Every answer comes from the chapter text.
 export type Mcq = { q: string; options: string[]; answer: number; explain: string };
 export type Blank = { before: string; after: string; answer: string; accept: string[]; explain: string };
 
@@ -25,9 +25,10 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
     },
     ch2: {
         mcq: [
-            { q: 'How much better do sphere contacts convert than portal leads?',
-                options: ['About the same', 'Two to three times', 'Five to ten times', 'Fifty times'], answer: 2,
-                explain: 'Trust is already built with your sphere and the cost is only time, so the chapter puts their conversion at five to ten times a portal lead.' },
+            { q: 'Why does the chapter call your sphere the highest-return lead source for most agents?',
+                options: ['Sphere contacts never need follow-up', 'Trust is already built, the cost is only your time, and it often converts far better than a portal lead',
+                    'Portal leads are always too expensive to be worth it', 'Friends are obliged to use you as their agent'], answer: 1,
+                explain: 'A portal inquirer has no relationship with you and has often inquired with several agents at once. The awkwardness of calling friends fades after the tenth call; the ad bill does not.' },
             { q: 'What is the right order for working your sphere?',
                 options: ['Ask, give, announce, repeat', 'Give, ask, announce, repeat', 'Announce, ask, give, repeat', 'Announce, give, ask, repeat'], answer: 3,
                 explain: 'Announce that you are in real estate, give something useful, ask for introductions after two or three helpful touches, then repeat so nobody hears from you only when you want something.' },
@@ -52,7 +53,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'A "just sold" update with a line about how many showings or offers the home received shows neighbors what you can do for them.' },
             { q: 'What should happen if a new lead arrives at 9 p.m. before you start paying for ads?',
                 options: ['It waits in a portal queue until Monday', 'You reply by hand and then forget it until next week',
-                    'They get an immediate automated reply, a call before 9 a.m., and a 90-day plan', 'You raise the ad budget to attract more leads'], answer: 2,
+                    'They get an immediate automated reply, a call by the next morning and a 90-day plan', 'You raise the ad budget to attract more leads'], answer: 2,
                 explain: 'If your system cannot do that without you having to remember, "buying leads is buying a leak."' }
         ],
         blank: {
@@ -69,7 +70,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'The day opens and closes in your CRM, and the order matters because of this reason.' },
             { q: 'What are the two layers of the speed-to-lead standard?',
                 options: ['A live call within one minute and an email within a day',
-                    'An automated text and email within one minute, then a live call within five minutes when possible, and always the same day',
+                    'An automated text and email within one minute, then a live call within five minutes when you can, and always the same day',
                     'A voicemail within an hour and a text within a day', 'A personal email within 30 minutes and a call within a week'], answer: 1,
                 explain: 'If you are with a client, the automated first touch buys you time and you call at the first break.' },
             { q: 'When should you add optional tools such as AI texting assistants or dialers?',
@@ -78,14 +79,14 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'A tool you have not mastered is one more place for a lead to get lost.' }
         ],
         blank: {
-            before: 'In the speed-to-lead window, conversion is highest when you respond in under', after: 'minutes.',
+            before: 'The speed-to-lead standard: an automated first touch within one minute, then a live call within', after: 'minutes when you can, and always the same day.',
             answer: '5', accept: ['5', 'five'],
-            explain: 'Figure 4: under five minutes is the highest conversion window, five to 30 minutes is still strong, and after 30 minutes there is a sharp drop-off.'
+            explain: 'The two layers: the automated first touch goes out on its own within a minute, and the live call follows within five minutes when you can, and always the same day. Figure 4 is an illustrative shape, not measured data.'
         }
     },
     ch5: {
         mcq: [
-            { q: 'Industry follow-up data says most conversions happen between which contacts?',
+            { q: 'Many agents and industry trainers report that most conversions happen between which contacts?',
                 options: ['The first and second', 'The third and fourth', 'The fifth and twelfth', 'The fifteenth and twentieth'], answer: 2,
                 explain: 'Most new agents stop after one or two attempts, so they abandon the leads that would have closed for the agent who kept going.' },
             { q: 'Which are the four qualifying questions?',
@@ -106,10 +107,10 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
         mcq: [
             { q: 'Which is one of the three rules for any script?',
                 options: ['Avoid mentioning what they asked about', 'Ask one question at the end', 'Keep talking until they interrupt', 'Never use their name'], answer: 1,
-                explain: 'The three rules: say their name and the specific thing they asked about, ask one question at the end, then stop talking. A message with no question gets no reply.' },
+                explain: 'The three rules: say their name and the specific thing they asked about, ask one question at the end, then stop talking. A message with no question rarely gets a reply.' },
             { q: 'What counts as a win on the sphere referral ask?',
                 options: ['A signed listing agreement', 'A five-star review', 'A name and permission to reach out, or "I\'ll keep you in mind"', 'A promise to call you next month'], answer: 2,
-                explain: 'Either outcome is a win. Thank them and move on.' },
+                explain: 'Either outcome is a win. Thank them and keep in touch.' },
             { q: 'According to the chapter, when has a script worked?',
                 options: ['When you said every word as written', 'When the call lasted at least ten minutes', 'When the person thanked you',
                     'When it reached its next step, even if you said none of the exact words'], answer: 3,
@@ -178,14 +179,14 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
     ch10: {
         mcq: [
             { q: 'How soon does the average homeowner move again, according to the chapter?',
-                options: ['Within one to two years', 'Within three to four years', 'Within seven to ten years', 'After more than twenty years'], answer: 2,
-                explain: 'They also know several people who will move before then. Being remembered is a schedule, not an accident.' },
+                options: ['Within one to two years', 'Within three to four years', 'Within a decade or two', 'Never; most stay in the home for life'], answer: 2,
+                explain: 'Most homeowners move again within a decade or two, and know several people who will move before then. Being remembered is a schedule, not an accident.' },
             { q: 'What is the test for every touch you send a past client?',
                 options: ['Does it mention a listing?', 'Is it free to send?', 'Does it include your phone number?', 'Would they be glad to receive it if they were never going to move again?'], answer: 3,
                 explain: 'A furnace-filter reminder or a contractor list passes. "Thinking of selling?" every month does not.' },
             { q: 'When does a closed client go on the post-close plan?',
                 options: ['The day of closing', 'After the 30-day call', 'When they mention moving', 'One year after closing'], answer: 0,
-                explain: 'Build the plan once as a follow-up plan and apply it at every closing. Closing day is the handwritten note, the gift and the ask for the introduction.' }
+                explain: 'Build the plan once, assign it the day the contract goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.' }
         ],
         blank: {
             before: 'Once a year, unprompted, send each past client a home', after: 'update. Sellers come from this.',

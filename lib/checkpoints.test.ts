@@ -12,15 +12,15 @@ describe('parseCheckpointQuestions', () => {
 });
 
 describe('the shipped checkpoints', () => {
-  it('give every question in chapters 1 to 12 an answer', () => {
+  it('give every question in chapters 1 to 13 an answer', () => {
     for (const [page, answers] of Object.entries(CHECKPOINT_ANSWERS)) {
       const html = readFileSync(`content/pages/${page}.html`, 'utf8');
       const inner = /<!--widget:checkpoints-->([\s\S]*?)<!--\/widget:checkpoints-->/.exec(html)?.[1];
       expect(inner, page).toBeDefined();
       expect(parseCheckpointQuestions(inner!).length, page).toBe(answers.length);
     }
-    expect(Object.keys(CHECKPOINT_ANSWERS)).toHaveLength(12);
-    expect(CHECKPOINT_TOTAL).toBe(38); // 36 on the static site, plus the questions added to Chapters 4 and 5
+    expect(Object.keys(CHECKPOINT_ANSWERS)).toHaveLength(13);
+    expect(CHECKPOINT_TOTAL).toBe(43); // 36 on the static site, plus Chapters 4 and 5 (one each), 8 and 11 (one each) and 13 (three)
   });
 });
 
@@ -28,7 +28,7 @@ describe('rollup', () => {
   it('counts only got-it answers', () => {
     expect(checkpointConfident({ 'ch1:0': { status: 'got' }, 'ch1:1': { status: 'review' }, 'ch1:2': { text: 'x' }, 'ch2:0': { status: 'got' } })).toBe(2);
     expect(checkpointConfident(undefined)).toBe(0);
-    expect(rollupText(2)).toBe('2 of 38 checkpoint questions confident');
+    expect(rollupText(2)).toBe('2 of 43 checkpoint questions confident');
   });
 });
 
