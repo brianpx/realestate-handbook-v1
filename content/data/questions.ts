@@ -543,4 +543,191 @@ export const QUESTIONS: Question[] = [
     answer: 2,
     explain: '$120 + (24 x $25) = $720, and $720 divided by 1 closing is $720.',
   },
+  // ch11
+  // ---- ch11.agency-disclosure
+  {
+    id: 'ch11.agency-disclosure.when', version: 1, concept: 'ch11.agency-disclosure', kind: 'mcq', draft: true,
+    prompt: 'When does the chapter say to give a buyer or seller your state\'s agency disclosure?',
+    options: [
+      'Once they sign a purchase contract with you',
+      'When a conversation turns from casual to substantive',
+      'After the first showing, if they keep working with you',
+      'Only if they ask you directly whom you represent',
+    ],
+    answer: 1,
+    explain: 'Your state sets the form and the timing, usually at first substantive contact: "If a conversation moves from casual to substantive, that is the moment to disclose." Learn your state\'s rule from your broker.',
+  },
+  {
+    id: 'ch11.agency-disclosure.signed-copy', version: 1, concept: 'ch11.agency-disclosure', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A seller has just signed your state\'s agency disclosure form. What does the chapter say to do with it?',
+    options: [
+      'Hand it to the seller, since only they need a copy',
+      'Keep it until the listing goes live, then discard it',
+      'Keep the signed copy in your transaction system',
+      'Hold it in your car until the transaction closes',
+    ],
+    answer: 2,
+    explain: 'Keep the signed copy in your transaction system, and note the disclosure, given and signed, with the date: it is the first item on the documentation list.',
+  },
+
+  // ---- ch11.buyer-agreements
+  {
+    id: 'ch11.buyer-agreements.before-touring', version: 1, concept: 'ch11.buyer-agreements', kind: 'mcq', draft: true,
+    prompt: 'According to the chapter, when should you get a written buyer representation agreement?',
+    options: [
+      'Before you tour homes with the buyer',
+      'After the buyer\'s offer has been accepted',
+      'Only if the buyer asks to sign one',
+      'At closing, with the other documents',
+    ],
+    answer: 0,
+    explain: 'Get it before you tour homes. Your state and your broker set when it has to be signed, so confirm the rule and the current form with your broker.',
+  },
+  {
+    id: 'ch11.buyer-agreements.compensation', version: 1, concept: 'ch11.buyer-agreements', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A buyer asks how their agent gets paid, and you have an old listing form that shows a number. What does the chapter say to do?',
+    options: [
+      'Quote the figure printed on the old listing form',
+      'Read the buyer-agent compensation field in the MLS',
+      'Say the seller always pays a fixed standard amount',
+      'Treat it as negotiable and discuss it with your client',
+    ],
+    answer: 3,
+    explain: 'Compensation is negotiable and an offer to the buyer\'s agent is no longer an MLS field. Who pays, and how much, is a conversation with your client. Do not quote a number from an old listing form; your broker has the words to use.',
+  },
+
+  // ---- ch11.fair-housing
+  {
+    id: 'ch11.fair-housing.listing-line', version: 1, concept: 'ch11.fair-housing', kind: 'mcq', draft: true,
+    prompt: 'Which listing line follows the chapter\'s Fair Housing guidance for marketing?',
+    options: [
+      'Great for families who want a quiet, safe street',
+      'Perfect for young professionals starting out',
+      'Four bedrooms, fenced yard, two blocks from the park',
+      'An ideal first home for a newly married couple',
+    ],
+    answer: 2,
+    explain: 'Describe the property, not the ideal buyer. The chapter names "great for families" and "perfect for young professionals" as problems and "four bedrooms, fenced yard, two blocks from the park" as fine.',
+  },
+  {
+    id: 'ch11.fair-housing.good-area', version: 1, concept: 'ch11.fair-housing', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A client asks you, "Is this a good area?" What does the chapter say to do?',
+    options: [
+      'Share the same third-party sources you give every client',
+      'Describe the kind of people who live in the neighborhood',
+      'Give your honest personal opinion of the area',
+      'Steer them toward areas you think would suit them',
+    ],
+    answer: 0,
+    explain: 'Give every client the same third-party sources on schools, crime statistics and amenities; do not editorialize or describe who lives there. Some brokerages have their own guidance on crime statistics, so confirm the wording with your broker first.',
+  },
+  {
+    id: 'ch11.fair-housing.property', version: 1, concept: 'ch11.fair-housing', kind: 'blank', draft: true,
+    before: 'In your marketing, describe the', after: ', not the ideal buyer.',
+    answer: 'property', accept: ['property', 'the property'],
+    explain: 'The same rule runs through conversation and service: do not characterize neighborhoods by who lives there, and give every inquiry the same response time, information and options.',
+  },
+
+  // ---- ch11.consent
+  {
+    id: 'ch11.consent.who', version: 1, concept: 'ch11.consent', kind: 'mcq', draft: true,
+    prompt: 'Which contacts may you put on an automated text plan, according to the chapter?',
+    options: [
+      'Anyone whose phone number is in your CRM',
+      'Only people whose consent you have recorded in the CRM',
+      'Anyone who has not yet asked you to stop',
+      'Past clients, since they already know you',
+    ],
+    answer: 1,
+    explain: 'Send automated texts or calls only to people whose consent you have recorded in the CRM, and stop at the first opt-out. Having someone\'s number is not consent.',
+  },
+  {
+    id: 'ch11.consent.opt-out', version: 1, concept: 'ch11.consent', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A contact replies to one of your automated texts asking you to stop. What does the chapter say to do?',
+    options: [
+      'Finish the current plan, then remove them',
+      'Switch them to automated calls instead',
+      'Pause the plan for a month, then restart it',
+      'Stop all texts and automated plans now, and log it',
+    ],
+    answer: 3,
+    explain: 'Stop all texts and automated plans the moment someone opts out, and log it in your CRM. The professional standards repeat it: honor every opt-out immediately.',
+  },
+  {
+    id: 'ch11.consent.where-and-when', version: 1, concept: 'ch11.consent', kind: 'blank', draft: true,
+    before: 'In each contact\'s CRM record, note where and', after: 'the person agreed to receive texts.',
+    answer: 'when', accept: ['when'],
+    explain: 'That record is what lets you send automated texts at all: only people whose consent you have recorded in the CRM get them.',
+  },
+
+  // ---- ch11.documentation
+  {
+    id: 'ch11.documentation.declined-advice', version: 1, concept: 'ch11.documentation', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'You recommend a further inspection and your client decides against it. What does the chapter say to do?',
+    options: [
+      'Nothing, since no transaction step took place',
+      'Record it only if the deal later falls apart',
+      'Note the advice and their decision, with the date',
+      'Stop working with them until they agree',
+    ],
+    answer: 2,
+    explain: '"Any advice you gave that the client declined to follow" is one of the seven items, and inspection findings discussed with the client\'s choices is another. Each note has the date, parties, what was said and what was decided.',
+  },
+  {
+    id: 'ch11.documentation.four-details', version: 1, concept: 'ch11.documentation', kind: 'mcq', draft: true,
+    prompt: 'Which four details does the chapter say go in every documentation note?',
+    options: [
+      'Date, time of day, the location, and how long it lasted',
+      'Date, parties, what was said or delivered, what was decided',
+      'Client name, phone number, email address and lead source',
+      'List price, commission, lender name and closing date',
+    ],
+    answer: 1,
+    explain: 'Date, parties, what was said or delivered, and what was decided, kept in your CRM or transaction system the same day.',
+  },
+  {
+    id: 'ch11.documentation.referral', version: 1, concept: 'ch11.documentation', kind: 'mcq', draft: true,
+    prompt: 'You refer a client to a lender. What does the chapter say your note should record?',
+    options: [
+      'The lender\'s rate quote for the client',
+      'The referral fee you were offered',
+      'Nothing, since referrals are not on the list',
+      'That the client chose the lender freely',
+    ],
+    answer: 3,
+    explain: 'Referrals to lenders, inspectors or attorneys are on the list, "with a note that the client chose freely". Do not accept anything of value for a referral until your broker has told you what is allowed.',
+  },
+
+  // ---- ch11.professional-standards
+  {
+    id: 'ch11.professional-standards.refer', version: 1, concept: 'ch11.professional-standards', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'A client asks you a tax question about their sale. What does the chapter say to do?',
+    options: [
+      'Refer them to the right professional instead of answering',
+      'Give your best answer, then suggest they double-check it',
+      'Answer only if you have seen the same situation before',
+      'Look it up online and pass on what you find',
+    ],
+    answer: 0,
+    explain: 'Never give legal, tax or structural advice; refer to the professional. The chapter\'s line: "That\'s a question for your attorney. I can introduce you to two."',
+  },
+  {
+    id: 'ch11.professional-standards.wire-fraud', version: 1, concept: 'ch11.professional-standards', kind: 'mcq', draft: true,
+    prompt: 'What does the chapter\'s wire fraud warning tell every client before closing?',
+    options: [
+      'Wire instructions will come to them by text from you',
+      'Send the funds as soon as any instructions arrive',
+      'You will never email them wire instructions',
+      'Emailed instructions from the title company are safe',
+    ],
+    answer: 2,
+    explain: 'If an email or text with wire instructions arrives, even one that looks like it is from you or the title company, they call you at the number you gave them before sending anything. Log that you gave the warning, and use the wording your broker or title company prefers.',
+  },
+  {
+    id: 'ch11.professional-standards.confidential', version: 1, concept: 'ch11.professional-standards', kind: 'blank', draft: true,
+    before: 'Keep client information confidential, including', after: 'the transaction.',
+    answer: 'after', accept: ['after'],
+    explain: 'Confidentiality does not end at closing. The standards also include following the National Association of REALTORS® Code of Ethics and your local MLS rules.',
+  },
+  // end ch11
 ];
