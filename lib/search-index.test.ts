@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { extractSearchable, indexPage } from './search-index';
 import { searchEntries, type SearchEntry } from './search-query';
-import { PAGE_IDS } from './pages';
+import { PAGE_IDS, type PageId } from './pages';
 
 describe('extractSearchable', () => {
   it('takes headings, terms, figure titles, paragraphs and list items in document order', () => {
@@ -19,6 +19,10 @@ describe('extractSearchable', () => {
   it('skips the footer, next-chapter link, plain fallbacks and dialogs, and everything inside them', () => {
     const html = '<footer class="chapter-foot"><p>Not legal advice</p></footer><p class="chapter-next">Next</p><div class="nurture-static"><ol><li>x</li></ol></div><dialog><p>d</p></dialog><p>kept</p>';
     expect(extractSearchable(html).map(e => e.text)).toEqual(['kept']);
+  });
+  it('skips screen-reader-only blocks, but keeps hidden inline text in the block around it', () => {
+    const html = '<table><caption class="visually-hidden">Table B.1. Hidden</caption></table><table><caption>Table E.1. Shown</caption></table><p><a href="#">ARELLO<span class="visually-hidden"> (opens in a new tab)</span></a> finds regulators.</p>';
+    expect(extractSearchable(html).map(e => e.text)).toEqual(['Table E.1. Shown', 'ARELLO (opens in a new tab) finds regulators.']);
   });
   it('drops a paragraph or item that only wraps other searchable blocks', () => {
     expect(extractSearchable('<ul><li>Outer<ul><li>Inner</li></ul></li></ul>').map(e => e.text)).toEqual(['Inner']);
@@ -72,5 +76,14 @@ describe('the shipped pages', () => {
       total += n;
     }
     expect(total).toBeGreaterThan(500);
+  });
+  it('leave out the visually hidden table captions and keep the visible ones', () => {
+    const texts = (id: PageId) => indexPage(id, readFileSync(`content/pages/${id}.html`, 'utf8')).map(e => e.text);
+    const caption = (id: PageId, prefix: string) => texts(id).filter(t => t.startsWith(prefix));
+    expect(caption('app-b', 'Table B.')).toEqual([]);
+    expect(caption('ch2', 'Lead source comparison:')).toEqual([]);
+    expect(caption('app-e', 'Table E.1.')).toHaveLength(1);
+    expect(caption('app-f', 'Table F.1.')).toHaveLength(1);
+    expect(caption('ch9', 'Table 9.')).toHaveLength(2);
   });
 });

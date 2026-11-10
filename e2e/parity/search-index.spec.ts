@@ -30,7 +30,7 @@ test('the build-time index matches what the browser would find in each page', as
       const seen: Record<string, number> = {};
       return [...doc.querySelectorAll(SELECTOR)]
         .filter(node => {
-          if (node.closest('dialog, .chapter-foot, .chapter-next, .nurture-static')) return false;
+          if (node.closest('dialog, .chapter-foot, .chapter-next, .nurture-static, .visually-hidden')) return false;
           if (node.matches('p, li') && node.querySelector('p, li, h1, h2, h3, h4, caption, figcaption')) return false;
           return true;
         })

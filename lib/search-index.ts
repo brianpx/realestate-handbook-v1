@@ -8,12 +8,14 @@ import type { SearchEntry } from './search-query';
 
 // What the sidebar search looks through. Same rules as the static site (legacy/js/search.js): headings, glossary
 // terms, figure titles, paragraphs and list items, with the footer, next-chapter link and plain fallbacks left
-// out. It is built from the page HTML at build time instead of fetching and parsing every chapter in the browser.
+// out. Unlike the static site, blocks that are only there for screen readers (.visually-hidden, such as the captions
+// that repeat a table's heading) are left out too; hidden text inside a visible block still counts toward it. It is
+// built from the page HTML at build time instead of fetching and parsing every chapter in the browser.
 
 const SELECT_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'dt', 'caption', 'figcaption', 'p', 'li']);
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'dt']);
 const BLOCK_TAGS = new Set(['p', 'li', 'h1', 'h2', 'h3', 'h4', 'caption', 'figcaption']);
-const EXCLUDED_CLASSES = new Set(['chapter-foot', 'chapter-next', 'nurture-static']);
+const EXCLUDED_CLASSES = new Set(['chapter-foot', 'chapter-next', 'nurture-static', 'visually-hidden']);
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
 
 type Frame = { tag: string; order: number; candidate: boolean; heading: boolean; excluded: boolean; hasBlockChild: boolean; text: string };
