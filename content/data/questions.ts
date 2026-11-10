@@ -633,10 +633,10 @@ export const QUESTIONS: Question[] = [
     id: 'ch11.consent.who', version: 1, concept: 'ch11.consent', kind: 'mcq', draft: true,
     prompt: 'Which contacts may you put on an automated text plan, according to the chapter?',
     options: [
-      'Anyone whose phone number is in your CRM',
+      'Anyone whose mobile number is already saved in your CRM',
       'Only people whose consent you have recorded in the CRM',
-      'Anyone who has not yet asked you to stop',
-      'Past clients, since they already know you',
+      'Anyone who has not yet asked you to stop texting them',
+      'Past clients, since they already know and trust you',
     ],
     answer: 1,
     explain: 'Send automated texts or calls only to people whose consent you have recorded in the CRM, and stop at the first opt-out. Having someone\'s number is not consent.',
@@ -646,7 +646,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'A contact replies to one of your automated texts asking you to stop. What does the chapter say to do?',
     options: [
       'Finish the current plan, then remove them',
-      'Switch them to automated calls instead',
+      'Switch them to automated calls, which are a different channel',
       'Pause the plan for a month, then restart it',
       'Stop all texts and automated plans now, and log it',
     ],
@@ -701,7 +701,7 @@ export const QUESTIONS: Question[] = [
   // ---- ch11.professional-standards
   {
     id: 'ch11.professional-standards.refer', version: 1, concept: 'ch11.professional-standards', kind: 'mcq', draft: true, scenario: true,
-    prompt: 'A client asks you a tax question about their sale. What does the chapter say to do?',
+    prompt: 'A client asks you a legal question about their contract. What does the chapter say to do?',
     options: [
       'Refer them to the right professional instead of answering',
       'Give your best answer, then suggest they double-check it',

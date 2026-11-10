@@ -13,6 +13,8 @@ You have worked as an agent, so the useful things only you can judge are below. 
 
 Every keyed answer is traceable to a sentence in `../../content/pages/ch11.html`; the quoted passages below were copied from that file. That shows the question matches the **book**. It does not show the book is right. The chapter states no California-specific rule, so no question makes one.
 
+A cross-chapter review on 9 November 2026 found no legal over-claims and confirmed that the consent items match the signed consent sentence. After it, the wrong options in `ch11.consent.who` and `ch11.consent.opt-out` were lengthened so the keyed option no longer stands out by length, and `ch11.professional-standards.refer` now asks a legal question instead of a tax one.
+
 ## How approved questions get used
 
 Approved questions lose their `draft` flag and join the review deck. They also join Chapter 11's end-of-chapter check: `chapterCheck()` in `../../lib/coach/check.ts` serves every non-draft question for the chapter, and while all sixteen are drafts Chapter 11 keeps its plain knowledge check. Approving all sixteen would make a sixteen-question chapter check, so decide which ones are review-only before approving in bulk.
@@ -188,10 +190,10 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 **Which contacts may you put on an automated text plan, according to the chapter?**
 
-- A. Anyone whose phone number is in your CRM
+- A. Anyone whose mobile number is already saved in your CRM
 - B. Only people whose consent you have recorded in the CRM ✓
-- C. Anyone who has not yet asked you to stop
-- D. Past clients, since they already know you
+- C. Anyone who has not yet asked you to stop texting them
+- D. Past clients, since they already know and trust you
 
 Explanation shown to the reader: Send automated texts or calls only to people whose consent you have recorded in the CRM, and stop at the first opt-out. Having someone's number is not consent.
 
@@ -213,7 +215,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 **A contact replies to one of your automated texts asking you to stop. What does the chapter say to do?**
 
 - A. Finish the current plan, then remove them
-- B. Switch them to automated calls instead
+- B. Switch them to automated calls, which are a different channel
 - C. Pause the plan for a month, then restart it
 - D. Stop all texts and automated plans now, and log it ✓
 
@@ -317,7 +319,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 ### 14. `ch11.professional-standards.refer`
 *Refer legal, tax and structural questions, keep client information confidential, warn about wire fraud · multiple choice, scenario*
 
-**A client asks you a tax question about their sale. What does the chapter say to do?**
+**A client asks you a legal question about their contract. What does the chapter say to do?**
 
 - A. Refer them to the right professional instead of answering ✓
 - B. Give your best answer, then suggest they double-check it
@@ -329,7 +331,7 @@ Explanation shown to the reader: Never give legal, tax or structural advice; ref
 Chapter source:
 > Never give legal, tax or structural advice. Refer to the professional. Say: "That's a question for your attorney. I can introduce you to two."
 
-Note: the chapter's sample line names an attorney; the question is about tax. The rule covers both, but you may prefer the question to say "legal" to match the line.
+Note: the stem asks a legal question so that it matches the chapter's sample line, which sends the client to an attorney. An earlier draft asked a tax question.
 
 Status: draft, awaiting owner review.
 
