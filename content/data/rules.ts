@@ -27,7 +27,7 @@ export const RULES = {
     concepts: ['ch2.online-leads', 'ch3.paid-ads'],
   },
   postClose: {
-    sentence: 'The post-close plan is built once, assigned on the day the contract goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
+    sentence: 'The post-close plan is built once, assigned on the day the client goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
     chapter: 'ch10',
     anchor: 'the-post-close-plan',
     concepts: ['ch12.pipeline-milestone', 'ch10.post-close-plan'],

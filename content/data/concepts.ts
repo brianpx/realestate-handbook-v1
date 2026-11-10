@@ -493,7 +493,7 @@ export const CONCEPTS: Concept[] = [
     id: 'ch10.post-close-plan',
     chapter: 'ch10',
     title: 'Every closed client goes on the post-close plan: seven dated touches in the first year',
-    summary: 'Built once, assigned on the day the contract goes under contract, activated on closing day; after the first year the client stays on the Quarterly Call Plan.',
+    summary: 'Built once, assigned on the day the client goes under contract, activated on closing day; after the first year the client stays on the Quarterly Call Plan.',
     anchor: 'the-post-close-plan',
     version: 1,
   },

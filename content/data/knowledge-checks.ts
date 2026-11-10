@@ -186,7 +186,7 @@ export const KNOWLEDGE_CHECKS: Record<string, { mcq: Mcq[]; blank: Blank }> = {
                 explain: 'A furnace-filter reminder or a contractor list passes. "Thinking of selling?" every month does not.' },
             { q: 'When does a closed client go on the post-close plan?',
                 options: ['The day of closing', 'After the 30-day call', 'When they mention moving', 'One year after closing'], answer: 0,
-                explain: 'Build the plan once, assign it the day the contract goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.' }
+                explain: 'Build the plan once, assign it the day the client goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.' }
         ],
         blank: {
             before: 'Once a year, unprompted, send each past client a home', after: 'update. Sellers come from this.',

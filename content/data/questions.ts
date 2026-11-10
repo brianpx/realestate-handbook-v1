@@ -1881,7 +1881,7 @@ export const QUESTIONS: Question[] = [
     prompt: 'When does a closed client go on the post-close plan?',
     options: ['The day of closing', 'After the 30-day call', 'When they mention moving', 'One year after closing'],
     answer: 0,
-    explain: 'Build the plan once, assign it the day the contract goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.',
+    explain: 'Build the plan once, assign it the day the client goes under contract, and it activates on closing day: the handwritten note, the gift and the ask for the introduction.',
   },
   {
     id: 'ch10.touch-purposes.value-update', version: 1, concept: 'ch10.touch-purposes', kind: 'blank',
@@ -1920,7 +1920,7 @@ export const QUESTIONS: Question[] = [
       'Assigned on closing day, started at the home anniversary',
     ],
     answer: 2,
-    explain: 'The post-close plan is built once, assigned on the day the contract goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
+    explain: 'The post-close plan is built once, assigned on the day the client goes under contract, and activated on closing day; it runs seven dated touches in the first year, starting with the closing-day note.',
   },
   {
     id: 'ch10.post-close-plan.seven-touches', version: 1, concept: 'ch10.post-close-plan', kind: 'blank', draft: true,
