@@ -608,7 +608,7 @@ export const QUESTIONS: Question[] = [
       'No, only conversations that book an appointment count',
       'Only once you have scheduled a follow-up with them',
       'Yes, a "no" still counts toward that number',
-      'No, it counts only when they agree to meet',
+      'Only if they agree to stay on your follow-up plan',
     ],
     answer: 2,
     explain: 'You control how many real conversations you have today, and a "no" still counts toward that number.',
@@ -721,10 +721,10 @@ export const QUESTIONS: Question[] = [
     explain: 'The first three things to check are the new leads that arrived overnight, the tasks due today, and the Opportunities that moved. Chapter 4 builds the full daily rhythm around them.',
   },
   {
-    id: 'ch1.crm-headquarters.first-and-last', version: 1, concept: 'ch1.crm-headquarters', kind: 'blank', draft: true,
-    before: 'Open your CRM first thing every morning and', after: 'it before you stop working.',
-    answer: 'update', accept: ['update'],
-    explain: 'This is the habit that matters most in your first 90 days. Your CRM is the single source of truth: open it first, update it last.',
+    id: 'ch1.crm-headquarters.first-90-days', version: 1, concept: 'ch1.crm-headquarters', kind: 'blank', draft: true,
+    before: 'The habit that matters most in your first', after: 'days is opening your CRM first thing every morning and updating it before you stop working.',
+    answer: '90', accept: ['90', 'ninety'],
+    explain: 'The habit that matters most in your first 90 days is simple: open your CRM first thing every morning and update it before you stop working.',
   },
   {
     id: 'ch1.crm-headquarters.sticky-notes', version: 1, concept: 'ch1.crm-headquarters', kind: 'mcq', draft: true, scenario: true,

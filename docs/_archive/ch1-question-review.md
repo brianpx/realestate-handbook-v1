@@ -34,7 +34,8 @@ Approving a question also adds it to Chapter 1's end-of-chapter check: `chapterC
 
 - **`ch1.runway`** links to `#working-backward-from-an-income-goal`, the top of the section, because Table 1.2 has no heading of its own. A dedicated anchor near the table would land the reader closer.
 - **`ch1.runway.check-order`**: the chapter leaves the tax share to a tax professional ("many new agents start at a quarter to a third"). The question tests only the order, never a percentage. Confirm that is the lesson you want.
-- **`ch1.goal-ladder.worst-day`** and **`ch1.crm-headquarters.first-and-last`** are one-word blanks close to the chapter's phrasing. The first accepts "worst" and "bad" because the chapter uses both; the second accepts only "update".
+- **`ch1.goal-ladder.worst-day`** is a one-word blank close to the chapter's phrasing. It accepts "worst" and "bad" because the chapter uses both.
+- **`ch1.crm-headquarters.first-90-days`** replaced an earlier blank ("open your CRM first and ___ it last") after the cross-chapter review found it duplicated `ch4.daily-rhythm.opens-closes`.
 - I tried to keep the keyed option from being the longest. In 3 of 15 multiple-choice drafts it still is, by two to four characters (`costs-first`, `start-with`, `formula`).
 
 ## The questions
@@ -151,7 +152,7 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 - A. No, only conversations that book an appointment count
 - B. Only once you have scheduled a follow-up with them
 - C. Yes, a "no" still counts toward that number ✓
-- D. No, it counts only when they agree to meet
+- D. Only if they agree to stay on your follow-up plan
 
 Explanation shown to the reader: You control how many real conversations you have today, and a "no" still counts toward that number.
 
@@ -391,20 +392,19 @@ Decision: ☐ Approve  ☐ Change  ☐ Drop        Comments:
 
 ---
 
-### 17. `ch1.crm-headquarters.first-and-last`
+### 17. `ch1.crm-headquarters.first-90-days`
 *Your CRM is your headquarters: open it first, update it last · fill in the blank*
 
-**Open your CRM first thing every morning and ______ it before you stop working.**
+**The habit that matters most in your first ______ days is opening your CRM first thing every morning and updating it before you stop working.**
 
-Keyed answer: **update**. Also accepted: none.
+Keyed answer: **90**. Also accepted: ninety.
 
-Explanation shown to the reader: This is the habit that matters most in your first 90 days. Your CRM is the single source of truth: open it first, update it last.
+Explanation shown to the reader: The habit that matters most in your first 90 days is simple: open your CRM first thing every morning and update it before you stop working.
 
 Chapter source:
 > The habit that matters most in your first 90 days is simple: open your CRM first thing every morning and update it before you stop working.
-> Your CRM is the single source of truth. Open it first, update it last.
 
-Note: one accepted answer. A reader who types "check" or "close" is marked wrong. Decide whether to accept more, or drop it in favour of the multiple-choice items.
+Note: the stem rephrases the chapter sentence ("is simple: open ... and update" becomes "is opening ... and updating") so it reads as one clause. It tests the time frame the chapter attaches to the habit, not the habit's wording, which `ch4.daily-rhythm.opens-closes` already covers.
 
 Status: draft, awaiting owner review.
 
