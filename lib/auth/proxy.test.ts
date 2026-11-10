@@ -1,6 +1,6 @@
-import { getRedirectUrl, unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
+import { getRedirectUrl, getRewrittenUrl, unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { NextRequest } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { config, proxy } from '@/proxy';
 import { PATH_HEADER } from './config';
 import { newSecret } from './token';
@@ -11,11 +11,17 @@ const PAGE = { 'sec-fetch-dest': 'document', accept: 'text/html,application/xhtm
 const FETCH = { 'sec-fetch-dest': 'empty', accept: '*/*' };
 
 describe('the proxy gate', () => {
-  it.each(['/handbook', '/handbook/ch3', '/handbook/plan', '/account', '/admin/users', '/search-index.json'])('matches %s', path => {
+  it.each(['/handbook', '/handbook/ch3', '/handbook/plan', '/account', '/admin/users', '/search-index.json', '/', '/preview', '/signup', '/signin', '/auth/verify', '/pricing'])('matches %s', path => {
     expect(unstable_doesMiddlewareMatch({ config, url: path })).toBe(true);
   });
-  it.each(['/', '/preview', '/signup', '/auth/verify', '/api/auth/request-link', '/pricing', '/_next/static/chunk.js', '/images/logo.png', '/sitemap.xml'])('leaves %s alone', path => {
+  it.each(['/api/auth/request-link', '/_next/static/chunk.js', '/images/logo.png', '/sitemap.xml', '/robots.txt', '/coming-soon'])('leaves %s alone', path => {
     expect(unstable_doesMiddlewareMatch({ config, url: path })).toBe(false);
+  });
+  it.each(['/', '/preview', '/signup', '/pricing'])('passes the public page %s through untouched', path => {
+    const res = run(`http://localhost:3187${path}`, undefined, PAGE);
+    expect(getRedirectUrl(res)).toBeNull();
+    expect(getRewrittenUrl(res)).toBeNull();
+    expect(res.headers.getSetCookie()).toEqual([]);
   });
   it('sends a visitor with no cookie to sign in, keeping the path and query to come back to', () => {
     expect(getRedirectUrl(run('http://localhost:3187/handbook/ch3'))).toBe('http://localhost:3187/signup?next=%2Fhandbook%2Fch3');
@@ -64,5 +70,37 @@ describe('the proxy gate', () => {
   });
   it('still sends a prefetch with no cookie to sign in', () => {
     expect(getRedirectUrl(run('http://localhost:3187/handbook/ch3', undefined, FETCH))).toBe('http://localhost:3187/signup?next=%2Fhandbook%2Fch3');
+  });
+});
+
+describe('the coming-soon switch', () => {
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it.each(['/', '/pricing', '/signup', '/preview', '/handbook/ch3', '/search-index.json'])('shows a visitor with no session the coming-soon page at %s', path => {
+    vi.stubEnv('COMING_SOON', 'true');
+    const res = run(`https://handbook.example${path}?x=1`, undefined, PAGE);
+    expect(getRewrittenUrl(res)).toBe('https://handbook.example/coming-soon');
+    expect(getRedirectUrl(res)).toBeNull();
+    expect(res.headers.get('x-robots-tag')).toBe('noindex');
+  });
+  it.each(['/signin', '/auth/verify'])('keeps %s open so the owner can sign in', path => {
+    vi.stubEnv('COMING_SOON', 'true');
+    const res = run(`https://handbook.example${path}`, undefined, PAGE);
+    expect(getRewrittenUrl(res)).toBeNull();
+    expect(getRedirectUrl(res)).toBeNull();
+  });
+  it('lets a visitor with a session see the site, and the product gate carries on as before', () => {
+    vi.stubEnv('COMING_SOON', 'true');
+    const cookie = `hb_session=${newSecret()}`;
+    const home = run('https://handbook.example/', cookie, PAGE);
+    expect(getRewrittenUrl(home)).toBeNull();
+    expect(home.headers.getSetCookie()).toEqual([]);
+    const chapter = run('https://handbook.example/handbook/ch3', cookie, PAGE);
+    expect(getRewrittenUrl(chapter)).toBeNull();
+    expect(chapter.headers.getSetCookie()).toHaveLength(2);
+  });
+  it.each(['false', '1', ''])('stays off for COMING_SOON=%s', value => {
+    vi.stubEnv('COMING_SOON', value);
+    expect(getRewrittenUrl(run('https://handbook.example/', undefined, PAGE))).toBeNull();
   });
 });
