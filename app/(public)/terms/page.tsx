@@ -38,7 +38,7 @@ export default function TermsPage() {
         </ul>
 
         <h2>Third-party names</h2>
-        <p>Keller Williams Command and other product or company names appear as examples. They belong to their owners, and their use here is not an endorsement or an affiliation.</p>
+        <p>Worked examples use Keller Williams Command screens and terms, and each is labeled. Those and other product or company names appear as examples. All of them belong to their owners, and their use here is not an endorsement or an affiliation.</p>
 
         <h2>Changes, access and liability</h2>
         <Decision>how long access lasts and whether the terms may change, see <Link href="/updates">Access and updates</Link>.</Decision>

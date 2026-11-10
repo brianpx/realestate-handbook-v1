@@ -1,11 +1,68 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { UNITS } from '@/content/data/plan';
 import { isoDate } from './dates';
+import { htmlText } from './html-text';
+import { PAGE_IDS } from './pages';
 import {
   fmtClock, fmtSpan, phaseSummary, planBlocks, plannerVerdict, postCloseEvents, postCloseNote, postCloseSchedule, roadmapEvents, roadmapStatus,
   ROADMAP_PHASES, TIMEBLOCK_DEFAULTS, timeblockEvents, toMinutes, type PostCloseRows,
 } from './plan';
 
 const d = (y: number, m: number, day: number) => new Date(y, m - 1, day);
+const page = (id: string) => readFileSync(`content/pages/${id}.html`, 'utf8');
+
+describe('reading plan', () => {
+  const order = UNITS.flatMap(u => u.chapters);
+  const readBefore = (earlier: string, later: string) => order.indexOf(earlier) < order.indexOf(later);
+
+  it('lists the same weeks and chapters in the preface as content/data/plan.ts', () => {
+    const weeks = [...page('pref').matchAll(/<li><strong>Week (\d+):<\/strong> Chapters ([^.]+)\./g)]
+      .map(m => ({ unit: Number(m[1]), chapters: m[2]!.split(/, | and /).map(n => `ch${n}`) }));
+    expect(weeks).toEqual(UNITS);
+  });
+  it('reads every chapter once, in book order (OD-03)', () => {
+    expect(order).toEqual(PAGE_IDS.filter(id => /^ch\d+$/.test(id)));
+  });
+  // A chapter may point ahead ("Chapter 5 explains it"), but a sentence that assumes the reader has done the work
+  // must name a chapter the plan has already scheduled.
+  const LOOK_BACK = /\byour? (?:[a-z-]+ ){0,4}?(?:from|(?:built|wrote|made|set|set up|did|practiced|created) in) Chapters? (\d+)(?: (to|and) (\d+))?/gi;
+  const lookBacks = (text: string) =>
+    [...text.matchAll(LOOK_BACK)].filter(m => !/\bwill\b/i.test(m[0])).map(m => {
+      const first = Number(m[1]);
+      const last = Number(m[3] ?? m[1]);
+      const chapters = m[2] === 'and' ? [first, last] : Array.from({ length: last - first + 1 }, (_, i) => first + i);
+      return { phrase: m[0], chapters: chapters.map(n => `ch${n}`) };
+    });
+  it('recognizes the look-back phrasings and skips pointers ahead', () => {
+    expect(lookBacks('the list you set in Chapter 1, your opening from Chapter 6, the work you did in Chapters 2 and 3').map(l => l.chapters))
+      .toEqual([['ch1'], ['ch6'], ['ch2', 'ch3']]);
+    expect(lookBacks('the work you did in Chapters 1 to 3')[0]!.chapters).toEqual(['ch1', 'ch2', 'ch3']);
+    expect(lookBacks('You will split it across lead sources in Chapter 2. Chapter 5 explains it. You will use it from Chapter 8 on.')).toEqual([]);
+  });
+  it('only looks back at chapters the plan has already scheduled', () => {
+    const bad = order.flatMap(id =>
+      lookBacks(htmlText(page(id))).flatMap(l => l.chapters.filter(ch => !readBefore(ch, id)).map(ch => `${id}: "${l.phrase}" (${ch})`)));
+    expect(bad).toEqual([]);
+  });
+  it('names the first week the same way on the handbook home and at the end of the guided setup', () => {
+    const week1 = UNITS[0]!.chapters.map(ch => ch.slice(2));
+    const words = `Chapters ${week1.slice(0, -1).join(', ')} and ${week1.at(-1)}`;
+    const setup = readFileSync('components/handbook/StartSetup.tsx', 'utf8');
+    expect(readFileSync('app/(product)/handbook/page.tsx', 'utf8')).toContain(`${words} set`);
+    expect(setup).toContain(`first week is ${words}:`);
+    const links = /What to read next[\s\S]*?<\/ul>/.exec(setup)?.[0] ?? '';
+    expect([...links.matchAll(/pageHref\('(ch\d+)'\)/g)].map(m => m[1])).toEqual(UNITS[0]!.chapters);
+  });
+  it('schedules Chapter 2 before Chapter 4, whose Try It imports the Chapter 2 sphere list', () => {
+    expect(htmlText(page('ch4'))).toContain('Start by importing the sphere list you built in Chapter 2.');
+    expect(readBefore('ch2', 'ch4')).toBe(true);
+  });
+  it('schedules Chapter 12, which says the reader has met every part of the system, after Chapters 1 to 11', () => {
+    expect(htmlText(page('ch12'))).toContain('You have now met every part of the system.');
+    expect(order.slice(0, order.indexOf('ch12'))).toEqual(order.filter(id => Number(id.slice(2)) < 12));
+  });
+});
 
 describe('roadmap', () => {
   const start = d(2026, 11, 2);

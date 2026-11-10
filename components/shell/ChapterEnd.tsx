@@ -12,8 +12,8 @@ export function ChapterEnd({ id }: { id: PageId }) {
       <footer className="chapter-foot">
         <p>Not legal advice. Confirm forms, compensation, and prospecting rules with your broker.</p>
         <p>
-          For new agents. Worked examples use Keller Williams Command names. In another CRM, use your website, client search app,
-          pipeline stages, and drip campaigns.
+          For new agents. Worked examples use Keller Williams Command screens and terms, and each is labeled.
+          In another CRM, use your website, client search app, pipeline stages, and branding settings.
         </p>
         <p>v1.0 · October 2026</p>
       </footer>

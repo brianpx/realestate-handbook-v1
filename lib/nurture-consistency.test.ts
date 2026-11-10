@@ -1,10 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CHECKLISTS } from '@/content/data/checklists';
 import { CHECKPOINT_ANSWERS } from '@/content/data/checkpoints';
 import { NURTURE_TOUCHES } from '@/content/data/nurture';
 import { NURTURE_STATIC_HTML } from '@/content/data/nurture-static';
 import { LIVE_CALL_MINUTES, NINE_PM_TEST_HOUR, NURTURE_PLAN_DAYS, POST_CLOSE_TOUCHES_PHRASE, POST_CLOSE_TOUCHES_YEAR_ONE, RULES } from '@/content/data/rules';
 import { htmlText, tableRows } from './html-text';
+import { isFreePage } from './pages';
 import { POST_CLOSE_STEPS } from './plan';
 
 // One nurture plan, one count. These tests read the prose, the answer keys and the no-JS figure and fail when any of
@@ -129,6 +131,15 @@ describe('each rule is stated verbatim where the handbook defines it', () => {
   it('the 9 p.m. test is restated verbatim in Appendix C', () => {
     expect(htmlText(page('app-c'))).toContain(RULES.ninePmTest.sentence);
   });
+  it('the post-close milestone is restated verbatim in Chapter 4 step 3, Chapter 5, Chapter 12, the preface and Appendix C', () => {
+    const step3 = section(page('ch4'), 'the-one-time-setup').split('\n').find(line => line.includes('Create or download follow-up plans'));
+    expect(step3).toContain(RULES.postClose.sentence);
+    for (const id of ['ch5', 'ch12', 'pref', 'app-c']) expect(htmlText(page(id)), id).toContain(RULES.postClose.sentence);
+  });
+  it('the consent rule is in the preface quick start, which a free reader can open', () => {
+    expect(isFreePage('pref')).toBe(true);
+    expect(section(page('pref'), 'before-your-first-outreach')).toContain(RULES.consent.sentence);
+  });
   it('the speed-to-lead standard is the Chapter 4 checkpoint answer, verbatim', () => {
     const keyPoints = CHECKPOINT_ANSWERS.ch4!.flatMap(a => (Array.isArray(a) ? a : []));
     expect(keyPoints).toContain(RULES.speedToLead.sentence);
@@ -170,5 +181,48 @@ describe('the signed rules agree with their numbers and the plan data', () => {
     expect(htmlText(page(RULES.consent.chapter))).toContain('stop at the first opt-out');
     expect(NURTURE_TOUCHES[0]!.channels).toContain('text');
     expect(htmlText(page('app-b'))).toContain('The day-0 text waits until you have that permission.');
+  });
+  it('the speed-to-lead test runs at the same hour in Appendix C as in Chapter 4', () => {
+    const times = (text: string) => [...text.matchAll(/\b\d{1,2} [ap]\.m\./g)].map(m => m[0]);
+    const hour = [`${NINE_PM_TEST_HOUR - 12} p.m.`];
+    const appC = CHECKLISTS['app-c']!.groups.flatMap(g => g.items).find(item => item.startsWith('Speed-to-lead test'));
+    const ch4 = section(page('ch4'), 'speed-to-lead').split('\n').find(line => line.includes('Test your own speed-to-lead'));
+    expect(times(appC ?? '')).toEqual(hour);
+    expect(times(ch4 ?? '')).toEqual(hour);
+  });
+});
+
+// Decision OD-04: the quick start in the preface (a free page, OD-01) carries the minimum safeguards; Chapter 11 keeps
+// the full treatment.
+describe('the "before your first outreach" checklist', () => {
+  const list = /id="before-your-first-outreach"[\s\S]*?<ul>([\s\S]*?)<\/ul>/.exec(page('pref'))?.[1] ?? '';
+  const items = [...list.matchAll(/<li><strong>([^<]+)<\/strong>/g)].map(m => m[1]);
+  it('names the four safeguards in the preface', () => {
+    expect(items).toEqual([
+      'Consent before automated texts.', 'Describe the property, not the people.', 'Agency disclosure at first substantive contact.', 'Do-not-call.',
+    ]);
+  });
+  it('says what Chapter 11 says about each', () => {
+    const quick = section(page('pref'), 'before-your-first-outreach');
+    const ch11 = htmlText(page('ch11'));
+    for (const phrase of ['Describe the property', 'first substantive contact', 'do-not-call list, or outside the hours your state allows']) {
+      expect(quick, phrase).toContain(phrase);
+      expect(ch11, phrase).toContain(phrase);
+    }
+  });
+});
+
+// Decision OD-05: vendor-neutral, with Keller Williams Command names as labeled examples. Chapter 4 and the Appendix C
+// checklist label the first use of each name.
+describe('Keller Williams Command names are labeled as examples', () => {
+  const names = ['Marketing Profile', 'Opportunities', 'Agent Site'];
+  it('in Chapter 4, at the first use of each name', () => {
+    const lines = htmlText(page('ch4')).split('\n');
+    for (const name of names) expect(lines.find(line => line.includes(name)), name).toContain('Keller Williams Command example');
+  });
+  it('in every Appendix C checklist item that uses one', () => {
+    const items = CHECKLISTS['app-c']!.groups.flatMap(g => g.items).filter(item => names.some(name => item.includes(name)));
+    expect(items).toHaveLength(3);
+    for (const item of items) expect(item).toContain('Keller Williams Command example');
   });
 });

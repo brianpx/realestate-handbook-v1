@@ -12,10 +12,10 @@ const coach = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getIte
 
 // Default pace from a Friday start, Mon to Fri: four sessions in each 7-day block, in the preface's reading order.
 const SCHEDULE = [
-  'Fri, Nov 20: 1. Mindset & Foundations', 'Mon, Nov 23: 4. Your CRM and daily operating system', 'Tue, Nov 24: 12. Execution Plans (90 Days)',
-  'Wed, Nov 25: 2. Finding Clients', 'Fri, Nov 27: 5. Nurturing Leads', 'Mon, Nov 30: 6. Scripts & Conversations',
+  'Fri, Nov 20: 1. Mindset & Foundations', 'Mon, Nov 23: 2. Finding Clients', 'Tue, Nov 24: 3. Marketing & Brand Presence',
+  'Wed, Nov 25: 4. Your CRM and daily operating system', 'Fri, Nov 27: 5. Nurturing Leads', 'Mon, Nov 30: 6. Scripts & Conversations',
   'Tue, Dec 1: 7. Common Errors & Pitfalls', 'Wed, Dec 2: 8. Staying Organized & Motivated', 'Fri, Dec 4: 9. Client Consultations & Objections',
-  'Mon, Dec 7: 3. Marketing & Brand Presence', 'Tue, Dec 8: 10. Keeping Clients', 'Wed, Dec 9: 11. Legal Protection & Standards',
+  'Mon, Dec 7: 10. Keeping Clients', 'Tue, Dec 8: 11. Legal Protection & Standards', 'Wed, Dec 9: 12. Execution Plans (90 Days)',
   'Fri, Dec 11: 13. Resources & Next Steps',
 ];
 const nextCard = (page: Page) => page.locator('aside.box.try-it');
@@ -85,7 +85,7 @@ test.describe('starting a plan', () => {
 
     const saved = await coach(page);
     expect(saved.plan).toMatchObject({ startDate: '2026-11-20', pace: 'default', studyDays: [1, 2, 3, 4, 5], time: '08:00' });
-    expect(saved.plan.sessions.map((s: { id: string }) => s.id)).toEqual(['ch1', 'ch4', 'ch12', 'ch2', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch3', 'ch10', 'ch11', 'ch13']);
+    expect(saved.plan.sessions.map((s: { id: string }) => s.id)).toEqual(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13']);
     await page.reload();
     await expect(nextCard(page).locator('.box-title')).toHaveText('● TODAY');
   });
@@ -115,13 +115,13 @@ test('marking read, exercise and questions completes the session and moves on to
   await page.getByRole('button', { name: 'I answered them' }).click();
 
   await expect(nextCard(page).locator('.box-title')).toHaveText('● NEXT · MON, NOV 23');
-  await expect(nextCard(page)).toContainText('4. Your CRM and daily operating system');
-  await expect(steps(page).last()).toHaveText('○ Answer the questions at the end of the chapter. Go to the questions'); // ch4 has tagged questions
-  await expect(page.getByRole('link', { name: 'Go to the questions' })).toHaveAttribute('href', '/handbook/ch4');
+  await expect(nextCard(page)).toContainText('2. Finding Clients');
+  await expect(steps(page).last()).toHaveText('○ Answer the questions at the end of the chapter. Go to the questions'); // ch2 has tagged questions
+  await expect(page.getByRole('link', { name: 'Go to the questions' })).toHaveAttribute('href', '/handbook/ch2');
   await expect(page.getByText('1 of 13 sessions complete. On pace.')).toBeVisible();
   await page.locator('details.box summary').click();
   await expect(page.locator('details.box li').first()).toHaveText('Fri, Nov 20: 1. Mindset & Foundations ✓');
-  await expect(page.locator('details.box li').nth(1)).toHaveText('Mon, Nov 23: 4. Your CRM and daily operating system ← next');
+  await expect(page.locator('details.box li').nth(1)).toHaveText('Mon, Nov 23: 2. Finding Clients ← next');
   const at = DAY1.toISOString();
   expect((await coach(page)).completions).toEqual({ ch1: { read: at, did: at, checked: at } });
 });
@@ -130,8 +130,7 @@ test.describe('the review deck', () => {
   test('a ch4 question missed today is due tomorrow and comes back in the deck', async ({ page }) => {
     await startPlan(page);
     await finishFirstSession(page);
-    await page.getByRole('link', { name: 'Go to the questions' }).click();
-    await expect(page).toHaveURL(/\/handbook\/ch4$/);
+    await page.goto('/handbook/ch4');
     const quiz = page.locator('aside.box.quiz');
     await expect(quiz).toContainText('Say how sure you are, then answer. Your answers are saved on this device so the ideas you miss can come back later.');
     const first = quiz.locator('fieldset.quiz-item').first();

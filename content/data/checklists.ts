@@ -52,8 +52,8 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
           "Professional headshot uploaded.",
           "Bio written in plain language (three short paragraphs).",
           "Phone, email, license number and social links current.",
-          "Marketing Profile complete: colors, logo, tagline.",
-          "Agent Site reviewed on phone and desktop.",
+          "Marketing Profile (Keller Williams Command example; in another CRM, its branding settings) complete: colors, logo, tagline.",
+          "Agent Site (Keller Williams Command example; in another CRM, your website) reviewed on phone and desktop.",
         ],
       },
       {
@@ -75,7 +75,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
           "New online lead plan built (Appendix B.1); the day-0 automated text goes only to leads whose consent is recorded in the CRM (the Chapter 11 consent rule).",
           "8x8 sphere plan built (B.2).",
           "Quarterly database plan built (B.3) and applied to the whole database.",
-          "Post-close plan built (B.4).",
+          "Post-close plan built (B.4), ready to assign the day a client goes under contract.",
           "Every message rewritten in your own voice.",
         ],
       },
@@ -83,7 +83,7 @@ export const CHECKLISTS: Record<string, { header: boolean; titleTag: 'h2' | 'h3'
         id: "app-c-pipeline-and-routing",
         title: "Pipeline and routing",
         items: [
-          "Opportunities stages renamed to match how you work.",
+          "Opportunities stages (Keller Williams Command example; in another CRM, its pipeline stages) renamed to match how you work.",
           "Existing leads placed in the correct stage.",
           "Lead routing rules set (teams only).",
         ],
