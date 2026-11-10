@@ -580,4 +580,54 @@ export const CONCEPTS: Concept[] = [
     version: 1,
   },
   // end ch11
+  // ch13
+  {
+    id: 'ch13.two-habits',
+    chapter: 'ch13',
+    title: 'The two habits that matter most: speed-to-lead and multi-touch follow-up',
+    summary: 'Stay in touch for 90 days and then forever; everything else in the book exists to make the two habits easy, and they are the first things to check when results stall.',
+    anchor: 'the-two-habits-that-matter-most',
+    version: 1,
+  },
+  {
+    id: 'ch13.help-network',
+    chapter: 'ch13',
+    title: 'Name the people you will actually use: a mentor, a class, a lender, an attorney or title contact',
+    summary: 'Ask your office for a mentor, meet three lenders and pick one, and put each person in your CRM with a Partner tag and a date for the first conversation.',
+    anchor: 'where-to-get-help',
+    version: 1,
+  },
+  {
+    id: 'ch13.broker-before',
+    chapter: 'ch13',
+    title: 'Go to your broker for anything legal, contractual or unusual, before, not after',
+    summary: 'Including asking what is and is not allowed before you agree to anything with a lender partner.',
+    anchor: 'where-to-get-help',
+    version: 1,
+  },
+  {
+    id: 'ch13.ninety-day-review',
+    chapter: 'ch13',
+    title: 'Write a one-paragraph review of your first 90 days and share it with one person',
+    summary: 'What moved, what did not, what surprised you, starting from your scorecards; saved in the CRM as a note dated day 90 and shared with your broker, a mentor or an accountability partner on a set date.',
+    anchor: 'plan-the-next-90-days',
+    version: 1,
+  },
+  {
+    id: 'ch13.own-numbers',
+    chapter: 'ch13',
+    title: 'Set the next 90 days from your own conversion ratios, not the book\'s examples',
+    summary: 'Replace conversations per appointment, conversion by source and touches before a reply with your own, writing each new ratio next to the old one.',
+    anchor: 'plan-the-next-90-days',
+    version: 1,
+  },
+  {
+    id: 'ch13.implementation-intention',
+    chapter: 'ch13',
+    title: 'Write one implementation intention for next Monday morning',
+    summary: 'In the form "On [day], at [time], I will [action]."',
+    anchor: 'plan-the-next-90-days',
+    version: 1,
+  },
+  // end ch13
 ];

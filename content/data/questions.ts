@@ -2003,4 +2003,160 @@ export const QUESTIONS: Question[] = [
     explain: 'Confidentiality does not end at closing. The standards also include following the National Association of REALTORS® Code of Ethics and your local MLS rules.',
   },
   // end ch11
+  // ch13
+  {
+    id: 'ch13.two-habits.when-stalled', version: 1, concept: 'ch13.two-habits', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Your results have stalled. Which two habits does Chapter 13 say to check first?',
+    options: ['Cold calling and door knocking', 'Speed-to-lead and multi-touch follow-up', 'Open houses and paid online leads', 'Social posts and monthly mailers'],
+    answer: 1,
+    explain: 'Speed-to-lead and multi-touch follow-up are the two habits that matter most. The seven lines on the card are the system; these two are the first things to check when results stall.',
+  },
+  {
+    id: 'ch13.two-habits.forever', version: 1, concept: 'ch13.two-habits', kind: 'blank', draft: true,
+    before: 'Multi-touch follow-up means you stay in touch for 90 days and then', after: '.',
+    answer: 'forever', accept: ['forever'],
+    explain: 'These two habits separate agents who grow from agents who stay stuck.',
+  },
+  {
+    id: 'ch13.two-habits.rest-of-book', version: 1, concept: 'ch13.two-habits', kind: 'mcq', draft: true,
+    prompt: 'How does Chapter 13 describe the rest of the book in relation to the two habits?',
+    options: [
+      'It is optional once the habits are in place',
+      'It matters more than the habits do',
+      'It exists to make the two habits easy',
+      'It applies only after your first closing',
+    ],
+    answer: 2,
+    explain: 'In the chapter\'s words: "Everything else in the book exists to make them easy."',
+  },
+
+  {
+    id: 'ch13.help-network.mentor', version: 1, concept: 'ch13.help-network', kind: 'mcq', draft: true,
+    prompt: 'Where does the chapter tell you to go to ask for a mentor?',
+    options: [
+      'An online forum for agents in other markets',
+      'The lender partner you picked from three',
+      'Past clients who have already bought from you',
+      'Your office, including agents two years ahead',
+    ],
+    answer: 3,
+    explain: 'Your office: the team leader, any coach your brokerage offers, and the agents who are two years ahead of you. Ask for a mentor.',
+  },
+  {
+    id: 'ch13.help-network.lender', version: 1, concept: 'ch13.help-network', kind: 'mcq', draft: true,
+    prompt: 'How does the chapter suggest choosing a lender partner?',
+    options: [
+      'Meet three lenders and pick one',
+      'Use the lender your first buyer already has',
+      'Split your buyers evenly among several lenders',
+      'Wait until a contract is signed, then pick one',
+    ],
+    answer: 0,
+    explain: 'A good lender teaches you financing and sends you referrals. Meet three and pick one; Chapter 6 has the introduction script.',
+  },
+  {
+    id: 'ch13.help-network.partner-tag', version: 1, concept: 'ch13.help-network', kind: 'blank', draft: true,
+    before: 'Put the mentor, class, lender and attorney or title contact you will use in your CRM with a', after: 'tag and a date for the first conversation.',
+    answer: 'Partner', accept: ['partner'],
+    explain: 'Name the people you will actually use: one mentor, the next brokerage class you will attend, one lender, and one attorney or title contact.',
+  },
+
+  {
+    id: 'ch13.broker-before.timing', version: 1, concept: 'ch13.broker-before', kind: 'mcq', draft: true, scenario: true,
+    prompt: 'Something contractual and unusual comes up in a deal. When does the chapter say to bring in your broker?',
+    options: ['Before you act, not after', 'Once it is resolved, for the record', 'Only if the client complains', 'At your next monthly review'],
+    answer: 0,
+    explain: 'Your broker is for anything legal, contractual or unusual. Before, not after.',
+  },
+  {
+    id: 'ch13.broker-before.lender-rules', version: 1, concept: 'ch13.broker-before', kind: 'mcq', draft: true,
+    prompt: 'You have picked a lender partner. What does the chapter say to do before you agree to anything with them?',
+    options: [
+      'Ask agents in your office what they accept',
+      'Get the lender\'s offer in writing first',
+      'Ask your broker what is and is not allowed',
+      'Run it past your accountability partner',
+    ],
+    answer: 2,
+    explain: 'The chapter: "Ask your broker what is and is not allowed before you agree to anything."',
+  },
+  {
+    id: 'ch13.broker-before.kinds', version: 1, concept: 'ch13.broker-before', kind: 'blank', draft: true,
+    before: 'Go to your broker for anything legal, contractual or', after: '. Before, not after.',
+    answer: 'unusual', accept: ['unusual'],
+    explain: 'Your broker is the help for anything legal, contractual or unusual, and you ask before you act.',
+  },
+
+  {
+    id: 'ch13.ninety-day-review.start-from', version: 1, concept: 'ch13.ninety-day-review', kind: 'mcq', draft: true,
+    prompt: 'What should your one-paragraph review of the first 90 days start from?',
+    options: [
+      'Your memory of your best and worst weeks',
+      'Your count of closings and commission earned',
+      'Your scorecards, row by row against target',
+      'A survey of the clients you worked with',
+    ],
+    answer: 2,
+    explain: 'Start from your scorecards (Appendix A): which rows hit target most weeks, and which never did. Then write what moved, what did not and what surprised you.',
+  },
+  {
+    id: 'ch13.ninety-day-review.where-kept', version: 1, concept: 'ch13.ninety-day-review', kind: 'mcq', draft: true,
+    prompt: 'Where does the chapter say to keep your 90-day review once it is written?',
+    options: ['In a notebook you take to the office', 'In an email to yourself', 'On the back of the one-page card', 'In the CRM as a note dated day 90'],
+    answer: 3,
+    explain: 'Put it in the CRM as a note dated day 90. If you are still reading, write it for the first 30.',
+  },
+  {
+    id: 'ch13.ninety-day-review.share', version: 1, concept: 'ch13.ninety-day-review', kind: 'blank', draft: true,
+    before: 'Choose one person to share the review with, such as your broker, a mentor or an accountability partner, and put a', after: 'on it.',
+    answer: 'date', accept: ['date'],
+    explain: 'One person, named in advance, with a date for sharing the review.',
+  },
+
+  {
+    id: 'ch13.own-numbers.targets', version: 1, concept: 'ch13.own-numbers', kind: 'mcq', draft: true,
+    prompt: 'What does Chapter 13 say the next 90 days\' targets should be set from?',
+    options: ['Your own conversion ratios', 'The book\'s example numbers', 'Your office\'s top producer', 'Whatever your broker assigns'],
+    answer: 0,
+    explain: 'Set the next 90 days\' targets from your own conversion ratios, not the book\'s examples.',
+  },
+  {
+    id: 'ch13.own-numbers.which-three', version: 1, concept: 'ch13.own-numbers', kind: 'mcq', draft: true,
+    prompt: 'Which three of the book\'s example numbers does the chapter ask you to replace with your own?',
+    options: [
+      'Calls made per day, average sale price, listings taken per year',
+      'Open houses held per month, ad spend per month, website visits per week',
+      'Conversations per appointment, conversion by source, touches before a reply',
+      'Closings per quarter, commission per closed deal, referrals per year',
+    ],
+    answer: 2,
+    explain: 'Conversations per appointment (Chapter 1), conversion by source (Chapter 2) and touches before a reply (Chapter 5).',
+  },
+  {
+    id: 'ch13.own-numbers.side-by-side', version: 1, concept: 'ch13.own-numbers', kind: 'blank', draft: true,
+    before: 'When you replace one of the book\'s example numbers with your own, write the new ratio next to the', after: 'one.',
+    answer: 'old', accept: ['old'],
+    explain: 'Replace three of the book\'s example numbers with your own and write the new ratio next to the old one, so the next 90 days\' targets come from your own conversion ratios.',
+  },
+
+  {
+    id: 'ch13.implementation-intention.form', version: 1, concept: 'ch13.implementation-intention', kind: 'mcq', draft: true,
+    prompt: 'Which of these is written in the implementation-intention form the chapter gives?',
+    options: [
+      'I will make prospecting calls more often this quarter.',
+      'On Monday, at 9:30 a.m., I will call my sphere contacts.',
+      'My goal is to close more deals than last year.',
+      'Sometime soon I should update every contact in my CRM.',
+    ],
+    answer: 1,
+    explain: 'The form is "On [day], at [time], I will [action]." Only this option names a day, a time and an action.',
+  },
+  {
+    id: 'ch13.implementation-intention.when', version: 1, concept: 'ch13.implementation-intention', kind: 'mcq', draft: true,
+    prompt: 'For when does the chapter say to make your one implementation intention?',
+    options: ['The first day of next month', 'Next Monday morning', 'Day 90 of the next plan', 'Whenever your schedule frees up'],
+    answer: 1,
+    explain: 'Write one implementation intention: "On [day], at [time], I will [action]." Make it next Monday morning.',
+  },
+  // end ch13
 ];
