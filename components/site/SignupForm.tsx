@@ -141,11 +141,22 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
         <p>Chapters 1 and 7 are free once you’re signed in. The rest opens when you buy the handbook.</p>
       </div>}
       {sent ? (
-        <div className="signup-sent" data-source={source}>
-          {page && <><span className="auth-mail"><MailIcon aria-hidden="true" /></span><p className="pub-eyebrow">Link sent</p></>}
-          <SentHeading className={page ? 'pub-h1' : 'pub-h3'}>{page ? 'Check your email' : 'Check your inbox.'}</SentHeading>
-          {page ? <><p>We sent a sign-in link to <strong>{sent.email}</strong>.</p><p>Open it on this device to go straight to the handbook. The link works once and expires after {TOKEN_TTL_SECONDS / 60} minutes.</p></>
-            : <p>If {sent.email} can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes. Look in spam if it has not arrived in a minute.</p>}
+        <div className={`signup-sent${page ? '' : ' signup-notice'}`} data-source={source} role={page ? undefined : 'region'} aria-labelledby={page ? undefined : `${id}-sent-title`}>
+          {page ? <>
+            <span className="auth-mail"><MailIcon aria-hidden="true" /></span><p className="pub-eyebrow">Link sent</p>
+            <SentHeading className="pub-h1">Check your email</SentHeading>
+            <p>We sent a sign-in link to <strong>{sent.email}</strong>.</p><p>Open it on this device to go straight to the handbook. The link works once and expires after {TOKEN_TTL_SECONDS / 60} minutes.</p>
+          </> : <>
+            <div className="signup-notice-header">
+              <span className="signup-notice-icon"><MailIcon aria-hidden="true" /></span>
+              <div>
+                <SentHeading className="pub-h3" id={`${id}-sent-title`}>Check your inbox.</SentHeading>
+                <p className="signup-notice-email">{sent.email}</p>
+              </div>
+            </div>
+            <p>If this address can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes.</p>
+            <p className="signup-notice-help"><strong>Don’t see it after a minute?</strong> Check spam or promotions.</p>
+          </>}
           {sent.notes === 'sent' && <p>If this address is not already on the notes list, a second email asks you to confirm it. Nothing is sent until you open that link.</p>}
           {sent.notes === 'failed' && <p>The notes sign-up did not go through. You can try again from the form after the sample lesson.</p>}
           <p className="signup-actions">
