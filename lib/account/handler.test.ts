@@ -55,13 +55,14 @@ describe('sign out everywhere', () => {
   });
   it('refuses a foreign origin, and without a live session only clears the cookie', async () => {
     const { auth, deps, req } = await setup();
-    expect((await handleSignOutAll(req('', { origin: 'https://evil.example' }), deps)).status).toBe(403);
-    expect((await handleSignOutAll(req('', { origin: null }), deps)).status).toBe(403);
+    const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
+    expect(await handleSignOutAll(req('', { origin: 'https://evil.example' }), deps)).toEqual(unavailable);
+    expect(await handleSignOutAll(req('', { origin: null }), deps)).toEqual(unavailable);
     const res = await handleSignOutAll(req('', { sessionId: undefined }), deps);
     expect(res.status).toBe(303);
     expect(String(res.headers?.['Set-Cookie'])).toContain('hb_session=;');
     expect(auth.sessions.every(s => s.revokedAt === null)).toBe(true);
-    expect((await handleSignOutAll(req(), { ...deps, stores: null })).status).toBe(503);
+    expect(await handleSignOutAll(req(), { ...deps, stores: null })).toEqual(unavailable);
   });
 });
 
@@ -108,30 +109,31 @@ describe('delete account', () => {
   it('refuses a foreign origin and an oversized body, and sends a signed-out visitor to sign in', async () => {
     const { users, deps, req } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
-    expect((await handleDeleteAccount(req(body, { origin: 'https://evil.example' }), deps)).status).toBe(403);
-    expect((await handleDeleteAccount(req('x'.repeat(5000)), deps)).status).toBe(413);
+    const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
+    expect(await handleDeleteAccount(req(body, { origin: 'https://evil.example' }), deps)).toEqual(unavailable);
+    expect(await handleDeleteAccount(req('x'.repeat(5000)), deps)).toEqual(unavailable);
     const out = await handleDeleteAccount(req(body, { sessionId: undefined }), deps);
     expect(out.status).toBe(303);
     expect(out.headers?.Location).toBe('/signup?next=%2Faccount');
     expect(users.users[0]!.status).toBe('active');
   });
-  it('is a 503 when the store fails, and the lead or profile store failing does not fail the deletion', async () => {
+  it('sends the reader back to the account page when the store fails, and a failing lead or profile delete leaves the account active', async () => {
     const { auth, leads, profiles, deps, req, users } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
+    const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       auth.failWith = new Error('db down');
-      expect((await handleDeleteAccount(req(body), deps)).status).toBe(503);
-      expect((await handleSignOutAll(req(), deps)).status).toBe(503);
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(await handleSignOutAll(req(), deps)).toEqual(unavailable);
       expect(users.users[0]!.status).toBe('active');
+      expect(auth.sessions.every(s => s.revokedAt === null)).toBe(true);
       auth.failWith = null;
       leads.failWith = new Error('leads down');
       profiles.failWith = new Error('profiles down');
-      const res = await handleDeleteAccount(req(body), deps);
-      expect(res.status).toBe(303);
-      expect(res.headers?.Location).toBe('/goodbye');
-      expect(users.users[0]!.status).toBe('deleted');
-      expect(profiles.profiles).toHaveLength(1); // the step failed and was logged; the deletion still went through
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(users.users[0]!.status).toBe('active');
+      expect(profiles.profiles).toHaveLength(1);
     } finally {
       spy.mockRestore();
     }

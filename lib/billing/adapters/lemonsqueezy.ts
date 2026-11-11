@@ -14,8 +14,9 @@ import { BILLING_PROVIDER, UPGRADE_PRODUCT_KEY, VARIANT_PRODUCTS, type GrantEffe
  * (status `partial_refund`, or `refunded_amount` below `total` in cents) keeps access. Status `refunded` revokes
  * even when that amount is short. There is no dispute status: a chargeback Lemon Squeezy settles by
  * refunding arrives as a refund and revokes access. `failed` is not a `billing_records.status`, so that order
- * is left unmatched and grants nothing. `fraudulent` is unmatched as well, so it changes nothing either way
- * until the owner decides what it should do. Subscription events are not a product; they are unmatched too.
+ * is left unmatched and grants nothing. `fraudulent` ends access the way a lost chargeback does: the record is
+ * stored as `chargeback_lost` with the provider's own word kept in `provider_status`, and an administrator can
+ * grant access again if the flag was wrong. Subscription events are not a product; they are unmatched too.
  * `billing_events.status` has no `ignored`, so those non-product events are stored as `unmatched`.
  */
 
@@ -219,6 +220,8 @@ function effectFor(status: string, refundedFlag: boolean, total: number | null, 
   if (status === 'refunded' || fullByAmount || (refundedFlag && !partial)) {
     return { outcome: 'mirror', status: 'refunded', grant: 'revoke', revokeReason: 'refund', accessEndsAt: now };
   }
+  // Checked before the partial case: a flagged order does not keep access because part of it was refunded.
+  if (status === 'fraudulent') return { outcome: 'mirror', status: 'chargeback_lost', grant: 'revoke', revokeReason: 'chargeback', accessEndsAt: now };
   if (partial || status === 'partial_refund') return { outcome: 'mirror', status: 'partially_refunded', grant: 'grant', revokeReason: null, accessEndsAt: null };
   if (status === 'paid') return { outcome: 'mirror', status: 'paid', grant: 'grant', revokeReason: null, accessEndsAt: null };
   if (status === 'pending') return { outcome: 'mirror', status: 'pending', grant: 'none', revokeReason: null, accessEndsAt: null };

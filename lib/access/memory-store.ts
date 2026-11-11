@@ -4,7 +4,7 @@ import type { MemoryAuthStore } from '@/lib/auth/memory-store';
 import type { MemoryUserStore, Page } from '@/lib/users/store';
 import type { Role } from '@/lib/users/types';
 import { projectMembership } from './membership';
-import type { AccessStore, Anonymisation, NewGrant, Revocation, Suspension } from './store';
+import type { AccessStore, Anonymisation, MembershipProjection, NewGrant, Revocation, Suspension } from './store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from './types';
 
 /**
@@ -50,10 +50,21 @@ export class MemoryAccessStore implements AccessStore {
     return after;
   }
   async findMembership(userId: string) { this.check(); return this.memberships.find(m => m.userId === userId) ?? null; }
-  async saveMembership(membership: Membership) {
-    this.check();
+  private writeMembership(membership: Membership) {
     const i = this.memberships.findIndex(m => m.userId === membership.userId);
     if (i >= 0) this.memberships[i] = membership; else this.memberships.push(membership);
+    return membership;
+  }
+  async saveMembership(projection: MembershipProjection): Promise<Membership> {
+    this.check();
+    const existing = this.memberships.find(m => m.userId === projection.userId);
+    return this.writeMembership({
+      ...projection,
+      status: existing?.suspendedAt ? 'suspended' : projection.status,
+      suspendedAt: existing?.suspendedAt ?? null,
+      suspendedBy: existing?.suspendedBy ?? null,
+      suspendReason: existing?.suspendReason ?? null,
+    });
   }
   async anonymise({ userId, email }: Anonymisation, audit: AuditStub) {
     this.check();
@@ -117,7 +128,7 @@ export class MemoryAccessStore implements AccessStore {
     if (existing?.suspendedAt) return null;
     const base: Membership = existing ?? { userId, status: 'none', tier: null, startedAt: null, endsAt: null, currentGrantId: null, complimentary: false, suspendedAt: null, suspendedBy: null, suspendReason: null, updatedAt: at };
     const next = projectMembership(userId, this.grants.filter(g => g.userId === userId), { ...base, suspendedAt: at, suspendedBy: by, suspendReason: reason }, at);
-    await this.saveMembership(next);
+    this.writeMembership(next);
     this.log(audit, { table: 'memberships', id: userId }, existing, next);
     return next;
   }
@@ -126,7 +137,7 @@ export class MemoryAccessStore implements AccessStore {
     const existing = this.memberships.find(m => m.userId === userId);
     if (!existing?.suspendedAt) return null;
     const next = projectMembership(userId, this.grants.filter(g => g.userId === userId), { ...existing, suspendedAt: null, suspendedBy: null, suspendReason: null }, at);
-    await this.saveMembership(next);
+    this.writeMembership(next);
     this.log(audit, { table: 'memberships', id: userId }, existing, next);
     return next;
   }

@@ -145,6 +145,20 @@ describe('Lemon Squeezy orders', () => {
     expect(mapped.order.accessEndsAt).toBeNull();
   });
 
+  it('ends access on status fraudulent as a lost chargeback, not a refund, even with part refunded', () => {
+    for (const refunded_amount of [0, 100]) {
+      const mapped = mapResource(order({ status: 'fraudulent', refunded_amount }), NOW);
+      if (mapped.outcome !== 'order') throw new Error('expected an order');
+      expect(mapped.order).toMatchObject({ status: 'chargeback_lost', providerStatus: 'fraudulent', grant: 'revoke', revokeReason: 'chargeback', accessEndsAt: NOW, refundedAt: null });
+    }
+  });
+
+  it('stores a flagged order whose money went back in full as a refund', () => {
+    const mapped = mapResource(order({ status: 'fraudulent', refunded: true, refunded_amount: 4321 }), NOW);
+    if (mapped.outcome !== 'order') throw new Error('expected an order');
+    expect(mapped.order).toMatchObject({ status: 'refunded', providerStatus: 'fraudulent', grant: 'revoke', revokeReason: 'refund' });
+  });
+
   it('keeps access on status partial_refund, with or without an amount', () => {
     for (const refunded_amount of [100, undefined]) {
       const mapped = mapResource(order({ status: 'partial_refund', refunded_amount }), NOW);

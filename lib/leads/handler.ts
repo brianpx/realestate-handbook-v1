@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { hashSecret, isSecretShape, newSecret } from '@/lib/auth/token';
 import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
-import { CONFIRM_PATH, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
+import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
 import { sendConfirmation, type MailConfig } from './mail';
 import type { LeadStore } from './store';
 import { leadSchema } from './validate';
@@ -43,7 +43,8 @@ async function overLimit(store: LeadStore, req: LeadRequest, deps: LeadDeps, now
  * Duplicates and bots get the same answer as a new sign-up, so the form cannot be used to find out who is on the
  * list. The address is stored at once but is not subscribed: the email sent for a new address carries the link
  * that confirms it (handleConfirm). A failed send never loses the lead: the next submit of that address gets a
- * fresh link, the only case in which a repeat address is emailed again.
+ * fresh link. An interrupted send can be retried after its lease, and an expired link can be replaced.
+ * Repeating a successful live link or a confirmed address sends nothing. No automatic send retry occurs.
  */
 export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
   if (req.origin && !deps.allowedOrigins.includes(req.origin)) return reply(403, 'forbidden');
@@ -71,9 +72,15 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
     const raw = newSecret();
     const expiresAt = new Date(now.getTime() + CONFIRM_TTL_SECONDS * 1000);
     const row = await deps.store.insert({ email, source, consentVersion, consentText: CONSENT_TEXTS[consentVersion], confirmTokenHash: hashSecret(raw), confirmExpiresAt: expiresAt, at: now });
-    const retry = !row.created && row.confirmedAt === null && row.emailStatus === 'failed';
-    if (retry) await deps.store.resetConfirmation(row.id, hashSecret(raw), expiresAt); // the old link is dead with it
-    if (row.created || retry) await deps.store.setEmailStatus(row.id, await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, deps.fetchImpl));
+    const tokenHash = hashSecret(raw);
+    const retryBefore = new Date(now.getTime() - CONFIRM_RETRY_SECONDS * 1000);
+    // The conditional durable claim elects one sender, even for concurrent duplicate submissions. A process
+    // interruption leaves a lease that an explicit later submission can reclaim. A reclaimed link replaces the old
+    // hash: provider acceptance may have been uncertain, so this is not a promise of exactly-once email delivery.
+    if (await deps.store.claimConfirmation(row.id, tokenHash, expiresAt, now, retryBefore)) {
+      const status = await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, deps.fetchImpl);
+      await deps.store.completeConfirmation(row.id, tokenHash, status);
+    }
     return OK;
   } catch (err) {
     console.error('lead: storage failed', err instanceof Error ? err.name : 'error');
@@ -88,9 +95,10 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
  * good link lands on the same success state as the first.
  */
 export async function handleConfirm(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
-  if (!req.origin || !deps.allowedOrigins.includes(req.origin)) return reply(403, 'forbidden');
+  // The confirm page is a form navigation. A refusal still lands on the failure card, not a JSON body.
+  if (!req.origin || !deps.allowedOrigins.includes(req.origin)) return redirect(CONFIRM_FAILED);
   if (!deps.store) return redirect(CONFIRM_FAILED);
-  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(CONFIRM_FAILED);
 
   const now = deps.now();
   try {

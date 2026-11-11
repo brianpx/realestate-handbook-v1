@@ -115,6 +115,38 @@ test.describe('public pages', () => {
     await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
   });
 
+  test('hero amount fields focus as a whole without including validation text', async ({ page }) => {
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      for (const id of ['heroGoal', 'heroCommission']) {
+        const input = page.locator(`#${id}`);
+        await input.focus();
+        await expect(input).toHaveCSS('outline-style', 'none');
+        await expect(input).toHaveCSS('box-shadow', 'none');
+        await input.fill('invalid');
+        await expect(input).toHaveAttribute('aria-invalid', 'true');
+        const field = input.locator('..');
+        await expect(field.locator('.calc-error')).toBeVisible();
+        const ring = await field.evaluate(el => {
+          const style = getComputedStyle(el, '::after');
+          return {
+            content: style.content,
+            border: style.borderTopStyle,
+            width: parseFloat(style.width),
+            height: parseFloat(style.height),
+            fieldWidth: el.getBoundingClientRect().width,
+            inputHeight: el.querySelector('input')!.getBoundingClientRect().height,
+          };
+        });
+        expect(ring.content).toBe('""');
+        expect(ring.border).toBe('solid');
+        expect(ring.width).toBeCloseTo(ring.fieldWidth, 0);
+        expect(ring.height).toBeCloseTo(ring.inputHeight, 0);
+      }
+    }
+  });
+
   test('the sample lesson runs the real calculator and links to pricing', async ({ page }) => {
     await page.goto('/preview');
     await expect(page.locator('.calc-panel')).toBeVisible();
@@ -184,13 +216,14 @@ test.describe('public pages', () => {
   });
 
   // CR-M9: a same-page hash link changes no pathname, so the menu has to close on the tap itself
-  test('the phone menu closes on a same-page hash link, which is marked as a location on its page', async ({ page }) => {
+  test('the phone menu closes on a same-page hash link without claiming an untracked current section', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Main' });
     // the links are hidden until the menu opens, and role queries skip hidden elements
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(nav.getByRole('link', { name: 'How it works' })).toHaveAttribute('aria-current', 'location');
+    await expect(nav.getByRole('link', { name: 'How it works' })).not.toHaveAttribute('aria-current', /.+/);
+    await expect(nav.getByRole('link', { name: "What's included" })).not.toHaveAttribute('aria-current', /.+/);
     await expect(nav.getByRole('link', { name: 'Sample lesson' })).not.toHaveAttribute('aria-current', /.+/);
     await nav.getByRole('link', { name: 'How it works' }).click();
     await expect(page).toHaveURL(/\/#how-it-works$/);
@@ -247,14 +280,16 @@ test.describe('public pages', () => {
     }
   });
 
-  // M8 step 4 in part: the support address resolves the contact placeholders; the postal address is still owed
-  test('the privacy and refund policies give the support address, and the terms still want a postal address', async ({ page }) => {
+  // M8 step 4 in part: the support address, the seller's name, and a temporary postal address. Prices and approvals stay open.
+  test('the privacy and refund policies give the support address, and the terms name the seller', async ({ page }) => {
     for (const path of ['/privacy', '/refunds', '/support']) {
       await page.goto(path);
       await expect(page.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');
     }
     await page.goto('/terms');
-    await expect(page.getByText('the legal name of the seller and a postal address')).toBeVisible();
+    await expect(page.getByText('Brian Pitts').first()).toBeVisible();
+    await expect(page.getByText('The postal address is synthetic temp address.')).toBeVisible();
+    await expect(page.getByText('the legal name of the seller and a postal address')).toHaveCount(0);
     await page.goto('/updates');
     await expect(page.getByText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.')).toBeVisible();
   });

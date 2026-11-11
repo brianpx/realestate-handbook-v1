@@ -12,17 +12,25 @@ export function ChoiceDrill({ stateKey, noun, items }: { stateKey: string; noun:
   const [picked, setPicked] = useState<number | null>(null);
   const [done, setDone] = useState(false);
   const nextRef = useRef<HTMLButtonElement>(null);
+  const promptRef = useRef<HTMLQuoteElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const focusTransition = useRef(false);
+  useEffect(() => {
+    if (!focusTransition.current) return;
+    focusTransition.current = false;
+    (done ? resultRef.current : promptRef.current)?.focus();
+  }, [index, done]);
   useEffect(() => { if (picked !== null) nextRef.current?.focus(); }, [picked]);
 
   if (done) {
     const best = typeof saved.best === 'number' ? saved.best : correct;
     return (
       <div className="drill">
-        <div className="drill-score">{correct} of {items.length} correct</div>
+        <div ref={resultRef} tabIndex={-1} className="drill-score">{correct} of {items.length} correct</div>
         <p>{correct === items.length ? 'Clean sweep. Reread the chapter section if any of these felt like a guess.' : 'Reread the explanations for the ones you missed, then run it again.'}</p>
         <p className="calc-note">Your best score on this device: {best} of {items.length}.</p>
         <div className="script-actions">
-          <button type="button" className="btn-mini" onClick={() => { setIndex(0); setCorrect(0); setPicked(null); setDone(false); }}>Try again</button>
+          <button type="button" className="btn-mini" onClick={() => { focusTransition.current = true; setIndex(0); setCorrect(0); setPicked(null); setDone(false); }}>Try again</button>
         </div>
       </div>
     );
@@ -39,6 +47,7 @@ export function ChoiceDrill({ stateKey, noun, items }: { stateKey: string; noun:
     if (i === item.answer) setCorrect(c => c + 1);
   };
   const advance = () => {
+    focusTransition.current = true;
     if (last) {
       updateWidget(stateKey, w => { w.best = Math.max(typeof w.best === 'number' ? w.best : 0, correct); });
       setDone(true);
@@ -52,7 +61,7 @@ export function ChoiceDrill({ stateKey, noun, items }: { stateKey: string; noun:
     <div className="drill">
       <div className="drill-progress">{noun} {index + 1} of {items.length} · {correct} correct so far</div>
       {item.tag && <span className="drill-tag">{item.tag}</span>}
-      <blockquote className="drill-prompt">{item.prompt}</blockquote>
+      <blockquote ref={promptRef} tabIndex={-1} className="drill-prompt">{item.prompt}</blockquote>
       <div className="drill-options" role="group" aria-label={item.question || 'Choose one'}>
         {item.options.map((label, i) => (
           <button

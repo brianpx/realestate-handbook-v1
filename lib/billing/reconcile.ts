@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { Actor } from '@/lib/audit';
 import { unchanged } from '@/lib/audit';
-import { mirrorFromOrder, sendReadyLinkTo, type ProcessDeps } from './process-event';
+import { mirrorFromOrder, orderDates, sendReadyLinkTo, type ProcessDeps } from './process-event';
 import { recordSnapshot, UPGRADE_PRODUCT_KEY, type BillingRecord } from './types';
 import { decideGrant, UPGRADE_HELD_NOTE } from './upgrade';
 
@@ -115,10 +115,8 @@ async function mirrorRecord(deps: ReconcileDeps, record: BillingRecord, actor: A
   const mapped = await deps.adapter.fetch({ type, id: record.providerObjectId }, deps.fetchImpl);
   if (mapped.outcome !== 'order') return null;
   const order = mapped.order;
-  const refunding = order.grant === 'revoke';
-  // A record already refunded keeps its dates, so re-reading it changes nothing and writes no audit row.
-  const settled = record.status === 'refunded';
   const decided = await decideGrant(deps.store, order, record.userId, order.grant, now);
+  const dates = orderDates(order, record, now);
   const result = await deps.store.commitMirror(mirrorFromOrder(order, {
     at: now,
     lastEventAt: order.updatedAt ?? now,
@@ -126,8 +124,9 @@ async function mirrorRecord(deps: ReconcileDeps, record: BillingRecord, actor: A
     grant: decided.grant,
     notes: decided.held ? UPGRADE_HELD_NOTE : null,
     revokeReason: order.revokeReason,
-    accessEndsAt: refunding ? (settled && record.accessEndsAt) || now : decided.held ? record.accessEndsAt ?? now : order.accessEndsAt,
-    refundedAt: refunding ? (settled && record.refundedAt) || now : order.refundedAt,
+    ...dates,
+    // A held upgrade has no access, and keeps the day that was first written so a re-read changes nothing.
+    accessEndsAt: decided.held ? record.accessEndsAt ?? now : dates.accessEndsAt,
     actor,
   }));
   return result.applied ? result.record : null;

@@ -35,9 +35,10 @@ export async function migrate(url: string, dir = MIGRATIONS_DIR, log: (line: str
   const sql = neon(url);
   await sql.query('create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())');
   const applied = (await sql.query('select name from schema_migrations')).map(row => String((row as { name: unknown }).name));
-  const files = pending(migrationFiles(await readdir(dir)), applied);
+  // turbopackIgnore: importing refusalReason must not trace the whole project into the server bundle.
+  const files = pending(migrationFiles(await readdir(/*turbopackIgnore: true*/ dir)), applied);
   for (const file of files) {
-    const statements = splitStatements(await readFile(path.join(dir, file), 'utf8'));
+    const statements = splitStatements(await readFile(/*turbopackIgnore: true*/ path.join(dir, file), 'utf8'));
     const queries = [
       sql.query(`select pg_advisory_xact_lock(${LOCK_KEY})`),
       ...statements.map(s => sql.query(s)),

@@ -90,7 +90,7 @@ describe('the live offer', () => {
     expect(checkoutUrlFor('basic')).toBeNull();
     expect(checkoutUrlFor('pro')).toBeNull();
   });
-  // the owner's 9 November 2026 inputs (OD-20, OD-23): the terms and the support address, but no price, checkout or postal address
+  // OD-20 and OD-23: the terms, the support address, and a temporary seller name and postal address. No price or checkout.
   it('has published the two terms and the support address', () => {
     expect(OFFER.accessTerm).toBe('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.');
     expect(OFFER.updatesByPlan.basic).toBe('Corrections and improvements to the chapters and essential tools of edition 1.0 are included; a future edition is a separate purchase at a discount for existing buyers.');
@@ -100,9 +100,9 @@ describe('the live offer', () => {
     expect(termPublished('updatesTerm')).toBe(true);
     expect(termPublished('supportEmail')).toBe(true);
   });
-  it('still has no postal address or business name', () => {
-    expect(OWNER.postalAddress).toBeNull();
-    expect(OWNER.businessName).toBeNull();
+  it('names the seller and shows the temporary postal address', () => {
+    expect(OWNER.businessName).toBe('Brian Pitts');
+    expect(OWNER.postalAddress).toBe('synthetic temp address');
   });
 
   it('builds a signed-in checkout link from the env url and stays null while that url is unset', () => {

@@ -18,7 +18,7 @@ test.describe('signed out', () => {
   test('the handbook, the account page and the search index send you to sign in; the sample stays open', async ({ page, request }) => {
     await page.goto('/handbook/ch1');
     await expect(page).toHaveURL(`${BASE_URL}/signup?next=%2Fhandbook%2Fch1`);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Open the handbook with a link we email you.');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Sign in to the handbook');
     for (const path of ['/handbook', '/account', '/search-index.json']) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status(), path).toBe(307);
@@ -32,7 +32,7 @@ test.describe('signed out', () => {
     await page.goto('/signup?next=/handbook/ch2');
     await page.getByLabel('Email address').fill(email.toUpperCase());
     await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
-    await expect(page.getByText('Check your inbox.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Check your email', exact: true })).toBeVisible();
 
     const link = await linkFor(request, email);
     expect(link.startsWith(`${BASE_URL}/auth/verify?token=`)).toBe(true);
@@ -97,15 +97,15 @@ test.describe('signed out', () => {
     await expect(page.locator('form[data-source="final"]').getByLabel('Email address')).toBeFocused();
   });
 
-  test('/signin is the same form with return-visit copy, and the home page welcomes a signed-in reader back', async ({ page, request }) => {
+  test('/signin serves new and returning readers, and the home page welcomes a signed-in reader back', async ({ page, request }) => {
     const email = fresh();
     await page.goto('/signin');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome back.');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Sign in to the handbook');
     const form = page.locator('form[data-source="signin"]');
     await expect(form).toHaveAttribute('data-ready', 'true');
     await form.getByLabel('Email address').fill(email);
     await form.getByRole('button', { name: 'Email me a sign-in link' }).click();
-    await expect(page.getByText('Check your inbox.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Check your email', exact: true })).toBeVisible();
     await page.goto(await linkFor(request, email));
     await expect(page).toHaveURL(`${BASE_URL}/handbook`);
 
@@ -127,7 +127,9 @@ test.describe('signed out', () => {
     const body = { email: 'a@b.co', termsVersion: 'v1', source: 'hero' };
     expect((await request.post('/api/auth/request-link', { data: body })).status()).toBe(403); // no Origin
     expect((await request.post('/api/auth/request-link', { data: body, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
-    expect((await request.post('/api/auth/verify', { form: { token: 'x'.repeat(43) }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
+    const refused = await request.post('/api/auth/verify', { form: { token: 'x'.repeat(43) }, headers: { Origin: 'https://evil.example' }, maxRedirects: 0 });
+    expect(refused.status()).toBe(303);
+    expect(refused.headers().location).toBe('/auth/verify?error=1');
     expect((await request.get('/api/auth/request-link')).status()).toBe(405);
   });
 });
