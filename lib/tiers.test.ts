@@ -22,11 +22,13 @@ describe('tiers', () => {
     expect(support).toBeDefined();
     expect(support?.values).toEqual({ free: false, basic: true, pro: true });
   });
-  // OD-20: a future edition is a separate purchase, so no tier can promise "this edition and the next"
-  it('promises both paid tiers the same updates', () => {
-    const updates = FEATURES.find(f => f.label === 'Updates');
-    expect(updates).toBeDefined();
-    expect(updates?.values.pro).toBe('Corrections and updates to this edition');
-    expect(updates?.values.basic).toBe(updates?.values.pro);
+  // 11 November 2026: corrections reach both paid plans; new chapters, tools and editions are Pro's, and Basic gets a discount on an edition
+  it('gives both paid plans corrections and only Pro the additions and later editions', () => {
+    const corrections = FEATURES.find(f => f.label === 'Corrections and improvements to edition 1.0');
+    expect(corrections?.values).toEqual({ free: false, basic: true, pro: true });
+    const additions = FEATURES.find(f => f.label === 'New chapters, tools and editions');
+    expect(additions?.values).toEqual({ free: false, basic: 'Discount on a new edition', pro: 'Included' });
+    expect(corrections?.publishedWhen).toBe('updatesTerm');
+    expect(additions?.publishedWhen).toBe('updatesTerm');
   });
 });

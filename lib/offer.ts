@@ -24,15 +24,29 @@ export const OWNER: {
   postalAddress: null,
 };
 
+/**
+ * Days after a purchase in which it can be refunded in full, for any reason (owner decision, 11 November 2026).
+ * Each purchase has its own window, counted from its own payment date.
+ */
+export const REFUND_DAYS = 14;
+
+// What each paid plan gets after edition 1.0 ships (owner decision, 11 November 2026). "Addition" means a new chapter,
+// tool or script; "edition" means a re-write of the book under a new edition number.
+const BASIC_UPDATES = 'Corrections and improvements to the chapters and essential tools of edition 1.0 are included; a future edition is a separate purchase at a discount for existing buyers.';
+const PRO_UPDATES = 'Everything in Basic, plus every new chapter, tool and script added to the handbook and every future edition, at no further charge, for as long as the handbook is published.';
+
 // Prices and checkout links live with their tiers in lib/tiers.ts.
 export const OFFER: {
   /** One sentence on how long access lasts (OD-23), shown on the pricing and updates pages. */
   accessTerm: string | null;
-  /** One sentence on what updates are included (OD-20), shown beside it. */
+  /** What updates are included for both plans in one line (OD-20), shown beside it. */
   updatesTerm: string | null;
+  /** The same terms by plan, for the pages that set them out one under the other. */
+  updatesByPlan: { basic: string; pro: string };
 } = {
-  accessTerm: 'Lifetime access to edition 1.0 for one person, not transferable.',
-  updatesTerm: 'Corrections and updates to edition 1.0 are included; a future edition is a separate purchase with a discount for existing buyers.',
+  accessTerm: 'Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.',
+  updatesTerm: `Basic: ${BASIC_UPDATES} Pro: ${PRO_UPDATES}`,
+  updatesByPlan: { basic: BASIC_UPDATES, pro: PRO_UPDATES },
 };
 
 // A policy page shows a "draft for owner review" notice until its status is changed to 'approved' here.

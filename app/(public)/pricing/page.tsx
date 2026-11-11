@@ -4,7 +4,7 @@ import { PageHead } from '@/components/site/Draft';
 import { PricingTable } from '@/components/site/PricingTable';
 import { ToolIndex } from '@/components/site/ToolIndex';
 import { pricingFaqs } from '@/content/site/faq';
-import { OFFER, OWNER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
+import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 
 export const metadata: Metadata = {
@@ -42,8 +42,14 @@ export default function PricingPage() {
             <div><dt>Price</dt><dd>{open ? paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join('; ') : NOT_PUBLISHED}</dd></div>
             <div><dt>Access</dt><dd>{OFFER.accessTerm ?? NOT_PUBLISHED}</dd></div>
             <div><dt>Updates</dt><dd>{OFFER.updatesTerm ?? NOT_PUBLISHED}</dd></div>
-            <div><dt>Refunds</dt><dd>{POLICY_STATUS.refunds === 'approved' ? <Link href="/refunds">Read the refund policy</Link> : NOT_PUBLISHED}</dd></div>
-            <div><dt>Devices</dt><dd>Works in the browser on a phone, tablet or computer, with nothing to install. Progress is saved per browser on each device with no sync; move it with a backup file.</dd></div>
+            <div>
+              <dt>Refunds</dt>
+              <dd>
+                {REFUND_DAYS} days from each purchase, for any reason.{' '}
+                {POLICY_STATUS.refunds === 'approved' ? <Link href="/refunds">Read the refund policy</Link> : 'The full policy is a draft awaiting approval.'}
+              </dd>
+            </div>
+            <div><dt>Devices</dt><dd>Use it in the browser on any phone, tablet or computer, with nothing to install. Your purchase follows your account, so you can sign in on every device you own. Your progress does not follow you: it is saved in each browser separately and is not sent to a server. To move it to another device or browser, download a backup file on the first and restore it on the second.</dd></div>
             <div>
               <dt>Support</dt>
               <dd>{OWNER.supportEmail ? <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a> : NOT_PUBLISHED}. Self-help is on the <Link href="/support">support page</Link>.</dd>

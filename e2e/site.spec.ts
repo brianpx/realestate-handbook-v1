@@ -78,18 +78,20 @@ test.describe('public pages', () => {
     await expect(table.getByRole('button', { name: 'Not on sale yet' })).toHaveCount(2);
     await expect(table.locator('a[href^="https://"]')).toHaveCount(0);
     await expect(table.getByRole('link', { name: 'Try the sample lesson' })).toHaveAttribute('href', '/preview');
-    // the update and support rows carry the terms the owner published on 9 Nov 2026 (lib/offer.ts, OD-20, OD-23); a
-    // future edition is a separate purchase, so neither paid plan promises the next one
+    // the update and support rows carry the owner's terms (lib/offer.ts, OD-20, OD-23, 11 Nov 2026): both plans get
+    // corrections, only Pro is promised new chapters, tools and editions
     await expect(table.getByText('Not published yet')).toHaveCount(0);
-    await expect(table.getByText('Corrections and updates to this edition').first()).toBeVisible();
+    await expect(table.getByText('Corrections and improvements to edition 1.0').first()).toBeVisible();
+    await expect(table.getByText('Discount on a new edition').first()).toBeVisible();
     await expect(table.getByText('This edition and the next')).toHaveCount(0);
     // email support is the same plain cell on both paid plans: no priority tier was decided (decision log, 9 Nov)
     await expect(table.getByText('Priority')).toHaveCount(0);
     const terms = page.locator('section[aria-labelledby="termsTitle"]');
-    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, not transferable.');
+    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.');
+    await expect(terms).toContainText('14 days from each purchase, for any reason');
     await expect(terms.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');
     await expect(terms).toContainText('Price');
-    await expect(terms).toContainText('Not published yet'); // the price and the refund policy
+    await expect(terms).toContainText('Not published yet'); // the price
 
     await page.setViewportSize({ width: 390, height: 800 });
     await expect(table.getByRole('tab', { name: 'Basic' })).toHaveAttribute('aria-selected', 'true');
@@ -254,7 +256,7 @@ test.describe('public pages', () => {
     await page.goto('/terms');
     await expect(page.getByText('the legal name of the seller and a postal address')).toBeVisible();
     await page.goto('/updates');
-    await expect(page.getByText('Lifetime access to edition 1.0 for one person, not transferable.')).toBeVisible();
+    await expect(page.getByText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.')).toBeVisible();
   });
 
   // M7 step 7: the strictly necessary cookies are disclosed by name (lib/auth/cookie.ts), with no banner to go with them
