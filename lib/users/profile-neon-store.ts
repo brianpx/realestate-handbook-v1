@@ -38,14 +38,19 @@ export class NeonProfileStore implements ProfileStore {
 
   async save(userId: string, f: ProfileFields, source: ProfileSource, at: Date) {
     const atIso = at.toISOString();
-    // every editable column is written, so a cleared field becomes null; the administrator's and the survey's columns are not named
+    // Recheck and lock the active account in the write itself: a request authorized before account deletion
+    // must not recreate personal data after that deletion commits. Every cleared editable field becomes null.
     const rows = await this.sql`
+      with active_user as (
+        select id from users where id = ${userId} and status = 'active' for update
+      )
       insert into realtor_profiles (user_id, professional_role, brokerage_name, team_name, license_jurisdiction, license_number,
         license_status, year_first_licensed, primary_market_city, primary_market_state, phone, nar_member, nar_member_since,
         profile_source, created_at, updated_at)
-      values (${userId}, ${f.professionalRole}, ${f.brokerageName}, ${f.teamName}, ${f.licenseJurisdiction}, ${f.licenseNumber},
+      select id, ${f.professionalRole}, ${f.brokerageName}, ${f.teamName}, ${f.licenseJurisdiction}, ${f.licenseNumber},
         ${f.licenseStatus}, ${f.yearFirstLicensed}, ${f.primaryMarketCity}, ${f.primaryMarketState}, ${f.phone}, ${f.narMember}, ${f.narMemberSince},
-        ${source}, ${atIso}, ${atIso})
+        ${source}, ${atIso}, ${atIso}
+      from active_user where true
       on conflict (user_id) do update set
         professional_role = excluded.professional_role,
         brokerage_name = excluded.brokerage_name,

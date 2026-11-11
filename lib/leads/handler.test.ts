@@ -113,8 +113,8 @@ describe('confirmation', () => {
     const { confirm, store } = setup();
     expect(await confirm('x'.repeat(43))).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(await confirm('short')).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
-    expect((await confirm('x'.repeat(43), { origin: null })).status).toBe(403);
-    expect((await confirm('x'.repeat(43), { origin: 'https://evil.example' })).status).toBe(403);
+    expect(await confirm('x'.repeat(43), { origin: null })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
+    expect(await confirm('x'.repeat(43), { origin: 'https://evil.example' })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(store.leads).toHaveLength(0);
   });
   it('refuses a link older than a week, but still answers a confirmed one', async () => {

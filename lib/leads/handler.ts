@@ -95,9 +95,10 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
  * good link lands on the same success state as the first.
  */
 export async function handleConfirm(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
-  if (!req.origin || !deps.allowedOrigins.includes(req.origin)) return reply(403, 'forbidden');
+  // The confirm page is a form navigation. A refusal still lands on the failure card, not a JSON body.
+  if (!req.origin || !deps.allowedOrigins.includes(req.origin)) return redirect(CONFIRM_FAILED);
   if (!deps.store) return redirect(CONFIRM_FAILED);
-  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(CONFIRM_FAILED);
 
   const now = deps.now();
   try {
