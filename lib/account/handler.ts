@@ -14,9 +14,9 @@ export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
 const SIGN_IN = `${SIGN_IN_PATH}?next=${encodeURIComponent(ACCOUNT_PATH)}`;
 
-const reply = (status: number, error: string): AuthReply => ({ status, body: { ok: false, error } });
 const redirect = (location: string, headers: Record<string, string | string[]> = {}): AuthReply => ({ status: 303, headers: { Location: location, ...headers } });
 const originRefused = (req: AuthRequest, deps: AccountDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
+const UNAVAILABLE = `${ACCOUNT_PATH}?error=unavailable`;
 
 // The account routes are plain form posts from the account page, so they answer with redirects. The session is
 // read through lib/auth/request-user.ts, not the page's data-access layer; the profile routes
@@ -24,8 +24,9 @@ const originRefused = (req: AuthRequest, deps: AccountDeps) => !req.origin || !d
 
 /** "Sign out everywhere": every session of the reader's, this one included, is revoked, and the fact is logged. */
 export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
-  if (originRefused(req, deps)) return reply(403, 'forbidden');
-  if (!deps.stores) return reply(503, 'unavailable');
+  // A failed attempt leaves the reader signed in: no cookie is cleared, and the account page can be retried.
+  if (originRefused(req, deps)) return redirect(UNAVAILABLE);
+  if (!deps.stores) return redirect(UNAVAILABLE);
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
   try {
     const now = deps.now();
@@ -39,7 +40,7 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
     return redirect(SIGN_IN, cleared);
   } catch (err) {
     console.error('account: sign-out-all failed', err instanceof Error ? err.name : 'error');
-    return reply(503, 'unavailable');
+    return redirect(UNAVAILABLE);
   }
 }
 
@@ -50,9 +51,10 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
  * profile's cascade never fires, because the user row stays).
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
-  if (originRefused(req, deps)) return reply(403, 'forbidden');
-  if (!deps.stores) return reply(503, 'unavailable');
-  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  // A failed attempt leaves the reader signed in: no cookie is cleared, and nothing is deleted.
+  if (originRefused(req, deps)) return redirect(UNAVAILABLE);
+  if (!deps.stores) return redirect(UNAVAILABLE);
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(UNAVAILABLE);
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
   try {
     const now = deps.now();
@@ -82,6 +84,6 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     return redirect(GOODBYE_PATH, cleared);
   } catch (err) {
     console.error('account: delete failed', err instanceof Error ? err.name : 'error');
-    return reply(503, 'unavailable');
+    return redirect(UNAVAILABLE);
   }
 }

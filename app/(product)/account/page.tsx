@@ -170,6 +170,7 @@ export default async function AccountPage({ searchParams }: Props) {
 
       <h2 className="hb-h2" id="sessions">Where you are signed in</h2>
       <p>{liveSessions === 1 ? 'This is the only browser signed in to your account.' : `Your account is signed in on ${liveSessions} browsers or devices, this one included.`} A sign-in lasts 90 days from your last visit, or until you sign out.</p>
+      {error === 'unavailable' && <p className="setup-error" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
       <form method="post" action="/api/account/sign-out-all" className="account-form">
         <button type="submit" className="btn-nav btn-secondary">Sign out everywhere</button>
         <span className="setup-hint">Ends every sign-in, this one too. You get a fresh link by email next time.</span>
@@ -182,6 +183,7 @@ export default async function AccountPage({ searchParams }: Props) {
         Deleting removes your account, your profile and every sign-in, and then removes your entry from the mailing list (if that last step fails, write to us). Purchase records, if any, are kept for seven years for accounting, with no address on them.
         What you saved while reading is only in this browser, so clear this site's data there as well if you want it gone.
       </p>
+      {error === 'unavailable' && <p className="setup-error" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
       {error === 'confirm' && <p className="setup-error" role="alert">The address you typed did not match the one on this account. Nothing was deleted.</p>}
       <form method="post" action="/api/account/delete" className="account-form account-danger">
         <label htmlFor="confirmEmail">Type your email address to confirm</label>

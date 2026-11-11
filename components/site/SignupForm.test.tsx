@@ -1,8 +1,16 @@
 // @vitest-environment happy-dom
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it, vi } from 'vitest';
 import { SignupForm } from './SignupForm';
+
+it('disables the submit button before hydration so Enter cannot post a form body', () => {
+  const html = renderToStaticMarkup(<SignupForm source="signin" />);
+  const button = /<button\b([^>]*)>/.exec(html)?.[1] ?? '';
+  expect(button).toContain('type="submit"');
+  expect(button).toContain('disabled');
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 it('retains the address when reviewing a resend and does not send until explicitly submitted', async () => {
