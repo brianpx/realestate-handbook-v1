@@ -110,6 +110,10 @@ Status values: `not started`, `in progress`, `blocked` (name the blocker), `done
 | 2026-11-10 | Appendix D figure credit | Old Figures 6 and 7 (now 7.1 and 12.1) were drawn for this edition; the colophon stands (owner) | completion-plan session |
 | 2026-11-10 | `realestate-handbook.vercel.app` alias | Remove it: it serves an old deployment with the full site, outside the coming-soon switch. The owner runs the removal (the session's alias change was refused earlier) | completion-plan session |
 | 2026-11-10 | Who ran migrations 002 and 003 on production (M3) | Owner not sure; recorded as unconfirmed. The `schema_migrations` rows show each applied once on the production branch | completion-plan session |
+| 2026-11-11 | Prices (supersedes the OD-23 row of 9 Nov) | Basic $79, Pro **$129** (was $149), one-time (owner). Nothing is entered in `lib/tiers.ts`; `docs/plans/COMPLETION-PLAN.md` wave 3 item 2 still says $149 and is stale | offer-plan session |
+| 2026-11-11 | Basic to Pro upgrade | Basic owners pay Pro minus Basic ($50) to reach Pro, no expiry, covering the edition they bought; refunding Basic inside its window also revokes a live upgrade; an upgrade order from someone without a live Basic purchase is stored `unmatched` with no grant and reviewed by hand (owner). Design: `docs/plans/UPGRADE-PLAN.md`. Not built | offer-plan session |
+| 2026-11-11 | Refund window | 14 days from each purchase, any reason, counted per purchase (owner; the 7 days asked about was not chosen). One constant, `REFUND_DAYS` in `lib/offer.ts` | offer-plan session |
+| 2026-11-11 | Updates by plan (refines OD-20) | Basic: corrections and improvements to the chapters and essential tools of edition 1.0, and a discount on a future edition. Pro: also every new chapter, tool and script and every future edition, at no further charge, for as long as the handbook is published (owner approved the wording; a professional's read is still needed before the policies are approved). Note `PRODUCT_KEY` in `lib/billing/types.ts` says a later edition does not ride these grants; that must change for Pro before a second edition | offer-plan session |
 
 ## Step log (append-only)
 
