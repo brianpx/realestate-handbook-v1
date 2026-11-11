@@ -160,8 +160,8 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
           </>}
         </div>
       ) : (
-        // method and action are for the moment before hydration: Enter then posts to the route instead of putting
-        // the address in this page's URL
+        // method and action are the post target, but the button stays disabled until mount: Enter before hydration
+        // would post a form body, and the route accepts JSON only
         <form className={`signup-form${page ? ' pub-card' : ''}`} method="post" action="/api/auth/request-link" noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined}>
           <div className="signup-row">
             <div className="pub-field">
@@ -169,7 +169,7 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
               <input ref={inputRef} className="calc-input" type="email" id={`${id}-email`} name="email" autoComplete="email" inputMode="email" value={emailDraft} onChange={e => setEmailDraft(e.target.value)} placeholder="you@example.com" required aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
               {error && <p className="signup-error" id={`${id}-error`} role="alert"><CircleAlertIcon aria-hidden="true" />{error}</p>}
             </div>
-            <button type="submit" className="pub-btn pub-btn-primary" disabled={sending}>{sending ? 'Sending…' : buttonLabel}</button>
+            <button type="submit" className="pub-btn pub-btn-primary" disabled={!ready || sending}>{sending ? 'Sending…' : buttonLabel}</button>
           </div>
           <input ref={trapRef} type="text" name="_gotcha" tabIndex={-1} autoComplete="off" className="signup-trap" aria-hidden="true" />
           <label className="signup-optin" htmlFor={`${id}-notes`}>
