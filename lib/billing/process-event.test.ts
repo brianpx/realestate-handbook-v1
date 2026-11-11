@@ -8,10 +8,10 @@ import type { MailConfig } from '@/lib/leads/mail';
 import { tokenExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryUserStore } from '@/lib/users/store';
-import { LemonSqueezyAdapter, providerEventId } from './adapters/lemonsqueezy';
+import { LemonSqueezyAdapter, mapResource, providerEventId, type ProductOrder } from './adapters/lemonsqueezy';
 import { MemoryBillingStore } from './memory-store';
-import { processBillingWebhook, type ProcessDeps, type ProcessResult, type WebhookInput } from './process-event';
-import type { BillingThrowAfter } from './types';
+import { orderDates, processBillingWebhook, type ProcessDeps, type ProcessResult, type WebhookInput } from './process-event';
+import type { BillingRecord, BillingThrowAfter } from './types';
 
 const NOW = new Date('2026-11-10T12:05:00.000Z');
 const SECRET = 'test-webhook-secret';
@@ -233,6 +233,26 @@ describe('billing webhooks', () => {
     expect(h.sends()).toHaveLength(1);
   });
 
+  it('ends access when a paid order is later marked fraudulent, with a dispute date and no refund date', async () => {
+    const paid = order({}, { custom_data: undefined });
+    const flagged = order({ status: 'fraudulent', updated_at: '2026-11-10T12:06:00.000Z', role: 'admin' }, { custom_data: undefined });
+    let current: unknown = paid;
+    const h = harness(() => current);
+    expect(await h.process(sign(paid))).toEqual({ status: 200, outcome: 'processed' });
+    const user = h.users.users[0];
+    if (!user) throw new Error('expected a user');
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('member');
+    current = flagged;
+    expect(await h.process(sign(flagged))).toEqual({ status: 200, outcome: 'processed' });
+    expect(user.role).toBe('reader');
+    expect(user.status).toBe('active');
+    expect(h.access.grants).toHaveLength(1);
+    expect(h.access.grants[0]).toMatchObject({ revokedAt: NOW, revokeReason: 'chargeback' });
+    expect(h.store.records[0]).toMatchObject({ status: 'chargeback_lost', providerStatus: 'fraudulent', accessEndsAt: NOW, disputedAt: NOW, refundedAt: null });
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('preview');
+    expect(h.sends()).toHaveLength(1);
+  });
+
   it('does not set the ready flag when the send fails, and a retry then sends once', async () => {
     const body = order({}, { custom_data: undefined });
     const h = harness(() => body);
@@ -311,5 +331,44 @@ describe('billing webhooks', () => {
     expect(h.auth.tokens).toHaveLength(0);
     expect(h.store.records).toHaveLength(1);
     expect(h.store.events[0]?.status).toBe('failed');
+  });
+});
+
+describe('orderDates', () => {
+  const LATER = new Date(NOW.getTime() + 60 * 60 * 1000);
+  const mapped = (attributes: Record<string, unknown>): ProductOrder => {
+    const result = mapResource(order(attributes), NOW);
+    if (result.outcome !== 'order') throw new Error('expected an order');
+    return result.order;
+  };
+  const refund = mapped({ status: 'refunded', refunded: true, refunded_amount: 4321 });
+  const flag = mapped({ status: 'fraudulent' });
+
+  async function paidRecord(): Promise<BillingRecord> {
+    const body = order({}, { custom_data: undefined });
+    const h = harness(() => body);
+    await h.process(sign(body));
+    const record = h.store.records[0];
+    if (!record) throw new Error('expected a record');
+    return record;
+  }
+
+  it('dates a refund or a flag once, and a repeat read keeps the dates', async () => {
+    const paid = await paidRecord();
+    expect(orderDates(mapped({}), null, NOW)).toEqual({ accessEndsAt: null, refundedAt: null, disputedAt: null });
+    expect(orderDates(refund, paid, NOW)).toEqual({ accessEndsAt: NOW, refundedAt: NOW, disputedAt: null });
+    expect(orderDates(flag, null, NOW)).toEqual({ accessEndsAt: NOW, refundedAt: null, disputedAt: NOW });
+    const refunded: BillingRecord = { ...paid, status: 'refunded', accessEndsAt: NOW, refundedAt: NOW };
+    expect(orderDates(refund, refunded, LATER)).toEqual({ accessEndsAt: NOW, refundedAt: NOW, disputedAt: null });
+    const flagged: BillingRecord = { ...paid, status: 'chargeback_lost', accessEndsAt: NOW, disputedAt: NOW };
+    expect(orderDates(flag, flagged, LATER)).toEqual({ accessEndsAt: NOW, refundedAt: null, disputedAt: NOW });
+  });
+
+  it('keeps a dispute date through a later refund and a partial refund date through a later flag', async () => {
+    const paid = await paidRecord();
+    const flagged: BillingRecord = { ...paid, status: 'chargeback_lost', accessEndsAt: NOW, disputedAt: NOW };
+    expect(orderDates(refund, flagged, LATER)).toEqual({ accessEndsAt: NOW, refundedAt: LATER, disputedAt: NOW });
+    const partly: BillingRecord = { ...paid, status: 'partially_refunded', refundedAt: NOW };
+    expect(orderDates(flag, partly, LATER)).toEqual({ accessEndsAt: LATER, refundedAt: NOW, disputedAt: LATER });
   });
 });

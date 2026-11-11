@@ -99,6 +99,26 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     return () => phone.removeEventListener('change', onChange);
   }, [open, syncScrollLock]);
 
+  // The dropdown is absolutely positioned, so its own height does not affect this measurement.
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!open || !sidebar) return;
+    const measure = () => {
+      sidebar.style.setProperty('--overlay-top', `${sidebar.getBoundingClientRect().bottom}px`);
+      sidebar.style.setProperty('--overlay-height', `${window.visualViewport?.height ?? window.innerHeight}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(sidebar);
+    window.addEventListener('resize', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+    };
+  }, [open]);
+
   // Swipes are blocked everywhere except inside the open list, and there only while it can still move.
   useEffect(() => {
     let startY = 0;
@@ -137,9 +157,45 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     };
   }, [menuOpen]);
 
+  // The browser restores window scroll; retain the independently scrolling desktop reading panel too.
+  const readingPositions = useRef(new Map<string, number>());
+  const historyNavigation = useRef(false);
+  useEffect(() => {
+    const onPopState = () => { historyNavigation.current = true; };
+    // A deliberate link activation after a same-page history event starts a new navigation.
+    const onLink = (event: MouseEvent) => {
+      const link = (event.target as Element | null)?.closest('a[href]');
+      if (link) {
+        const main = document.getElementById('main-content');
+        if (main) readingPositions.current.set(window.location.pathname, main.scrollTop);
+        historyNavigation.current = false;
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    document.addEventListener('click', onLink, true);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      document.removeEventListener('click', onLink, true);
+    };
+  }, []);
+  useEffect(() => {
+    const main = document.getElementById('main-content');
+    if (!main) return;
+    const remember = () => {
+      // Next can scroll the newly committed route before React cleans up the previous route's listener.
+      // That automatic scroll must never overwrite the reading position of the page we just left.
+      if (window.location.pathname === pathname) readingPositions.current.set(pathname, main.scrollTop);
+    };
+    main.addEventListener('scroll', remember, { passive: true });
+    return () => main.removeEventListener('scroll', remember);
+  }, [pathname]);
+
   // Navigating closes the menu, resets the scroll position and tells screen readers where they are.
   const lastPath = useRef<string | null>(null);
   useEffect(() => {
+    // A quick Back can update the URL before a pending route effect runs. Do not consume that history
+    // event or reset scroll for an intermediate route that is no longer the browser's destination.
+    if (window.location.pathname !== pathname) return;
     setMenuOpen(false);
     // Unlock now, not on the next render: focusing the heading below is a no-op while the page is still inert.
     syncScrollLock(false);
@@ -147,7 +203,12 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     let hash = window.location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use it as typed */ }
     const target = hash ? document.getElementById(hash) : null;
-    if (target) {
+    const traversingHistory = historyNavigation.current;
+    historyNavigation.current = false;
+    if (traversingHistory) {
+      const main = document.getElementById('main-content');
+      if (main) main.scrollTop = readingPositions.current.get(pathname) ?? 0;
+    } else if (target) {
       target.scrollIntoView();
     } else {
       const main = document.getElementById('main-content');
@@ -192,8 +253,8 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
             className="menu-toggle"
             id="menuToggle"
             aria-label={searching ? 'Close search results' : 'Table of contents'}
-            aria-expanded={menuOpen}
-            aria-controls="navList"
+            aria-expanded={searching ? true : menuOpen}
+            aria-controls={searching ? 'searchResults' : 'navList'}
             onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
           >
             {open ? '✕' : '☰'}

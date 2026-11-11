@@ -60,26 +60,61 @@ const toBody = (v: Values): Record<ProfileField, unknown> => ({
 const isField = (name: unknown): name is ProfileField => typeof name === 'string' && FIELDS.includes(name as ProfileField);
 const moment = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
 
-type Props = { initial: ProfileFields; updatedAt: string | null };
+const DRAFT_KEY = 'handbook-profile-draft';
+const DRAFT_TTL = 30 * 60 * 1000;
+type Props = { initial: ProfileFields; updatedAt: string | null; accountId: string };
 
 // The account page's profile form: the editable columns of the realtor profile, saved whole with one PUT to
 // /api/account/profile, which stores them against the signed-in reader. Every field is optional. Rendered with the
 // server's values, so nothing is fetched on load; the button is disabled until hydration so an early Enter cannot
 // submit the boxes as a page query.
-export function ProfileForm({ initial, updatedAt }: Props) {
+export function ProfileForm({ initial, updatedAt, accountId }: Props) {
   const [values, setValues] = useState<Values>(() => toValues(initial));
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [savedAt, setSavedAt] = useState(updatedAt);
   const [ready, setReady] = useState(false);
   const busy = useRef(false);
+  const [draftNote, setDraftNote] = useState('');
+  const [reauthenticate, setReauthenticate] = useState(false);
   const noteRef = useRef<HTMLParagraphElement>(null);
 
-  useEffect(() => setReady(true), []);
+  useEffect(() => {
+    setReady(true);
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft: unknown = JSON.parse(raw);
+      if (typeof draft !== 'object' || draft === null || !('accountId' in draft) || draft.accountId !== accountId || !('expiresAt' in draft) || typeof draft.expiresAt !== 'number' || draft.expiresAt <= Date.now() || !('values' in draft) || typeof draft.values !== 'object' || draft.values === null) {
+        sessionStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      const saved = draft.values;
+      const recovered = toValues(initial);
+      for (const field of FIELDS) {
+        const value: unknown = Reflect.get(saved, field);
+        if (typeof value !== 'string' || value.length > 1000) return;
+        recovered[field] = value;
+      }
+      setValues(recovered);
+      setDraftNote('Your unsaved draft was recovered in this tab. Review it and save your profile.');
+    } catch {
+      setDraftNote('Draft recovery is unavailable in this browser.');
+    }
+  }, [accountId]);
   // the outcome is announced where the reader is looking, below the button
   useEffect(() => { if (state.kind === 'saved' || state.kind === 'error') noteRef.current?.focus(); }, [state]);
 
   const set = (field: ProfileField, value: string) => setValues(v => ({ ...v, [field]: value }));
   const fail = (message: string, fields: ProfileField[] = []) => setState({ kind: 'error', message, fields });
+
+  const keepDraft = () => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ accountId, expiresAt: Date.now() + DRAFT_TTL, values }));
+      setDraftNote('Your draft can be recovered in this tab for 30 minutes. Open the sign-in link in this same tab.');
+    } catch {
+      setDraftNote('This browser cannot keep your draft. Copy your changes before leaving to sign in.');
+    }
+  };
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,6 +130,9 @@ export function ProfileForm({ initial, updatedAt }: Props) {
       const body = (await res.json().catch(() => ({}))) as { error?: string; fields?: unknown; profile?: ProfileFields; updatedAt?: string | null };
       if (res.ok && body.profile) {
         setValues(toValues(body.profile));
+        setReauthenticate(false);
+        setDraftNote('');
+        try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* Storage may be blocked; recovery rejects expired drafts. */ }
         setSavedAt(body.updatedAt ?? null);
         setState({ kind: 'saved' });
         return;
@@ -102,7 +140,11 @@ export function ProfileForm({ initial, updatedAt }: Props) {
       if (res.status === 400 && body.error === 'invalid_profile') {
         const fields = Array.isArray(body.fields) ? body.fields.filter(isField) : [];
         fail(fields.length ? `Please check: ${fields.map(f => LABELS[f]).join(', ')}.` : 'Please check the form and try again.', fields);
-      } else if (res.status === 401) fail('Your sign-in has ended. Sign in again, then come back to this page.');
+      } else if (res.status === 401) {
+        setReauthenticate(true);
+        keepDraft();
+        fail('Your sign-in has ended. Sign in again, then come back to this page.');
+      }
       else if (res.status === 503) fail('Saving is not available right now. Please try again later.');
       else fail(GENERIC_ERROR);
     } catch {
@@ -119,13 +161,13 @@ export function ProfileForm({ initial, updatedAt }: Props) {
   const textInput = (field: ProfileField, extra: Partial<React.ComponentProps<'input'>> = {}) => (
     <div className="profile-field">
       <label htmlFor={id(field)}>{LABELS[field]}</label>
-      <input id={id(field)} name={field} className="account-input" type="text" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)} {...extra} />
+      <input id={id(field)} name={field} className="account-input" disabled={state.kind === 'saving'} type="text" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)} {...extra} />
     </div>
   );
   const select = (field: ProfileField, options: readonly string[], labels: Record<string, string>, none = 'Not given') => (
     <div className="profile-field">
       <label htmlFor={id(field)}>{LABELS[field]}</label>
-      <select id={id(field)} name={field} className="account-input" value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)}>
+      <select id={id(field)} name={field} className="account-input" disabled={state.kind === 'saving'} value={values[field]} onChange={e => set(field, e.target.value)} aria-invalid={invalid(field)} aria-describedby={describedBy(field)}>
         <option value="">{none}</option>
         {options.map(o => <option key={o} value={o}>{labels[o]}</option>)}
       </select>
@@ -134,6 +176,8 @@ export function ProfileForm({ initial, updatedAt }: Props) {
 
   return (
     <form className="account-form profile-form" noValidate onSubmit={submit} data-profile-form data-ready={ready || undefined}>
+      {draftNote && <p role="status">{draftNote}</p>}
+      {reauthenticate && <a href="/signin?next=%2Faccount" onClick={keepDraft}>Sign in again</a>}
       {select('professionalRole', PROFESSIONAL_ROLES, PROFESSIONAL_ROLE_LABELS)}
       {textInput('brokerageName', { autoComplete: 'organization', maxLength: 200 })}
       {textInput('teamName', { maxLength: 200 })}

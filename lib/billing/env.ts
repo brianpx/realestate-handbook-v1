@@ -3,6 +3,7 @@ import { authMailFromEnv, sendReadyLink } from '@/lib/auth/mail';
 import { tokenExpiry } from '@/lib/auth/session';
 import { authStoresFromEnv } from '@/lib/auth/store';
 import { hashSecret, newSecret } from '@/lib/auth/token';
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { lemonSqueezyFromEnv, type LemonSqueezyAdapter } from './adapters/lemonsqueezy';
 import { FileBillingStore } from './file-store';
 import { NeonBillingStore } from './neon-store';
@@ -11,8 +12,12 @@ import type { BillingStore } from './store';
 
 type Env = Record<string, string | undefined>;
 
-/** File storage is local and e2e only. A hosted deploy uses the database and ignores BILLING_STORE. */
+/**
+ * File storage is local and e2e only. A hosted deploy uses the database and ignores BILLING_STORE.
+ * A non-production deployment pointed at the production host returns none and does not open it.
+ */
 export function billingStoreFromEnv(env: Env): BillingStore | null {
+  if (productionDatabaseRefused(env)) return null;
   const hosted = env.VERCEL_ENV === 'preview' || env.VERCEL_ENV === 'production';
   if (!hosted && env.BILLING_STORE === 'file') {
     return new FileBillingStore(env.BILLING_STORE_PATH || '.data/billing.json', env.AUTH_STORE_PATH || '.data/auth.json');

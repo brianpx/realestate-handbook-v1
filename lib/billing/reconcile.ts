@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { Actor } from '@/lib/audit';
 import { unchanged } from '@/lib/audit';
-import { mirrorFromOrder, sendReadyLinkTo, type ProcessDeps } from './process-event';
+import { mirrorFromOrder, orderDates, sendReadyLinkTo, type ProcessDeps } from './process-event';
 import { recordSnapshot, type BillingRecord } from './types';
 
 /** A received row this old was never finished. The next delivery, or this pass, may claim it again. */
@@ -114,17 +114,13 @@ async function mirrorRecord(deps: ReconcileDeps, record: BillingRecord, actor: A
   const mapped = await deps.adapter.fetch({ type, id: record.providerObjectId }, deps.fetchImpl);
   if (mapped.outcome !== 'order') return null;
   const order = mapped.order;
-  const refunding = order.grant === 'revoke';
-  // A record already refunded keeps its dates, so re-reading it changes nothing and writes no audit row.
-  const settled = record.status === 'refunded';
   const result = await deps.store.commitMirror(mirrorFromOrder(order, {
     at: now,
     lastEventAt: order.updatedAt ?? now,
     userId: record.userId,
     grant: order.grant,
     revokeReason: order.revokeReason,
-    accessEndsAt: refunding ? (settled && record.accessEndsAt) || now : order.accessEndsAt,
-    refundedAt: refunding ? (settled && record.refundedAt) || now : order.refundedAt,
+    ...orderDates(order, record, now),
     actor,
   }));
   return result.applied ? result.record : null;

@@ -20,8 +20,10 @@ export const OWNER: {
 } = {
   author: null,
   supportEmail: 'support@findnurturekeep.com',
-  businessName: null,
-  postalAddress: null,
+  businessName: 'Brian Pitts',
+  // Stand-in until a PO box, virtual mailbox, or registered-agent address replaces it.
+  // It is shown on the site and in local notes mail. SendGrid still requires LEAD_MAILING_ADDRESS.
+  postalAddress: 'synthetic temp address',
 };
 
 /**

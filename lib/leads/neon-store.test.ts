@@ -105,4 +105,21 @@ describe('NeonLeadStore', () => {
       { id: 'u-1', email: 'a@b.co', source: 'gate', createdAt: new Date('2026-11-02T12:00:00Z'), consentVersion: 'v1', emailStatus: null, confirmedAt: null },
     ]);
   });
+  it('claims confirmation delivery atomically only while unconfirmed and retryable', async () => {
+    const { sql, calls } = fake([{ id: 'u-1' }], []);
+    const store = new NeonLeadStore(sql);
+    const at = new Date('2026-11-10T12:00:00Z');
+    const retryBefore = new Date('2026-11-10T11:59:00Z');
+    expect(await store.claimConfirmation('u-1', 'new-hash', lead.confirmExpiresAt, at, retryBefore)).toBe(true);
+    expect(await store.claimConfirmation('u-1', 'other-hash', lead.confirmExpiresAt, at, retryBefore)).toBe(false);
+    expect(calls[0]!.text).toContain('where id = ? and confirmed_at is null');
+    expect(calls[0]!.text).toContain("email_status in ('failed', 'skipped') or confirm_token_expires_at <= ?");
+    expect(calls[0]!.text).toContain('confirm_delivery_started_at is null or confirm_delivery_started_at <= ?');
+    expect(calls[0]!.values).toEqual(['new-hash', lead.confirmExpiresAt.toISOString(), at.toISOString(), 'u-1', at.toISOString(), retryBefore.toISOString()]);
+  });
+  it('qualifies completion by token hash so an obsolete sender cannot change its successor', async () => {
+    const { sql, calls } = fake([]);
+    await new NeonLeadStore(sql).completeConfirmation('u-1', 'claim-hash', 'sent');
+    expect(calls[0]).toEqual({ text: 'update leads set email_status = ? where id = ? and confirm_token_hash = ?', values: ['sent', 'u-1', 'claim-hash'] });
+  });
 });

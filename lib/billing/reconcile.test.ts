@@ -169,6 +169,25 @@ describe('reconcileBilling', () => {
     expect(h.access.audit).toHaveLength(audits);
   });
 
+  it('ends access for an order marked fraudulent that no webhook reported, and a second read changes nothing', async () => {
+    let body = order();
+    const h = harness(() => body);
+    const user = await h.store.createReader('buyer@e2e.test', NOW);
+    await h.store.commitMirror(pending(user.id));
+    await reconcileBilling(h.deps);
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('member');
+    body = order({ status: 'fraudulent', updated_at: '2026-11-10T12:06:00.000Z' });
+    await reconcileBilling(h.deps);
+    expect(h.access.grants[0]).toMatchObject({ revokedAt: NOW, revokeReason: 'chargeback' });
+    expect(h.store.records[0]).toMatchObject({ status: 'chargeback_lost', disputedAt: NOW, accessEndsAt: NOW, refundedAt: null });
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('preview');
+    const audits = h.access.audit.length;
+    const later: ReconcileDeps = { ...h.deps, now: () => new Date(NOW.getTime() + 60 * 60_000) };
+    expect(await resyncUserRecords(later, user.id, { kind: 'admin', userId: null })).toEqual({ changed: false });
+    expect(h.store.records[0]).toMatchObject({ disputedAt: NOW, accessEndsAt: NOW });
+    expect(h.access.audit).toHaveLength(audits);
+  });
+
   it('nulls payloads older than 90 days and deletes expired auth rows', async () => {
     const h = harness(() => order());
     const kept = await h.store.claimEvent({

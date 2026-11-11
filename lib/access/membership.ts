@@ -1,5 +1,5 @@
 import { grantLive } from './entitlement';
-import type { AccessStore } from './store';
+import type { AccessStore, MembershipProjection } from './store';
 import type { Grant, Membership } from './types';
 
 // Purchases and subscriptions are shown ahead of complimentary and promo grants; within a kind the one that runs
@@ -18,30 +18,36 @@ export function currentGrant(grants: Grant[], now: Date): Grant | null {
  * is active, any grant at all is lapsed, nothing is none. The suspension triple is the only hand-written part and
  * is carried over unchanged. Enforcement never reads `status`; a stale projection changes nothing a reader can open.
  */
-export function projectMembership(userId: string, grants: Grant[], existing: Membership | null, now: Date): Membership {
+function projectGrants(userId: string, grants: Grant[], now: Date): MembershipProjection {
   const current = currentGrant(grants, now);
-  const suspended = existing?.suspendedAt ?? null;
   return {
     userId,
-    status: suspended ? 'suspended' : current ? 'active' : grants.length > 0 ? 'lapsed' : 'none',
+    status: current ? 'active' : grants.length > 0 ? 'lapsed' : 'none',
     tier: current?.tier ?? null,
     startedAt: current?.startsAt ?? null,
     endsAt: current?.endsAt ?? null,
     currentGrantId: current?.id ?? null,
     complimentary: current !== null && !PAID.has(current.kind),
-    suspendedAt: suspended,
-    suspendedBy: existing?.suspendedBy ?? null,
-    suspendReason: existing?.suspendReason ?? null,
     updatedAt: now,
   };
 }
 
-/** Rewrites the projection from the grants on file. Run after every grant change, and lazily when a read finds it stale. */
+export function projectMembership(userId: string, grants: Grant[], existing: Membership | null, now: Date): Membership {
+  const projection = projectGrants(userId, grants, now);
+  const suspended = existing?.suspendedAt ?? null;
+  return {
+    ...projection,
+    status: suspended ? 'suspended' : projection.status,
+    suspendedAt: suspended,
+    suspendedBy: existing?.suspendedBy ?? null,
+    suspendReason: existing?.suspendReason ?? null,
+  };
+}
+
+/** Refreshes derived grant fields; the store retains the suspension current at the moment of the write. */
 export async function recomputeMembership(store: AccessStore, userId: string, now: Date): Promise<Membership> {
-  const [grants, existing] = await Promise.all([store.listGrants(userId), store.findMembership(userId)]);
-  const next = projectMembership(userId, grants, existing, now);
-  await store.saveMembership(next);
-  return next;
+  const grants = await store.listGrants(userId);
+  return store.saveMembership(projectGrants(userId, grants, now));
 }
 
 /** True when the cached row says active but its grant has run out, so the next admin list would mislead. */
