@@ -105,11 +105,23 @@ test.describe('public pages', () => {
   test('the hero calculator uses the Chapter 1 arithmetic and flags bad input', async ({ page }) => {
     await page.goto('/');
     const stats = page.locator('.pub-stats');
-    await expect(stats.locator('b')).toHaveText(['13', '16', '3']); // 3.25 a day rounds to 3
+    await expect(stats.locator('b')).toHaveText(['13', '16', '3–4']); // 3.25 a day is shown as a range
+    await expect(page.locator('.pub-device-note')).toContainText('48 working weeks of 5 days each');
+    const breakdown = page.locator('.pub-calc-details');
+    await expect(breakdown.locator('table')).toBeHidden();
+    const toggle = page.getByRole('button', { name: 'How it’s calculated' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(breakdown.locator('table')).toBeVisible();
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['13', '39', '780', '16.25', '3.25']);
+    await page.keyboard.press('Escape');
+    await expect(toggle).toBeFocused();
     await page.getByLabel('Yearly income goal').fill('120000');
-    await expect(stats.locator('b')).toHaveText(['19', '24', '5']); // 19 closings; 23.75 a week and 4.75 a day, rounded
+    await expect(stats.locator('b')).toHaveText(['19', '24', '4–5']); // 19 closings; 23.75 a week and 4.75 a day
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['19', '57', '1,140', '23.75', '4.75']);
     await page.getByLabel('Yearly income goal').fill('');
     await expect(stats).toContainText('Enter both numbers');
+    await expect(breakdown).toHaveCount(0);
     // a signed-in reader is pointed at the chapter, not asked for an address
     await expect(page.locator('.pub-device-prompt').getByRole('link', { name: 'Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
     await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
