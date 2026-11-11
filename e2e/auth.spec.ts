@@ -127,7 +127,9 @@ test.describe('signed out', () => {
     const body = { email: 'a@b.co', termsVersion: 'v1', source: 'hero' };
     expect((await request.post('/api/auth/request-link', { data: body })).status()).toBe(403); // no Origin
     expect((await request.post('/api/auth/request-link', { data: body, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
-    expect((await request.post('/api/auth/verify', { form: { token: 'x'.repeat(43) }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
+    const refused = await request.post('/api/auth/verify', { form: { token: 'x'.repeat(43) }, headers: { Origin: 'https://evil.example' }, maxRedirects: 0 });
+    expect(refused.status()).toBe(303);
+    expect(refused.headers().location).toBe('/auth/verify?error=1');
     expect((await request.get('/api/auth/request-link')).status()).toBe(405);
   });
 });

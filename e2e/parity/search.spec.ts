@@ -127,7 +127,8 @@ test.describe('sidebar search', () => {
     await page.route('**/search-index.json', route => (fail ? route.fulfill({ status: 500, body: 'no' }) : route.continue()));
     await page.goto('/handbook/ch1');
     await page.getByLabel('Search the handbook').fill('crm');
-    await expect(page.locator('.search-empty')).toHaveText('Search could not load. Try again.');
+    await expect(page.locator('.search-empty')).toContainText('Search could not load.');
+    await expect(page.getByRole('button', { name: 'Retry search' })).toBeVisible();
     fail = false;
     await page.getByLabel('Search the handbook').fill('crm ');
     await page.getByLabel('Search the handbook').fill('crm');
