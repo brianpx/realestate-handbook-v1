@@ -109,6 +109,30 @@ describe('FileLeadStore', () => {
   });
 });
 
+describe('confirmation claims', () => {
+  it('lets one overlapping claim win, then ignores a late result after a successor, on file and in memory', async () => {
+    const at = new Date('2026-11-02T12:00:00Z');
+    const retryBefore = new Date(at.getTime() - 60_000);
+    const later = new Date(at.getTime() + 60_000);
+    const expires = new Date('2026-11-09T12:00:00Z');
+    for (const store of [new FileLeadStore(file), new MemoryLeadStore()]) {
+      const { id } = await store.insert(lead('a@b.co'));
+      const claimed = await Promise.all([
+        store.claimConfirmation(id, 'claim-a', expires, at, retryBefore),
+        store.claimConfirmation(id, 'claim-b', expires, at, retryBefore),
+      ]);
+      expect(claimed).toEqual([true, false]);
+      expect(await store.claimConfirmation(id, 'claim-c', expires, later, new Date(later.getTime() - 60_000))).toBe(true);
+      await store.completeConfirmation(id, 'claim-c', 'sent');
+      await store.completeConfirmation(id, 'claim-a', 'failed');
+      expect((await store.list())[0]!.emailStatus).toBe('sent');
+      expect(await store.confirm('claim-a', later)).toBe(false);
+      expect(await store.confirm('claim-c', later)).toBe(true);
+      expect(await store.claimConfirmation(id, 'claim-d', expires, later, new Date(later.getTime() - 60_000))).toBe(false);
+    }
+  });
+});
+
 describe('MemoryLeadStore', () => {
   it('lists leads newest first', async () => {
     const store = new MemoryLeadStore();

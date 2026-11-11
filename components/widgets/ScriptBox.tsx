@@ -20,6 +20,11 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
   const [playing, setPlaying] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(copyTimer.current), []);
+  useEffect(() => {
+    if (mode !== 'revealed') return;
+    bodyRef.current?.focus();
+    announce('Script revealed. Compare it with your own words below.');
+  }, [mode]);
 
   const saved = typeof scripts[storageKey] === 'string' ? (scripts[storageKey] as string) : '';
 
@@ -54,7 +59,7 @@ export function ScriptBox({ titleHtml, bodyHtml, storageKey, example }: { titleH
   return (
     <aside className={`box script${mode === 'practicing' ? ' practicing' : ''}`} data-widget="script-practice" tabIndex={-1}>
       <BoxTitle dangerouslySetInnerHTML={{ __html: titleHtml }} />
-      <blockquote className="script-body" ref={bodyRef} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+      <blockquote className="script-body" ref={bodyRef} tabIndex={-1} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       <div className="script-actions">
         <span className="interactive-pill"><span aria-hidden="true">◉ </span>INTERACTIVE</span>
         <button type="button" className="btn-mini" onClick={copy}>{copyLabel}</button>

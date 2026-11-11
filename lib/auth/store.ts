@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { NeonAccessStore } from '@/lib/access/neon-store';
 import type { AccessStore } from '@/lib/access/store';
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { sqlFromUrl } from '@/lib/db/sql';
 import { NeonUserStore } from '@/lib/users/neon-store';
 import type { UserStore } from '@/lib/users/store';
@@ -59,9 +60,11 @@ const fileStore = (file: string): FileAuthStore => {
 /**
  * Picks the stores from the environment: a database when DATABASE_URL is set, the throwaway file store only when
  * asked for by name and only outside a hosted deployment (its disk is ephemeral; see lib/leads/store.ts), otherwise
- * none (the routes then answer 503 and the handbook cannot be opened).
+ * none (the routes then answer 503 and the handbook cannot be opened). A non-production deployment whose
+ * DATABASE_URL is the production host is also none, and this function does not open that database.
  */
 export function authStoresFromEnv(env: Record<string, string | undefined>): AuthStores | null {
+  if (productionDatabaseRefused(env)) return null;
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
   if (env.AUTH_STORE === 'file' && !hosted) {
     const store = fileStore(env.AUTH_STORE_PATH ?? path.join(process.cwd(), '.data', 'auth.json'));
