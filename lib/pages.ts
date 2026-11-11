@@ -52,3 +52,21 @@ export const neighbors = (id: PageId): { prev: PageEntry | null; next: PageEntry
 // (lib/access/entitlement.ts). Changing the set is this line plus the /signup copy.
 export const FREE_PAGE_IDS: readonly PageId[] = ['cover', 'pref', 'ch1', 'ch7'];
 export const isFreePage = (id: PageId): boolean => FREE_PAGE_IDS.includes(id);
+
+export type LabelParts = { before: string; mark: string; after: string; title: string };
+/**
+ * A page label split around its number or letter, so a menu can set the mark in its own column:
+ * "5. Nurturing Leads" is 5 and "Nurturing Leads", "App D: Glossary" is D and "Glossary". The four pieces joined
+ * give the label back. Null for a page with no mark (the title page, the overview).
+ */
+export function labelParts(label: string): LabelParts | null {
+  const m = /^(App )?(\d+|[A-Z])(\. |: )(.+)$/.exec(label);
+  return m ? { before: m[1] ?? '', mark: m[2]!, after: m[3]!, title: m[4]! } : null;
+}
+
+/** A part heading as an eyebrow and a name: "PART IV: Nurture" is "Part IV" and "Nurture"; "APPENDICES" is "Reference" and "Appendices". */
+export function partParts(part: string): { eyebrow: string; name: string } {
+  const colon = part.indexOf(':');
+  if (colon < 0) return { eyebrow: 'Reference', name: part.charAt(0) + part.slice(1).toLowerCase() };
+  return { eyebrow: `Part ${part.slice(0, colon).replace(/^PART\s+/i, '')}`, name: part.slice(colon + 1).trim() };
+}

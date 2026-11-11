@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChapterList, ContinuePanel } from '@/components/handbook/HomePanels';
+import { ChapterList, ContinuePanel, HeroActions, ProgressCard } from '@/components/handbook/HomePanels';
 import { ProductCard } from '@/components/shell/ProductCard';
 import { pageOpen } from '@/lib/access/entitlement';
 import { requireViewer } from '@/lib/auth/dal';
@@ -24,56 +24,80 @@ const TOOLS = [
 export default async function HandbookHome() {
   const { entitlement } = await requireViewer();
   const locked = PAGE_IDS.filter(id => !pageOpen(entitlement, id));
+  const member = entitlement.level === 'member';
+  const paused = entitlement.level === 'preview' && entitlement.suspended;
   return (
     <ProductCard>
-      <p className="part-label">Your handbook</p>
-      <h1 className="hb-title">{BOOK_TITLE}</h1>
-      <p>A practical 90-day plan for your first year: find conversations, follow up on a plan, and keep clients so they send you the next ones. Work through it in order, and do each exercise the day you read the chapter.</p>
+      <div className="hb-home">
+        <section className="hb-block">
+          <div className="hb-hero">
+            <div className="hb-hero-text">
+              <h1 className="hb-title">{BOOK_TITLE}</h1>
+              <p className="hb-lead">A practical 90-day plan for your first year: find conversations, follow up on a plan, and keep clients so they send you the next ones. Work through it in order, and do each exercise the day you read the chapter.</p>
+              <HeroActions locked={locked} />
+            </div>
+            <ProgressCard />
+          </div>
 
-      {entitlement.level !== 'member' && (
-        <section className="hb-continue" aria-labelledby="freeSetTitle" data-free-set>
-          <h2 id="freeSetTitle">{entitlement.level === 'preview' && entitlement.suspended ? 'Your access is paused' : 'You are reading the free set'}</h2>
-          <p>
-            The overview, Chapter 1 and Chapter 7 are open in full, with their tools. The other chapters, the appendices and the guided setup are part of the paid handbook
-            {purchaseOpen() ? '.' : ', which is not on sale yet.'}
-          </p>
-          <div className="hb-actions">
-            <Link className="btn-nav hb-primary" href="/pricing">{purchaseOpen() ? 'See plans and buy' : 'Pricing and availability'}</Link>
-            <Link className="btn-mini" href={pageHref('ch1')}>Read Chapter 1</Link>
+          {!member && (
+            <div className="hb-notice" data-free-set>
+              <span className="hb-free">Free set</span>
+              <p>
+                <strong>{paused ? 'Your access is paused.' : 'You are reading the free set.'}</strong>{' '}
+                The overview, Chapter 1 and Chapter 7 are open in full, with their tools. The other chapters, the appendices and the guided setup are part of the paid handbook
+                {purchaseOpen() ? '.' : ', which is not on sale yet.'}
+              </p>
+              <Link href="/pricing">{purchaseOpen() ? 'See plans and buy' : 'Pricing and availability'}</Link>
+            </div>
+          )}
+
+          {member && <ContinuePanel />}
+        </section>
+
+        <section className="hb-block" aria-labelledby="howTitle">
+          <h2 id="howTitle">How to use the handbook</h2>
+          <ol className="hb-grid3" role="list">
+            <li className="hb-step">
+              <span className="hb-step-num" aria-hidden="true">1</span>
+              <h3>Do the guided setup once</h3>
+              <p>It gives you a daily number, two lead sources and a scheduled week. <Link href={`${HANDBOOK}/start`}>Start here</Link></p>
+            </li>
+            <li className="hb-step">
+              <span className="hb-step-num" aria-hidden="true">2</span>
+              <h3>Follow the first-week reading</h3>
+              <p>Chapters 1, 2 and 3 set your daily number, build your sphere list and set up your home base. The overview has the four-week reading plan.</p>
+            </li>
+            <li className="hb-step">
+              <span className="hb-step-num" aria-hidden="true">3</span>
+              <h3>Review every Friday</h3>
+              <p>Fill in the scorecard, check your pipeline and decide one thing to do differently next week.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section className="hb-block" aria-labelledby="toolsTitle">
+          <div className="hb-block-head">
+            <h2 id="toolsTitle">Tools</h2>
+            <Link className="hb-more" href={pageHref('app-e')}>See every interactive tool</Link>
+          </div>
+          <div className="hb-grid3">
+            {TOOLS.map(t => (
+              <a
+                key={t.widget}
+                className="hb-card"
+                href={pageHref(t.page)}
+                data-goto={t.page}
+                {...(locked.includes(t.page) ? {} : { 'data-widget': t.widget })}
+              >
+                <strong>{t.name}</strong>
+                <span>{t.task}</span>
+              </a>
+            ))}
           </div>
         </section>
-      )}
 
-      {entitlement.level === 'member' && <ContinuePanel />}
-
-      <h2 className="hb-h2">How to use the handbook</h2>
-      <ol className="hb-how">
-        <li><strong>Do the guided setup once.</strong> It gives you a daily number, two lead sources and a scheduled week. <Link href={`${HANDBOOK}/start`}>Start here</Link>.</li>
-        <li><strong>Follow the first-week reading.</strong> Chapters 1, 2 and 3 set your daily number, build your sphere list and set up your home base. The overview has the four-week reading plan.</li>
-        <li><strong>Review every Friday.</strong> Fill in the scorecard, check your pipeline and decide one thing to do differently next week.</li>
-      </ol>
-      <p>Everything you enter is saved in this browser on this device. See <Link href="/account">Account and saved progress</Link> to back it up or move it.</p>
-
-      <h2 className="hb-h2">Tools</h2>
-      <div className="hb-tools">
-        {TOOLS.map(t => (
-          <a
-            key={t.widget}
-            className="hb-tool"
-            href={pageHref(t.page)}
-            data-goto={t.page}
-            {...(locked.includes(t.page) ? {} : { 'data-widget': t.widget })}
-          >
-            <strong>{t.name}</strong>
-            <span>{t.task}</span>
-          </a>
-        ))}
+        <ChapterList locked={locked} />
       </div>
-      <p><Link href={pageHref('app-e')}>See every interactive tool</Link></p>
-
-      <h2 className="hb-h2">Chapters</h2>
-      <p><Link href={pageHref('cover')}>Title page</Link> · <Link href={pageHref('pref')}>Overview and plan</Link></p>
-      <ChapterList locked={locked} />
     </ProductCard>
   );
 }
