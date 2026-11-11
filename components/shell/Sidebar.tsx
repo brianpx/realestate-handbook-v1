@@ -253,8 +253,8 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
             className="menu-toggle"
             id="menuToggle"
             aria-label={searching ? 'Close search results' : 'Table of contents'}
-            aria-expanded={menuOpen}
-            aria-controls="navList"
+            aria-expanded={searching ? true : menuOpen}
+            aria-controls={searching ? 'searchResults' : 'navList'}
             onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
           >
             {open ? '✕' : '☰'}

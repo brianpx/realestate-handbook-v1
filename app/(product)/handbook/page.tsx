@@ -11,6 +11,7 @@ import { HANDBOOK, pageHref } from '@/lib/routes';
 export const metadata: Metadata = { title: 'Handbook home', alternates: { canonical: HANDBOOK } };
 
 // Tool shortcuts use the same data-goto links as Appendix E, so DeepLinks moves to the chapter and lands on the tool.
+// A locked chapter is the upsell card, which has no tool: omit data-widget so that landing is not announced as a miss.
 const TOOLS = [
   { page: 'ch1', widget: 'goal-calculator', name: 'Income goal calculator', task: 'Turn a yearly goal into a daily conversation target.' },
   { page: 'ch2', widget: 'lead-sources', name: 'Lead source comparison', task: 'Work out what each source costs you per closing.' },
@@ -56,7 +57,13 @@ export default async function HandbookHome() {
       <h2 className="hb-h2">Tools</h2>
       <div className="hb-tools">
         {TOOLS.map(t => (
-          <a key={t.widget} className="hb-tool" href={pageHref(t.page)} data-goto={t.page} data-widget={t.widget}>
+          <a
+            key={t.widget}
+            className="hb-tool"
+            href={pageHref(t.page)}
+            data-goto={t.page}
+            {...(locked.includes(t.page) ? {} : { 'data-widget': t.widget })}
+          >
             <strong>{t.name}</strong>
             <span>{t.task}</span>
           </a>

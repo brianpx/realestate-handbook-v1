@@ -101,10 +101,14 @@ test.describe('sidebar search', () => {
     await page.getByLabel('Search the handbook').fill('crm');
     await expect(toggle).toHaveText('✕');
     await expect(toggle).toHaveAttribute('aria-label', 'Close search results');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toHaveAttribute('aria-controls', 'searchResults');
     await expect(page.locator('html')).toHaveClass(/scroll-locked/);
     await toggle.click();
     await expect(page.getByLabel('Search the handbook')).toHaveValue('');
     await expect(toggle).toHaveText('☰');
+    await expect(toggle).toHaveAttribute('aria-label', 'Table of contents');
+    await expect(toggle).toHaveAttribute('aria-controls', 'navList');
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
     await expect(page.locator('#sidebar')).not.toHaveClass(/menu-open/);
   });
