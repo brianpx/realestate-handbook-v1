@@ -5,7 +5,7 @@ import type { Actor } from '@/lib/audit';
 import type { User } from '@/lib/users/types';
 import { providerEventId, withinEventWindow, type LemonSqueezyAdapter, type ParsedWebhook, type ProductOrder } from './adapters/lemonsqueezy';
 import type { BillingStore } from './store';
-import { BILLING_PROVIDER, PRODUCT_KEY, type GrantEffect, type MirrorInput } from './types';
+import { BILLING_PROVIDER, PRODUCT_KEY, type BillingRecord, type GrantEffect, type MirrorInput } from './types';
 
 /**
  * A Lemon Squeezy delivery is a signal. The signature and the five-minute window are decided before any store
@@ -115,18 +115,13 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
   // A named user who is not on file must not fall through to the checkout address.
   const metadataMiss = Boolean(metadataUserId) && !metaUser && !existing?.userId;
   const user = metadataMiss ? null : await resolveUser(store, metaUser, order.email, existing?.userId ?? null, at);
-  const revoking = order.grant === 'revoke';
-  // Only a refund has a refund date. An order the provider flagged gets a dispute date instead.
-  const refunding = revoking && order.revokeReason === 'refund';
   const mirrored = await store.commitMirror(mirrorFromOrder(order, {
     at,
     lastEventAt: parsed.eventTime,
     userId: user?.id ?? null,
     grant: metadataMiss ? 'none' : order.grant,
     revokeReason: metadataMiss ? null : order.revokeReason,
-    accessEndsAt: revoking ? at : order.accessEndsAt,
-    refundedAt: refunding ? at : order.refundedAt,
-    disputedAt: revoking && !refunding ? at : null,
+    ...orderDates(order, existing, at),
     actor: ACTOR,
   }));
 
@@ -149,6 +144,22 @@ async function resolveUser(store: BillingStore, metaUser: User | null, email: st
   if (existingUserId) return store.findUserById(existingUserId);
   if (!email) return null;
   return (await store.findUserByEmail(email)) ?? store.createReader(email, at);
+}
+
+/**
+ * The three dates a mirror writes. Only a refund has a refund date; an order the provider flagged gets a dispute
+ * date instead. A record that has already lost access keeps the day it did, and a refund or dispute date on
+ * file survives a later read, so a repeat delivery or a resync changes nothing and writes no audit row.
+ */
+export function orderDates(order: ProductOrder, existing: BillingRecord | null, at: Date): Pick<MirrorInput, 'accessEndsAt' | 'refundedAt' | 'disputedAt'> {
+  if (order.grant !== 'revoke') return { accessEndsAt: order.accessEndsAt, refundedAt: order.refundedAt, disputedAt: null };
+  const ended = existing?.status === 'refunded' || existing?.status === 'chargeback_lost';
+  const refunding = order.revokeReason === 'refund';
+  return {
+    accessEndsAt: (ended && existing?.accessEndsAt) || at,
+    refundedAt: refunding ? (existing?.status === 'refunded' && existing.refundedAt) || at : existing?.refundedAt ?? null,
+    disputedAt: existing?.disputedAt ?? (refunding ? null : at),
+  };
 }
 
 /** The fetched order, translated into the one mirror the stores know. The caller chooses the actor and the event time. */
