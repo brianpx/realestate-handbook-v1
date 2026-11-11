@@ -7,9 +7,11 @@ import type { Grant, Membership } from './types';
 // every live grant alike.
 const PAID = new Set(['purchase', 'subscription']);
 const endsRank = (g: Grant) => (g.endsAt === null ? Infinity : g.endsAt.getTime());
+// Two indefinite grants tie on both, as a Basic purchase and its Pro upgrade do: show the tier entitlement() computes.
+const tierRank = (g: Grant) => (g.tier === 'pro' ? 1 : 0);
 export function currentGrant(grants: Grant[], now: Date): Grant | null {
   const live = grants.filter(g => grantLive(g, now));
-  live.sort((a, b) => Number(PAID.has(b.kind)) - Number(PAID.has(a.kind)) || endsRank(b) - endsRank(a));
+  live.sort((a, b) => Number(PAID.has(b.kind)) - Number(PAID.has(a.kind)) || endsRank(b) - endsRank(a) || tierRank(b) - tierRank(a));
   return live[0] ?? null;
 }
 

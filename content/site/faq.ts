@@ -1,4 +1,4 @@
-import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS } from '@/lib/offer';
+import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS, upgradeOffered, upgradePriceDisplay } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 
 export type Faq = { q: string; a: string };
@@ -60,6 +60,14 @@ export function pricingFaqs(): Faq[] {
       a: open
         ? 'Checkout opens on the payment provider’s own page, not on this site, which never sees your card details. The Access and updates page explains how you get in afterwards.'
         : 'Nothing, today. This site has no checkout. When purchase opens, checkout will be on a payment provider’s own page, and the Access and updates page will explain how you get in afterwards.',
+    },
+    {
+      q: 'Can I upgrade from Basic to Pro later?',
+      a: upgradeOffered()
+        ? `Yes. A Basic owner pays only the difference, ${upgradePriceDisplay()}, once, with no time limit. It covers the edition you bought. Sign in and open your account page to find your upgrade link.`
+        : open
+          ? `The upgrade is not on sale yet. Write to ${OWNER.supportEmail ?? 'the support address'} and ask.`
+          : 'That is the plan: when purchase opens, a Basic owner will be able to move to Pro by paying the difference between the two prices. The price will be on this page before you are asked to pay.',
     },
     {
       q: 'Can I get a refund?',

@@ -40,6 +40,11 @@ export default function UpdatesPage() {
           Pro covers both for as long as the handbook is published; if it is ever retired, notice will be given here first.
         </p>
 
+        <p>
+          A Basic owner can upgrade to Pro by paying the difference between the two prices, with no time limit. The upgrade covers the edition you bought. When a new edition is
+          published, a Basic owner gets the existing-buyer discount on it as above, and Pro is priced at that edition’s Pro price.
+        </p>
+
         <h2>Support</h2>
         <p>Self-help is on the <Link href="/support">support page</Link>.</p>
 

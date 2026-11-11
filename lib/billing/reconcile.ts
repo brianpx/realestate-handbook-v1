@@ -2,7 +2,8 @@ import { timingSafeEqual } from 'node:crypto';
 import type { Actor } from '@/lib/audit';
 import { unchanged } from '@/lib/audit';
 import { mirrorFromOrder, orderDates, sendReadyLinkTo, type ProcessDeps } from './process-event';
-import { recordSnapshot, type BillingRecord } from './types';
+import { recordSnapshot, UPGRADE_PRODUCT_KEY, type BillingRecord } from './types';
+import { decideGrant, UPGRADE_HELD_NOTE } from './upgrade';
 
 /** A received row this old was never finished. The next delivery, or this pass, may claim it again. */
 const STUCK_RECEIVED_MS = 10 * 60 * 1000;
@@ -75,7 +76,7 @@ export type ResendOutcome = 'sent' | 'not_paid' | 'missing' | 'not_sent';
 export async function resendReadyForUser(deps: ReconcileDeps, userId: string, actor: Actor): Promise<ResendOutcome> {
   const records = await deps.store.listRecordsForUser(userId);
   if (records.length === 0) return 'missing';
-  const paid = records.filter(record => record.status === 'paid');
+  const paid = records.filter(record => record.status === 'paid' && record.productKey !== UPGRADE_PRODUCT_KEY);
   if (paid.length === 0) return 'not_paid';
   const user = await deps.store.findUserById(userId);
   if (!user) return 'missing';
@@ -114,13 +115,18 @@ async function mirrorRecord(deps: ReconcileDeps, record: BillingRecord, actor: A
   const mapped = await deps.adapter.fetch({ type, id: record.providerObjectId }, deps.fetchImpl);
   if (mapped.outcome !== 'order') return null;
   const order = mapped.order;
+  const decided = await decideGrant(deps.store, order, record.userId, order.grant, now);
+  const dates = orderDates(order, record, now);
   const result = await deps.store.commitMirror(mirrorFromOrder(order, {
     at: now,
     lastEventAt: order.updatedAt ?? now,
     userId: record.userId,
-    grant: order.grant,
+    grant: decided.grant,
+    notes: decided.held ? UPGRADE_HELD_NOTE : null,
     revokeReason: order.revokeReason,
-    ...orderDates(order, record, now),
+    ...dates,
+    // A held upgrade has no access, and keeps the day that was first written so a re-read changes nothing.
+    accessEndsAt: decided.held ? record.accessEndsAt ?? now : dates.accessEndsAt,
     actor,
   }));
   return result.applied ? result.record : null;

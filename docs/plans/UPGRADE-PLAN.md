@@ -90,6 +90,17 @@ Decided: manual review. Because the user id already travels in the signed-in lin
 1. **Timing.** The webhook is built, so the upgrade is a follow-on change to it. Either build it before purchase opens (recommended: it touches the same refund path that is being reviewed now), or launch without it and handle the first upgrades by hand: the owner records a Pro `complimentary`/`promo` grant through the admin screen after taking the $50 by a discounted Pro checkout. That works because `grantInputSchema` already accepts hand-made grants.
 2. **Billing items already open in PROGRESS** that the upgrade depends on: the `test_mode` check with live variant ids, the unique index on `access_grants.billing_record_id`, and the owner's call on `fraudulent`.
 
+## Built (Part C) and known limits
+
+Built on `feat/pro-upgrade`: the upgrade variant (`BILLING_VARIANT_UPGRADE`), the eligibility rule (`lib/billing/upgrade.ts`), the Basic-refund cascade in the memory, file and Neon stores, the membership tie-break, and the upgrade price, link, account row, coach card, pricing, FAQ and policy copy. Divergence from the design above: `purchaseOpenFor()` does not require the upgrade, because a missing upgrade must not keep Basic and Pro closed; the upgrade link shows only when purchase is open, the price can be derived and `BILLING_CHECKOUT_URL_UPGRADE` is set (`upgradeOffered()`).
+
+An independent reviewer read the diff and found no way to reach Pro without paying and no SQL fault. It found one real bug, fixed in the same branch (a swept upgrade came back to life without a grant when the account bought Basic again; an upgrade whose access has ended now stays ended). Accepted limits:
+- A granted upgrade re-read after the account also gets a live Pro record is re-marked "needs review" with its access end set. The grant stays live; the flag is the owner's cue to refund the $50.
+- The eligibility check is not atomic with the write. A Basic refund that commits between an upgrade's check and its commit leaves a Pro grant on a refunded Basic, and two simultaneous deliveries of two upgrade orders could both pass. Both need a payment at the same instant; manual review catches them.
+- An upgrade that arrives with no user attached counts as Pro in the entitlement safety net once an admin links it, until the resync that the link triggers decides it.
+- The $50 refund that goes with a refunded Basic is done by the owner by hand in Lemon Squeezy; there is no admin screen for it.
+- Verified: the Neon statement on a throwaway Postgres 17 with migrations 001 to 006 (a temporary script, not kept), unit tests, and the local e2e suite. Not verified: a hosted database, a real checkout, live-mode variant ids.
+
 ## Not verified
 
 Lemon Squeezy is the provider (OD-23) and its checkout link carries the user id. I did not check whether it can issue single-use discount codes. Nothing in this plan was run; it is a reading of the code on `origin/main` at `a2fe58f`.

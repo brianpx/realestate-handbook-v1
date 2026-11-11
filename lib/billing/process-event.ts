@@ -5,7 +5,8 @@ import type { Actor } from '@/lib/audit';
 import type { User } from '@/lib/users/types';
 import { providerEventId, withinEventWindow, type LemonSqueezyAdapter, type ParsedWebhook, type ProductOrder } from './adapters/lemonsqueezy';
 import type { BillingStore } from './store';
-import { BILLING_PROVIDER, PRODUCT_KEY, type BillingRecord, type GrantEffect, type MirrorInput } from './types';
+import { decideGrant, UPGRADE_HELD_NOTE } from './upgrade';
+import { BILLING_PROVIDER, UPGRADE_PRODUCT_KEY, type BillingRecord, type GrantEffect, type MirrorInput } from './types';
 
 /**
  * A Lemon Squeezy delivery is a signal. The signature and the five-minute window are decided before any store
@@ -115,13 +116,18 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
   // A named user who is not on file must not fall through to the checkout address.
   const metadataMiss = Boolean(metadataUserId) && !metaUser && !existing?.userId;
   const user = metadataMiss ? null : await resolveUser(store, metaUser, order.email, existing?.userId ?? null, at);
+  const decided = await decideGrant(store, order, user?.id ?? null, metadataMiss ? 'none' : order.grant, at);
+  const dates = orderDates(order, existing, at);
   const mirrored = await store.commitMirror(mirrorFromOrder(order, {
     at,
     lastEventAt: parsed.eventTime,
     userId: user?.id ?? null,
-    grant: metadataMiss ? 'none' : order.grant,
+    grant: decided.grant,
+    notes: decided.held ? UPGRADE_HELD_NOTE : null,
     revokeReason: metadataMiss ? null : order.revokeReason,
-    ...orderDates(order, existing, at),
+    ...dates,
+    // A held upgrade has no access, and keeps the day that was first written so a re-read changes nothing.
+    accessEndsAt: decided.held ? existing?.accessEndsAt ?? at : dates.accessEndsAt,
     actor: ACTOR,
   }));
 
@@ -131,12 +137,15 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
   }
 
   const record = mirrored.record;
-  if (record.status === 'paid' && record.readyEmailSentAt === null && record.userId) {
+  // An upgrade is bought by someone already signed in, so it has no "your handbook is ready" email.
+  if (record.status === 'paid' && record.readyEmailSentAt === null && record.userId && record.productKey !== UPGRADE_PRODUCT_KEY) {
     const recipient = await store.findUserById(record.userId);
     if (recipient) await sendReadyEmail(recipient.email, at, origin, record.id, deps);
   }
-  await store.setEventStatus(eventId, 'processed', null, at);
-  return { status: 200, outcome: 'processed' };
+  // A held upgrade is stored but granted nothing, which is what `unmatched` means here: someone has to look at it.
+  const outcome = decided.held ? 'unmatched' : 'processed';
+  await store.setEventStatus(eventId, outcome, null, at);
+  return { status: 200, outcome };
 }
 
 async function resolveUser(store: BillingStore, metaUser: User | null, email: string | null, existingUserId: string | null, at: Date): Promise<User | null> {
@@ -173,13 +182,14 @@ export function mirrorFromOrder(order: ProductOrder, over: {
   refundedAt: Date | null;
   disputedAt: Date | null;
   actor: Actor;
+  notes?: string | null;
 }): MirrorInput {
   return {
     provider: BILLING_PROVIDER,
     providerObjectId: order.providerObjectId,
     kind: 'purchase',
     tier: order.tier,
-    productKey: PRODUCT_KEY,
+    productKey: order.productKey,
     status: order.status,
     providerStatus: order.providerStatus,
     userId: over.userId,
@@ -199,7 +209,7 @@ export function mirrorFromOrder(order: ProductOrder, over: {
     cancelEffectiveAt: null,
     accessEndsAt: over.accessEndsAt,
     lastEventAt: over.lastEventAt,
-    notes: null,
+    notes: over.notes ?? null,
     manageUrl: order.manageUrl,
     grant: over.grant,
     revokeReason: over.revokeReason,

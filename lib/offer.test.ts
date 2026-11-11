@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkoutUrlFor, OFFER, OWNER, purchaseOpen, purchaseOpenFor, REFUND_DAYS, termPublished } from './offer';
+import { checkoutUrlFor, OFFER, OWNER, purchaseOpen, purchaseOpenFor, REFUND_DAYS, termPublished, upgradeFor, upgradeOffered, upgradePriceDisplay } from './offer';
 import type { Tier } from './tiers';
 
 const tier = (id: Tier['id'], over: Partial<Tier> = {}): Tier => ({ id, name: id, tagline: '', priceDisplay: '$49', checkoutUrl: 'https://pay.example/x', ...over });
@@ -19,6 +19,62 @@ describe('purchaseOpenFor', () => {
   it('stays closed while a term is missing or a policy is a draft', () => {
     expect(purchaseOpenFor([tier('basic')], { ...terms, updatesTerm: null }, approved)).toBe(false);
     expect(purchaseOpenFor([tier('basic')], terms, { ...approved, refunds: 'draft' })).toBe(false);
+  });
+});
+
+describe('upgradePriceDisplay', () => {
+  it('is Pro minus Basic, in dollars the way the prices are written', () => {
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: '$79' }), tier('pro', { priceDisplay: '$129' })])).toBe('$50');
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: '$79.50' }), tier('pro', { priceDisplay: '$129' })])).toBe('$49.50');
+  });
+  it('is null while either price is unset, not a plain dollar amount, or Pro is not above Basic', () => {
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: null }), tier('pro', { priceDisplay: '$129' })])).toBeNull();
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: '$79' }), tier('pro', { priceDisplay: null })])).toBeNull();
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: '79 dollars' }), tier('pro', { priceDisplay: '$129' })])).toBeNull();
+    expect(upgradePriceDisplay([tier('basic', { priceDisplay: '$129' }), tier('pro', { priceDisplay: '$129' })])).toBeNull();
+    expect(upgradePriceDisplay([])).toBeNull();
+  });
+  it('is null on the live tiers, which ship without prices', () => {
+    expect(upgradePriceDisplay()).toBeNull();
+  });
+});
+
+describe('the upgrade offer', () => {
+  const basicMember = { level: 'member', tier: 'basic' } as const;
+  const user = { id: 'user 1', email: 'a@b.co' };
+
+  // lib/tiers.ts ships with no prices, so purchase is closed and no upgrade is on sale whatever the environment says
+  it('is not on sale while purchase is closed, even with an upgrade link set', () => {
+    const previous = process.env.BILLING_CHECKOUT_URL_UPGRADE;
+    try {
+      process.env.BILLING_CHECKOUT_URL_UPGRADE = 'https://pay.example/upgrade';
+      expect(upgradeOffered()).toBe(false);
+      expect(upgradeFor(basicMember, user)).toBeNull();
+    } finally {
+      if (previous === undefined) delete process.env.BILLING_CHECKOUT_URL_UPGRADE;
+      else process.env.BILLING_CHECKOUT_URL_UPGRADE = previous;
+    }
+  });
+  it('gives a Basic member a link that names them, once the upgrade is on sale', () => {
+    const on = { open: true, price: '$50', base: 'https://pay.example/upgrade' };
+    expect(upgradeOffered(on)).toBe(true);
+    expect(upgradeFor(basicMember, user, on)).toEqual({
+      href: 'https://pay.example/upgrade?checkout[email]=a%40b.co&checkout[custom][user_id]=user%201',
+      price: '$50',
+    });
+    expect(upgradeFor(basicMember, user, { ...on, base: 'https://pay.example/upgrade?x=1' })?.href).toContain('?x=1&checkout[email]=');
+  });
+  it('needs purchase open, a price and a link', () => {
+    const on = { open: true, price: '$50', base: 'https://pay.example/upgrade' };
+    for (const off of [{ ...on, open: false }, { ...on, price: null }, { ...on, base: null }]) {
+      expect(upgradeOffered(off)).toBe(false);
+      expect(upgradeFor(basicMember, user, off)).toBeNull();
+    }
+  });
+  it('is shown to no one but a Basic member', () => {
+    for (const e of [{ level: 'none' }, { level: 'preview', suspended: false }, { level: 'preview', suspended: true }, { level: 'member', tier: 'pro' }] as const) {
+      expect(upgradeFor(e, user)).toBeNull();
+    }
   });
 });
 

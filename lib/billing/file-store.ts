@@ -9,6 +9,7 @@ import { planMirror } from './plan-mirror';
 import type { BillingStore, ClaimResult, MirrorResult, ResendWrite } from './store';
 import {
   NON_TERMINAL_STATUSES,
+  UPGRADE_PRODUCT_KEY,
   isPurchaseStatus,
   isSubscriptionStatus,
   type BillingCustomer,
@@ -106,7 +107,7 @@ export class FileBillingStore implements BillingStore {
   }
 
   listPaidMissingReadyEmail() {
-    return this.view(async () => (await this.records()).filter(r => r.status === 'paid' && r.readyEmailSentAt === null && r.userId !== null));
+    return this.view(async () => (await this.records()).filter(r => r.status === 'paid' && r.readyEmailSentAt === null && r.userId !== null && r.productKey !== UPGRADE_PRODUCT_KEY));
   }
 
   commitMirror(input: MirrorInput): Promise<MirrorResult> {
@@ -119,7 +120,8 @@ export class FileBillingStore implements BillingStore {
       const keptUser = existing?.userId ?? input.userId;
       const grants = listOf(auth, 'grants').map(reviveGrant).filter((g): g is Grant => g !== null && g.userId === keptUser);
       const membership = listOf(auth, 'memberships').map(reviveMembership).find(m => m?.userId === keptUser) ?? null;
-      const plan = planMirror({ record: existing, customers, grants, membership }, input);
+      const userRecords = keptUser ? records.filter(r => r.userId === keptUser) : [];
+      const plan = planMirror({ record: existing, customers, userRecords, grants, membership }, input);
       if (!plan.applied) return { applied: false };
 
       const nextRecords = existing ? records.map(r => r.id === plan.record.id ? plan.record : r) : [...records, plan.record];
@@ -129,7 +131,9 @@ export class FileBillingStore implements BillingStore {
           ? customers.map(c => c.id === customer.id ? customer : c)
           : [...customers, customer]
         : customers;
-      disk.records = nextRecords.map(freezeRecord);
+      // An upgrade swept up by a refunded Basic stops being live on its own record too, so the account can buy another.
+      const swept = new Map(plan.grantRevokes.filter(r => r.billingRecordId !== plan.record.id).map(r => [r.billingRecordId, r.at]));
+      disk.records = nextRecords.map(r => freezeRecord(swept.has(r.id) ? { ...r, accessEndsAt: swept.get(r.id) ?? r.accessEndsAt } : r));
       disk.customers = nextCustomers.map(freezeCustomer);
       await this.writeBilling(disk);
       this.applyPlanToAuth(auth, plan);
@@ -253,8 +257,7 @@ export class FileBillingStore implements BillingStore {
 
   private applyPlanToAuth(auth: Record<string, unknown>, plan: Extract<MirrorPlan, { applied: true }>) {
     const grants = listOf(auth, 'grants');
-    const revocation = plan.grantRevoke;
-    if (revocation) {
+    for (const revocation of plan.grantRevokes) {
       const grant = grants.find(row => isRecord(row) && row.billingRecordId === revocation.billingRecordId && (row.revokedAt === null || row.revokedAt === undefined));
       if (isRecord(grant)) {
         grant.revokedAt = revocation.at.toISOString();

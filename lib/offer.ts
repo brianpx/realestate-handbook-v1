@@ -2,6 +2,7 @@
 // so plainly instead of showing an invented value. Nothing here switches purchase on by itself. `checkoutUrl` in
 // lib/tiers.ts stays empty while purchase is closed; a signed-in checkout link is built from BILLING_CHECKOUT_URL_*
 // and stays null until that variable is set. See docs/_archive/launch-handoff.md.
+import type { Entitlement } from './access/entitlement';
 import { BOOK_TITLE } from './pages';
 import { paidTiers, tierById, type PublishedWhen, type Tier, type TierId } from './tiers';
 
@@ -92,9 +93,42 @@ function signedInCheckoutUrl({ tierId, userId, email }: { tierId: TierId; userId
   if (tierId === 'free') return null;
   const configured = process.env[tierId === 'basic' ? 'BILLING_CHECKOUT_URL_BASIC' : 'BILLING_CHECKOUT_URL_PRO'];
   const base = checkoutLink(configured ?? null);
-  if (!base) return null;
+  return base ? withBuyer(base, userId, email) : null;
+}
+
+function withBuyer(base: string, userId: string, email: string): string {
   const join = base.includes('?') ? '&' : '?';
   return `${base}${join}checkout[email]=${encodeURIComponent(email)}&checkout[custom][user_id]=${encodeURIComponent(userId)}`;
+}
+
+const priceCents = (display: string | null): number | null => {
+  const m = display?.match(/^\$(\d+)(?:\.(\d{2}))?$/);
+  return m ? Number(m[1]) * 100 + Number(m[2] ?? 0) : null;
+};
+
+/** The upgrade price as a buyer sees it, always Pro minus Basic ("$50"); null while either price is unset or not a plain dollar amount. */
+export function upgradePriceDisplay(paid: readonly Tier[] = paidTiers()): string | null {
+  const basic = priceCents(paid.find(t => t.id === 'basic')?.priceDisplay ?? null);
+  const pro = priceCents(paid.find(t => t.id === 'pro')?.priceDisplay ?? null);
+  if (basic === null || pro === null || pro <= basic) return null;
+  const diff = pro - basic;
+  return diff % 100 === 0 ? `$${diff / 100}` : `$${(diff / 100).toFixed(2)}`;
+}
+
+type UpgradeOffer = { open: boolean; price: string | null; base: string | null };
+const currentUpgradeOffer = (): UpgradeOffer => ({ open: purchaseOpen(), price: upgradePriceDisplay(), base: checkoutLink(process.env.BILLING_CHECKOUT_URL_UPGRADE ?? null) });
+
+/** Whether the Basic-to-Pro upgrade is on sale: purchase is open, the price can be derived, and its checkout link is set. */
+export const upgradeOffered = (offer: UpgradeOffer = currentUpgradeOffer()): boolean => offer.open && offer.price !== null && offer.base !== null;
+
+/**
+ * The upgrade a signed-in reader may be shown: only a Basic member, only while it is on sale. The link carries the
+ * reader's id and address like the other signed-in links, but it is only a convenience: the webhook decides from the
+ * database whether the order upgrades anyone (lib/billing/upgrade.ts).
+ */
+export function upgradeFor(entitlement: Entitlement, user: { id: string; email: string }, offer: UpgradeOffer = currentUpgradeOffer()): { href: string; price: string } | null {
+  if (entitlement.level !== 'member' || entitlement.tier !== 'basic' || !offer.open || !offer.price || !offer.base) return null;
+  return { href: withBuyer(offer.base, user.id, user.email), price: offer.price };
 }
 
 /** Whether the owner has published the term a feature row's promise rests on (see `Feature.publishedWhen`). */

@@ -18,6 +18,12 @@ export default function RefundsPage() {
           makes no difference. Each purchase has its own {REFUND_DAYS} days, counted from the day that purchase was paid. Each paid plan is a one-time purchase, so there is no subscription to cancel. A refund ends the access the purchase gave.
         </p>
 
+        <h2>If you upgrade from Basic to Pro</h2>
+        <p>
+          The upgrade is its own purchase, so it has its own {REFUND_DAYS} days from the day it was paid. Refund it in that time and you go back to Basic, which you keep.
+          If you refund your Basic purchase, an upgrade bought on top of it ends with it, because the upgrade is priced against Basic, and that upgrade is refunded too.
+        </p>
+
         <h2>How to ask</h2>
         <p>Write from the email address you bought with, within the {REFUND_DAYS} days, and say which purchase it is. No reason is needed.</p>
         {OWNER.supportEmail

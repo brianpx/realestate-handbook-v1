@@ -64,6 +64,24 @@ describe('FileBillingStore', () => {
     expect(after.grants).toHaveLength(1);
   });
 
+  it('revokes an upgrade bought on a Basic purchase when that Basic is first refunded, and ends the upgrade record', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'reh-bill-'));
+    const authFile = path.join(dir, 'auth.json');
+    const store = new FileBillingStore(path.join(dir, 'billing.json'), authFile);
+    const buyer = await store.createReader('buyer@e2e.test', NOW);
+    await store.commitMirror(paid(buyer.id));
+    await store.commitMirror(paid(buyer.id, { providerObjectId: '101', tier: 'pro', productKey: 'handbook-v1-upgrade', amountCents: 5000 }));
+    await store.commitMirror(paid(buyer.id, {
+      status: 'refunded', providerStatus: 'refunded', grant: 'revoke', revokeReason: 'refund',
+      accessEndsAt: LATER, refundedAt: LATER, lastEventAt: LATER, at: LATER,
+    }));
+    const saved = JSON.parse(await readFile(authFile, 'utf8')) as { grants: { tier: string; revokeReason: string | null }[] };
+    expect(saved.grants.map(g => [g.tier, g.revokeReason])).toEqual([['basic', 'refund'], ['pro', 'refund']]);
+    const records = await store.listRecordsForUser(buyer.id);
+    expect(records.find(r => r.providerObjectId === '101')?.accessEndsAt).toEqual(LATER);
+    expect(await store.listPaidMissingReadyEmail()).toHaveLength(0);
+  });
+
   it('keeps an unlinked order so an administrator can attach it without a grant', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'reh-bill-'));
     const authFile = path.join(dir, 'auth.json');

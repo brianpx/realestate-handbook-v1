@@ -4,7 +4,7 @@ import { PageHead } from '@/components/site/Draft';
 import { PricingTable } from '@/components/site/PricingTable';
 import { ToolIndex } from '@/components/site/ToolIndex';
 import { pricingFaqs } from '@/content/site/faq';
-import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS } from '@/lib/offer';
+import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS, upgradeOffered, upgradePriceDisplay } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 
 export const metadata: Metadata = {
@@ -17,6 +17,7 @@ const NOT_PUBLISHED = 'Not published yet';
 
 export default function PricingPage() {
   const open = purchaseOpen();
+  const upgradePrice = upgradeOffered() ? upgradePriceDisplay() : null;
   return (
     <>
       <PageHead eyebrow="Pricing" title={open ? 'Three plans, one handbook.' : 'Pricing and availability'}>
@@ -39,7 +40,8 @@ export default function PricingPage() {
         <div className="pub-wrap pub-narrow">
           <h2 id="termsTitle" className="pub-h2">Terms at a glance</h2>
           <dl className="pub-terms">
-            <div><dt>Price</dt><dd>{open ? paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join('; ') : NOT_PUBLISHED}</dd></div>
+            <div><dt>Price</dt><dd>{open ? paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join('; ') + (upgradePrice ? `; Pro upgrade for Basic owners ${upgradePrice}` : '') : NOT_PUBLISHED}</dd></div>
+            {upgradePrice && <div><dt>Upgrade</dt><dd>A Basic owner moves to Pro by paying the difference, {upgradePrice}, once, with no time limit. It covers the edition you bought. Sign in and open your account page to find your upgrade link.</dd></div>}
             <div><dt>Access</dt><dd>{OFFER.accessTerm ?? NOT_PUBLISHED}</dd></div>
             <div><dt>Updates</dt><dd>{OFFER.updatesTerm ?? NOT_PUBLISHED}</dd></div>
             <div>

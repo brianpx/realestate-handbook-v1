@@ -7,8 +7,8 @@ import { requireViewer } from '@/lib/auth/dal';
 import { sessionLive } from '@/lib/auth/session';
 import { authStoresFromEnv } from '@/lib/auth/store';
 import { billingAdapterFromEnv, billingStoreFromEnv } from '@/lib/billing/env';
-import type { BillingRecord } from '@/lib/billing/types';
-import { OWNER, purchaseOpen } from '@/lib/offer';
+import { UPGRADE_PRODUCT_KEY, type BillingRecord } from '@/lib/billing/types';
+import { OWNER, purchaseOpen, upgradeFor } from '@/lib/offer';
 import { pageHref } from '@/lib/routes';
 import { tierById } from '@/lib/tiers';
 import { EMPTY_PROFILE, profileFields, type Profile } from '@/lib/users/profile';
@@ -20,6 +20,7 @@ type Props = { searchParams: Promise<{ error?: string | string[] }> };
 
 type PurchaseRow = {
   id: string;
+  label: string;
   status: string;
   providerStatus: string | null;
   paidAt: Date | null;
@@ -77,8 +78,9 @@ async function purchaseRow(record: BillingRecord, adapter: ReturnType<typeof bil
   }
 }
 
-function rowFacts(record: BillingRecord): Pick<PurchaseRow, 'id' | 'status' | 'providerStatus' | 'paidAt' | 'refundedAt'> {
-  return { id: record.id, status: record.status, providerStatus: record.providerStatus, paidAt: record.paidAt, refundedAt: record.refundedAt };
+function rowFacts(record: BillingRecord): Pick<PurchaseRow, 'id' | 'label' | 'status' | 'providerStatus' | 'paidAt' | 'refundedAt'> {
+  const label = record.productKey === UPGRADE_PRODUCT_KEY ? 'Pro upgrade' : tierById(record.tier).name;
+  return { id: record.id, label, status: record.status, providerStatus: record.providerStatus, paidAt: record.paidAt, refundedAt: record.refundedAt };
 }
 
 function PurchasePanel({ purchases }: { purchases: Purchases }) {
@@ -98,6 +100,7 @@ function PurchasePanel({ purchases }: { purchases: Purchases }) {
       <h2 className="hb-h2">Your purchase</h2>
       {purchases.rows.map(row => (
         <dl className="account-facts" key={row.id}>
+          <div><dt>Purchase</dt><dd>{row.label}</dd></div>
           <div><dt>Status</dt><dd>{row.providerStatus ?? row.status}</dd></div>
           {row.paidAt && <div><dt>Paid</dt><dd>{day.format(row.paidAt)} UTC</dd></div>}
           {row.refundedAt && <div><dt>Refunded</dt><dd>{day.format(row.refundedAt)} UTC</dd></div>}
@@ -132,6 +135,7 @@ export default async function AccountPage({ searchParams }: Props) {
   const loaded = await loadProfile(user.id);
   const purchases = await loadPurchases(user.id);
 
+  const upgrade = upgradeFor(entitlement, user);
   const plan = entitlement.level === 'member' ? `${tierById(entitlement.tier).name} plan` : entitlement.level === 'preview' && entitlement.suspended ? 'Paused' : 'Free set';
 
   return (
@@ -156,6 +160,11 @@ export default async function AccountPage({ searchParams }: Props) {
           </>
         )}
       </p>
+      {upgrade && (
+        <p data-upgrade-offer>
+          Want the reading-plan coach and every tool? <a href={upgrade.href} rel="noopener" data-upgrade>Upgrade to Pro for {upgrade.price}</a>: you pay only the difference from Basic, once.
+        </p>
+      )}
 
       <PurchasePanel purchases={purchases} />
 

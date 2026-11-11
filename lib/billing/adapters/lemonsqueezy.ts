@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import type { PaidTier, PurchaseStatus } from '@/lib/access/types';
 import { emailSchema } from '@/lib/validate/email';
-import { BILLING_PROVIDER, VARIANT_TIER, type GrantEffect } from '@/lib/billing/types';
+import { BILLING_PROVIDER, UPGRADE_PRODUCT_KEY, VARIANT_PRODUCTS, type GrantEffect, type VariantProduct } from '@/lib/billing/types';
 
 /**
  * Lemon Squeezy signs the raw body with HMAC-SHA256 and sends the hex digest in `X-Signature`. The current
@@ -33,10 +33,11 @@ export type ParsedWebhook = {
 
 export type UnmatchedReason = 'not_order' | 'unknown_variant' | 'failed' | 'unknown_status';
 
-/** A fetched order that is one of our two one-time variants, already translated into our status words. */
+/** A fetched order that is one of our one-time variants, already translated into our status words. */
 export type ProductOrder = {
   providerObjectId: string;
   tier: PaidTier;
+  productKey: string;
   providerStatus: string;
   status: PurchaseStatus;
   email: string | null;
@@ -65,6 +66,8 @@ export type LemonSqueezyConfig = {
   apiBase: string;
   /** Set only when the process is not hosted. Production never reads a fixture file. */
   fixturePath: string | null;
+  /** The variant id of the Basic-to-Pro upgrade product; null until the owner creates it. */
+  upgradeVariantId?: string | null;
 };
 
 export type Fetchable = { type: 'orders' | 'subscriptions'; id: string };
@@ -84,6 +87,7 @@ export function lemonSqueezyFromEnv(env: Env): LemonSqueezyAdapter | null {
     apiKey: env.BILLING_API_KEY ?? null,
     apiBase: (env.BILLING_API_BASE || API_BASE_DEFAULT).replace(/\/$/, ''),
     fixturePath: fixtureAllowed(env) ? env.BILLING_ORDER_FIXTURE ?? null : null,
+    upgradeVariantId: env.BILLING_VARIANT_UPGRADE?.trim() || null,
   });
 }
 
@@ -102,7 +106,7 @@ export class LemonSqueezyAdapter {
     const body = this.config.fixturePath
       ? await readFixture(this.config.fixturePath, object)
       : await fetchResource(this.config, object, fetchImpl);
-    return mapResource(body, new Date());
+    return mapResource(body, new Date(), this.config.upgradeVariantId ?? null);
   }
 
   /** Brackets stay literal. URLSearchParams would encode them, and the share link would drop the custom field. */
@@ -151,7 +155,7 @@ export function parseWebhook(raw: string, eventNameHeader: string | null): Parse
 }
 
 /** `now` is the refund's access end. Amounts are taken from the resource, never from a price table. */
-export function mapResource(body: unknown, now: Date): MappedObject {
+export function mapResource(body: unknown, now: Date, upgradeVariantId: string | null = null): MappedObject {
   const resource = readResource(body);
   if (!resource) {
     const error = new Error('unreadable');
@@ -160,8 +164,8 @@ export function mapResource(body: unknown, now: Date): MappedObject {
   }
   if (resource.type !== 'orders') return { outcome: 'unmatched', reason: 'not_order' };
   const variant = variantId(resource.attributes);
-  const tier = variant ? VARIANT_TIER[variant] : undefined;
-  if (!variant || !tier) return { outcome: 'unmatched', reason: 'unknown_variant' };
+  const product = variant ? productForVariant(variant, upgradeVariantId) : undefined;
+  if (!variant || !product) return { outcome: 'unmatched', reason: 'unknown_variant' };
 
   const providerStatus = stringOrNull(resource.attributes.status) ?? '';
   const total = cents(resource.attributes.total);
@@ -175,7 +179,8 @@ export function mapResource(body: unknown, now: Date): MappedObject {
     outcome: 'order',
     order: {
       providerObjectId: resource.id,
-      tier,
+      tier: product.tier,
+      productKey: product.productKey,
       providerStatus,
       status: effect.status,
       email,
@@ -196,6 +201,11 @@ export function mapResource(body: unknown, now: Date): MappedObject {
       revokeReason: effect.revokeReason,
     },
   };
+}
+
+function productForVariant(variant: string, upgradeVariantId: string | null): VariantProduct | undefined {
+  if (upgradeVariantId && variant === upgradeVariantId) return { tier: 'pro', productKey: UPGRADE_PRODUCT_KEY };
+  return VARIANT_PRODUCTS[variant];
 }
 
 type Effect =
