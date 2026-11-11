@@ -16,6 +16,7 @@ export type ReconcileDeps = Pick<ProcessDeps, 'store' | 'adapter' | 'now' | 'mai
 export type ReconcileReport = {
   requeued: number;
   mirrored: number;
+  mirrorFailures: number;
   readyEmails: number;
   payloadsNulled: number;
 };
@@ -39,13 +40,20 @@ export async function reconcileBilling(deps: ReconcileDeps, actor: Actor = { kin
   const requeued = await deps.store.requeueStuckReceived(new Date(now.getTime() - STUCK_RECEIVED_MS));
   const records = await deps.store.listNonTerminal();
   let mirrored = 0;
+  let mirrorFailures = 0;
   for (const record of records) {
-    if (await mirrorRecord(deps, record, actor, now)) mirrored += 1;
+    // One order the provider will not return must not stop the rest of the pass, today or on every later run.
+    try {
+      if (await mirrorRecord(deps, record, actor, now)) mirrored += 1;
+    } catch (err) {
+      mirrorFailures += 1;
+      console.error('billing: reconcile mirror failed', err instanceof Error && err.name ? err.name : 'error');
+    }
   }
   const readyEmails = await sendMissingReadyEmails(deps, now);
   const payloadsNulled = await deps.store.nullPayloadsOlderThan(new Date(now.getTime() - PAYLOAD_TTL_MS));
   await deps.store.deleteExpiredAuth(now);
-  return { requeued, mirrored, readyEmails, payloadsNulled };
+  return { requeued, mirrored, mirrorFailures, readyEmails, payloadsNulled };
 }
 
 /** Re-reads one user's records. `changed` is false when every fetched order already matches the row. */
@@ -107,14 +115,16 @@ async function mirrorRecord(deps: ReconcileDeps, record: BillingRecord, actor: A
   if (mapped.outcome !== 'order') return null;
   const order = mapped.order;
   const refunding = order.grant === 'revoke';
+  // A record already refunded keeps its dates, so re-reading it changes nothing and writes no audit row.
+  const settled = record.status === 'refunded';
   const result = await deps.store.commitMirror(mirrorFromOrder(order, {
     at: now,
     lastEventAt: order.updatedAt ?? now,
     userId: record.userId,
     grant: order.grant,
     revokeReason: order.revokeReason,
-    accessEndsAt: refunding ? now : order.accessEndsAt,
-    refundedAt: refunding ? now : order.refundedAt,
+    accessEndsAt: refunding ? (settled && record.accessEndsAt) || now : order.accessEndsAt,
+    refundedAt: refunding ? (settled && record.refundedAt) || now : order.refundedAt,
     actor,
   }));
   return result.applied ? result.record : null;

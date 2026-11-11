@@ -8,7 +8,7 @@ import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryUserStore } from '@/lib/users/store';
 import { LemonSqueezyAdapter } from './adapters/lemonsqueezy';
 import { MemoryBillingStore } from './memory-store';
-import { bearerMatches, reconcileBilling, type ReconcileDeps } from './reconcile';
+import { bearerMatches, reconcileBilling, resyncUserRecords, type ReconcileDeps } from './reconcile';
 import type { MirrorInput } from './types';
 
 const NOW = new Date('2026-11-10T12:05:00.000Z');
@@ -128,6 +128,45 @@ describe('reconcileBilling', () => {
     expect(h.access.grants[0]?.revokeReason).toBe('refund');
     expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('preview');
     expect(h.sends()).toBe(1);
+  });
+
+  it('carries on past an order the provider will not return, and counts it', async () => {
+    const h = harness(() => order());
+    const user = await h.store.createReader('buyer@e2e.test', NOW);
+    await h.store.commitMirror({ ...pending(user.id), providerObjectId: '98' });
+    await h.store.commitMirror(pending(user.id));
+    const fetchImpl = vi.fn<typeof fetch>(async (url) => {
+      const href = String(url);
+      if (href.endsWith('/orders/98')) return new Response('gone', { status: 404 });
+      if (href.includes('api.lemonsqueezy.com')) return new Response(JSON.stringify(order()), { status: 200 });
+      return new Response('ok', { status: 200 });
+    });
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const report = await reconcileBilling({ ...h.deps, fetchImpl });
+    expect(logged).toHaveBeenCalledWith('billing: reconcile mirror failed', 'BillingFetchFailed');
+    logged.mockRestore();
+    expect(report).toMatchObject({ mirrored: 1, mirrorFailures: 1, readyEmails: 1 });
+    expect(h.store.records.find(record => record.providerObjectId === '98')?.status).toBe('pending');
+    expect(h.store.records.find(record => record.providerObjectId === '99')?.status).toBe('paid');
+  });
+
+  it('re-reads a refunded record without moving its dates or writing another audit row', async () => {
+    let body = order();
+    const h = harness(() => body);
+    const user = await h.store.createReader('buyer@e2e.test', NOW);
+    await h.store.commitMirror(pending(user.id));
+    await reconcileBilling(h.deps);
+    body = order({ status: 'refunded', refunded: true, refunded_amount: 4321, updated_at: '2026-11-10T12:06:00.000Z' });
+    const admin = { kind: 'admin' as const, userId: null };
+    const at = (minutes: number): ReconcileDeps => ({ ...h.deps, now: () => new Date(NOW.getTime() + minutes * 60_000) });
+    expect(await resyncUserRecords(at(60), user.id, admin)).toEqual({ changed: true });
+    const refundedAt = h.store.records[0]?.refundedAt;
+    expect(refundedAt).toEqual(new Date(NOW.getTime() + 60 * 60_000));
+    const audits = h.access.audit.length;
+    expect(await resyncUserRecords(at(120), user.id, admin)).toEqual({ changed: false });
+    expect(h.store.records[0]?.refundedAt).toEqual(refundedAt);
+    expect(h.store.records[0]?.accessEndsAt).toEqual(refundedAt);
+    expect(h.access.audit).toHaveLength(audits);
   });
 
   it('nulls payloads older than 90 days and deletes expired auth rows', async () => {
