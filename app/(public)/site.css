@@ -86,7 +86,8 @@
 .pub a.pub-btn-secondary:hover { background: var(--color-accent-tint); color: var(--color-link)}
 .pub-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 14px}
 .pub .pub-fineprint { font-size: 0.9rem; color: var(--pub-muted); margin: 0; max-width: 34rem}
-.pub :focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; box-shadow: 0 0 0 3px #0f172a; }
+.pub :focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
+.pub .calc-input:focus-visible { outline-offset: -2px}
 
 /* ---- hero ---- */
 .pub-hero { padding: 64px 0 72px; background: linear-gradient(180deg, var(--pub-tint) 0%, var(--color-surface) 100%)}
