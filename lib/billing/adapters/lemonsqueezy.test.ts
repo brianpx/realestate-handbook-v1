@@ -71,7 +71,7 @@ describe('Lemon Squeezy signatures', () => {
 
 describe('Lemon Squeezy orders', () => {
   it('reads the event time from updated_at so a refund of an older order is not stale', () => {
-    const raw = JSON.stringify(order());
+    const raw = JSON.stringify(order({}, { event_name: 'order_refunded' }));
     const parsed = parseWebhook(raw, 'order_refunded');
     expect(parsed?.eventName).toBe('order_refunded');
     expect(parsed?.eventTime.toISOString()).toBe('2026-11-10T12:05:00.000Z');
@@ -79,6 +79,12 @@ describe('Lemon Squeezy orders', () => {
     expect(parsed?.metadataUserId).toBe('22222222-2222-2222-2222-222222222222');
     if (!parsed) throw new Error('expected a webhook');
     expect(providerEventId(parsed.eventName, parsed.objectId, parsed.eventTime)).toBe('order_refunded:99:2026-11-10T12:05:00.000Z');
+  });
+
+  it('takes the event name from the signed body, and from the header only when the body names none', () => {
+    expect(parseWebhook(JSON.stringify(order()), 'order_refunded')?.eventName).toBe('order_created');
+    expect(parseWebhook(JSON.stringify(order({}, { event_name: undefined })), 'order_refunded')?.eventName).toBe('order_refunded');
+    expect(parseWebhook(JSON.stringify(order({}, { event_name: undefined })), null)).toBeNull();
   });
 
   it('falls back to created_at and rejects a body that is not the resource', () => {
@@ -120,6 +126,16 @@ describe('Lemon Squeezy orders', () => {
     expect(mapped.order.status).toBe('partially_refunded');
     expect(mapped.order.grant).toBe('grant');
     expect(mapped.order.accessEndsAt).toBeNull();
+  });
+
+  it('keeps access on status partial_refund, with or without an amount', () => {
+    for (const refunded_amount of [100, undefined]) {
+      const mapped = mapResource(order({ status: 'partial_refund', refunded_amount }), NOW);
+      if (mapped.outcome !== 'order') throw new Error('expected an order');
+      expect(mapped.order.status).toBe('partially_refunded');
+      expect(mapped.order.grant).toBe('grant');
+      expect(mapped.order.accessEndsAt).toBeNull();
+    }
   });
 
   it('treats a paid order with a smaller refunded_amount as a partial refund that keeps access', () => {
