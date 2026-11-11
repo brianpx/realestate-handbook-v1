@@ -348,6 +348,7 @@ html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16p
 
 /* Sign-in form (components/site/SignupForm.tsx): on /signup, the verify page and, later, the home page. */
 .pub .signup-card { padding: 28px; margin: 0 0 20px}
+.pub .pub-hero-grid .signup-card { margin-top: 28px}
 .pub .signup-form .pub-field { margin-bottom: 14px}
 .pub .signup-trap { position: absolute; left: -9999px}
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
@@ -440,7 +441,7 @@ html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16p
 .pub .lead-trap { position: absolute; left: -9999px}
 .pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
 .pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
-.pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
+.pub .pub-hero-side { display: grid; gap: 20px; align-content: start; align-self: start}
 .pub .pub-final-form { display: flex; justify-content: center}
 .pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
 .pub .pub-final .pub-trust, .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}

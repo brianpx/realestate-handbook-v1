@@ -6,7 +6,7 @@ import { ToolIndex } from '@/components/site/ToolIndex';
 import { JsonLd } from '@/components/shell/JsonLd';
 import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
-import { OFFER, OWNER, primaryAction, purchaseOpen } from '@/lib/offer';
+import { OFFER, OWNER, primaryAction, purchaseOpen, REFUND_DAYS, upgradeOffered, upgradePriceDisplay } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 import { NAV } from '@/lib/pages';
 import { fmtClock, planBlocks, ROADMAP_PHASES, TIMEBLOCK_DEFAULTS } from '@/lib/plan';
@@ -66,7 +66,13 @@ function Hero({ action, open }: { action: Action; open: boolean }) {
         <ActionLink action={action} className="pub-btn pub-btn-primary" />
         <Link className="pub-btn pub-btn-secondary" href="/preview">Try a sample lesson</Link>
       </div>
-      <p className="pub-fineprint">{OFFER.accessTerm} The sample lesson is free and needs no sign-up.</p>
+      <p className="pub-fineprint">{OFFER.accessSummary} The sample lesson is free and needs no sign-up.</p>
+      {/* once something is for sale the buy button leads, and the form sits under it so the calculator keeps the right column */}
+      <div className="pub-card signup-card">
+        <p className="pub-h3" style={{ margin: '0 0 6px' }}>Read the free chapters first.</p>
+        <p className="pub-trust">{TRUST_LINE}</p>
+        <SignupForm variant="card" source="hero" />
+      </div>
     </>
   ) : (
     <>
@@ -94,19 +100,6 @@ function Hero({ action, open }: { action: Action; open: boolean }) {
           <SignedInSwitch signedIn={<WelcomeBack />} signedOut={visitor} />
         </div>
         <div className="pub-hero-side">
-          {/* once something is for sale the buy button takes the hero and the form moves beside the calculator */}
-          {open && (
-            <SignedInSwitch
-              signedIn={null}
-              signedOut={
-                <div className="pub-card signup-card">
-                  <p className="pub-h3" style={{ margin: '0 0 6px' }}>Read the free chapters first.</p>
-                  <p className="pub-trust">{TRUST_LINE}</p>
-                  <SignupForm variant="card" source="hero" />
-                </div>
-              }
-            />
-          )}
           <HeroPlan />
         </div>
       </div>
@@ -407,6 +400,7 @@ function Fit() {
 
 /* 8. Offer */
 function Offer({ open }: { open: boolean }) {
+  const upgradePrice = upgradeOffered() ? upgradePriceDisplay() : null;
   return (
     <section className="pub-section" id="offer" aria-labelledby="offerTitle">
       <div className="pub-wrap">
@@ -420,8 +414,13 @@ function Offer({ open }: { open: boolean }) {
               <dl>
                 <dt>Plans</dt><dd>Two one-time purchases, Basic and Pro; everything in Basic is in Pro. The free set stays free.</dd>
                 <dt>Access</dt><dd>{OFFER.accessTerm}</dd>
-                <dt>Updates</dt><dd>{OFFER.updatesTerm}</dd>
-                <dt>Refunds</dt><dd><Link href="/refunds">Read the refund policy</Link> before you buy.</dd>
+                <dt>Updates</dt>
+                <dd>
+                  <span className="block"><strong>Basic:</strong> {OFFER.updatesByPlan.basic}</span>
+                  <span className="block mt-1"><strong>Pro:</strong> {OFFER.updatesByPlan.pro}</span>
+                </dd>
+                {upgradePrice && <><dt>Upgrade</dt><dd>A Basic owner moves to Pro by paying the difference, {upgradePrice}, once, with no time limit. It covers the edition you bought.</dd></>}
+                <dt>Refunds</dt><dd>{REFUND_DAYS} days from each purchase, for any reason. <Link href="/refunds">Read the refund policy</Link> before you buy.</dd>
               </dl>
               <Link className="pub-btn pub-btn-primary" href="/pricing">Compare the plans and buy</Link>
             </>

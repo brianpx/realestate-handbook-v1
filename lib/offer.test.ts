@@ -96,6 +96,9 @@ describe('the live offer', () => {
     expect(OFFER.updatesByPlan.basic).toBe('Corrections and improvements to the chapters and essential tools of edition 1.0 are included; a future edition is a separate purchase at a discount for existing buyers.');
     expect(OFFER.updatesByPlan.pro).toBe('Everything in Basic, plus every new chapter, tool and script added to the handbook and every future edition, at no further charge, for as long as the handbook is published.');
     expect(OFFER.updatesTerm).toBe(`Basic: ${OFFER.updatesByPlan.basic} Pro: ${OFFER.updatesByPlan.pro}`);
+    // the hero's fine print carries the short access line: the Pro-only promise belongs on the pricing and updates pages
+    expect(OFFER.accessSummary).toBe('Lifetime access to edition 1.0 for one person, not transferable.');
+    expect(OFFER.accessSummary).not.toMatch(/Pro|devices/);
     expect(OWNER.supportEmail).toBe('support@findnurturekeep.com');
     expect(termPublished('updatesTerm')).toBe(true);
     expect(termPublished('supportEmail')).toBe(true);
