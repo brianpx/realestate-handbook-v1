@@ -24,6 +24,7 @@ function setup(over: Partial<AuthDeps> = {}) {
     allowedOrigins: [ORIGIN],
     ipSalt: 's',
     sendCeiling: DEFAULT_SEND_CEILING,
+    limits: { requestLink: REQUEST_LINK_LIMITS, verify: VERIFY_LIMIT },
     bootstrapEmails: [],
     now: () => now,
     fetchImpl,

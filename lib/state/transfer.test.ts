@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { coachStore } from '../coach';
 import { COACH_KEY } from '../coach/schema';
 import legacyState from './fixtures/legacy-handbook-state.json';
-import { applyImport, exportProgress, settingsStore, stateStore } from './index';
+import { applyImport, exportProgress, readPreviousBackup, settingsStore, stateStore } from './index';
 import { SCHEMA_VERSION } from './schema';
 import { buildExport, describeSummary, MAX_IMPORT_BYTES, parseImport } from './transfer';
 import { createStore } from './store';
@@ -143,4 +143,51 @@ describe('store.replace', () => {
     expect(JSON.parse(window.localStorage.getItem('k')!).read).toEqual({ ch9: true });
     expect(calls).toBe(1);
   });
+});
+
+
+describe('previous import recovery', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    stateStore.invalidate(); settingsStore.invalidate(); coachStore.invalidate();
+  });
+  it('restores the whole pre-import snapshot, including initially empty stores', () => {
+    const imported = parseImport(file({ read: { ch1: true } }, { dark: true }, coach));
+    if (!imported.ok) throw new Error(imported.error);
+    expect(applyImport(imported, coachStore)).toBe(true);
+    const backup = readPreviousBackup();
+    if (!backup.ok) throw new Error(backup.error);
+    expect(backup.state.read).toEqual({});
+    expect(applyImport(backup, coachStore)).toBe(true);
+    expect(stateStore.get().read).toEqual({});
+    expect(settingsStore.get().dark).toBeUndefined();
+    expect(coachStore.get().attempts).toEqual([]);
+    // Recovery itself remains reversible.
+    expect(readPreviousBackup()).toMatchObject({ ok: true, state: { read: { ch1: true } } });
+  });
+  it('rejects missing or corrupt backups without replacing progress', () => {
+    stateStore.update(s => { s.read.ch2 = true; });
+    expect(readPreviousBackup().ok).toBe(false);
+    localStorage.setItem('handbook-progress.pre-import', '{bad');
+    expect(readPreviousBackup().ok).toBe(false);
+    expect(stateStore.get().read.ch2).toBe(true);
+  });
+});
+
+
+it('leaves durable progress unchanged if the coherent recovery snapshot cannot be saved', () => {
+  localStorage.clear(); stateStore.invalidate(); settingsStore.invalidate(); coachStore.invalidate();
+  stateStore.update(s => { s.read.ch9 = true; });
+  const imported = parseImport(file({ read: { ch1: true } }));
+  if (!imported.ok) throw new Error(imported.error);
+  const original = localStorage.setItem.bind(localStorage);
+  const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+    if (key === 'handbook-progress.pre-import') throw new Error('quota');
+    original(key, value);
+  });
+  try {
+    expect(() => applyImport(imported, coachStore)).toThrow('Nothing was restored');
+    expect(stateStore.get().read).toEqual({ ch9: true });
+    expect(JSON.parse(localStorage.getItem('handbookState')!).read).toEqual({ ch9: true });
+  } finally { spy.mockRestore(); }
 });
