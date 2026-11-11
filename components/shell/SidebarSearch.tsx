@@ -1,7 +1,8 @@
 'use client';
 
+import { SearchIcon, XIcon } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
 import { NAV, isPageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
 import { searchEntries, type SearchEntry } from '@/lib/search-query';
@@ -24,13 +25,12 @@ const loadIndex = (): Promise<SearchEntry[]> => {
 
 export type SearchApi = { clear: () => void };
 
-// Ported from legacy/js/search.js. `children` is the menu button, which sits beside the box on phones and, while
-// results are open, turns into the cross that closes them.
-export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
+// Ported from legacy/js/search.js. The sidebar's menu button calls `clear` through apiRef: on phones, while results
+// are open, it is the cross that closes them.
+export function SidebarSearch({ onSearching, onNavigate, apiRef }: {
   onSearching: (searching: boolean) => void;
   onNavigate: () => void;
   apiRef: Ref<SearchApi>;
-  children: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -40,6 +40,9 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const pendingJump = useRef<SearchEntry | null>(null);
+  // The shortcut as this reader's keyboard has it. Only the browser knows which, so the hint appears after mount.
+  const [shortcut, setShortcut] = useState<string | null>(null);
+  useEffect(() => { setShortcut(/Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘K' : 'Ctrl K'); }, []);
 
   const trimmed = query.trim();
   const searching = trimmed !== '';
@@ -97,23 +100,29 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   return (
     <search className="nav-search">
       <label className="visually-hidden" htmlFor="navSearch">Search the handbook</label>
-      <input
-        ref={inputRef}
-        type="search"
-        id="navSearch"
-        className="nav-search-input"
-        placeholder="Search the handbook"
-        aria-keyshortcuts="Control+K Meta+K"
-        autoComplete="off"
-        spellCheck={false}
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        onFocus={() => { if (!index) load(); }}
-        onKeyDown={e => {
-          if (e.key === 'ArrowDown') { links()[0]?.focus(); e.preventDefault(); }
-          else if (e.key === 'Escape' && query) { setQuery(''); e.stopPropagation(); } // keeps the mobile menu's own Escape handler from also firing
-        }}
-      />
+      <div className="nav-search-field">
+        <SearchIcon aria-hidden="true" />
+        <input
+          ref={inputRef}
+          type="search"
+          id="navSearch"
+          className="nav-search-input"
+          placeholder="Search the handbook"
+          aria-keyshortcuts="Control+K Meta+K"
+          autoComplete="off"
+          spellCheck={false}
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onFocus={() => { if (!index) load(); }}
+          onKeyDown={e => {
+            if (e.key === 'ArrowDown') { links()[0]?.focus(); e.preventDefault(); }
+            else if (e.key === 'Escape' && query) { setQuery(''); e.stopPropagation(); } // keeps the mobile menu's own Escape handler from also firing
+          }}
+        />
+        {query
+          ? <button type="button" className="nav-search-clear" aria-label="Clear search" onClick={() => { setQuery(''); inputRef.current?.focus(); }}><XIcon aria-hidden="true" /></button>
+          : shortcut && <kbd aria-hidden="true">{shortcut}</kbd>}
+      </div>
       <ul
         ref={listRef}
         className="search-results"
@@ -148,7 +157,6 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         ))}
       </ul>
       <div className="visually-hidden" id="searchStatus" role="status" aria-live="polite">{status}</div>
-      {children}
     </search>
   );
 }

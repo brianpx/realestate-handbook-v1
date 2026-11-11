@@ -21,7 +21,8 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await expect(upsell(page)).toHaveAttribute('data-upsell', 'ch2');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('2. Finding Clients');
     await expect(page.getByText('part of the paid handbook')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Pricing and availability' })).toHaveAttribute('href', '/pricing');
+    // inside the card: the sidebar has a pricing link of its own
+    await expect(upsell(page).getByRole('link', { name: 'Pricing and availability' })).toHaveAttribute('href', '/pricing');
     await expect(upsell(page).locator('form[data-source="upsell"]')).toContainText('Tell me when purchase opens'); // the closed-state action (OD-02)
     await expect(page.getByRole('link', { name: '1. Mindset & Foundations' }).first()).toBeVisible();
     await expect(page.locator('article.chapter-body')).toHaveCount(0);

@@ -33,6 +33,7 @@
   --color-link: #1d4ed8;
   --color-focus: #4338ca;
   --color-success: #166534;
+  --color-success-tint: #dcfce7;
   --color-warning: #854d0e;
   --color-danger: #b91c1c;
 }
@@ -44,8 +45,8 @@
   --secondary-color: var(--color-link);
   --accent-color: var(--color-link);
   --bg-body: var(--color-canvas);
-  --bg-sidebar: var(--color-canvas);
-  --sidebar-text: var(--color-body);
+  --bg-sidebar: var(--color-surface);
+  --sidebar-text: var(--color-ink);
   --sidebar-hover: var(--color-ink);
   --card-bg: var(--color-surface);
   --text-main: var(--color-ink);
@@ -76,6 +77,9 @@
   --chart-5: var(--color-danger);
   /* 6px, the radius the handbook already uses on fields and buttons. */
   --radius: 0.375rem;
+  /* The handbook shell's own corners: the search field and buttons; cards and panels. */
+  --hb-radius: 10px;
+  --hb-radius-card: 12px;
   --sidebar: var(--color-canvas);
   --sidebar-foreground: var(--color-body);
   --sidebar-primary: var(--color-brand);
@@ -109,6 +113,7 @@
     --color-link: #93c5fd;
     --color-focus: #a5b4fc;
     --color-success: #86efac;
+    --color-success-tint: #14532d;
     --color-warning: #fde047;
     --color-danger: #fca5a5;
   }
@@ -118,7 +123,7 @@
    between the two sides of a breakpoint. Container queries for the chapter column are separate (.chapter-slot).
      1100px  header: the public nav becomes a menu button
      1000px  wide:   the public hero and four-column grids collapse
-      900px  shell:  the handbook's phone layout (sticky sidebar, dropdown menu)
+      900px  shell:  the handbook's phone layout (sticky bar, drawer menu)
       700px  narrow: public sections, grids, the tool index and the sample lose their side room
       600px  phone:  teaching widgets stack, controls grow to 44px, dialog footers stack
       420px  small:  the hero's fields and stat tiles become single rows */
@@ -142,81 +147,64 @@
         html.dark .sidebar-logo.logo-light { display: none}
         html.dark .sidebar-logo.logo-dark { display: block}
 
-        /* Sidebar Styling */
+        /* Sidebar: a white rail. The logo and the search stay put; the list under them scrolls. */
         #sidebar {
             width: 320px;
             background-color: var(--bg-sidebar);
             color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--color-line);
+            border-right: 1px solid var(--color-subtle);
             flex-shrink: 0;
             height: 100%}
 
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--color-line);
-            background-color: var(--color-surface);
-            /* never let the flex layout squeeze the header, which clipped the subtitle in short windows */
-            flex-shrink: 0;
-            transition: margin-top 0.3s ease, visibility 0s}
-        /* scrolling the main page slides the whole header up and out of view, so the search bar becomes
-           the top of the sidebar. The header moves as one rigid block (no reflow), so nothing is ever
-           half-clipped in place. --header-h is measured in JS. */
-        #sidebar.header-collapsed .sidebar-header { margin-top: calc(-1 * var(--header-h, 340px)); visibility: hidden; transition: margin-top 0.3s ease, visibility 0s 0.3s}
-        @media (prefers-reduced-motion: reduce) { .sidebar-header, #sidebar.header-collapsed .sidebar-header { transition: none} }
-
-        .sidebar-header .sidebar-title {
-            /* system fonts only, so nothing extra to load: SF Pro on Apple devices, Segoe UI Variable on Windows */
-            font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
-            font-size: 1.8rem;
-            color: var(--color-ink);
-            font-weight: 600;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            margin: 0.67em 0; /* the margin the book title had as an h1 */
-        }
-
+        /* never let the flex layout squeeze the header, which clipped the subtitle in short windows */
+        .sidebar-header { flex-shrink: 0; background-color: var(--color-surface)}
+        .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 16px 20px 12px; color: var(--color-ink); text-decoration: none}
         /* decorative: the title text beside it stays, so a failed image just drops out */
-        /* centered in the 320px sidebar */
-        .sidebar-logo { display: block; width: 200px; max-width: 100%; height: auto; margin: 0 auto 12px}
-
-        .sidebar-header p:not(.sidebar-title) {
-            font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
-            font-size: 1.1rem;
-            color: var(--color-ink-muted);
-            margin: 4px 0 8px}
+        .sidebar-logo { display: block; flex: none; width: 48px; height: 48px; object-fit: contain}
+        .sidebar-brand-text { min-width: 0}
+        .sidebar-header .sidebar-title { font-size: 0.9375rem; font-weight: 700; line-height: 1.25; color: var(--color-ink)}
+        .sidebar-header p:not(.sidebar-title) { margin-top: 2px; font-size: 0.75rem; line-height: 1.4; color: var(--color-ink-muted)}
 
         .nav-list {
             list-style: none;
             overflow-y: auto;
             scrollbar-width: none; /* still scrolls by wheel, touch and keyboard */
             flex-grow: 1;
-            padding: 12px 0}
+            padding: 0 0 20px}
 
         .nav-list::-webkit-scrollbar { display: none}
 
         .nav-section-title {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             color: var(--color-ink-muted);
-            padding: 12px 20px 4px;
-            font-weight: 700;
+            padding: 20px 20px 6px;
+            font-weight: 600;
             margin-bottom: 0}
 
+        /* A row: number or letter, title, then the padlock or the read tick */
         .nav-item {
-            display: block;
-            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 44px;
+            margin: 0 8px;
+            padding: 4px 12px;
+            border-radius: 8px;
             color: var(--sidebar-text);
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
+            line-height: 1.35;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent}
+            transition: background-color 0.2s ease, color 0.2s ease}
+        .nav-item .page-mark { flex: 0 0 22px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; font-weight: 400}
+        .nav-item .page-title { flex: 1; min-width: 0}
 
         .nav-item:hover {
-            background-color: var(--color-subtle);
+            background-color: var(--color-tint);
             color: var(--sidebar-hover)}
 
         .nav-item:focus-visible { outline: none; box-shadow: inset 0 0 0 3px #0f172a, inset 0 0 0 6px #ffffff; }
@@ -225,6 +213,8 @@
 
         /* Baseline focus ring for every control; zero specificity so widget-specific rules still win */
         :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; box-shadow: 0 0 0 3px #0f172a; }
+        /* Text that is read out and copied but takes no room, and stays inline: for punctuation inside a label */
+        .undrawn { font-size: 0}
         .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0}
 
         .skip-link {
@@ -244,7 +234,6 @@
         .nav-item.active {
             background-color: var(--color-accent-tint);
             color: var(--color-link);
-            border-left-color: var(--color-link);
             font-weight: 600}
 
         /* Main Content Styling */
@@ -337,9 +326,8 @@
             .chapter-section {
                 background: var(--card-bg);
                 padding: 48px;
-                border-radius: 12px;
-                border: 1px solid var(--border-color);
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)}
+                border-radius: var(--hb-radius-card);
+                border: 1px solid var(--color-subtle)}
             .chapter-section + .chapter-section { margin-top: 48px}
         }
 
@@ -428,7 +416,7 @@
             color: var(--color-body)}
         .content-container :where(a) { color: var(--color-link); text-underline-offset: 3px; }
         /* Text links darken on hover. Button links are excluded: this rule would paint their label --color-ink, which is unreadable on a brand fill in light mode and drops the link color on a mini button in both themes. */
-        .content-container :where(a):not(.btn-nav):not(.btn-mini):not(.link-btn):hover { color: var(--color-ink); }
+        .content-container :where(a):not(.btn-nav):not(.btn-mini):not(.link-btn):not(.hb-btn):hover { color: var(--color-ink); }
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
         textarea, select { background-color: var(--color-surface); color: var(--color-ink); }
 
@@ -658,18 +646,36 @@
         .glossary dd { margin-left: 0; color: var(--color-body)}
         .colophon { margin-top: 32px; font-size: 0.85rem; color: var(--color-ink-muted)}
 
-        /* Sidebar search */
-        .nav-search { display: block; flex-shrink: 0; padding: 12px 20px; border-bottom: 1px solid var(--color-line); background-color: var(--color-canvas)}
-        .nav-search-input { width: 100%; padding: 9px 12px; font: inherit; font-size: max(16px, 1rem); color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
+        /* Sidebar search: one field holding the magnifier, the box and either the "/" hint or the clear button */
+        .nav-search { position: relative; z-index: 1; display: block; flex-shrink: 0; padding: 0 20px 14px; border-bottom: 1px solid var(--color-subtle); background-color: var(--color-surface); transition: box-shadow 0.15s}
+        @media (width > 900px) { #sidebar.list-scrolled .nav-search { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08)} }
+        .nav-search-field { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border: 1px solid var(--color-line-strong); border-radius: var(--hb-radius); background: var(--color-canvas); color: var(--color-ink-muted)}
+        .nav-search-field:focus-within { border-color: var(--color-link); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-link) 20%, transparent)}
+        .nav-search-field svg { flex: none; width: 16px; height: 16px}
+        /* the id outranks the form-control rule that paints every text input the surface colour */
+        #sidebar .nav-search-input { flex: 1; min-width: 0; height: 100%; padding: 0; font: inherit; font-size: max(16px, 1rem); color: var(--color-ink); background: transparent; border: 0}
+        /* forced colours drop the shadow and repaint the border, so the field takes an outline there */
+        @media (forced-colors: active) { .nav-search-field:focus-within { outline: 3px solid; outline-offset: 2px} }
+        /* the field draws the focus ring for the box inside it */
+        .nav-search-input:focus-visible { outline: none; box-shadow: none}
         .nav-search-input::placeholder { color: var(--color-ink-muted)}
-        .search-results { list-style: none; margin: 8px -20px -12px; max-height: 50vh; overflow-y: auto}
+        .nav-search-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none}
+        .nav-search-field kbd { padding: 1px 6px; font: inherit; font-size: 0.75rem; border: 1px solid var(--color-line); border-radius: 5px; background: var(--color-surface)}
+        .nav-search-clear { display: flex; align-items: center; justify-content: center; flex: none; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--color-ink-muted); cursor: pointer}
+        .nav-search-clear:hover { background: var(--color-tint); color: var(--color-ink)}
+        .search-results { list-style: none; margin: 8px -20px -14px; padding-bottom: 8px; max-height: 50vh; overflow-y: auto}
         .search-results[hidden] { display: none}
         tr[hidden] { display: none}
         #sidebar.searching .nav-list { display: none}
         #sidebar.searching .search-results { max-height: none}
-        .search-result { display: block; padding: 9px 20px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent}
-        .search-result:hover, .search-result:focus-visible { background-color: var(--color-subtle); color: var(--sidebar-hover); border-left-color: var(--color-link)}
-        .search-result-title { display: block; font-size: 0.875rem}
+        /* on a desktop the results take the list's place under the pinned search and scroll there */
+        @media (width > 900px) {
+            #sidebar.searching .nav-search { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; border-bottom: 0}
+            #sidebar.searching .search-results { flex: 1; min-height: 0; scrollbar-width: none}
+        }
+        .search-result { display: block; margin: 0 8px; padding: 8px 12px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px}
+        .search-result:hover, .search-result:focus-visible { background-color: var(--color-tint); color: var(--sidebar-hover)}
+        .search-result-title { display: block; font-size: 0.9375rem; line-height: 1.35}
         .search-result-where { display: block; font-size: 0.75rem; color: var(--color-ink-muted)}
         .search-empty { padding: 9px 20px; font-size: 0.85rem; color: var(--color-ink-muted)}
 
@@ -717,16 +723,16 @@
         @media (width <= 600px) { .note-dialog-foot { flex-direction: column; align-items: stretch} .note-dialog-head, .note-dialog-body, .note-dialog-foot { padding-left: 16px; padding-right: 16px} }
 
         /* Progress */
-        .progress-item { list-style: none; padding: 4px 20px 12px}
+        .progress-item { list-style: none; padding: 6px 20px 12px}
         .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px}
         .progress-label { font-size: 0.75rem; color: var(--color-ink-muted)}
-        .settings-item { list-style: none; padding: 12px 20px 16px; margin-top: 8px; border-top: 1px solid var(--color-line)}
-        /* a bordered bar with a chevron that flips when opened, so it reads as expandable */
-        .settings summary { display: flex; align-items: center; justify-content: space-between; list-style: none; cursor: pointer; padding: 10px 14px; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-body); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
+        .settings-item { list-style: none; padding: 8px 20px 0; margin-top: 12px; border-top: 1px solid var(--color-subtle)}
+        /* a menu row with a chevron that flips when opened, so it reads as expandable */
+        .settings summary { display: flex; align-items: center; justify-content: space-between; list-style: none; cursor: pointer; min-height: 44px; margin: 0 -12px; padding: 4px 12px; font-size: 0.9375rem; line-height: 1.35; color: var(--sidebar-text); border-radius: 8px}
         .settings summary::-webkit-details-marker { display: none}
         .settings summary::after { content: ""; width: 8px; height: 8px; margin: -4px 2px 0 0; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.2s ease, margin 0.2s ease}
         .settings[open] summary::after { margin-top: 4px; transform: rotate(-135deg)}
-        .settings summary:hover { background: var(--color-tint); border-color: var(--color-ink-muted)}
+        .settings summary:hover { background: var(--color-tint)}
         .settings[open] summary { margin-bottom: 4px}
         @media (prefers-reduced-motion: reduce) { .settings summary::after { transition: none} }
         .settings-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 1rem; line-height: 1.45; color: var(--color-body)}
@@ -742,16 +748,15 @@
         .settings-sub { margin-top: 8px}
         .settings-sub[hidden] { display: none}
         .settings-reset { width: 100%}
-        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-ink-muted)}
+        .settings-legal { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-subtle); font-size: 0.75rem; line-height: 1.6; color: var(--color-ink-muted)}
         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-ink-muted)}
         .settings-transfer-title { font-size: 0.9rem; font-weight: 600}
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
         .settings-confirm { margin-top: 8px}
         .settings-confirm .btn-mini { margin: 6px 8px 0 0}
-        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-item.read::after { display: none}
-        .progress-bar { height: 6px; border-radius: 3px; background: var(--color-subtle); overflow: hidden}
-        .progress-bar span { display: block; height: 100%; width: 0; background: var(--color-link); transition: width 0.3s}
-        .nav-item.read::after { content: "\2713"; content: "\2713" / " (read)"; float: right; color: var(--color-brand-soft); font-weight: 700}
+        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-read { display: none}
+        .progress-bar { height: 6px; border-radius: 999px; background: var(--color-subtle); overflow: hidden}
+        .progress-bar span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--color-brand-soft); transition: width 0.3s}
 
         /* Checklists */
         .checklist { margin: 12px 0 20px}
@@ -786,8 +791,13 @@
         .score-axis { font-size: 12px; fill: var(--color-ink-muted)}
         .score-change { display: block; margin: 16px 0; font-weight: 600; color: var(--color-ink)}
         .score-change textarea { display: block; width: 100%; max-width: 40rem; margin-top: 6px; padding: 10px; font: inherit; font-weight: 400; font-size: max(16px, 1rem); line-height: 1.45; border: 1px solid var(--color-line-strong); border-radius: 6px}
-        .chapter-next { margin: 28px 0 8px; font-weight: 700}
-        .chapter-next a { color: var(--color-link)}
+        /* Previous and next, as two cards under the chapter */
+        .chapter-pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-subtle)}
+        .chapter-pager p { max-width: 48%; margin: 0; font-size: 1rem}
+        .chapter-next { margin-left: auto; text-align: right}
+        .chapter-pager a { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 48px; padding: 10px 16px; border: 1px solid var(--color-subtle); border-radius: var(--hb-radius); background: var(--color-surface); color: var(--color-link); font-weight: 600; text-decoration: none}
+        .chapter-pager a:hover { border-color: var(--color-link)}
+        .chapter-pager small { font-size: 0.75rem; font-weight: 400; color: var(--color-ink-muted)}
         .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--color-line); font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
@@ -798,7 +808,7 @@
             .shell-handbook { display: block; height: auto; overflow: visible}
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
-            .chapter-next { break-after: avoid}
+            .chapter-pager { break-after: avoid}
             .chapter-foot, .load-error { break-inside: avoid; color: #000; border-color: #000}
         }
 
@@ -1055,11 +1065,9 @@
 
         @media (width <= 900px) {
             /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
-               toolbar. The sidebar sticks to the top with its header just off-screen, so scrolling slides the
-               header away and leaves the search row pinned. */
+               toolbar. The sidebar becomes one bar stuck to the top: menu button, logo, search. */
             .shell-handbook { display: block; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible}
-            #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100}
-            #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible}
+            #sidebar { flex-direction: row; align-items: center; gap: 10px; width: 100%; height: auto; padding: 10px 12px; position: sticky; top: 0; z-index: 100; border-right: 0; border-bottom: 1px solid var(--color-subtle); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06)}
             #main-content { min-height: 0; overflow: visible}
             /* The document is the scroll root here, so anything brought into view (anchored jumps, search hits,
                focused inputs and buttons) must land below the sticky search row. The public site has the same rule
@@ -1069,59 +1077,62 @@
                 margin-top: 40px;
                 padding-top: 40px;
                 border-top: 2px solid var(--border-color)}
-            /* Compact header: logo | title over subtitle. Scrolling the page slides it away (the shared rule
-               above), leaving the search row, which always holds the menu button on its right. */
-            .sidebar-header { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 10px 14px}
-            .sidebar-header .sidebar-title {
-                grid-column: 2; grid-row: 1; align-self: end; margin: 0;
-                /* sized from the window width so the whole title always fits on one line */
-                font-size: clamp(11px, calc((100vw - 75px) / 19), 22px);
-                line-height: 1.2; white-space: nowrap}
-            .sidebar-header p:not(.sidebar-title) {
-                display: block; grid-column: 2; grid-row: 2; align-self: start; margin: 2px 0 0;
-                font-size: 13.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
-            .sidebar-logo { grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; max-width: none; margin: 0}
+            /* The logo alone is the way home; its words stay in the link's name for a screen reader. */
+            .sidebar-header { background: none}
+            .sidebar-brand { padding: 0}
+            .sidebar-logo { width: 36px; height: 36px}
+            .sidebar-brand-text { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap}
             .menu-toggle {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 flex-shrink: 0;
                 width: 44px;
                 height: 44px;
+                padding: 0;
                 background: transparent;
-                border: 1px solid var(--color-line-strong);
-                border-radius: 6px;
+                border: 0;
+                border-radius: var(--hb-radius);
                 color: var(--color-ink);
                 font-size: 1.4rem;
+                line-height: 1;
                 cursor: pointer}
-            /* Light dropdown that overlays the page rather than pushing it down */
+            /* The chapter list is a drawer under the bar, over the dimmed page, not a block that pushes it down */
             .nav-list {
                 display: none;
                 position: absolute;
-                top: 100%;
+                top: calc(100% + 1px); /* below the bar's border */
                 left: 0;
-                right: 0;
-                max-height: 70vh;
+                width: min(320px, 88vw);
+                height: calc(100vh - 100% - 1px);
+                height: calc(100dvh - 100% - 1px); /* a percentage here is the bar's height inside its border */
                 overflow-y: auto;
                 padding-bottom: 0; /* the Close bar sits flush with the bottom edge */
                 background: var(--color-surface);
-                border-bottom: 1px solid var(--color-line);
-                box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25)}
+                border-right: 1px solid var(--color-subtle);
+                box-shadow: 8px 0 24px rgba(15, 23, 42, 0.15);
+                transition: transform 0.2s}
             #sidebar.menu-open .nav-list { display: block}
+            @starting-style { #sidebar.menu-open .nav-list { transform: translateX(-100%)} }
             /* While a dropdown is open the page behind it neither scrolls nor receives taps */
             html.scroll-locked, html.scroll-locked body { overflow: hidden}
             html.scroll-locked body { position: fixed; width: 100%} /* top is set in JS to the saved scroll offset */
             html.scroll-locked #sidebar { position: fixed; left: 0; right: 0} /* top is set in JS too */
             html.scroll-locked .menu-backdrop { display: block}
-            .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: var(--color-tint); touch-action: none} /* fully opaque: nothing of the page shows or can be reached */
+            .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: rgba(15, 23, 42, 0.4); touch-action: none} /* dims the page; the scroll lock and inert keep it out of reach */
+            html.dark .menu-backdrop { background: rgba(0, 0, 0, 0.65)} /* the page is near black already */
             .nav-list, .search-results { overscroll-behavior: contain} /* scrolling the list never chains to the page */
             /* the desktop "searching" rule lifts the height limit; on phones the dropdown must stay within the screen and scroll */
-            #sidebar.searching .search-results { max-height: 70vh; max-height: 70dvh}
+            #sidebar.searching .search-results { max-height: calc(100vh - 100%); max-height: calc(100dvh - 100%)} /* to the bottom of the screen: a percentage here is the bar's height */
             /* phones are already full width, so the option does nothing there */
             .settings-row.settings-wide { display: none}
-            .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: var(--color-canvas); border-top: 1px solid var(--color-line-strong); list-style: none}
-            .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px; cursor: pointer}
-            .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px}
-            .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto}
-            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
+            .menu-close { display: block; position: sticky; bottom: 0; margin-top: 16px; padding: 10px 12px; background: var(--color-surface); border-top: 1px solid var(--color-subtle); list-style: none}
+            .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--hb-radius); cursor: pointer}
+            .nav-search { position: static; flex: 1; min-width: 0; padding: 0; border-bottom: 0; background: none; box-shadow: none}
+            .nav-search-field kbd { display: none}
+            .nav-search-clear { width: 40px; height: 40px; margin-right: -8px}
+            .settings-legal { margin-bottom: 0}
+            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; padding: 8px 0 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
             #main-content { padding: 8px}
             .content-container { padding: 16px; border-radius: 8px}
             .lifecycle-container { flex-direction: column}
@@ -1130,8 +1141,6 @@
         html.hide-quizzes .shell-handbook .box.quiz { display: none} /* a handbook setting; the public sample keeps its quizzes */
 
         /* ---- Product pages: handbook home, guided setup, account ---- */
-        .sidebar-header .sidebar-title a { color: inherit; text-decoration: none}
-        .sidebar-header .sidebar-title a:hover { text-decoration: underline}
         #content-container > h1:not(.hb-title) {
             font-size: 2rem;
             color: var(--primary-color);
@@ -1141,35 +1150,99 @@
             padding-bottom: 12px}
         .hb-title { font-size: 2.2rem; line-height: 1.2; color: var(--primary-color); margin: 4px 0 16px}
         .hb-h2 { font-size: 1.5rem; margin: 40px 0 14px; padding-bottom: 8px}
-        .hb-continue { margin: 28px 0 8px; padding: 24px; border: 1px solid var(--color-link); border-left: 5px solid var(--accent-color); border-radius: 10px; background: var(--color-accent-tint)}
-        .hb-continue h2 { font-size: 1.35rem; border: 0; padding: 0; margin: 0 0 10px}
-        .hb-continue p { margin-bottom: 10px}
-        .hb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px}
-        .hb-primary { display: inline-block; padding: 14px 28px; font-size: 1.05rem; text-decoration: none; min-height: 48px}
-        .hb-actions .btn-mini { display: inline-flex; align-items: center; text-decoration: none}
-        .hb-how li { margin-bottom: 10px}
-        .hb-tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 14px}
-        .hb-tool { display: block; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--color-surface); color: var(--text-main); text-decoration: none}
-        .hb-tool:hover { border-color: var(--accent-color); background: var(--color-canvas)}
-        .hb-tool strong { display: block; color: var(--secondary-color); margin-bottom: 4px}
-        .hb-tool span { font-size: 0.92rem; color: var(--color-ink-muted)}
-        .hb-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 32px}
-        .hb-part h3 { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-ink-muted); margin: 18px 0 6px}
-        .hb-part ul { list-style: none; padding: 0; margin: 0}
-        .hb-part li { margin-bottom: 4px}
-        .hb-read { color: var(--color-brand-soft); font-weight: 700}
-        /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts); the pages show the upsell card */
-        .nav-lock, .hb-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
-        .nav-item .nav-lock { float: right; margin-top: 3px}
-        .nav-item.locked { color: var(--color-ink-muted)}
+        /* Handbook home and the locked-page card: panels on the page background. The element rules above are
+           written for running text, so each piece here states its own margins. */
+        .hb-home { display: flex; flex-direction: column; gap: 48px; padding-bottom: 32px}
+        .hb-block { display: flex; flex-direction: column; gap: 20px}
+        .hb-home h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--color-ink)}
+        .hb-block-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px}
+        .hb-more { font-size: 0.9375rem; font-weight: 600}
+        .hb-kicker { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted)}
+
+        .hb-hero { display: flex; flex-wrap: wrap; align-items: stretch; gap: 32px}
+        .hb-hero-text { flex: 1 1 420px; display: flex; flex-direction: column; gap: 16px}
+        .hb-home .hb-title, .hb-upsell .hb-title { margin: 0; font-size: 2.375rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-ink)}
+        .hb-lead { max-width: 62ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--color-body)}
+        .hb-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px}
+        .hb-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid transparent; border-radius: var(--hb-radius); font: inherit; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer}
+        .hb-btn svg { flex: none; width: 16px; height: 16px}
+        .hb-btn-primary { background: var(--color-brand); color: var(--color-on-brand)}
+        .hb-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand)}
+        .hb-btn-ghost { background: var(--color-surface); border-color: var(--color-line); color: var(--color-ink)}
+        .hb-btn-ghost:hover { border-color: var(--color-ink); color: var(--color-ink)}
+        .hb-btn:disabled { opacity: 0.45; cursor: default}
+
+        .hb-progress { flex: 0 1 260px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-meter { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem}
+        .hb-meter-head { display: flex; justify-content: space-between; gap: 12px; color: var(--color-ink-muted)}
+        .hb-meter-head b { color: var(--color-ink); font-variant-numeric: tabular-nums}
+        .hb-bar { height: 6px; border-radius: 999px; background: var(--color-subtle); overflow: hidden}
+        .hb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--color-brand-soft); transition: width 0.3s}
+        .hb-fine { margin: 0; font-size: 0.8125rem; color: var(--color-ink-muted)}
+
+        .hb-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 14px 18px; background: var(--color-tint); border-radius: var(--hb-radius); font-size: 0.9375rem; color: var(--color-body)}
+        .hb-notice p { flex: 1 1 360px; margin: 0; font-size: inherit}
+        .hb-notice > a { font-weight: 600; white-space: nowrap}
+        .hb-free { flex: none; display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--color-success-tint); color: var(--color-success); font-size: 0.75rem; font-weight: 600; line-height: 1.5}
+        .hb-continue { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-continue-text { flex: 1 1 360px}
+        .hb-continue h2 { margin: 0 0 4px; font-size: 1.0625rem; letter-spacing: 0}
+        .hb-continue p { margin: 0; font-size: 0.9375rem}
+
+        .hb-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none}
+        .hb-step, .hb-card { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-step-num { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: var(--color-brand); color: var(--color-on-brand); font-size: 0.9375rem; font-weight: 600}
+        .hb-step h3, .hb-card strong { margin: 0; font-size: 1.0625rem; font-weight: 600; line-height: 1.4; color: var(--color-ink)}
+        .hb-step h3 { margin-top: 4px}
+        .hb-step p, .hb-card span { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--color-body)}
+        .hb-card { text-decoration: none}
+        .hb-card:hover { border-color: var(--color-link)}
+
+        /* The chapter list: one band per part, its name on the left and its pages on the right */
+        .hb-chapters .hb-block-head { padding-bottom: 16px}
+        .hb-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 0; font-size: 0.875rem; color: var(--color-ink-muted)}
+        .hb-legend > span { display: inline-flex; align-items: center; gap: 8px}
+        .hb-legend svg { width: 16px; height: 16px}
+        .hb-part { display: flex; flex-wrap: wrap; gap: 8px 32px; padding: 22px 0; border-top: 1px solid var(--color-subtle)}
+        .hb-part-label { flex: 0 0 190px}
+        .hb-part h3 { margin: 4px 0 0; font-size: 1.125rem; font-weight: 600; color: var(--color-ink)}
+        .hb-part ul { flex: 1 1 380px; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none}
+        .hb-part li { margin: 0; border-top: 1px solid var(--color-subtle)}
+        .hb-part li:first-child { border-top: 0}
+        .hb-ch { display: flex; align-items: center; gap: 16px; min-height: 46px; font-size: 1.0625rem; font-weight: 500; text-decoration: none}
+        .hb-ch .page-mark { flex: 0 0 28px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums}
+        .hb-ch .page-title { flex: 1; min-width: 0}
+        .hb-ch:hover .page-title { text-decoration: underline}
+        /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts) carry a padlock; the pages show
+           the upsell card. A page the reader has finished carries a green tick. */
+        .nav-lock, .nav-read, .hb-lock, .hb-read { display: inline-flex; flex: none; color: var(--color-ink-muted)}
+        .nav-read, .hb-read { color: var(--color-brand-soft)}
+        :is(.nav-lock, .nav-read, .hb-lock, .hb-read) svg { width: 16px; height: 16px}
+        .nav-lock { align-items: center; gap: 6px}
+        .nav-lock-plan { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase}
+
         .hb-upsell { max-width: 760px}
-        .hb-upsell-lede { font-size: 1.1rem; line-height: 1.55; color: var(--color-ink-muted)}
-        .hb-upsell-status { margin: 24px 0 8px; padding: 20px 24px; border: 1px solid var(--color-line-strong); border-left: 5px solid var(--accent-color); border-radius: 10px; background: var(--color-accent-tint)}
-        .hb-upsell-status p { margin-bottom: 10px}
-        .hb-upsell-free ul { padding-left: 20px}
-        .hb-upsell-free li { margin-bottom: 6px}
+        .hb-upsell .hb-title { margin: 8px 0 12px}
+        .hb-upsell-lede { max-width: 62ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--color-body)}
+        .hb-upsell-status { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 24px; padding: 28px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-upsell-status p { max-width: 60ch; margin: 0; font-size: 1rem}
+        .hb-lock-badge { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; background: var(--color-tint); color: var(--color-ink)}
+        .hb-lock-badge svg { width: 20px; height: 20px}
+        .hb-upsell-free { width: 100%}
+        .hb-upsell-free h2 { margin: 8px 0; padding: 0; border: 0; font-size: 1.1875rem; font-weight: 600; line-height: 1.3}
+        .hb-upsell-free ul { margin: 0; padding-left: 20px; list-style: disc; line-height: 1.9}
+        .hb-upsell-free li { margin: 0}
+        @media (width <= 900px) {
+            /* on a phone these two are panels on the page background too, not one sheet */
+            .content-container:has(> .hb-home, > .hb-upsell) { padding: 16px 8px 40px; background: none; border: 0; box-shadow: none}
+            .hb-home { gap: 36px}
+            .hb-home .hb-title, .hb-upsell .hb-title { font-size: 1.875rem}
+            .hb-home h2 { font-size: 1.3125rem}
+            .hb-continue h2 { font-size: 1.0625rem}
+            .hb-progress { flex: 1 1 100%}
+        }
         /* The notes form on the card (components/site/LeadForm.tsx), in the account page's input style */
-        .hb-upsell .lead-form { display: grid; gap: 10px; justify-items: start; max-width: 440px; margin: 4px 0 8px}
+        .hb-upsell .lead-form { display: grid; gap: 10px; justify-items: start; width: 100%; max-width: 520px}
         .hb-upsell .lead-form p { margin: 0}
         .hb-upsell .lead-field { width: 100%}
         .hb-upsell .lead-field label { display: block; font-weight: 600; margin-bottom: 6px}
@@ -1177,7 +1250,7 @@
         .hb-upsell .lead-error { color: var(--color-danger)}
         .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
         .hb-upsell .lead-sent p { margin-bottom: 8px}
-        .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}
+        .hb-upsell .account-input { min-height: 48px; border-radius: var(--hb-radius)}
         .box.tool-locked { border-style: dashed}
         /* The account page: facts, and the two forms that post without JavaScript */
         .account-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; margin: 0 0 16px}
@@ -1266,6 +1339,8 @@
         }
         @media (width <= 600px) {
             .hb-title { font-size: 1.7rem}
+            .hb-btns .hb-btn { flex: 1 1 100%}
+            .chapter-pager p { flex: 1 1 100%; max-width: 100%}
             .setup-step span:not(.setup-step-num) { font-size: 0.85rem}
         }
 

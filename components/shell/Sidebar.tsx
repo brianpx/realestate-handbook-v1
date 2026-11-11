@@ -1,5 +1,6 @@
 'use client';
 
+import { CircleCheckIcon, LockIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,11 +8,12 @@ import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { BOOK_TITLE, NAV } from '@/lib/pages';
 import { HANDBOOK, pageHref, pageIdFromPath } from '@/lib/routes';
 import { trackingProgress, useHandbookState, useSettings } from '@/lib/state';
+import { PageLabel } from './PageLabel';
 import { ProgressItem } from './ProgressItem';
 import { Settings } from './Settings';
 import { SidebarSearch, type SearchApi } from './SidebarSearch';
 
-// Ported from the static site's app-with-cover.js (header collapse, menu toggle, phone scroll lock).
+// Ported from the static site's app-with-cover.js (menu toggle, phone scroll lock).
 // The CSS keys off the same ids and classes, so those names stay.
 const PHONE_QUERY = '(max-width: 900px)';
 
@@ -23,40 +25,15 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
   const current = pathname === HANDBOOK ? 'home' : (pageIdFromPath(pathname) ?? pathname.slice(1));
 
   const sidebarRef = useRef<HTMLElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const lockedScrollY = useRef(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  // the chapter list has moved under the pinned logo and search, which then cast a shadow over it
+  const [listScrolled, setListScrolled] = useState(false);
   // true while search results are open; they pin the page like the menu does and the menu button closes them
   const [searching, setSearching] = useState(false);
   const searchApi = useRef<SearchApi>(null);
   const open = menuOpen || searching;
-
-  // Header slides out of the sidebar as the main panel scrolls; two thresholds avoid flicker.
-  useEffect(() => {
-    const sidebar = sidebarRef.current;
-    const header = headerRef.current;
-    const main = document.getElementById('main-content');
-    if (!sidebar || !header || !main) return;
-    const phone = window.matchMedia(PHONE_QUERY);
-    const measure = () => sidebar.style.setProperty('--header-h', `${header.offsetHeight}px`);
-    measure();
-    window.addEventListener('resize', measure);
-    window.addEventListener('load', measure);
-    void document.fonts?.ready.then(measure);
-    const onScroll = () => {
-      if (phone.matches) return; // on phones the sticky header scrolls away with the page
-      if (main.scrollTop > 60) setHeaderCollapsed(true);
-      else if (main.scrollTop < 8) setHeaderCollapsed(false);
-    };
-    main.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('load', measure);
-      main.removeEventListener('scroll', onScroll);
-    };
-  }, []);
 
   // On phones an open menu (or open search results) pins the page behind it: body fixed at the current offset (the
   // method iOS Safari honours), and the page is inert so Tab cannot reach what the backdrop covers (as a modal dialog would).
@@ -163,7 +140,8 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       heading.focus({ preventScroll: true });
     }
     const region = document.getElementById('pageStatus');
-    const label = document.querySelector('.nav-item.active')?.textContent?.trim() ?? '';
+    // the row's own label, without the padlock's or the tick's hidden words
+    const label = [...document.querySelectorAll('.nav-item.active :is(.page-mark, .page-title)')].map(node => node.textContent).join('').trim();
     if (region && label) {
       region.textContent = '';
       setTimeout(() => { region.textContent = label; }, 50);
@@ -172,39 +150,46 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
 
   const settings = useSettings();
   const { read } = useHandbookState();
-  const classes = [menuOpen && 'menu-open', searching && 'searching', headerCollapsed && 'header-collapsed', !trackingProgress(settings) && 'progress-off'].filter(Boolean).join(' ');
+  const classes = [menuOpen && 'menu-open', searching && 'searching', listScrolled && 'list-scrolled', !trackingProgress(settings) && 'progress-off'].filter(Boolean).join(' ');
 
   return (
     <>
       <nav id="sidebar" ref={sidebarRef} className={classes} aria-label="Handbook">
-        <div className="sidebar-header" ref={headerRef}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="sidebar-logo logo-dark" src="/images/logo3-sidebar-dark.png" width={320} height={320} alt="" />
-          <p className="sidebar-title"><Link href={HANDBOOK}>{BOOK_TITLE}</Link></p>
-          <p>A practical guide for new real estate agents</p>
+        {/* First in the bar on a phone (menu, logo, search); hidden on a desktop, where the list is always open. */}
+        <button
+          ref={toggleRef}
+          type="button"
+          className="menu-toggle"
+          id="menuToggle"
+          aria-label={searching ? 'Close search results' : 'Table of contents'}
+          aria-expanded={menuOpen}
+          aria-controls="navList"
+          onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
+        >
+          {open ? '✕' : '☰'}
+        </button>
+        <div className="sidebar-header">
+          <Link className="sidebar-brand" href={HANDBOOK}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="sidebar-logo logo-dark" src="/images/logo3-sidebar-dark.png" width={320} height={320} alt="" />
+            <div className="sidebar-brand-text">
+              <p className="sidebar-title">{BOOK_TITLE}</p>
+              <p>A practical guide for new real estate agents</p>
+            </div>
+          </Link>
         </div>
-        <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi}>
-          <button
-            ref={toggleRef}
-            type="button"
-            className="menu-toggle"
-            id="menuToggle"
-            aria-label={searching ? 'Close search results' : 'Table of contents'}
-            aria-expanded={menuOpen}
-            aria-controls="navList"
-            onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
-          >
-            {open ? '✕' : '☰'}
-          </button>
-        </SidebarSearch>
-        <ul className="nav-list" id="navList" role="list">
-          <ProgressItem />
+        <SidebarSearch onSearching={setSearching} onNavigate={() => setMenuOpen(false)} apiRef={searchApi} />
+        <ul className="nav-list" id="navList" role="list" onScroll={e => setListScrolled(e.currentTarget.scrollTop > 4)}>
           <ProductLinks current={current} locked={locked} />
+          {/* the title page and the overview have no part of their own: they close the Get started group */}
+          {NAV.filter(group => !group.part).map(group => (
+            <SectionGroup key="top" group={group} current={current} read={read} locked={locked} />
+          ))}
           {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}
-          {NAV.map(group => (
-            <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} locked={locked} />
+          {NAV.filter(group => group.part).map(group => (
+            <SectionGroup key={group.part} group={group} current={current} read={read} locked={locked} />
           ))}
           <HelpLinks current={current} />
           <Settings />
@@ -237,10 +222,19 @@ const PRODUCT_LINKS = [
 
 type Locked = Readonly<Record<string, string>>;
 
-/** The badge on a row the reader's plan does not open; the row still links, to the upsell card. */
+/**
+ * The padlock on a row the reader's plan does not open; the row still links, to the upsell card. A row that needs
+ * more than membership names the plan beside the padlock, so a Basic member can see why it is closed.
+ */
 function LockBadge({ label }: { label: string | undefined }) {
   if (!label) return null;
-  return <span className="nav-lock"><span aria-hidden="true">{label}</span><span className="visually-hidden"> ({label} only)</span></span>;
+  return (
+    <span className="nav-lock" title={`${label} only`}>
+      {label !== 'Members' && <span className="nav-lock-plan" aria-hidden="true">{label}</span>}
+      <LockIcon aria-hidden="true" />
+      <span className="visually-hidden"> ({label} only)</span>
+    </span>
+  );
 }
 
 function ProductLinks({ current, locked }: { current: string; locked: Locked }) {
@@ -253,7 +247,7 @@ function ProductLinks({ current, locked }: { current: string; locked: Locked }) 
         const lock = locked[link.id === 'start' ? 'start' : link.id === 'tools' ? 'app-e' : ''];
         return (
           <li key={link.id}>
-            <Link href={link.href} className={`nav-item${active ? ' active' : ''}${lock ? ' locked' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>{link.label}<LockBadge label={lock} /></Link>
+            <Link href={link.href} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}><span className="page-title">{link.label}</span><LockBadge label={lock} /></Link>
           </li>
         );
       })}
@@ -266,9 +260,11 @@ function HelpLinks({ current }: { current: string }) {
   return (
     <>
       <li className="nav-section-title" role="presentation">PROGRESS AND HELP</li>
-      <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}>Account and saved progress</Link></li>
-      <li><Link href="/support" className="nav-item" data-page="support">Support</Link></li>
-      <li><Link href="/" className="nav-item" data-page="site">Back to the website</Link></li>
+      <ProgressItem />
+      <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}><span className="page-title">Account and saved progress</span></Link></li>
+      <li><Link href="/pricing" className="nav-item" data-page="pricing"><span className="page-title">Pricing and availability</span></Link></li>
+      <li><Link href="/support" className="nav-item" data-page="support"><span className="page-title">Support</span></Link></li>
+      <li><Link href="/" className="nav-item" data-page="site"><span className="page-title">Back to the website</span></Link></li>
     </>
   );
 }
@@ -281,8 +277,8 @@ function StudyLinks({ current, locked }: { current: string; locked: Locked }) {
         const active = link.id === current;
         return (
           <li key={link.id}>
-            <Link href={`${HANDBOOK}/${link.id}`} className={`nav-item${active ? ' active' : ''}${locked[link.id] ? ' locked' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
-              {link.label}<LockBadge label={locked[link.id]} />
+            <Link href={`${HANDBOOK}/${link.id}`} className={`nav-item${active ? ' active' : ''}`} data-page={link.id} aria-current={active ? 'page' : undefined}>
+              <span className="page-title">{link.label}</span><LockBadge label={locked[link.id]} />
             </Link>
           </li>
         );
@@ -294,19 +290,21 @@ function StudyLinks({ current, locked }: { current: string; locked: Locked }) {
 function SectionGroup({ group, current, read, locked }: { group: (typeof NAV)[number]; current: string; read: Record<string, boolean>; locked: Locked }) {
   return (
     <>
-      {group.part && <li className="nav-section-title" role="presentation">{group.part}</li>}
+      {group.part && <li className="nav-section-title" role="presentation">{group.part.replace(': ', ' · ')}</li>}
       {group.pages.map(page => {
         const active = page.id === current;
         const lock = locked[page.id];
+        const isRead = Boolean(read[page.id]) && !lock;
         return (
           <li key={page.id}>
             <Link
               href={pageHref(page.id)}
-              className={`nav-item${active ? ' active' : ''}${read[page.id] && !lock ? ' read' : ''}${lock ? ' locked' : ''}`}
+              className={`nav-item${active ? ' active' : ''}${isRead ? ' read' : ''}`}
               data-page={page.id}
               aria-current={active ? 'page' : undefined}
             >
-              {page.label}<LockBadge label={lock} />
+              <PageLabel label={page.label} /><LockBadge label={lock} />
+              {isRead && <span className="nav-read"><CircleCheckIcon aria-hidden="true" /><span className="visually-hidden"> (read)</span></span>}
             </Link>
           </li>
         );
