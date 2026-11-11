@@ -18,6 +18,6 @@ export const BYPASS_HEADERS: Record<string, string> = process.env.VERCEL_AUTOMAT
 
 // Specs that need a server built with lead capture on and a throwaway lead file, Mailpit, or a staged fake old host.
 // A deployment is not built that way, so they run only locally.
-export const LOCAL_ONLY_SPECS = ['**/lead.spec.ts', '**/cutover-stub.spec.ts', '**/auth.spec.ts', '**/admin.spec.ts'];
+export const LOCAL_ONLY_SPECS = ['**/lead.spec.ts', '**/cutover-stub.spec.ts', '**/auth.spec.ts', '**/admin.spec.ts', '**/billing.spec.ts'];
 // Specs that seed readers of their own; against a deployment they need E2E_DATABASE_URL.
 export const SEEDING_SPECS = ['**/access.spec.ts'];

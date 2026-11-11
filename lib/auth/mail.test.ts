@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { authMailFromEnv, sendSignInLink, signInMessage } from './mail';
+import { authMailFromEnv, readyMessage, sendReadyLink, sendSignInLink, signInMessage } from './mail';
 
 const ok = (init?: Partial<Response>) => Promise.resolve({ ok: true, status: 202, ...init } as Response);
 
@@ -34,5 +34,22 @@ describe('the sign-in message', () => {
       spy.mockRestore();
     }
     expect(await sendSignInLink({ provider: 'none' }, 'to@y.co', 'x', fetchImpl)).toBe('skipped');
+  });
+});
+
+describe('the ready message', () => {
+  it('carries a one-time sign-in link and no price or postal address', async () => {
+    const link = 'https://handbook.example/auth/verify?token=abc';
+    const { subject, text } = readyMessage(link);
+    expect(subject).toBe('Your handbook is ready');
+    expect(text).toContain(link);
+    expect(text).toContain('expires in 15 minutes');
+    expect(text).not.toMatch(/\$|\d{2,}\s*(cents|dollars)/);
+    expect(text).not.toContain('unsubscribe');
+    const fetchImpl = vi.fn<typeof fetch>(() => ok());
+    const cfg = authMailFromEnv({ MAILPIT_URL: 'http://localhost:8025', LEAD_FROM_EMAIL: 'me@x.co' });
+    expect(await sendReadyLink(cfg, 'buyer@e2e.test', link, fetchImpl)).toBe('sent');
+    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ Subject: 'Your handbook is ready', To: [{ Email: 'buyer@e2e.test' }] });
+    expect(await sendReadyLink(cfg, 'buyer@e2e.test', link, vi.fn<typeof fetch>(() => ok({ ok: false, status: 500 })))).toBe('failed');
   });
 });
