@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { hashSecret } from '@/lib/auth/token';
 import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ceiling';
-import { CONFIRM_PATH, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
+import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
 import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, hashIp, type LeadDeps } from './handler';
 import { confirmationMessage, mailFromEnv, sendConfirmation, type MailConfig } from './mail';
 import { MemoryLeadStore } from './store';
@@ -225,6 +225,33 @@ describe('send ceiling', () => {
     expect((await post(body({ email: 'b@b.co' }), { ip: '198.51.100.2' })).status).toBe(429);
     const later = new Date(NOW.getTime() + SEND_CEILING_WINDOW_SECONDS * 1000);
     expect((await handleLead({ origin: SITE, ip: '198.51.100.2', body: body({ email: 'b@b.co' }) }, { ...deps, now: () => later })).status).toBe(200);
+  });
+});
+
+describe('confirmation lease', () => {
+  it('sends once for a null status whose lease is older than the retry window, and a fresh lease is not claimed again', async () => {
+    const { store, post, fetchImpl } = setup();
+    await store.insert({ email: 'a@b.co', source: 'sample', consentVersion: CONSENT_VERSION, consentText: CONSENT_TEXTS[CONSENT_VERSION], confirmTokenHash: 'a'.repeat(64), confirmExpiresAt: new Date(NOW.getTime() + 7 * 24 * 3600 * 1000), at: NOW });
+    const row = store.leads[0]!;
+    row.emailStatus = null;
+    row.confirmDeliveryStartedAt = new Date(NOW.getTime() - (CONFIRM_RETRY_SECONDS + 1) * 1000).toISOString();
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.emailStatus).toBe('sent');
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+  it('sends one email for overlapping submits, and never emails a confirmed address', async () => {
+    const { store, post, fetchImpl, confirm, sentLink } = setup();
+    const [first, second] = await Promise.all([post(body({ email: 'a@b.co' })), post(body({ email: 'a@b.co' }))]);
+    expect([first.status, second.status]).toEqual([200, 200]);
+    expect(store.leads).toHaveLength(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const token = new URL(sentLink()).searchParams.get('token')!;
+    expect(await confirm(token)).toEqual({ status: 303, headers: { Location: CONFIRMED } });
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.confirmedAt).toEqual(NOW);
   });
 });
 

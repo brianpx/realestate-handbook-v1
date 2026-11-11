@@ -30,6 +30,22 @@ export class NeonLeadStore implements LeadStore {
     return { created: false, id: String(existing[0]?.id ?? ''), emailStatus: emailStatus(existing[0]?.email_status), confirmedAt: toDateOrNull(existing[0]?.confirmed_at) };
   }
 
+  async claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date) {
+    // UPDATE rechecks its predicate after a competing row writer commits, so only one active claim wins.
+    const rows = await this.sql`
+      update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()},
+        email_status = null, confirm_delivery_started_at = ${at.toISOString()}
+      where id = ${id} and confirmed_at is null and (
+        email_status in ('failed', 'skipped') or confirm_token_expires_at <= ${at.toISOString()} or
+        (email_status is null and (confirm_delivery_started_at is null or confirm_delivery_started_at <= ${retryBefore.toISOString()}))
+      ) returning id`;
+    return rows.length > 0;
+  }
+
+  async completeConfirmation(id: string, tokenHash: string, status: EmailStatus) {
+    await this.sql`update leads set email_status = ${status} where id = ${id} and confirm_token_hash = ${tokenHash}`;
+  }
+
   async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {
     await this.sql`update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()} where id = ${id}`;
   }
