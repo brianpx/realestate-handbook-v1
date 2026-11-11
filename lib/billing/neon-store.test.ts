@@ -39,17 +39,32 @@ function mirror(over: Partial<MirrorInput> = {}): MirrorInput {
 }
 
 describe('NeonBillingStore statements', () => {
-  it('claims an event only when the stored row failed, and binds the payload', async () => {
-    const { sql, calls } = fakeSql([]);
-    const result = await new NeonBillingStore(sql).claimEvent({
-      provider: 'lemonsqueezy', providerEventId: 'order_created:99:2026-11-10T12:00:00.000Z', eventType: 'order_created',
-      objectId: '99', eventCreatedAt: NOW, payload: { event: 'order_created', objectId: '99' },
-    }, NOW);
-    expect(result).toEqual({ claimed: false });
-    expect(calls[0]?.text).toContain('on conflict (provider, provider_event_id) do update');
-    expect(calls[0]?.text).toContain("where billing_events.status = 'failed'");
-    expect(calls[0]?.text).not.toContain('buyer@e2e.test');
+  const EVENT = '44444444-4444-4444-8444-444444444444';
+  const event = {
+    provider: 'lemonsqueezy', providerEventId: 'order_created:99:2026-11-10T12:00:00.000Z', eventType: 'order_created',
+    objectId: '99', eventCreatedAt: NOW, payload: { event: 'order_created', objectId: '99' },
+  };
+
+  // Postgres cannot show a statement the row it has just inserted, so a claim read back from the table is empty
+  // for every new event. The claimed arm has to come from the insert's RETURNING.
+  it('reads a claim from the insert itself, reclaims only a failed row, and binds the payload', async () => {
+    const { sql, calls } = fakeSql([{ id: EVENT, claimed: true, status: null, received_at: null }]);
+    const result = await new NeonBillingStore(sql).claimEvent(event, NOW);
+    expect(result).toEqual({ claimed: true, id: EVENT });
+    const text = calls[0]?.text ?? '';
+    expect(text).toContain('select id, true as claimed, null::text as status, null::timestamptz as received_at from ins union all');
+    expect(text).not.toContain('billing_events.id in (select id from ins)');
+    expect(text).toContain('on conflict (provider, provider_event_id) do update');
+    expect(text).toContain("where billing_events.status = 'failed'");
+    expect(text).not.toContain('buyer@e2e.test');
     expect(calls[0]?.values).toContain('{"event":"order_created","objectId":"99"}');
+  });
+
+  it('reports the stored status of a row it did not claim, and no status when no row is visible', async () => {
+    const stored = fakeSql([{ id: EVENT, claimed: false, status: 'received', received_at: NOW.toISOString() }]);
+    expect(await new NeonBillingStore(stored.sql).claimEvent(event, NOW)).toEqual({ claimed: false, status: 'received', receivedAt: NOW });
+    const unseen = fakeSql([]);
+    expect(await new NeonBillingStore(unseen.sql).claimEvent(event, NOW)).toEqual({ claimed: false });
   });
 
   it('mirrors a record, grant and audit in one statement, with the amount bound and no role write', async () => {

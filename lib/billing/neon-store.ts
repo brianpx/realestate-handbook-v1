@@ -55,8 +55,10 @@ export class NeonBillingStore implements BillingStore {
 
   async claimEvent(event: NewBillingEvent, at: Date): Promise<ClaimResult> {
     const payload = event.payload === undefined ? null : JSON.stringify(event.payload);
-    // The insert's RETURNING is empty when the row is not `failed`, so the second arm reports that row's status.
-    // A duplicate of `processed` can answer 200. A duplicate of `received` must not.
+    // The claimed row is read from RETURNING, never from the table: the outer query runs on the statement's
+    // snapshot and cannot see a row this statement inserted. RETURNING is empty when the stored row is not
+    // `failed`, and the second arm then reports that row's status. A duplicate of `processed` can answer 200;
+    // a duplicate of `received` must not. No row at all means another delivery inserted it after the snapshot.
     const rows = await this.sql`
       with ins as (
         insert into billing_events (provider, provider_event_id, event_type, object_id, event_created_at, status, payload)
@@ -66,11 +68,10 @@ export class NeonBillingStore implements BillingStore {
           where billing_events.status = 'failed'
         returning id
       )
-      select billing_events.id, billing_events.status, billing_events.received_at,
-             (billing_events.id in (select id from ins)) as claimed
-      from billing_events
-      where billing_events.id in (select id from ins)
-         or (provider = ${event.provider} and provider_event_id = ${event.providerEventId} and not exists (select 1 from ins))`;
+      select id, true as claimed, null::text as status, null::timestamptz as received_at from ins
+      union all
+      select id, false as claimed, status, received_at from billing_events
+      where provider = ${event.provider} and provider_event_id = ${event.providerEventId} and not exists (select 1 from ins)`;
     return claimFrom(rows[0]);
   }
 

@@ -271,6 +271,15 @@ describe('billing webhooks', () => {
     }
   });
 
+  it('answers 500, not a duplicate, when the claim comes back with no status', async () => {
+    const body = order({}, { custom_data: undefined });
+    const h = harness(() => body);
+    h.store.claimEvent = async () => ({ claimed: false });
+    expect(await h.process(sign(body))).toEqual({ status: 500, error: 'in_progress' });
+    expect(h.store.records).toHaveLength(0);
+    expect(h.fetchImpl).not.toHaveBeenCalled();
+  });
+
   it('answers 500 while a delivery is still received, and reclaims it after the attempt is dead', async () => {
     const body = order({}, { custom_data: undefined });
     const h = harness(() => body);

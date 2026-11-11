@@ -71,8 +71,9 @@ export async function processBillingWebhook(input: WebhookInput, deps: ProcessDe
     claim = await store.claimEvent(event, at);
   }
   if (!claim.claimed) {
-    if (claim.status === 'received' || claim.status === 'failed') return { status: 500, error: 'in_progress' };
-    return { status: 200, duplicate: true };
+    // Only a finished row is a duplicate. An unknown status must not answer 200, or the provider stops retrying.
+    if (claim.status === 'processed' || claim.status === 'ignored_stale' || claim.status === 'unmatched') return { status: 200, duplicate: true };
+    return { status: 500, error: 'in_progress' };
   }
 
   try {
