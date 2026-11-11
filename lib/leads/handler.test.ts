@@ -244,8 +244,8 @@ describe('mail', () => {
   it('uses SendGrid only with a sender and a postal address, Mailpit in development, else nothing', () => {
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k' })).toEqual({ provider: 'none' });
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co' })).toEqual({ provider: 'none' });
-    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co' });
-    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025' });
+    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co', mailingAddress: '1 Main St' });
+    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025', mailingAddress: 'synthetic temp address' });
     expect(mailFromEnv({})).toEqual({ provider: 'none' });
   });
   it('posts to Mailpit\'s send API in its own shape', async () => {
