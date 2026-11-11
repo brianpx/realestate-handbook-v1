@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { NeonLeadStore } from './neon-store';
 
 /** `confirmTokenHash` is the SHA-256 hex of the token in the confirmation link; the raw token is never stored. */
@@ -247,9 +248,11 @@ const fileStore = (file: string): FileLeadStore => {
  * asked for by name, otherwise none (the route then refuses with 503). A hosted Vercel deployment (VERCEL_ENV is
  * production or preview) never gets the file store, whatever LEAD_STORE says: its disk is ephemeral and the leads
  * would vanish with the instance. `vercel dev` (VERCEL_ENV=development) and a local production build (the e2e
- * suite) may still use it.
+ * suite) may still use it. A non-production deployment whose DATABASE_URL is the production host gets none
+ * instead, and this function does not open that database.
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
+  if (productionDatabaseRefused(env)) return null;
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
   if (env.LEAD_STORE === 'file' && !hosted) return fileStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);

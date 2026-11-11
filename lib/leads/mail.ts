@@ -1,8 +1,10 @@
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { OWNER } from '../offer';
 import type { EmailStatus } from './store';
 
 // Confirmation email for the marketing list. SendGrid in production, Mailpit (a local mail catcher) in development,
-// nothing otherwise. Both are plain HTTPS calls, so no client library is needed.
+// nothing otherwise. Both are plain HTTPS calls, so no client library is needed. A non-production deployment
+// pointed at the production database is nothing, even when SendGrid is configured.
 export type MailConfig =
   | { provider: 'none' }
   | { provider: 'mailpit'; url: string; from: string; fromName: string; replyTo?: string; mailingAddress: string }
@@ -11,6 +13,7 @@ export type MailConfig =
 export type Message = { subject: string; text: string; html?: string };
 
 export function mailFromEnv(env: Record<string, string | undefined>): MailConfig {
+  if (productionDatabaseRefused(env)) return { provider: 'none' };
   const from = env.LEAD_FROM_EMAIL;
   // The site's postal address fills the local notes footer. SendGrid ignores it: a commercial send needs
   // LEAD_MAILING_ADDRESS set on its own, so a stand-in on the site cannot start one.

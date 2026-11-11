@@ -1,3 +1,4 @@
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { deliver, type MailConfig, type Message } from '@/lib/leads/mail';
 import type { EmailStatus } from '@/lib/leads/store';
 import { TOKEN_TTL_SECONDS } from './config';
@@ -6,8 +7,11 @@ import { TOKEN_TTL_SECONDS } from './config';
  * The sign-in message uses the same sender and providers as the follow-up note, with one difference: it is a
  * transactional message the reader asked for a moment ago, so it goes out without the postal address the
  * marketing note needs. It still needs a from-address, which must be verified (SPF, DKIM) before any real send.
+ * A non-production deployment pointed at the production database returns no provider, so the ready email
+ * cannot send either.
  */
 export function authMailFromEnv(env: Record<string, string | undefined>): MailConfig {
+  if (productionDatabaseRefused(env)) return { provider: 'none' };
   const from = env.LEAD_FROM_EMAIL;
   const common = { fromName: env.LEAD_FROM_NAME ?? 'Finding, Nurturing, and Keeping Clients', replyTo: env.LEAD_REPLY_TO ?? from, mailingAddress: env.LEAD_MAILING_ADDRESS ?? '' };
   if (env.SENDGRID_API_KEY) {
