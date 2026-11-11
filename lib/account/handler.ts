@@ -45,10 +45,10 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
 }
 
 /**
- * Deletes the account (OD-21: the reader types their address to confirm). One batch anonymises the user row and
- * removes its sessions and tokens; grants and billing rows stay for the accounting record; the realtor profile and
- * the marketing list's row for the same address go too, each a separate best-effort step in its own store (the
- * profile's cascade never fires, because the user row stays).
+ * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile and the marketing
+ * row go first: if either delete throws, anonymise has not run and the account stays active. The database
+ * statement removes those rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
+ * license number or a marketing address after the account address is gone. Grants and billing rows stay.
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
   // A failed attempt leaves the reader signed in: no cookie is cleared, and nothing is deleted.
@@ -64,23 +64,12 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     const parsed = deleteAccountSchema.safeParse({ confirmEmail: new URLSearchParams(req.body).get('confirmEmail') ?? '' });
     if (!parsed.success || parsed.data.confirmEmail !== email) return redirect(`${ACCOUNT_PATH}?error=confirm`);
 
+    // Before anonymise, so a throw here leaves the account active. The Neon statement deletes the same rows.
+    if (deps.profiles) await deps.profiles.deleteByUser(userId);
+    if (deps.leads) await deps.leads.deleteByEmail(email);
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));
     if (!done) return redirect(SIGN_IN, cleared); // deleted by a concurrent request a moment ago: nothing to say goodbye to
-    if (deps.profiles) {
-      try {
-        await deps.profiles.deleteByUser(userId);
-      } catch (err) {
-        console.error('account: profile row not removed', err instanceof Error ? err.name : 'error');
-      }
-    }
-    if (deps.leads) {
-      try {
-        await deps.leads.deleteByEmail(email);
-      } catch (err) {
-        console.error('account: lead row not removed', err instanceof Error ? err.name : 'error');
-      }
-    }
     return redirect(GOODBYE_PATH, cleared);
   } catch (err) {
     console.error('account: delete failed', err instanceof Error ? err.name : 'error');

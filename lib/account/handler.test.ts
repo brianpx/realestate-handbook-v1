@@ -117,7 +117,7 @@ describe('delete account', () => {
     expect(out.headers?.Location).toBe('/signup?next=%2Faccount');
     expect(users.users[0]!.status).toBe('active');
   });
-  it('sends the reader back to the account page when the store fails, and the lead or profile store failing does not fail the deletion', async () => {
+  it('sends the reader back to the account page when the store fails, and a failing lead or profile delete leaves the account active', async () => {
     const { auth, leads, profiles, deps, req, users } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
     const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
@@ -131,11 +131,9 @@ describe('delete account', () => {
       auth.failWith = null;
       leads.failWith = new Error('leads down');
       profiles.failWith = new Error('profiles down');
-      const res = await handleDeleteAccount(req(body), deps);
-      expect(res.status).toBe(303);
-      expect(res.headers?.Location).toBe('/goodbye');
-      expect(users.users[0]!.status).toBe('deleted');
-      expect(profiles.profiles).toHaveLength(1); // the step failed and was logged; the deletion still went through
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(users.users[0]!.status).toBe('active');
+      expect(profiles.profiles).toHaveLength(1);
     } finally {
       spy.mockRestore();
     }
