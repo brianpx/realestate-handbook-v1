@@ -233,6 +233,26 @@ describe('billing webhooks', () => {
     expect(h.sends()).toHaveLength(1);
   });
 
+  it('ends access when a paid order is later marked fraudulent, with a dispute date and no refund date', async () => {
+    const paid = order({}, { custom_data: undefined });
+    const flagged = order({ status: 'fraudulent', updated_at: '2026-11-10T12:06:00.000Z', role: 'admin' }, { custom_data: undefined });
+    let current: unknown = paid;
+    const h = harness(() => current);
+    expect(await h.process(sign(paid))).toEqual({ status: 200, outcome: 'processed' });
+    const user = h.users.users[0];
+    if (!user) throw new Error('expected a user');
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('member');
+    current = flagged;
+    expect(await h.process(sign(flagged))).toEqual({ status: 200, outcome: 'processed' });
+    expect(user.role).toBe('reader');
+    expect(user.status).toBe('active');
+    expect(h.access.grants).toHaveLength(1);
+    expect(h.access.grants[0]).toMatchObject({ revokedAt: NOW, revokeReason: 'chargeback' });
+    expect(h.store.records[0]).toMatchObject({ status: 'chargeback_lost', providerStatus: 'fraudulent', accessEndsAt: NOW, disputedAt: NOW, refundedAt: null });
+    expect(entitlement({ status: user.status, snapshot: await h.access.loadAccess(user.id), now: NOW }).level).toBe('preview');
+    expect(h.sends()).toHaveLength(1);
+  });
+
   it('does not set the ready flag when the send fails, and a retry then sends once', async () => {
     const body = order({}, { custom_data: undefined });
     const h = harness(() => body);

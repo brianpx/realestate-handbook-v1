@@ -115,15 +115,18 @@ async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, o
   // A named user who is not on file must not fall through to the checkout address.
   const metadataMiss = Boolean(metadataUserId) && !metaUser && !existing?.userId;
   const user = metadataMiss ? null : await resolveUser(store, metaUser, order.email, existing?.userId ?? null, at);
-  const refunding = order.grant === 'revoke';
+  const revoking = order.grant === 'revoke';
+  // Only a refund has a refund date. An order the provider flagged gets a dispute date instead.
+  const refunding = revoking && order.revokeReason === 'refund';
   const mirrored = await store.commitMirror(mirrorFromOrder(order, {
     at,
     lastEventAt: parsed.eventTime,
     userId: user?.id ?? null,
     grant: metadataMiss ? 'none' : order.grant,
     revokeReason: metadataMiss ? null : order.revokeReason,
-    accessEndsAt: refunding ? at : order.accessEndsAt,
+    accessEndsAt: revoking ? at : order.accessEndsAt,
     refundedAt: refunding ? at : order.refundedAt,
+    disputedAt: revoking && !refunding ? at : null,
     actor: ACTOR,
   }));
 
@@ -157,6 +160,7 @@ export function mirrorFromOrder(order: ProductOrder, over: {
   revokeReason: 'refund' | 'chargeback' | null;
   accessEndsAt: Date | null;
   refundedAt: Date | null;
+  disputedAt: Date | null;
   actor: Actor;
 }): MirrorInput {
   return {
@@ -176,7 +180,7 @@ export function mirrorFromOrder(order: ProductOrder, over: {
     currency: order.currency,
     paidAt: order.paidAt,
     refundedAt: over.refundedAt,
-    disputedAt: null,
+    disputedAt: over.disputedAt,
     trialEndsAt: null,
     currentPeriodStart: null,
     currentPeriodEnd: null,
