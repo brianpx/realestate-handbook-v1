@@ -113,6 +113,38 @@ test.describe('public pages', () => {
     await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
   });
 
+  test('hero amount fields focus as a whole without including validation text', async ({ page }) => {
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      for (const id of ['heroGoal', 'heroCommission']) {
+        const input = page.locator(`#${id}`);
+        await input.focus();
+        await expect(input).toHaveCSS('outline-style', 'none');
+        await expect(input).toHaveCSS('box-shadow', 'none');
+        await input.fill('invalid');
+        await expect(input).toHaveAttribute('aria-invalid', 'true');
+        const field = input.locator('..');
+        await expect(field.locator('.calc-error')).toBeVisible();
+        const ring = await field.evaluate(el => {
+          const style = getComputedStyle(el, '::after');
+          return {
+            content: style.content,
+            border: style.borderTopStyle,
+            width: parseFloat(style.width),
+            height: parseFloat(style.height),
+            fieldWidth: el.getBoundingClientRect().width,
+            inputHeight: el.querySelector('input')!.getBoundingClientRect().height,
+          };
+        });
+        expect(ring.content).toBe('""');
+        expect(ring.border).toBe('solid');
+        expect(ring.width).toBeCloseTo(ring.fieldWidth, 0);
+        expect(ring.height).toBeCloseTo(ring.inputHeight, 0);
+      }
+    }
+  });
+
   test('the sample lesson runs the real calculator and links to pricing', async ({ page }) => {
     await page.goto('/preview');
     await expect(page.locator('.calc-panel')).toBeVisible();

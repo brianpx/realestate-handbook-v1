@@ -121,6 +121,14 @@
   .pub-stat span { margin-top: 0; font-size: 0.9rem}
 }
 .pub .pub-device-note { font-size: 0.82rem; color: var(--pub-muted); margin: 14px 0 0}
+.pub-device .pub-field .calc-field { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0}
+.pub-device .pub-field .calc-prefix { grid-area: 1 / 1 / 2 / 2; font-size: 1rem; line-height: 1.5; background: var(--color-surface)}
+.pub-device .pub-field .calc-prefix + .calc-input { grid-area: 1 / 2 / 2 / 3; border-left: 0; line-height: 1.5}
+.pub-device .pub-field .calc-input:focus-visible { outline: none; box-shadow: none}
+/* One focus ring covers the dollar sign and input, leaving validation text below it. */
+.pub-device .pub-field .calc-field:has(.calc-input:focus-visible)::after { content: ""; grid-area: 1 / 1 / 2 / -1; align-self: stretch; border-radius: 8px; border: 2px solid var(--color-link); pointer-events: none; z-index: 1}
+.pub-device .pub-field .calc-error { grid-column: 1 / -1; grid-row: 2}
+.pub-device .pub-field .calc-error:empty { display: none}
 
 /* ---- grids and cards ---- */
 .pub-grid { display: grid; gap: 20px}
