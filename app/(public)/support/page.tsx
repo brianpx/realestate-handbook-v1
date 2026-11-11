@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHead } from '@/components/site/Draft';
+import { PageOutline } from '@/components/site/PageOutline';
 import { OWNER, purchaseOpen } from '@/lib/offer';
 
 export const metadata: Metadata = {
@@ -9,22 +10,23 @@ export const metadata: Metadata = {
   alternates: { canonical: '/support' },
 };
 
+// Drives the outline; each id is the matching <h2 id> below.
+const OUTLINE = [
+  { id: 'navigating', text: 'Finding your way' },
+  { id: 'saving', text: 'Saving progress' },
+  { id: 'backup', text: 'Backup and restore' },
+  { id: 'devices', text: 'Devices and browsers' },
+  { id: 'access', text: 'Access and recovery' },
+  { id: 'contact', text: 'Contact' },
+];
+
 export default function SupportPage() {
   return (
     <>
       <PageHead eyebrow="Support" title="Help with the handbook">
         Most questions are about where progress is saved. Start here; the answers describe how the handbook works today.
       </PageHead>
-      <div className="pub-wrap pub-narrow pub-prose">
-        <ul className="pub-toc" role="list">
-          <li><a href="#navigating">Finding your way</a></li>
-          <li><a href="#saving">Saving progress</a></li>
-          <li><a href="#backup">Backup and restore</a></li>
-          <li><a href="#devices">Devices and browsers</a></li>
-          <li><a href="#access">Access and recovery</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-
+      <PageOutline items={OUTLINE}>
         <h2 id="navigating">Finding your way</h2>
         <ul>
           <li><strong>Handbook home</strong> is the orientation page, with a Start here button, the chapters and shortcuts to the tools.</li>
@@ -76,7 +78,7 @@ export default function SupportPage() {
         ) : (
           <p>A support address has not been published yet. Until it is, the answers above cover the common questions.</p>
         )}
-      </div>
+      </PageOutline>
     </>
   );
 }
