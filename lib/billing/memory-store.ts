@@ -10,6 +10,7 @@ import type { BillingStore, ClaimResult, MirrorResult, ResendWrite } from './sto
 import {
   BillingStepError,
   NON_TERMINAL_STATUSES,
+  UPGRADE_PRODUCT_KEY,
   type BillingCustomer,
   type BillingEvent,
   type BillingRecord,
@@ -90,7 +91,7 @@ export class MemoryBillingStore implements BillingStore {
   }
 
   async listPaidMissingReadyEmail() {
-    return this.records.filter(r => r.status === 'paid' && r.readyEmailSentAt === null && r.userId !== null);
+    return this.records.filter(r => r.status === 'paid' && r.readyEmailSentAt === null && r.userId !== null && r.productKey !== UPGRADE_PRODUCT_KEY);
   }
 
   async commitMirror(input: MirrorInput): Promise<MirrorResult> {
@@ -100,6 +101,7 @@ export class MemoryBillingStore implements BillingStore {
     const plan = planMirror({
       record: existing,
       customers: this.customers,
+      userRecords: keptUser ? this.records.filter(r => r.userId === keptUser) : [],
       grants: keptUser && access ? access.grants.filter(g => g.userId === keptUser) : [],
       membership: keptUser && access ? access.memberships.find(m => m.userId === keptUser) ?? null : null,
     }, input);
@@ -117,9 +119,11 @@ export class MemoryBillingStore implements BillingStore {
     if (this.throwAfter === 'record') throw new BillingStepError('record');
 
     if (access && plan.grantInsert) access.grants.push(plan.grantInsert);
-    const revocation = plan.grantRevoke;
-    if (access && revocation) {
-      const grant = access.grants.find(g => g.billingRecordId === revocation.billingRecordId && g.revokedAt === null);
+    for (const revocation of plan.grantRevokes) {
+      // An upgrade swept up by a refunded Basic stops being live on its own record too, so the account can buy another.
+      const swept = this.records.find(r => r.id === revocation.billingRecordId && r.id !== plan.record.id);
+      if (swept) swept.accessEndsAt = revocation.at;
+      const grant = access?.grants.find(g => g.billingRecordId === revocation.billingRecordId && g.revokedAt === null);
       if (grant) {
         grant.revokedAt = revocation.at;
         grant.revokedBy = null;

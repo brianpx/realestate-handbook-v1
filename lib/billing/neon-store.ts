@@ -6,6 +6,7 @@ import type { BillingStore, ClaimResult, MirrorResult, ResendWrite } from './sto
 import {
   isPurchaseStatus,
   isSubscriptionStatus,
+  UPGRADE_PRODUCT_KEY,
   type BillingRecord,
   type BillingStatus,
   type EventStatus,
@@ -118,7 +119,7 @@ export class NeonBillingStore implements BillingStore {
   async listPaidMissingReadyEmail() {
     const rows = await this.sql`
       select * from billing_records
-      where status = 'paid' and ready_email_sent_at is null and user_id is not null
+      where status = 'paid' and ready_email_sent_at is null and user_id is not null and product_key <> ${UPGRADE_PRODUCT_KEY}
       order by created_at`;
     return rows.map(rowToRecord);
   }
@@ -204,6 +205,29 @@ export class NeonBillingStore implements BillingStore {
           where ${input.grant} = 'revoke' and g.id in (select id from live_grant)
           returning g.id
         ),
+        -- Refunding a Basic purchase for the first time also revokes an upgrade bought on top of it. A re-read of an
+        -- already refunded Basic does not, or it would take away an upgrade bought later on a new Basic.
+        cascade_revoked as (
+          update access_grants g
+          set revoked_at = ${now}::timestamptz, revoke_reason = ${input.revokeReason}
+          where ${input.grant} = 'revoke'
+            and (select tier from rec) = 'basic'
+            and (select product_key from rec) <> ${UPGRADE_PRODUCT_KEY}
+            and coalesce((select status from prior), '') not in ('refunded', 'chargeback_lost')
+            and g.user_id = (select user_id from rec)
+            and g.revoked_at is null
+            and g.billing_record_id in (
+              select u.id from billing_records u
+              where u.user_id = (select user_id from rec) and u.product_key = ${UPGRADE_PRODUCT_KEY} and u.id <> (select id from rec)
+            )
+          returning g.id, g.billing_record_id
+        ),
+        cascade_records as (
+          update billing_records u
+          set access_ends_at = ${now}::timestamptz, updated_at = ${now}::timestamptz
+          where u.id in (select billing_record_id from cascade_revoked)
+          returning u.id
+        ),
         grant_inserted as (
           insert into access_grants (user_id, kind, tier, starts_at, ends_at, billing_record_id, granted_by, created_at)
           select rec.user_id, rec.kind, rec.tier, ${now}::timestamptz, null, rec.id, null, ${now}::timestamptz
@@ -224,6 +248,7 @@ export class NeonBillingStore implements BillingStore {
             and g.starts_at <= ${now}::timestamptz
             and (g.ends_at is null or g.ends_at > ${now}::timestamptz)
             and not exists (select 1 from revoked r where r.id = g.id)
+            and not exists (select 1 from cascade_revoked c where c.id = g.id)
           union all
           select i.id, rec.kind, rec.tier, ${now}::timestamptz, null::timestamptz
           from grant_inserted i
@@ -231,7 +256,8 @@ export class NeonBillingStore implements BillingStore {
         ),
         chosen as (
           select id, kind, tier, starts_at, ends_at from visible
-          order by case when kind in ('purchase', 'subscription') then 0 else 1 end, ends_at desc nulls first
+          order by case when kind in ('purchase', 'subscription') then 0 else 1 end, ends_at desc nulls first,
+            case when tier = 'pro' then 0 else 1 end
           limit 1
         ),
         has_grant as (

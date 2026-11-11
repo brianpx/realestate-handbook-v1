@@ -57,7 +57,7 @@ function harness(fetched: () => unknown = () => order({ }, { custom_data: undefi
   const auth = new MemoryAuthStore();
   const access = new MemoryAccessStore({ users, auth });
   const store = new MemoryBillingStore({ access, users, auth });
-  const adapter = new LemonSqueezyAdapter({ webhookSecret: SECRET, apiKey: 'test-key', apiBase: 'https://api.lemonsqueezy.com/v1', fixturePath: null });
+  const adapter = new LemonSqueezyAdapter({ webhookSecret: SECRET, apiKey: 'test-key', apiBase: 'https://api.lemonsqueezy.com/v1', fixturePath: null, upgradeVariantId: '555' });
   const fetchImpl = vi.fn<typeof fetch>(async (url) => {
     const href = String(url);
     if (href.includes('api.lemonsqueezy.com')) return new Response(JSON.stringify(fetched()), { status: 200 });
@@ -311,5 +311,110 @@ describe('billing webhooks', () => {
     expect(h.auth.tokens).toHaveLength(0);
     expect(h.store.records).toHaveLength(1);
     expect(h.store.events[0]?.status).toBe('failed');
+  });
+});
+
+describe('the Basic to Pro upgrade', () => {
+  const BASIC = 2357693;
+  const PRO = 2357694;
+  const UPGRADE = 555;
+
+  type Harness = ReturnType<typeof harness>;
+
+  function orderFor(id: string, variant: number, userId: string, attributes: Record<string, unknown> = {}, meta: Record<string, unknown> = {}) {
+    const o = order({ first_order_item: { variant_id: variant }, ...attributes }, { custom_data: { user_id: userId }, ...meta });
+    return { ...o, data: { ...o.data, id } };
+  }
+
+  function setup() {
+    let fetched: unknown = order();
+    const h = harness(() => fetched);
+    const deliver = (body: unknown, eventName = 'order_created') => {
+      fetched = body;
+      return h.process(sign(body, eventName));
+    };
+    return { h, deliver };
+  }
+
+  const tierOf = async (h: Harness, userId: string) => entitlement({ status: 'active', snapshot: await h.access.loadAccess(userId), now: NOW });
+  const refunded = (id: string, variant: number, userId: string, total: number, updatedAt: string) =>
+    orderFor(id, variant, userId, { status: 'refunded', refunded: true, refunded_amount: total, total, updated_at: updatedAt }, { event_name: 'order_refunded' });
+
+  it('grants Pro to a Basic owner who pays the upgrade, and sends no second ready email', async () => {
+    const { h, deliver } = setup();
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    expect(await deliver(orderFor('100', BASIC, owner.id))).toEqual({ status: 200, outcome: 'processed' });
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'basic' });
+
+    expect(await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'processed' });
+    expect(h.access.grants.map(g => [g.tier, g.revokedAt])).toEqual([['basic', null], ['pro', null]]);
+    expect(h.store.records[1]).toMatchObject({ productKey: 'handbook-v1-upgrade', tier: 'pro', amountCents: 5000, status: 'paid', notes: null });
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'pro' });
+    expect(h.sends()).toHaveLength(1);
+  });
+
+  it('holds an upgrade bought without a live Basic: stored, nothing granted, left for review', async () => {
+    const { h, deliver } = setup();
+    const stranger = await h.store.createReader('stranger@e2e.test', NOW);
+    expect(await deliver(orderFor('101', UPGRADE, stranger.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'unmatched' });
+    expect(h.access.grants).toHaveLength(0);
+    expect(h.store.records[0]).toMatchObject({ productKey: 'handbook-v1-upgrade', status: 'paid', userId: stranger.id });
+    expect(h.store.records[0]?.notes).toContain('held');
+    expect(h.store.records[0]?.accessEndsAt).toEqual(NOW);
+    expect(h.store.events[0]?.status).toBe('unmatched');
+    expect(await tierOf(h, stranger.id)).toEqual({ level: 'preview', suspended: false });
+    expect(h.sends()).toHaveLength(0);
+  });
+
+  it('holds an upgrade from someone who is already Pro, and a second upgrade on a Pro that was upgraded', async () => {
+    const { h, deliver } = setup();
+    const pro = await h.store.createReader('pro@e2e.test', NOW);
+    await deliver(orderFor('100', PRO, pro.id));
+    expect(await deliver(orderFor('101', UPGRADE, pro.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'unmatched' });
+    expect(h.access.grants.map(g => g.tier)).toEqual(['pro']);
+
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    await deliver(orderFor('200', BASIC, owner.id));
+    await deliver(orderFor('201', UPGRADE, owner.id, { total: 5000 }));
+    expect(await deliver(orderFor('202', UPGRADE, owner.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'unmatched' });
+    expect(h.access.grants.filter(g => g.userId === owner.id).map(g => g.tier)).toEqual(['basic', 'pro']);
+  });
+
+  it('returns a refunded upgrade to Basic and leaves the Basic purchase alone', async () => {
+    const { h, deliver } = setup();
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    await deliver(orderFor('100', BASIC, owner.id));
+    await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000 }));
+    expect(await deliver(refunded('101', UPGRADE, owner.id, 5000, '2026-11-10T12:06:00.000000Z'), 'order_refunded')).toEqual({ status: 200, outcome: 'processed' });
+    expect(h.access.grants.map(g => [g.tier, g.revokedAt === null, g.revokeReason])).toEqual([['basic', true, null], ['pro', false, 'refund']]);
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'basic' });
+  });
+
+  it('revokes the upgrade too when the Basic purchase is refunded, and ends the upgrade record so another can be bought', async () => {
+    const { h, deliver } = setup();
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    await deliver(orderFor('100', BASIC, owner.id));
+    await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000 }));
+    expect(await deliver(refunded('100', BASIC, owner.id, 4321, '2026-11-10T12:06:00.000000Z'), 'order_refunded')).toEqual({ status: 200, outcome: 'processed' });
+    expect(h.access.grants.every(g => g.revokedAt !== null && g.revokeReason === 'refund')).toBe(true);
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'preview', suspended: false });
+    const upgrade = h.store.records.find(r => r.providerObjectId === '101');
+    expect(upgrade).toMatchObject({ status: 'paid' });
+    expect(upgrade?.accessEndsAt).toEqual(NOW);
+  });
+
+  it('does not take away a later upgrade when the old refunded Basic is read again', async () => {
+    const { h, deliver } = setup();
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    await deliver(orderFor('100', BASIC, owner.id));
+    await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000 }));
+    await deliver(refunded('100', BASIC, owner.id, 4321, '2026-11-10T12:06:00.000000Z'), 'order_refunded');
+
+    await deliver(orderFor('300', BASIC, owner.id));
+    expect(await deliver(orderFor('301', UPGRADE, owner.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'processed' });
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'pro' });
+
+    await deliver(refunded('100', BASIC, owner.id, 4321, '2026-11-10T12:07:00.000000Z'), 'order_refunded');
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'pro' });
   });
 });

@@ -3,16 +3,25 @@ import type { Actor, AuditRow } from '@/lib/audit';
 
 /** The provider string stored on billing rows. Lemon Squeezy is the only one this phase speaks. */
 export const BILLING_PROVIDER = 'lemonsqueezy';
-/** Edition 1.0. A later edition is a different key and does not ride these grants. */
+/**
+ * Edition 1.0. A later edition is a different key and does not ride a Basic grant. A Pro grant is promised every
+ * later edition (docs/plans/OFFER-PLAN.md, 3.2), so when a second edition exists entitlement must read the tier,
+ * not this key, to let Pro through.
+ */
 export const PRODUCT_KEY = 'handbook-v1';
+/** The Basic-to-Pro upgrade. It is Pro-tier, covers the edition the Basic owner bought, and is never a first purchase. */
+export const UPGRADE_PRODUCT_KEY = 'handbook-v1-upgrade';
+
+export type VariantProduct = { tier: PaidTier; productKey: string };
 
 /**
  * Published one-time variants. Prices are not stored here: the amount on a grant comes from the fetched order.
- * 2357693 is Basic, 2357694 is Pro.
+ * 2357693 is Basic, 2357694 is Pro. The upgrade variant id belongs to the owner's Lemon Squeezy product and is
+ * read from `BILLING_VARIANT_UPGRADE`, so it is not in this table.
  */
-export const VARIANT_TIER: Readonly<Record<string, PaidTier>> = {
-  '2357693': 'basic',
-  '2357694': 'pro',
+export const VARIANT_PRODUCTS: Readonly<Record<string, VariantProduct>> = {
+  '2357693': { tier: 'basic', productKey: PRODUCT_KEY },
+  '2357694': { tier: 'pro', productKey: PRODUCT_KEY },
 };
 
 export type BillingStatus = PurchaseStatus | SubscriptionStatus;
@@ -139,6 +148,8 @@ export const recordSnapshot = (r: Pick<BillingRecord, 'status' | 'tier' | 'userI
   accessEndsAt: r.accessEndsAt ? r.accessEndsAt.toISOString() : null,
 });
 
+export type MirrorGrantRevoke = { billingRecordId: string; at: Date; reason: 'refund' | 'chargeback' };
+
 export type MirrorPlan = {
   applied: false;
 } | {
@@ -146,7 +157,8 @@ export type MirrorPlan = {
   record: BillingRecord;
   customer: BillingCustomer | null;
   grantInsert: Grant | null;
-  grantRevoke: { billingRecordId: string; at: Date; reason: 'refund' | 'chargeback' } | null;
+  /** The record's own grant, plus the upgrade's when a Basic purchase is refunded (docs/plans/UPGRADE-PLAN.md). */
+  grantRevokes: MirrorGrantRevoke[];
   membership: Membership | null;
   billing: (BillingAccess & { userId: string | null }) | null;
   audit: AuditRow | null;

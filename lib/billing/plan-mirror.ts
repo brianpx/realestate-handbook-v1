@@ -6,8 +6,10 @@ import {
   isPurchaseStatus,
   isSubscriptionStatus,
   recordSnapshot,
+  UPGRADE_PRODUCT_KEY,
   type BillingCustomer,
   type BillingRecord,
+  type MirrorGrantRevoke,
   type MirrorInput,
   type MirrorPlan,
 } from './types';
@@ -15,6 +17,8 @@ import {
 type PlanState = {
   record: BillingRecord | null;
   customers: readonly BillingCustomer[];
+  /** The kept user's other billing records, so a refunded Basic purchase can find the upgrade that rests on it. */
+  userRecords: readonly BillingRecord[];
   /** Grants already on file for the user this mirror will keep. */
   grants: readonly Grant[];
   membership: Membership | null;
@@ -65,15 +69,14 @@ export function planMirror(state: PlanState, input: MirrorInput): MirrorPlan {
   };
 
   const grantInsert = planGrantInsert(state.grants, record, input);
-  const grantRevoke = input.grant === 'revoke' && input.revokeReason && state.grants.some(g => g.billingRecordId === record.id && g.revokedAt === null)
-    ? { billingRecordId: record.id, at: input.at, reason: input.revokeReason }
-    : null;
+  const grantRevokes = planGrantRevokes(state, record, existing, input);
 
   let membership: Membership | null = null;
   if (userId) {
-    const grants = state.grants.map(g => (grantRevoke && g.billingRecordId === record.id && g.revokedAt === null
-      ? { ...g, revokedAt: grantRevoke.at, revokedBy: null, revokeReason: grantRevoke.reason }
-      : g));
+    const grants = state.grants.map(g => {
+      const revoke = g.revokedAt === null ? grantRevokes.find(r => r.billingRecordId === g.billingRecordId) : undefined;
+      return revoke ? { ...g, revokedAt: revoke.at, revokedBy: null, revokeReason: revoke.reason } : g;
+    });
     if (grantInsert) grants.push(grantInsert);
     membership = projectMembership(userId, grants, state.membership, input.at);
   }
@@ -95,7 +98,27 @@ export function planMirror(state: PlanState, input: MirrorInput): MirrorPlan {
     ipHash: input.actor.ipHash ?? null,
   };
 
-  return { applied: true, record, customer, grantInsert, grantRevoke, membership, billing, audit };
+  return { applied: true, record, customer, grantInsert, grantRevokes, membership, billing, audit };
+}
+
+const SETTLED_REFUND: readonly string[] = ['refunded', 'chargeback_lost'];
+
+/**
+ * The record's own live grant, and, when this mirror is the one that refunds a Basic purchase, the live grant of
+ * any upgrade bought on top of it: the upgrade is worth nothing without the Basic it was priced against
+ * (docs/plans/OFFER-PLAN.md, 2.1). A re-read of an already refunded Basic must not do it again, or it would take
+ * away an upgrade bought later on a new Basic.
+ */
+function planGrantRevokes(state: PlanState, record: BillingRecord, existing: BillingRecord | null, input: MirrorInput): MirrorGrantRevoke[] {
+  if (input.grant !== 'revoke' || !input.revokeReason) return [];
+  const reason = input.revokeReason;
+  const live = (billingRecordId: string) => state.grants.some(g => g.billingRecordId === billingRecordId && g.revokedAt === null);
+  const targets = [record.id];
+  const firstRefundOfBasic = record.tier === 'basic' && record.productKey !== UPGRADE_PRODUCT_KEY && !(existing && SETTLED_REFUND.includes(existing.status));
+  if (firstRefundOfBasic) {
+    for (const r of state.userRecords) if (r.productKey === UPGRADE_PRODUCT_KEY && r.id !== record.id) targets.push(r.id);
+  }
+  return targets.filter(live).map(billingRecordId => ({ billingRecordId, at: input.at, reason }));
 }
 
 function planCustomer(customers: readonly BillingCustomer[], input: MirrorInput, userId: string | null): BillingCustomer | null {

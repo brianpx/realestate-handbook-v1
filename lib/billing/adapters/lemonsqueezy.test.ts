@@ -112,6 +112,23 @@ describe('Lemon Squeezy orders', () => {
     expect(mapped.order.customerId).toBe('55');
   });
 
+  it('maps the configured upgrade variant to a Pro-tier upgrade, and treats it as unknown when none is configured', () => {
+    const upgrade = order({ first_order_item: { variant_id: 777 }, total: 5000 });
+    const mapped = mapResource(upgrade, NOW, '777');
+    expect(mapped.outcome).toBe('order');
+    if (mapped.outcome !== 'order') return;
+    expect(mapped.order).toMatchObject({ tier: 'pro', productKey: 'handbook-v1-upgrade', amountCents: 5000, providerPriceId: '777', grant: 'grant' });
+    expect(mapResource(upgrade, NOW)).toEqual({ outcome: 'unmatched', reason: 'unknown_variant' });
+    expect(mapResource(upgrade, NOW, '778')).toEqual({ outcome: 'unmatched', reason: 'unknown_variant' });
+  });
+
+  it('keeps the Basic and Pro variants on the edition key whatever upgrade variant is configured', () => {
+    const basic = mapResource(order(), NOW, '777');
+    const pro = mapResource(order({ first_order_item: { variant_id: 2357694 } }), NOW, '777');
+    expect(basic.outcome === 'order' && basic.order).toMatchObject({ tier: 'basic', productKey: 'handbook-v1' });
+    expect(pro.outcome === 'order' && pro.order).toMatchObject({ tier: 'pro', productKey: 'handbook-v1' });
+  });
+
   it('revokes a refunded order even when the refunded amount is short', () => {
     const mapped = mapResource(order({ status: 'refunded', refunded_amount: 100 }), NOW);
     if (mapped.outcome !== 'order') throw new Error('expected an order');
