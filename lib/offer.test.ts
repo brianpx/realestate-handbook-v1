@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkoutUrlFor, OFFER, OWNER, purchaseOpen, purchaseOpenFor, termPublished } from './offer';
+import { checkoutUrlFor, OFFER, OWNER, purchaseOpen, purchaseOpenFor, REFUND_DAYS, termPublished } from './offer';
 import type { Tier } from './tiers';
 
 const tier = (id: Tier['id'], over: Partial<Tier> = {}): Tier => ({ id, name: id, tagline: '', priceDisplay: '$49', checkoutUrl: 'https://pay.example/x', ...over });
@@ -23,6 +23,10 @@ describe('purchaseOpenFor', () => {
 });
 
 describe('the live offer', () => {
+  // owner decision of 11 November 2026: 14 days, any reason, counted per purchase
+  it('refunds within 14 days', () => {
+    expect(REFUND_DAYS).toBe(14);
+  });
   // lib/tiers.ts ships with no prices or checkout links, so purchase stays closed whatever else the owner has entered
   it('stays closed and links no checkout, for any tier', () => {
     expect(purchaseOpen()).toBe(false);
@@ -32,8 +36,10 @@ describe('the live offer', () => {
   });
   // the owner's 9 November 2026 inputs (OD-20, OD-23): the terms and the support address, but no price, checkout or postal address
   it('has published the two terms and the support address', () => {
-    expect(OFFER.accessTerm).toBe('Lifetime access to edition 1.0 for one person, not transferable.');
-    expect(OFFER.updatesTerm).toBe('Corrections and updates to edition 1.0 are included; a future edition is a separate purchase with a discount for existing buyers.');
+    expect(OFFER.accessTerm).toBe('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.');
+    expect(OFFER.updatesByPlan.basic).toBe('Corrections and improvements to the chapters and essential tools of edition 1.0 are included; a future edition is a separate purchase at a discount for existing buyers.');
+    expect(OFFER.updatesByPlan.pro).toBe('Everything in Basic, plus every new chapter, tool and script added to the handbook and every future edition, at no further charge, for as long as the handbook is published.');
+    expect(OFFER.updatesTerm).toBe(`Basic: ${OFFER.updatesByPlan.basic} Pro: ${OFFER.updatesByPlan.pro}`);
     expect(OWNER.supportEmail).toBe('support@findnurturekeep.com');
     expect(termPublished('updatesTerm')).toBe(true);
     expect(termPublished('supportEmail')).toBe(true);
