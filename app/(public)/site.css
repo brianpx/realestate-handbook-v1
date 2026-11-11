@@ -333,6 +333,26 @@ html:has(.pub) { scroll-padding-top: 104px}
 .pub .signup-sent p:focus-visible, .pub .lead-sent p:focus-visible { outline-offset: 6px}
 .pub .signup-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center}
 .pub .pub-link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer}
+/* Inline confirmation stays visible while the reader checks their inbox. */
+.pub .signup-notice { padding: 22px; border: 1px solid var(--pub-line); border-top: 3px solid var(--pub-green); border-radius: 14px; background: var(--pub-tint); text-align: left}
+.pub .signup-notice-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px}
+.pub .signup-notice-header > div { min-width: 0}
+.pub .signup-notice .pub-h3 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 700}
+.pub .signup-notice-icon { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border: 1px solid var(--pub-line); border-radius: 10px; background: var(--color-surface); color: var(--pub-green)}
+.pub .signup-notice-icon svg { width: 20px; height: 20px}
+.pub .signup-notice p { font-size: 0.95rem; line-height: 1.55}
+.pub .signup-notice .signup-notice-email { margin: 0; color: var(--pub-ink); font-weight: 600; overflow-wrap: anywhere}
+.pub .signup-notice .signup-notice-help { font-size: 0.875rem}
+.pub .signup-notice .signup-actions { gap: 8px 16px; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--pub-line)}
+.pub .signup-notice .pub-btn { min-height: 44px; padding: 8px 14px; border-width: 1px; border-color: var(--color-line-strong); background: var(--color-surface); color: var(--pub-ink); font-size: 0.875rem}
+.pub .signup-notice .pub-btn:hover:not(:disabled) { background: var(--color-canvas)}
+.pub .signup-notice .pub-btn:disabled { color: var(--pub-muted); border-color: var(--pub-line); cursor: default}
+.pub .signup-notice .pub-link-btn { min-height: 44px; font-size: 0.875rem; text-align: left}
+@media (width <= 420px) {
+  .pub .signup-notice { padding: 18px}
+  .pub .signup-notice .signup-actions { flex-direction: column; align-items: stretch}
+  .pub .signup-notice .pub-link-btn { text-align: center}
+}
 /* Variants: the hero and inline forms put the field and the button in one row and speak the label only; the card
    is the stacked form on its own page. The notes checkbox sits under every variant, off by default. */
 .pub .signup-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start}

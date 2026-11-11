@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { TERMS_TEXT, TERMS_VERSION, type Source } from '@/lib/auth/config';
+import { MailIcon } from 'lucide-react';
+import { TERMS_TEXT, TERMS_VERSION, TOKEN_TTL_SECONDS, type Source } from '@/lib/auth/config';
 import { CONSENT_TEXTS, CONSENT_VERSION } from '@/lib/leads/config';
 
 const RESEND_AFTER_SECONDS = 30;
@@ -102,8 +103,16 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
       {/* always mounted, so a screen reader hears the outcome that replaces the form */}
       <p className="visually-hidden" role="status" aria-live="polite">{sent ? `Check your inbox at ${sent.email}.` : ''}</p>
       {sent ? (
-        <div className="signup-sent" data-source={source}>
-          <p ref={sentRef} tabIndex={-1}><strong>Check your inbox.</strong> If {sent.email} can receive mail, a sign-in link is on its way. It works once and expires in 15 minutes. Look in spam if it has not arrived in a minute.</p>
+        <div className="signup-sent signup-notice" data-source={source} role="region" aria-labelledby={`${id}-sent-title`}>
+          <div className="signup-notice-header">
+            <span className="signup-notice-icon"><MailIcon aria-hidden="true" /></span>
+            <div>
+              <h2 className="pub-h3" id={`${id}-sent-title`}>Check your inbox.</h2>
+              <p ref={sentRef} tabIndex={-1} className="signup-notice-email">{sent.email}</p>
+            </div>
+          </div>
+          <p>If this address can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes.</p>
+          <p className="signup-notice-help"><strong>Don’t see it after a minute?</strong> Check spam or promotions.</p>
           {sent.notes === 'sent' && <p>If this address is not already on the notes list, a second email asks you to confirm it. Nothing is sent until you open that link.</p>}
           {sent.notes === 'failed' && <p>The notes sign-up did not go through. You can try again from the form after the sample lesson.</p>}
           <p className="signup-actions">
