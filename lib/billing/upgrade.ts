@@ -3,7 +3,7 @@ import type { BillingStore } from './store';
 import { UPGRADE_PRODUCT_KEY, type BillingRecord, type GrantEffect } from './types';
 
 /** Stored on an upgrade order that was paid for but granted nothing, so whoever reviews it sees why. */
-export const UPGRADE_HELD_NOTE = 'Upgrade order held: no live Basic purchase on this account, or already Pro. No access was granted. Refund it or review it by hand.';
+export const UPGRADE_HELD_NOTE = 'Upgrade order needs review: no live Basic purchase on this account, already Pro, or its access already ended. Refund it or review it by hand.';
 
 const LIVE_STATUSES: readonly string[] = ['paid', 'partially_refunded', 'disputed'];
 
@@ -23,7 +23,8 @@ export function upgradeEligible(others: readonly BillingRecord[], now: Date): bo
 /**
  * What an order that asks for a grant may actually get. Only an upgrade is ever held back, and only when the user
  * is known: with no user there is nothing to decide yet, and the decision is made on the mirror that finds one.
- * A held order is stored with a note and no grant.
+ * A held order is stored with a note and no grant. An upgrade whose access has already ended (held at first sight, or
+ * swept up by a refunded Basic) stays ended: buying another Basic later must not bring it back to life with no grant.
  */
 export async function decideGrant(
   store: Pick<BillingStore, 'listRecordsForUser'>,
@@ -33,6 +34,9 @@ export async function decideGrant(
   at: Date,
 ): Promise<{ grant: GrantEffect; held: boolean }> {
   if (order.productKey !== UPGRADE_PRODUCT_KEY || grant !== 'grant' || !userId) return { grant, held: false };
-  const others = (await store.listRecordsForUser(userId)).filter(r => r.providerObjectId !== order.providerObjectId);
+  const records = await store.listRecordsForUser(userId);
+  const own = records.find(r => r.providerObjectId === order.providerObjectId);
+  if (own?.accessEndsAt && own.accessEndsAt <= at) return { grant: 'none', held: true };
+  const others = records.filter(r => r.providerObjectId !== order.providerObjectId);
   return upgradeEligible(others, at) ? { grant, held: false } : { grant: 'none', held: true };
 }

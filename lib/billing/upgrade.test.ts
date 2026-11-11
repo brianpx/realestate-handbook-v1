@@ -47,6 +47,10 @@ describe('decideGrant', () => {
     expect(await decideGrant(store([]), upgrade, 'u1', 'grant', NOW)).toEqual({ grant: 'none', held: true });
     expect(await decideGrant(store([record()]), upgrade, 'u1', 'grant', NOW)).toEqual({ grant: 'grant', held: false });
   });
+  it('keeps an upgrade whose access has ended held, even when the account has a live Basic again', async () => {
+    const ended = record({ id: 'r3', providerObjectId: '101', productKey: 'handbook-v1-upgrade', tier: 'pro', accessEndsAt: new Date(NOW.getTime() - 1000) });
+    expect(await decideGrant(store([record(), ended]), upgrade, 'u1', 'grant', NOW)).toEqual({ grant: 'none', held: true });
+  });
   it('leaves the order being decided out of the check, so a re-read of a granted upgrade stays granted', async () => {
     const own = record({ id: 'r3', providerObjectId: '101', productKey: 'handbook-v1-upgrade', tier: 'pro' });
     expect(await decideGrant(store([record(), own]), upgrade, 'u1', 'grant', NOW)).toEqual({ grant: 'grant', held: false });

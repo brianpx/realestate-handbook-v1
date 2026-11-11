@@ -359,7 +359,7 @@ describe('the Basic to Pro upgrade', () => {
     expect(await deliver(orderFor('101', UPGRADE, stranger.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'unmatched' });
     expect(h.access.grants).toHaveLength(0);
     expect(h.store.records[0]).toMatchObject({ productKey: 'handbook-v1-upgrade', status: 'paid', userId: stranger.id });
-    expect(h.store.records[0]?.notes).toContain('held');
+    expect(h.store.records[0]?.notes).toContain('needs review');
     expect(h.store.records[0]?.accessEndsAt).toEqual(NOW);
     expect(h.store.events[0]?.status).toBe('unmatched');
     expect(await tierOf(h, stranger.id)).toEqual({ level: 'preview', suspended: false });
@@ -401,6 +401,23 @@ describe('the Basic to Pro upgrade', () => {
     const upgrade = h.store.records.find(r => r.providerObjectId === '101');
     expect(upgrade).toMatchObject({ status: 'paid' });
     expect(upgrade?.accessEndsAt).toEqual(NOW);
+  });
+
+  it('keeps a swept upgrade ended when the account buys Basic again, so a new upgrade can still be bought', async () => {
+    const { h, deliver } = setup();
+    const owner = await h.store.createReader('owner@e2e.test', NOW);
+    await deliver(orderFor('100', BASIC, owner.id));
+    await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000 }));
+    await deliver(refunded('100', BASIC, owner.id, 4321, '2026-11-10T12:06:00.000000Z'), 'order_refunded');
+    await deliver(orderFor('300', BASIC, owner.id));
+
+    // the old upgrade is still `paid` at the provider until the owner refunds it, and is read again
+    expect(await deliver(orderFor('101', UPGRADE, owner.id, { total: 5000, updated_at: '2026-11-10T12:07:00.000000Z' }, { event_name: 'order_updated' }), 'order_updated')).toEqual({ status: 200, outcome: 'unmatched' });
+    expect(h.store.records.find(r => r.providerObjectId === '101')?.accessEndsAt).toEqual(NOW);
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'basic' });
+
+    expect(await deliver(orderFor('301', UPGRADE, owner.id, { total: 5000 }))).toEqual({ status: 200, outcome: 'processed' });
+    expect(await tierOf(h, owner.id)).toEqual({ level: 'member', tier: 'pro' });
   });
 
   it('does not take away a later upgrade when the old refunded Basic is read again', async () => {
