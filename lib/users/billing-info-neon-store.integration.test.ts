@@ -43,7 +43,7 @@ run('the billing info store against a real database', () => {
 
   it('does not write for a user who is not active', async () => {
     const user = await createUser(`it-${tag}-g@integration.test`);
-    await sql`update users set status = 'deleted' where id = ${user.id}`;
+    await sql`update users set status = 'deleted', deleted_at = now() where id = ${user.id}`;
     expect(await store.save(user.id, { companyName: 'Late' }, NOW)).toBeNull();
     expect(await store.find(user.id)).toBeNull();
   });
