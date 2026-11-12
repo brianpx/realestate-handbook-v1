@@ -3,6 +3,19 @@ import { expect, test } from '../fixtures';
 // Parity checks for the sidebar search. Assertions were read off legacy/js/search.js, not observed by running
 // the static site.
 test.describe('sidebar search', () => {
+  test('Enter opens the top result, and a capped list says how many more matched', async ({ page }) => {
+    await page.goto('/handbook/ch1');
+    const box = page.getByLabel('Search the handbook');
+    await box.fill('crm');
+    await expect(page.locator('.search-result').first()).toBeVisible();
+    await expect(page.locator('.search-more')).toHaveText(/^Showing 12 of \d+\./);
+    const href = await page.locator('.search-result').first().getAttribute('href');
+    await box.press('Enter');
+    await expect(page).toHaveURL(new RegExp(`${href}(#.*)?$`));
+    await expect(page.locator('#sidebar')).not.toHaveClass(/searching/);
+    await expect(box).toHaveValue('');
+  });
+
   test('loads its index only when the box is first focused', async ({ page }) => {
     const hits: string[] = [];
     page.on('request', r => { if (r.url().endsWith('/search-index.json')) hits.push(r.url()); });
@@ -97,7 +110,7 @@ test.describe('sidebar search', () => {
     await page.goto('/handbook/ch1');
     const toggle = page.locator('#menuToggle');
     await expect(toggle).toHaveText('☰');
-    await expect(toggle).toHaveAttribute('aria-label', 'Table of contents');
+    await expect(toggle).toHaveAttribute('aria-label', 'Handbook menu');
     await page.getByLabel('Search the handbook').fill('crm');
     await expect(toggle).toHaveText('✕');
     await expect(toggle).toHaveAttribute('aria-label', 'Close search results');
@@ -107,8 +120,8 @@ test.describe('sidebar search', () => {
     await toggle.click();
     await expect(page.getByLabel('Search the handbook')).toHaveValue('');
     await expect(toggle).toHaveText('☰');
-    await expect(toggle).toHaveAttribute('aria-label', 'Table of contents');
-    await expect(toggle).toHaveAttribute('aria-controls', 'navList');
+    await expect(toggle).toHaveAttribute('aria-label', 'Handbook menu');
+    await expect(toggle).toHaveAttribute('aria-controls', 'sidebarBody');
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
     await expect(page.locator('#sidebar')).not.toHaveClass(/menu-open/);
   });

@@ -159,48 +159,56 @@
             flex-shrink: 0;
             height: 100%}
 
+        /* Compact header: logo | title over subtitle, so the navigation below gets the height of the window. */
         .sidebar-header {
-            padding: 20px;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            column-gap: 12px;
+            align-items: center;
+            padding: 14px 20px;
             border-bottom: 1px solid var(--color-line);
             background-color: var(--color-surface);
             /* never let the flex layout squeeze the header, which clipped the subtitle in short windows */
-            flex-shrink: 0;
-            transition: margin-top 0.3s ease, visibility 0s}
-        /* scrolling the main page slides the whole header up and out of view, so the search bar becomes
-           the top of the sidebar. The header moves as one rigid block (no reflow), so nothing is ever
-           half-clipped in place. --header-h is measured in JS. */
-        #sidebar.header-collapsed .sidebar-header { margin-top: calc(-1 * var(--header-h, 340px)); visibility: hidden; transition: margin-top 0.3s ease, visibility 0s 0.3s}
-        @media (prefers-reduced-motion: reduce) { .sidebar-header, #sidebar.header-collapsed .sidebar-header { transition: none} }
+            flex-shrink: 0}
 
         .sidebar-header .sidebar-title {
+            grid-column: 2; grid-row: 1; align-self: end;
             /* system fonts only, so nothing extra to load: SF Pro on Apple devices, Segoe UI Variable on Windows */
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
-            font-size: 1.8rem;
+            font-size: 1.25rem;
             color: var(--color-ink);
             font-weight: 600;
             line-height: 1.2;
             letter-spacing: -0.02em;
-            margin: 0.67em 0; /* the margin the book title had as an h1 */
+            margin: 0;
         }
 
         /* decorative: the title text beside it stays, so a failed image just drops out */
-        /* centered in the 320px sidebar */
-        .sidebar-logo { display: block; width: 200px; max-width: 100%; height: auto; margin: 0 auto 12px}
+        .sidebar-logo { display: block; grid-column: 1; grid-row: 1 / 3; width: 48px; height: 48px; max-width: none; margin: 0}
 
         .sidebar-header p:not(.sidebar-title) {
+            grid-column: 2; grid-row: 2; align-self: start;
             font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+            line-height: 1.35;
             color: var(--color-ink-muted);
-            margin: 4px 0 8px}
+            margin: 4px 0 0}
+
+        /* Below the header: a body that fills the rest of the column. The list scrolls inside it and the footer
+           (Settings) stays pinned under it. On phones the body is the dropdown instead (the phone block below). */
+        .sidebar-body { flex: 1; min-height: 0; display: flex; flex-direction: column}
+        .sidebar-nav { flex: 1; min-height: 0; display: flex; flex-direction: column}
+        .sidebar-footer { position: relative; flex-shrink: 0; padding: 10px 20px 12px; border-top: 1px solid var(--color-line); background-color: var(--color-canvas)}
 
         .nav-list {
             list-style: none;
             overflow-y: auto;
-            scrollbar-width: none; /* still scrolls by wheel, touch and keyboard */
-            flex-grow: 1;
+            scrollbar-width: thin; /* visible, so it is clear the list scrolls */
+            scrollbar-color: var(--color-line-strong) transparent;
+            flex: 1;
+            min-height: 0;
+            margin: 0;
             padding: 12px 0}
-
-        .nav-list::-webkit-scrollbar { display: none}
 
         .nav-section-title {
             font-size: 0.75rem;
@@ -209,7 +217,22 @@
             color: var(--color-ink-muted);
             padding: 12px 20px 4px;
             font-weight: 700;
-            margin-bottom: 0}
+            margin: 0}
+
+        /* Rows sit in nested lists, one per titled group. A named part of the book is a heading holding a disclosure
+           button that spans the whole title row; folded, its list is hidden. */
+        .nav-group { list-style: none}
+        .nav-group-list { list-style: none; margin: 0; padding: 0}
+        .nav-part-title { padding: 0}
+        .nav-section-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; padding: 12px 20px 4px; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; color: inherit; background: none; border: 0; cursor: pointer}
+        .nav-section-toggle::after { content: ""; flex-shrink: 0; width: 6px; height: 6px; margin: -3px 2px 0 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.2s ease}
+        .nav-section-toggle[aria-expanded="true"]::after { margin-top: 3px; transform: rotate(-135deg)}
+        .nav-section-toggle:hover { color: var(--color-ink)}
+        .nav-section-toggle[aria-disabled="true"] { cursor: default}
+        .nav-section-toggle[aria-disabled="true"]::after { opacity: 0.35}
+        .nav-section-toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-link)}
+        @media (forced-colors: active) { .nav-section-toggle:focus-visible { outline: 3px solid; outline-offset: -3px} }
+        @media (prefers-reduced-motion: reduce) { .nav-section-toggle::after { transition: none} }
 
         .nav-item {
             display: block;
@@ -218,7 +241,7 @@
             text-decoration: none;
             font-size: 0.875rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
             border-left: 3px solid transparent}
 
         .nav-item:hover {
@@ -677,11 +700,17 @@
         .nav-search { display: block; flex-shrink: 0; padding: 12px 20px; border-bottom: 1px solid var(--color-line); background-color: var(--color-canvas)}
         .nav-search-input { width: 100%; padding: 9px 12px; font: inherit; font-size: max(16px, 1rem); color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
         .nav-search-input::placeholder { color: var(--color-ink-muted)}
-        .search-results { list-style: none; margin: 8px -20px -12px; max-height: 50vh; overflow-y: auto}
+        .search-results { list-style: none; margin: 8px -20px 0; max-height: 50vh; overflow-y: auto}
         .search-results[hidden] { display: none}
         tr[hidden] { display: none}
-        #sidebar.searching .nav-list { display: none}
-        #sidebar.searching .search-results { max-height: none}
+        #sidebar.searching .sidebar-nav { display: none}
+        @media (width > 900px) {
+            /* the search box stays pinned and the results fill the rest of the column and scroll in it */
+            #sidebar.searching .nav-search { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0}
+            #sidebar.searching .nav-search-field { flex: 1; min-height: 0; display: flex; flex-direction: column}
+            #sidebar.searching .search-results { flex: 1; min-height: 0; max-height: none}
+            #sidebar.searching .sidebar-body { flex: none}
+        }
         .search-result { display: block; padding: 9px 20px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent}
         .search-result:hover, .search-result:focus-visible { background-color: var(--color-subtle); color: var(--sidebar-hover); border-left-color: var(--color-link)}
         .search-result-title { display: block; font-size: 0.875rem}
@@ -735,7 +764,10 @@
         .progress-item { list-style: none; padding: 4px 20px 12px}
         .progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px}
         .progress-label { font-size: 0.75rem; color: var(--color-ink-muted)}
-        .settings-item { list-style: none; padding: 12px 20px 16px; margin-top: 8px; border-top: 1px solid var(--color-line)}
+        @media (width > 900px) {
+            /* the open panel floats above the pinned Settings button, so opening it never shrinks the list */
+            .settings[open] .settings-panel { position: absolute; left: 12px; right: 12px; bottom: 100%; z-index: 30; max-height: calc(100vh - 160px); max-height: calc(100dvh - 160px); overflow-y: auto; padding: 4px 14px 16px; background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 8px; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25)}
+        }
         /* a bordered bar with a chevron that flips when opened, so it reads as expandable */
         .settings summary { display: flex; align-items: center; justify-content: space-between; list-style: none; cursor: pointer; padding: 10px 14px; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-body); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px}
         .settings summary::-webkit-details-marker { display: none}
@@ -757,16 +789,18 @@
         .settings-sub { margin-top: 8px}
         .settings-sub[hidden] { display: none}
         .settings-reset { width: 100%}
-        .settings-legal { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--color-line); font-size: 0.8rem; line-height: 1.6; text-align: center; color: var(--color-ink-muted)}
+        .settings-legal { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--color-line); font-size: 0.75rem; line-height: 1.5; text-align: center; color: var(--color-ink-muted)}
+        @media (width > 900px) { .settings[open] summary { margin-bottom: 0} } /* the panel floats there, so opening it moves nothing */
+        @media (width > 900px) and (height < 700px) { .settings-legal { display: none} } /* the colophon gives way to the list on a short window */
         .settings-note { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--color-ink-muted)}
         .settings-transfer-title { font-size: 0.9rem; font-weight: 600}
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
         .settings-confirm { margin-top: 8px}
         .settings-confirm .btn-mini { margin: 6px 8px 0 0}
-        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-item.read::after { display: none}
+        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-read { display: none}
         .progress-bar { height: 6px; border-radius: 3px; background: var(--color-subtle); overflow: hidden}
         .progress-bar span { display: block; height: 100%; width: 0; background: var(--color-link); transition: width 0.3s}
-        .nav-item.read::after { content: "\2713"; content: "\2713" / " (read)"; float: right; color: var(--color-brand-soft); font-weight: 700}
+        .nav-read { float: right; color: var(--color-brand-soft); font-weight: 700}
 
         /* Checklists */
         .checklist { margin: 12px 0 20px}
@@ -1073,13 +1107,14 @@
         .menu-close { display: none}
         .menu-backdrop { display: none}
 
+        @media (901px <= width <= 1100px) { #sidebar { width: 260px} } /* the rail is a third of a small window otherwise */
+
         @media (width <= 900px) {
             /* Phones: the document itself scrolls, which is what lets iOS Safari collapse its address bar and
                toolbar. The sidebar sticks to the top with its header just off-screen, so scrolling slides the
                header away and leaves the search row pinned. */
             .shell-handbook { display: block; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible}
             #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100}
-            #sidebar.header-collapsed .sidebar-header { margin-top: 0; visibility: visible}
             #main-content { min-height: 0; overflow: visible}
             /* The document is the scroll root here, so anything brought into view (anchored jumps, search hits,
                focused inputs and buttons) must land below the sticky search row. The public site has the same rule
@@ -1089,11 +1124,11 @@
                 margin-top: 40px;
                 padding-top: 40px;
                 border-top: 2px solid var(--border-color)}
-            /* Compact header: logo | title over subtitle. Scrolling the page slides it away (the shared rule
-               above), leaving the search row, which always holds the menu button on its right. */
-            .sidebar-header { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 10px 14px}
+            /* Phone header: smaller still. Scrolling the page slides it away, leaving the search row, which always
+               holds the menu button on its right. */
+            .sidebar-header { column-gap: 10px; padding: 10px 14px}
             .sidebar-header .sidebar-title {
-                grid-column: 2; grid-row: 1; align-self: end; margin: 0;
+                margin: 0;
                 /* Scale with reader text settings; wrapping is preferable to clipping the title. */
                 font-size: clamp(0.875rem, 2.8vw, 1.375rem);
                 line-height: 1.2; overflow-wrap: anywhere}
@@ -1113,7 +1148,7 @@
                 font-size: 1.4rem;
                 cursor: pointer}
             /* Light dropdown that overlays the page rather than pushing it down */
-            .nav-list {
+            .sidebar-body {
                 display: none;
                 position: absolute;
                 top: 100%;
@@ -1122,18 +1157,20 @@
                 max-height: max(0px, calc(100vh - var(--overlay-top, 132px)));
                 max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px)));
                 overflow-y: auto;
-                padding-bottom: 0; /* the Close bar sits flush with the bottom edge */
                 background: var(--color-surface);
                 border-bottom: 1px solid var(--color-line);
                 box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25)}
-            #sidebar.menu-open .nav-list { display: block}
+            #sidebar.menu-open .sidebar-body { display: block}
+            #sidebar.searching .sidebar-body { display: none}
+            .sidebar-nav { display: block}
+            .nav-list { overflow: visible; padding-bottom: 0} /* the dropdown scrolls, not the list; the Close bar sits flush with the bottom edge */
             /* While a dropdown is open the page behind it neither scrolls nor receives taps */
             html.scroll-locked, html.scroll-locked body { overflow: hidden}
             html.scroll-locked body { position: fixed; width: 100%} /* top is set in JS to the saved scroll offset */
             html.scroll-locked #sidebar { position: fixed; left: 0; right: 0} /* top is set in JS too */
             html.scroll-locked .menu-backdrop { display: block}
             .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: var(--color-tint); touch-action: none} /* fully opaque: nothing of the page shows or can be reached */
-            .nav-list, .search-results { overscroll-behavior: contain} /* scrolling the list never chains to the page */
+            .sidebar-body, .search-results { overscroll-behavior: contain} /* scrolling the list never chains to the page */
             /* the desktop "searching" rule lifts the height limit; on phones the dropdown must stay within the screen and scroll */
             #sidebar.searching .search-results { max-height: max(0px, calc(100vh - var(--overlay-top, 132px))); max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px)))}
             /* phones are already full width, so the option does nothing there */
@@ -1141,7 +1178,7 @@
             .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: var(--color-canvas); border-top: 1px solid var(--color-line-strong); list-style: none}
             .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px; cursor: pointer}
             .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px}
-            .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto}
+            .nav-search-field { flex: 1; min-width: 0}
             .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px))); padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
             #main-content { padding: 8px}
             .content-container { padding: 16px; border-radius: 8px}
