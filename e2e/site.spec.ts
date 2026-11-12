@@ -29,6 +29,35 @@ test.describe('public pages', () => {
     });
   }
 
+  test('"Every tool" on the pricing table opens and scrolls to the tool index', async ({ page }) => {
+    await page.goto('/pricing');
+    const table = page.locator('section[aria-labelledby="plansTitle"]');
+    const index = page.locator('.pub-tool-index');
+    await expect(index).not.toHaveAttribute('open', '');
+    await expect(table.getByRole('link', { name: 'Every tool' })).toHaveAttribute('href', '#tool-index');
+    await expect(table.getByRole('link', { name: 'The five essential tools' })).toHaveCount(0);
+    await table.getByRole('link', { name: 'Every tool' }).click();
+    await expect(page).toHaveURL(/\/pricing#tool-index$/);
+    await expect(index).toHaveAttribute('open', '');
+    await expect(index.locator('summary')).toBeInViewport();
+    await expect(index.getByRole('rowheader', { name: 'Objection trainer' })).toBeVisible();
+  });
+
+  test('/pricing#tool-index opens the tool index on arrival', async ({ page }) => {
+    await page.goto('/pricing#tool-index');
+    await expect(page.locator('.pub-tool-index')).toHaveAttribute('open', '');
+  });
+
+  test('"Every tool" opens the tool index from the phone plan tabs', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/pricing');
+    const table = page.locator('section[aria-labelledby="plansTitle"]');
+    await table.getByRole('tab', { name: 'Pro' }).click();
+    await table.getByRole('tabpanel', { name: 'Pro' }).getByRole('link', { name: 'Every tool' }).click();
+    await expect(page.locator('.pub-tool-index')).toHaveAttribute('open', '');
+    await expect(page.locator('.pub-tool-index summary')).toBeInViewport();
+  });
+
   test('the sales page has no purchase button until a price and checkout are configured', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'See plans and pricing' }).first()).toHaveAttribute('href', '/pricing');

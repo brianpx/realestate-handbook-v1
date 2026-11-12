@@ -22,7 +22,8 @@ export const TIERS: readonly Tier[] = [
 export type FeatureValue = string | boolean;
 /** Which owner-supplied term a row's promise rests on; until it is published the paid cells say so instead. */
 export type PublishedWhen = 'updatesTerm' | 'supportEmail';
-export type Feature = { label: string; values: Record<TierId, FeatureValue>; publishedWhen?: PublishedWhen };
+/** A tier's cell can link somewhere on the same page; the target id lives in components/site/ToolIndex.tsx. */
+export type Feature = { label: string; values: Record<TierId, FeatureValue>; publishedWhen?: PublishedWhen; links?: Partial<Record<TierId, string>> };
 
 // A string is shown as written; true and false become the included and not-included marks. The free column is the
 // signed-in free set (overview, Chapters 1 and 7); the glossary appendix and the pop-ups are not in it.
@@ -31,7 +32,7 @@ export const FEATURES: readonly Feature[] = [
   { label: 'Appendices', values: { free: false, basic: 'All six', pro: 'All six' } },
   { label: 'Checkpoints and quizzes', values: { free: 'In the free chapters', basic: 'Every chapter', pro: 'Every chapter' } },
   { label: 'Scripts with practice mode', values: { free: 'One Chapter 6 script', basic: '20+ scripts', pro: '20+ scripts' } },
-  { label: 'Interactive tools', values: { free: 'Goal calculator, pitfall explorer, self-score, weekly planner', basic: 'The five essential tools', pro: 'Every tool' } },
+  { label: 'Interactive tools', values: { free: 'Goal calculator, pitfall explorer, self-score, weekly planner', basic: 'The five essential tools', pro: 'Every tool' }, links: { pro: '#tool-index' } },
   { label: 'Reading-plan coach (plan and review)', values: { free: false, basic: false, pro: true } },
   { label: 'Search and glossary pop-ups', values: { free: false, basic: true, pro: true } },
   { label: 'Print-friendly pages', values: { free: false, basic: true, pro: true } },
