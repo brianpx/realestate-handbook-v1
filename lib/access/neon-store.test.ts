@@ -68,12 +68,13 @@ describe('NeonAccessStore', () => {
     expect(text).toContain('delete from sessions where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from auth_tokens where email = ? and exists (select 1 from before)');
     expect(text).toContain('delete from realtor_profiles where user_id = ? and exists (select 1 from before)');
+    expect(text).toContain('delete from billing_profiles where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from leads where email = ? and exists (select 1 from before)');
     expect(text).toContain('update billing_customers set email_at_provider = ?');
     expect(text).not.toContain('delete from access_grants');
     expect(text).not.toContain('delete from billing_records');
     expect(text).toContain("jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader')");
-    expect(values).toEqual(['u', ISO, ISO, 'u', 'u', 'a@b.co', 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
+    expect(values).toEqual(['u', ISO, ISO, 'u', 'u', 'a@b.co', 'u', 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
   });
   it('appends and lists audit rows', async () => {
     const row = { id: 'a', at: ISO, actor_user_id: null, actor_kind: 'system', action: 'bootstrap_admin', subject_table: 'users', subject_id: 'u', before: { role: 'reader' }, after: { role: 'admin' }, reason: null, ip_hash: null };

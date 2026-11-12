@@ -48,6 +48,7 @@ it('is open on /account with the Settings row current', async () => {
     const child = host.querySelector('a[href="/account/authentication"]')!;
     expect(child.textContent).toBe('Authentication');
     expect(child.hasAttribute('aria-current')).toBe(false);
+    expect(host.querySelector('a[href="/account/billing"]')!.textContent).toBe('Billing Information');
   } finally { await done(); }
 });
 
@@ -57,6 +58,17 @@ it('is open on a settings page with that child current and no dead links', async
     expect(host.querySelector('button')!.getAttribute('aria-expanded')).toBe('true');
     expect(host.querySelector('a[data-page="account"]')!.hasAttribute('aria-current')).toBe(false);
     expect(host.querySelector('a[href="/account/authentication"]')!.getAttribute('aria-current')).toBe('page');
-    expect(host.querySelectorAll('#navSettings a')).toHaveLength(1);
+    expect(host.querySelectorAll('#navSettings a')).toHaveLength(2);
+    expect(host.querySelector('a[href="/account/billing"]')!.hasAttribute('aria-current')).toBe(false);
+  } finally { await done(); }
+});
+
+it('marks Billing Information current on its page, after Authentication', async () => {
+  const { host, done } = await render('account/billing');
+  try {
+    expect(host.querySelector('button')!.getAttribute('aria-expanded')).toBe('true');
+    expect([...host.querySelectorAll('#navSettings a')].map(a => a.getAttribute('data-page'))).toEqual(['account/authentication', 'account/billing']);
+    expect(host.querySelector('a[href="/account/billing"]')!.getAttribute('aria-current')).toBe('page');
+    expect(host.querySelector('a[href="/account/authentication"]')!.hasAttribute('aria-current')).toBe(false);
   } finally { await done(); }
 });

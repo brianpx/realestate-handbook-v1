@@ -113,6 +113,30 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await expect(page.locator('#sidebar [data-page="account"]')).toHaveText('Settings');
   });
 
+  test('the billing page says nothing is charged yet, keeps a saved company name across a reload, and refuses a bad invoice email', async ({ page }) => {
+    await page.goto('/account/billing');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Billing Information');
+    await expect(page.locator('[data-billing-notice]')).toContainText('no payment method and there are no invoices');
+    await expect(page.locator('#sidebar [data-page="account/billing"]')).toHaveAttribute('aria-current', 'page');
+    const company = page.getByRole('textbox', { name: 'Company name' });
+    const save = page.getByRole('region', { name: 'Company Name' }).getByRole('button', { name: 'Save' });
+    const name = `Example Realty ${Date.now()}`;
+    await expect(save).toBeDisabled();
+    await company.fill(name);
+    await save.click();
+    await expect(page.getByRole('region', { name: 'Company Name' }).getByRole('status')).toHaveText('Saved.');
+    await page.reload();
+    await expect(page.getByRole('textbox', { name: 'Company name' })).toHaveValue(name);
+
+    const email = page.getByRole('textbox', { name: 'Invoice email recipient' });
+    await email.fill('not-an-address');
+    await page.getByRole('region', { name: 'Invoice Email Recipient' }).getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('region', { name: 'Invoice Email Recipient' }).getByRole('alert')).toHaveText('Enter a valid email address, or leave the box blank.');
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    await page.reload();
+    await expect(page.getByRole('textbox', { name: 'Invoice email recipient' })).toHaveValue('');
+  });
+
   test('the account page offers the profile section; the file store has no profile table, and says so', async ({ page }) => {
     await page.goto('/account');
     await expect(page.getByRole('heading', { level: 2, name: 'Realtor profile' })).toBeVisible();

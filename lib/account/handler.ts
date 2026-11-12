@@ -6,9 +6,10 @@ import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
 import { signedInUser } from '@/lib/auth/request-user';
 import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
+import type { BillingInfoStore } from '@/lib/users/billing-info-store';
 import type { ProfileStore } from '@/lib/users/profile-store';
 
-export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null };
+export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null };
 
 export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
@@ -45,9 +46,9 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
 }
 
 /**
- * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile and the marketing
- * row go first: if either delete throws, anonymise has not run and the account stays active. The database
- * statement removes those rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
+ * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile, the billing details and the marketing
+ * row go first: if any delete throws, anonymise has not run and the account stays active. The database
+ * statement removes the profile and marketing rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
  * license number or a marketing address after the account address is gone. Grants and billing rows stay.
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
@@ -66,6 +67,7 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
 
     // Before anonymise, so a throw here leaves the account active. The Neon statement deletes the same rows.
     if (deps.profiles) await deps.profiles.deleteByUser(userId);
+    if (deps.billingInfo) await deps.billingInfo.deleteByUser(userId);
     if (deps.leads) await deps.leads.deleteByEmail(email);
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));

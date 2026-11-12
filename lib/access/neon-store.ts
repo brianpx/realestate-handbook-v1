@@ -172,6 +172,8 @@ export class NeonAccessStore implements AccessStore {
         delete from auth_tokens where email = ${email} and exists (select 1 from before)
       ), profiles_gone as (
         delete from realtor_profiles where user_id = ${userId} and exists (select 1 from before)
+      ), billing_info_gone as (
+        delete from billing_profiles where user_id = ${userId} and exists (select 1 from before)
       ), leads_gone as (
         delete from leads where email = ${email} and exists (select 1 from before)
       ), billing_hashed as (

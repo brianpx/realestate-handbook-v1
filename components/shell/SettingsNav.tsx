@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 const SETTINGS_LINKS = [
   { id: 'account/authentication', label: 'Authentication', href: '/account/authentication' },
+  { id: 'account/billing', label: 'Billing Information', href: '/account/billing' },
 ];
 
 /**
