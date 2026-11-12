@@ -95,6 +95,9 @@
 .pub-hero { padding: 64px 0 72px; background: linear-gradient(180deg, var(--pub-tint) 0%, var(--color-surface) 100%)}
 .pub-hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 56px; align-items: center}
 @media (width <= 1000px) { .pub-hero { padding: 40px 0 52px} .pub-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px} }
+.pub .pub-hero-jump { display: none; margin: -8px 0 16px; font-weight: 600}
+.pub .pub-hero-jump a::after { content: " ↓"}
+@media (width <= 1000px) { .pub .pub-hero-jump { display: block} }
 @media (width <= 700px) { .pub .pub-hero .pub-lede { font-size: 1.02rem; line-height: 1.55; margin-bottom: 20px} }
 
 /* the live preview card in the hero and the first-session result */
@@ -174,14 +177,12 @@
 .pub-reassure { margin-top: 28px; font-size: 1.05rem; max-width: 44rem}
 
 /* ---- first session result ---- */
-.pub-result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start}
-@media (width <= 900px) { .pub-result { grid-template-columns: minmax(0, 1fr); gap: 32px} }
-.pub-checks { list-style: none}
-.pub-checks li { position: relative; padding: 0 0 0 38px; margin-bottom: 20px; font-size: 1.02rem}
-.pub-checks li::before { content: "✓"; position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.9rem}
-.pub-checks strong { display: block; color: var(--pub-ink); font-size: 1.05rem; margin-bottom: 2px}
 .pub-plan { padding: 24px}
-.pub-plan dl { margin: 0}
+.pub-plan dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; margin: 14px 0 0}
+@media (width <= 900px) { .pub-plan dl { grid-template-columns: minmax(0, 1fr); gap: 22px} }
+.pub-plan dt::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-size: 0.7rem; letter-spacing: 0; vertical-align: 1px}
+.pub-plan dd.pub-plan-what { margin: 6px 0 0; color: var(--pub-body); font-size: 0.98rem}
+.pub-plan dd.pub-plan-eg { margin: 10px 0 0; padding: 10px 14px; border-left: 3px solid var(--pub-green); background: var(--color-canvas); border-radius: 0 8px 8px 0}
 .pub-plan dt { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pub-muted); font-weight: 700; margin-top: 16px}
 .pub-plan dt:first-child { margin-top: 0}
 .pub-plan dd { margin: 4px 0 0; color: var(--pub-ink); font-size: 1.02rem; line-height: 1.45}
@@ -251,6 +252,17 @@
 .pub-phase ul { padding-left: 20px; margin: 10px 0 0}
 .pub-phase li { font-size: 0.98rem; margin-bottom: 6px; color: var(--pub-body)}
 @media (width <= 900px) { .pub-phases { grid-template-columns: minmax(0, 1fr)} .pub-phase { border-right: 0; border-bottom: 1px solid var(--pub-line)} .pub-phase:last-child { border-bottom: 0} }
+
+/* phone: tighter vertical rhythm. These come after the rules they override so the cascade, not specificity, decides. */
+@media (width <= 700px) {
+  .pub-section { padding: 40px 0}
+  .pub-section-head { margin-bottom: 24px}
+  .pub-grid { gap: 14px}
+  .pub-tile { padding: 18px}
+  .pub-tool { padding: 14px 14px 18px}
+  .pub-phase { padding: 20px 18px}
+  .pub-inside { margin-top: 40px}
+}
 
 /* ---- tools call to action and what is inside ---- */
 .pub-cta-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; margin-top: 32px; padding: 24px 28px; background: var(--pub-tint)}

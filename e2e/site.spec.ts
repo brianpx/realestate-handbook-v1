@@ -69,6 +69,28 @@ test.describe('public pages', () => {
     await expect(page.getByRole('link', { name: 'See the three phases below' })).toHaveAttribute('href', '#how-it-works');
   });
 
+  test('the first-session card shows each result once, with its example', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByRole('group', { name: /What the first session produces/ });
+    await expect(card.locator('dt')).toHaveText(['A daily conversation target', 'Two lead sources to start with', 'A scheduled first week', 'One clear next action']);
+    await expect(card.locator('.pub-plan-eg')).toHaveCount(4);
+    await expect(page.locator('.pub-checks')).toHaveCount(0); // the separate checklist repeated these four lines
+  });
+
+  test('on a phone the hero links to the calculator, on a desktop it does not', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    const jump = page.getByRole('link', { name: 'See your daily number' });
+    await expect(jump).toBeVisible();
+    await jump.click();
+    await expect(page).toHaveURL(/\/#heroPlan$/);
+    await expect(page.getByRole('heading', { name: 'Your daily conversation target' })).toBeInViewport();
+    const headerBottom = await page.locator('.pub-header').evaluate(el => el.getBoundingClientRect().bottom);
+    await expect.poll(() => page.locator('#heroPlan').evaluate(el => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(jump).toBeHidden();
+  });
+
   test('every row of the planner example on the sales page keeps its time beside its name', async ({ page }) => {
     await page.goto('/');
     const rows = page.locator('.pub-blocks li');

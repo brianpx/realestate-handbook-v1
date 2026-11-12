@@ -95,9 +95,10 @@ function Hero({ action, open }: { action: Action; open: boolean }) {
             implementation handbook with interactive tools: it turns your income goal into a daily conversation target, helps you
             set up your CRM and follow-up, and gives you scripts to practice and a weekly review so you keep staying in touch.
           </p>
+          <p className="pub-hero-jump"><a href="#heroPlan">See your daily number</a></p>
           <SignedInSwitch signedIn={<WelcomeBack />} signedOut={visitor} />
         </div>
-        <div className="pub-hero-side">
+        <div className="pub-hero-side" id="heroPlan">
           <HeroPlan />
         </div>
       </div>
@@ -152,26 +153,30 @@ function FirstSession() {
           <h2 id="firstTitle" className="pub-h2">What you leave your first session with.</h2>
           <p>The guided setup walks you through the first hour. It uses the same tools as the chapters, and your answers are saved on your device so you can come back and change them.</p>
         </div>
-        <div className="pub-result">
-          <ul className="pub-checks" role="list">
-            <li><strong>A daily conversation target</strong>Your income goal and average commission, run through ratios you can edit, down to a number for a single day.</li>
-            <li><strong>Two lead sources to start with</strong>Chosen on what each costs in time and money and what you can realistically follow up on this month, with the target split between them.</li>
-            <li><strong>A scheduled first week</strong>Protected blocks for your CRM, follow-up and prospecting, ready to add to your calendar.</li>
-            <li><strong>One clear next action</strong>The first thing to do on your next working day, written from your own numbers.</li>
-          </ul>
-          <div className="pub-card pub-plan" aria-label="Example plan summary">
-            <span className="pub-device-tag">Example only</span>
-            <dl>
-              <dt>Daily conversation target</dt>
-              <dd>{roundPerDay(EXAMPLE.plan.perDay)} a day<small>From an $80,000 goal and a $6,500 average commission, using the handbook’s example ratios.</small></dd>
-              <dt>Lead sources</dt>
-              <dd>{EXAMPLE.allocation.map(a => <span key={a.source} className="block">{sourceName(a.source)}: {a.percent}%</span>)}<small>An example split. Yours is set in step 4.</small></dd>
-              <dt>First week</dt>
-              <dd>{blocks.map(b => <span key={b.cls} className="block">{fmtClock(b.from)} {b.name}</span>)}<small>Default blocks. Start time and lengths are yours to edit.</small></dd>
-              <dt>Next action</dt>
-              <dd>{EXAMPLE.action}</dd>
-            </dl>
-          </div>
+        <div className="pub-card pub-plan" role="group" aria-label="What the first session produces, with example values">
+          <span className="pub-device-tag">Example only</span>
+          <dl>
+            <div>
+              <dt>A daily conversation target</dt>
+              <dd className="pub-plan-what">Your income goal and average commission, run through ratios you can edit, down to a number for a single day.</dd>
+              <dd className="pub-plan-eg">{roundPerDay(EXAMPLE.plan.perDay)} a day<small>From an $80,000 goal and a $6,500 average commission, using the handbook’s example ratios.</small></dd>
+            </div>
+            <div>
+              <dt>Two lead sources to start with</dt>
+              <dd className="pub-plan-what">Chosen on what each costs in time and money and what you can realistically follow up on this month, with the target split between them.</dd>
+              <dd className="pub-plan-eg">{EXAMPLE.allocation.map(a => <span key={a.source} className="block">{sourceName(a.source)}: {a.percent}%</span>)}<small>An example split. Yours is set in step 4.</small></dd>
+            </div>
+            <div>
+              <dt>A scheduled first week</dt>
+              <dd className="pub-plan-what">Protected blocks for your CRM, follow-up and prospecting, ready to add to your calendar.</dd>
+              <dd className="pub-plan-eg">{blocks.map(b => <span key={b.cls} className="block">{fmtClock(b.from)} {b.name}</span>)}<small>Default blocks. Start time and lengths are yours to edit.</small></dd>
+            </div>
+            <div>
+              <dt>One clear next action</dt>
+              <dd className="pub-plan-what">The first thing to do on your next working day, written from your own numbers.</dd>
+              <dd className="pub-plan-eg">{EXAMPLE.action}</dd>
+            </div>
+          </dl>
         </div>
         <div className="pub-actions mt-7">
           <Link className="pub-btn pub-btn-secondary" href="/preview">See the first of these tools in the sample lesson</Link>
