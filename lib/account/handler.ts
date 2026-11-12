@@ -6,10 +6,11 @@ import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
 import { signedInUser } from '@/lib/auth/request-user';
 import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
+import type { AvatarStorage } from '@/lib/users/avatar-storage';
 import type { BillingInfoStore } from '@/lib/users/billing-info-store';
 import type { ProfileStore } from '@/lib/users/profile-store';
 
-export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null };
+export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null; avatars: AvatarStorage | null };
 
 export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
@@ -46,9 +47,9 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
 }
 
 /**
- * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile, the billing details and the marketing
- * row go first: if any delete throws, anonymise has not run and the account stays active. The database
- * statement removes the profile and marketing rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
+ * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile, the billing details, the picture's blob and the
+ * marketing row go first: if any delete throws, anonymise has not run and the account stays active. The database
+ * statement clears the picture's key and removes the profile and marketing rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
  * license number or a marketing address after the account address is gone. Grants and billing rows stay.
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
@@ -61,13 +62,14 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     const now = deps.now();
     const user = await signedInUser(req.sessionId, deps.stores, now);
     if (!user) return redirect(SIGN_IN, cleared);
-    const { id: userId, email } = user; // copied: the store may rewrite the user object it handed out
+    const { id: userId, email, avatarKey } = user; // copied: the store may rewrite the user object it handed out
     const parsed = deleteAccountSchema.safeParse({ confirmEmail: new URLSearchParams(req.body).get('confirmEmail') ?? '' });
     if (!parsed.success || parsed.data.confirmEmail !== email) return redirect(`${ACCOUNT_PATH}?error=confirm`);
 
     // Before anonymise, so a throw here leaves the account active. The Neon statement deletes the same rows.
     if (deps.profiles) await deps.profiles.deleteByUser(userId);
     if (deps.billingInfo) await deps.billingInfo.deleteByUser(userId);
+    if (deps.avatars && avatarKey) await deps.avatars.delete(avatarKey); // the statement below clears the key; the blob is not in the database
     if (deps.leads) await deps.leads.deleteByEmail(email);
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));

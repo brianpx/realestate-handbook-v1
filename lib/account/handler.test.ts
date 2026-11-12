@@ -5,6 +5,8 @@ import { MemoryAuthStore } from '@/lib/auth/memory-store';
 import { sessionExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryLeadStore } from '@/lib/leads/store';
+import { newAvatarKey } from '@/lib/users/avatar';
+import { MemoryAvatarStorage } from '@/lib/users/avatar-storage';
 import { MemoryBillingInfoStore } from '@/lib/users/billing-info-store';
 import { EMPTY_PROFILE } from '@/lib/users/profile';
 import { MemoryProfileStore } from '@/lib/users/profile-store';
@@ -22,9 +24,13 @@ async function setup() {
   const leads = new MemoryLeadStore();
   const profiles = new MemoryProfileStore();
   const billingInfo = new MemoryBillingInfoStore();
-  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, billingInfo, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
+  const avatars = new MemoryAvatarStorage();
+  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, billingInfo, avatars, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
   await profiles.save(user.id, { ...EMPTY_PROFILE, brokerageName: 'Example Realty' }, 'user', NOW);
+  const avatarKey = newAvatarKey(user.id);
+  await avatars.put(avatarKey, new Uint8Array([1]));
+  await users.setAvatar(user.id, avatarKey, NOW);
   await billingInfo.save(user.id, { companyName: 'Example LLC', taxIdType: 'us_ein', taxIdValue: '12-3456789' }, NOW);
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
@@ -37,7 +43,7 @@ async function setup() {
     body,
     sessionId: 'sessionId' in extra ? extra.sessionId : sessions[0],
   });
-  return { users, auth, access, leads, profiles, billingInfo, deps, user, sessions, req };
+  return { users, auth, access, leads, profiles, billingInfo, avatars, avatarKey, deps, user, sessions, req };
 }
 
 describe('sign out everywhere', () => {
@@ -71,7 +77,7 @@ describe('sign out everywhere', () => {
 
 describe('delete account', () => {
   it('needs the typed address to match, then anonymises, keeps the grants, drops the profile, the billing details and the lead row and clears the cookie', async () => {
-    const { users, auth, access, leads, profiles, billingInfo, deps, user, req } = await setup();
+    const { users, auth, access, leads, profiles, billingInfo, avatars, deps, user, req } = await setup();
     await grantAccess(access, { userId: user.id, kind: 'complimentary', tier: 'basic', grantedBy: user.id }, { kind: 'system', userId: null }, NOW);
     const wrong = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: 'other@example.com' }).toString()), deps);
     expect(wrong.status).toBe(303);
@@ -79,6 +85,7 @@ describe('delete account', () => {
     expect(users.users[0]!.status).toBe('active');
     expect(billingInfo.rows).toHaveLength(1);
     expect(profiles.profiles).toHaveLength(1);
+    expect(avatars.objects.size).toBe(1);
 
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: ' Reader@Example.com ' }).toString()), deps);
     expect(res.status).toBe(303);
@@ -90,6 +97,8 @@ describe('delete account', () => {
     expect(await leads.list()).toHaveLength(0);
     expect(profiles.profiles).toHaveLength(0);
     expect(billingInfo.rows).toHaveLength(0);
+    expect(avatars.objects.size).toBe(0);
+    expect(users.users[0]).toMatchObject({ avatarKey: null, avatarUpdatedAt: null });
     expect(access.grants).toHaveLength(1);
     expect(access.memberships).toHaveLength(0);
     const anonymised = access.audit.find(a => a.action === 'user.anonymize');
@@ -123,7 +132,7 @@ describe('delete account', () => {
     expect(users.users[0]!.status).toBe('active');
   });
   it('sends the reader back to the account page when the store fails, and a failing lead, profile or billing delete leaves the account active', async () => {
-    const { auth, leads, profiles, billingInfo, deps, req, users } = await setup();
+    const { auth, leads, profiles, billingInfo, avatars, avatarKey, deps, req, users } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
     const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -144,6 +153,12 @@ describe('delete account', () => {
       expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
       expect(users.users[0]!.status).toBe('active');
       expect(billingInfo.rows).toHaveLength(1);
+      billingInfo.failWith = null;
+      avatars.failWith = new Error('blob down');
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(users.users[0]!.status).toBe('active');
+      expect(users.users[0]!.avatarKey).toBe(avatarKey);
+      expect(avatars.objects.size).toBe(1);
     } finally {
       spy.mockRestore();
     }
