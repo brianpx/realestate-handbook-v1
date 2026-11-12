@@ -218,7 +218,7 @@
             text-decoration: none;
             font-size: 0.875rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
             border-left: 3px solid transparent}
 
         .nav-item:hover {
@@ -763,10 +763,10 @@
         .settings-transfer .settings-sub .btn-mini { margin: 0 8px 6px 0}
         .settings-confirm { margin-top: 8px}
         .settings-confirm .btn-mini { margin: 6px 8px 0 0}
-        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-item.read::after { display: none}
+        #sidebar.progress-off .progress-item, #sidebar.progress-off .nav-read { display: none}
         .progress-bar { height: 6px; border-radius: 3px; background: var(--color-subtle); overflow: hidden}
         .progress-bar span { display: block; height: 100%; width: 0; background: var(--color-link); transition: width 0.3s}
-        .nav-item.read::after { content: "\2713"; content: "\2713" / " (read)"; float: right; color: var(--color-brand-soft); font-weight: 700}
+        .nav-read { float: right; color: var(--color-brand-soft); font-weight: 700}
 
         /* Checklists */
         .checklist { margin: 12px 0 20px}

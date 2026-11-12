@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
 import { NAV, isPageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
-import { searchEntries, type SearchEntry } from '@/lib/search-query';
+import { searchIndex, type SearchEntry } from '@/lib/search-query';
 import { findSearchTarget, revealSearchTarget } from '@/lib/search-jump';
 
 const labelOf = (page: string) => NAV.flatMap(g => g.pages).find(p => p.id === page)?.label ?? page;
@@ -51,7 +51,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   };
   useEffect(() => { if (searching && !index && !failed) load(); }, [searching, index, failed]);
 
-  const results = useMemo(() => (index && searching ? searchEntries(index, trimmed) : []), [index, searching, trimmed]);
+  const { entries: results, total } = useMemo(() => (index && searching ? searchIndex(index, trimmed) : { entries: [], total: 0 }), [index, searching, trimmed]);
 
   useImperativeHandle(apiRef, () => ({ clear: () => setQuery('') }), []);
 
@@ -111,6 +111,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
         onFocus={() => { if (!index) load(); }}
         onKeyDown={e => {
           if (e.key === 'ArrowDown') { links()[0]?.focus(); e.preventDefault(); }
+          else if (e.key === 'Enter' && !e.nativeEvent.isComposing && results[0]) { choose(results[0]); e.preventDefault(); }
           else if (e.key === 'Escape' && query) { setQuery(''); e.stopPropagation(); } // keeps the mobile menu's own Escape handler from also firing
         }}
       />
@@ -146,6 +147,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
             </a>
           </li>
         ))}
+        {total > results.length && <li className="search-empty search-more">Showing {results.length} of {total}. Add a word to narrow them.</li>}
       </ul>
       <div className="visually-hidden" id="searchStatus" role="status" aria-live="polite">{status}</div>
       {children}

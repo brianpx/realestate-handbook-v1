@@ -102,6 +102,54 @@ test.describe('phone menu', () => {
     expect(await isInert(page, '.skip-link')).toBe(false);
   });
 
+  test('touch listeners that block swipes exist only while the menu is open', async ({ page }) => {
+    // only blocking (non-passive) touchmove listeners count: Settings has a passive one on the document by design
+    await page.addInitScript(() => {
+      const blocking = new Set<EventListenerOrEventListenerObject>();
+      (window as unknown as { __blocking: Set<unknown> }).__blocking = blocking;
+      const add = document.addEventListener.bind(document);
+      const remove = document.removeEventListener.bind(document);
+      document.addEventListener = ((type: string, fn: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
+        if (type === 'touchmove' && typeof options === 'object' && options.passive === false) blocking.add(fn);
+        return add(type, fn, options);
+      }) as typeof document.addEventListener;
+      document.removeEventListener = ((type: string, fn: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) => {
+        if (type === 'touchmove') blocking.delete(fn);
+        return remove(type, fn, options);
+      }) as typeof document.removeEventListener;
+    });
+    const live = () => page.evaluate(() => (window as unknown as { __blocking: Set<unknown> }).__blocking.size);
+    await page.goto('/handbook/ch1');
+    expect(await live()).toBe(0);
+    await page.locator('#menuToggle').click();
+    await expect(page.locator('html')).toHaveClass(/scroll-locked/);
+    expect(await live()).toBe(1);
+    await page.locator('#menuToggle').click();
+    await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
+    expect(await live()).toBe(0);
+  });
+
+  test('tapping the backdrop closes open search results and clears the box', async ({ page }) => {
+    await page.goto('/handbook/ch1');
+    const box = page.getByLabel('Search the handbook');
+    await box.fill('crm');
+    await expect(page.locator('html')).toHaveClass(/scroll-locked/);
+    await page.locator('.menu-backdrop').click({ position: { x: 5, y: 700 } });
+    await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
+    await expect(box).toHaveValue('');
+  });
+
+  test('the open menu scrolls to the current page', async ({ page }) => {
+    await page.goto('/handbook/ch13');
+    await page.locator('#menuToggle').click();
+    const inside = await page.evaluate(() => {
+      const list = document.getElementById('navList')!.getBoundingClientRect();
+      const row = document.querySelector('#sidebar .nav-item.active')!.getBoundingClientRect();
+      return row.top >= list.top && row.bottom <= list.bottom;
+    });
+    expect(inside).toBe(true);
+  });
+
   test('a chapter chosen from the open menu gets focus on its heading, with the page no longer inert', async ({ page }) => {
     await page.goto('/handbook/ch1');
     await page.locator('#menuToggle').click();
@@ -112,6 +160,45 @@ test.describe('phone menu', () => {
     expect(await isInert(page, '#main-content')).toBe(false);
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
   });
+});
+
+test('on desktop the list scrolls the current page into view, and Appendix E also marks the tools row', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/handbook/app-e');
+  const inside = await page.evaluate(() => {
+    const list = document.getElementById('navList')!.getBoundingClientRect();
+    const row = document.querySelector('#sidebar a[data-page="app-e"]')!.getBoundingClientRect();
+    return row.top >= list.top && row.bottom <= list.bottom;
+  });
+  expect(inside).toBe(true);
+  await expect(page.locator('#sidebar a[aria-current="page"]')).toHaveCount(2);
+  await expect(page.locator('#sidebar a[data-page="tools"]')).toHaveAttribute('aria-current', 'page');
+});
+
+test('the current row is back in view after search closes on the same page', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/handbook/app-e');
+  const box = page.getByLabel('Search the handbook');
+  await box.fill('crm');
+  await expect(page.locator('#sidebar')).toHaveClass(/searching/);
+  await box.press('Escape');
+  await expect(page.locator('#sidebar')).not.toHaveClass(/searching/);
+  await expect.poll(() => page.evaluate(() => {
+    const list = document.getElementById('navList')!.getBoundingClientRect();
+    const row = document.querySelector('#sidebar a[data-page="app-e"]')!.getBoundingClientRect();
+    return row.top >= list.top && row.bottom <= list.bottom;
+  })).toBe(true);
+});
+
+test('the page announcement leaves out the read tick', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('handbookState', JSON.stringify({ read: { ch2: true } })));
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/handbook/ch1');
+  const row = page.locator('#sidebar a[data-page="ch2"]');
+  await row.click();
+  await expect(page).toHaveURL(/\/handbook\/ch2$/);
+  await expect(row.locator('.nav-read')).toHaveCount(1);
+  await expect(page.locator('#pageStatus')).toHaveText('2. Finding Clients');
 });
 
 test('Settings stays open on a wheel-up while one of its controls has focus', async ({ page }) => {

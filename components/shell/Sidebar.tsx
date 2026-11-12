@@ -15,6 +15,28 @@ import { SidebarSearch, type SearchApi } from './SidebarSearch';
 // The CSS keys off the same ids and classes, so those names stay.
 const PHONE_QUERY = '(max-width: 900px)';
 
+// While the page is locked, swipes are blocked everywhere except inside the open list, and there only while it can
+// still move. The listeners exist only for that time: a non-passive touchmove on the document makes the browser wait
+// for script on every touch scroll, on every page.
+function guardSwipes(): () => void {
+  let startY = 0;
+  const onStart = (e: TouchEvent) => { startY = e.touches[0]?.clientY ?? 0; };
+  const onMove = (e: TouchEvent) => {
+    const list = (e.target as Element | null)?.closest<HTMLElement>('.nav-list, .search-results');
+    if (!list) { e.preventDefault(); return; }
+    const down = (e.touches[0]?.clientY ?? 0) > startY;
+    const atTop = list.scrollTop <= 0;
+    const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+    if (list.scrollHeight <= list.clientHeight || (down && atTop) || (!down && atBottom)) e.preventDefault();
+  };
+  document.addEventListener('touchstart', onStart, { passive: true });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  return () => {
+    document.removeEventListener('touchstart', onStart);
+    document.removeEventListener('touchmove', onMove);
+  };
+}
+
 // `locked` names the rows the reader's plan does not open (a page id, 'plan' or 'review') and the badge to show
 // on them; the pages themselves show the upsell card. The layout works it out from the viewer.
 export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, string>> }) {
@@ -26,6 +48,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
   const headerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const lockedScrollY = useRef(0);
+  const releaseSwipes = useRef<(() => void) | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   // true while search results are open; they pin the page like the menu does and the menu button closes them
@@ -75,8 +98,11 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       document.body.style.top = `-${lockedScrollY.current}px`;
       root.classList.add('scroll-locked');
       behind.forEach(node => { node.inert = true; });
+      releaseSwipes.current = guardSwipes();
     } else if (!lock && locked) {
       root.classList.remove('scroll-locked');
+      releaseSwipes.current?.();
+      releaseSwipes.current = null;
       if (sidebar) sidebar.style.top = ''; // null on unmount: a link out of the open menu to the public site
       document.body.style.paddingTop = '';
       document.body.style.top = '';
@@ -118,27 +144,6 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       window.visualViewport?.removeEventListener('resize', measure);
     };
   }, [open]);
-
-  // Swipes are blocked everywhere except inside the open list, and there only while it can still move.
-  useEffect(() => {
-    let startY = 0;
-    const onStart = (e: TouchEvent) => { startY = e.touches[0]?.clientY ?? 0; };
-    const onMove = (e: TouchEvent) => {
-      if (!document.documentElement.classList.contains('scroll-locked')) return;
-      const list = (e.target as Element | null)?.closest<HTMLElement>('.nav-list, .search-results');
-      if (!list) { e.preventDefault(); return; }
-      const down = (e.touches[0]?.clientY ?? 0) > startY;
-      const atTop = list.scrollTop <= 0;
-      const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
-      if (list.scrollHeight <= list.clientHeight || (down && atTop) || (!down && atBottom)) e.preventDefault();
-    };
-    document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchmove', onMove, { passive: false });
-    return () => {
-      document.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchmove', onMove);
-    };
-  }, []);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -224,12 +229,29 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       heading.focus({ preventScroll: true });
     }
     const region = document.getElementById('pageStatus');
-    const label = document.querySelector('.nav-item.active')?.textContent?.trim() ?? '';
+    const current = document.querySelector('.nav-item.active:not([data-page="tools"])')?.cloneNode(true) as HTMLElement | undefined;
+    current?.querySelector('.nav-read')?.remove(); // the read tick is not part of the page's name
+    const label = current?.textContent?.trim() ?? '';
     if (region && label) {
       region.textContent = '';
       setTimeout(() => { region.textContent = label; }, 50);
     }
   }, [pathname, syncScrollLock]);
+
+  // The list is long, so bring the current row into view whenever the list is showing (desktop at any route change,
+  // phones when the menu opens). Only the list scrolls: scrollIntoView would move the page too.
+  useEffect(() => {
+    const list = document.getElementById('navList');
+    const rows = list?.querySelectorAll<HTMLElement>('.nav-item.active');
+    const row = rows?.item(rows.length - 1); // Appendix E also marks the tools row above it; the book row is the later one
+    if (!list || !row || list.clientHeight === 0) return; // hidden: a closed phone menu or open search results
+    const edge = 8;
+    const closeBar = list.querySelector<HTMLElement>('.menu-close')?.offsetHeight ?? 0; // sticky over the bottom on phones
+    const l = list.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    if (r.top < l.top + edge) list.scrollTop += r.top - l.top - edge;
+    else if (r.bottom > l.bottom - edge - closeBar) list.scrollTop += r.bottom - l.bottom + edge + closeBar;
+  }, [pathname, menuOpen, searching]); // searching: the list is hidden meanwhile and comes back unscrolled
 
   const settings = useSettings();
   const { read } = useHandbookState();
@@ -252,7 +274,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
             type="button"
             className="menu-toggle"
             id="menuToggle"
-            aria-label={searching ? 'Close search results' : 'Table of contents'}
+            aria-label={searching ? 'Close search results' : 'Handbook menu'}
             aria-expanded={searching ? true : menuOpen}
             aria-controls={searching ? 'searchResults' : 'navList'}
             onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
@@ -276,7 +298,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       </nav>
       <div
         className="menu-backdrop"
-        onClick={e => { e.preventDefault(); setMenuOpen(false); }}
+        onClick={e => { e.preventDefault(); setMenuOpen(false); searchApi.current?.clear(); }}
       />
     </>
   );
@@ -293,7 +315,7 @@ const STUDY_LINKS = [
 const PRODUCT_LINKS = [
   { id: 'home', label: 'Handbook home', href: HANDBOOK },
   { id: 'start', label: 'Start here: guided setup', href: `${HANDBOOK}/start` },
-  { id: 'tools', label: 'Interactive tools', href: pageHref('app-e') }, // the same page as Appendix E, so never marked current here
+  { id: 'tools', label: 'Interactive tools', href: pageHref('app-e') }, // the same page as Appendix E, which is marked current too
 ];
 
 type Locked = Readonly<Record<string, string>>;
@@ -309,7 +331,7 @@ function ProductLinks({ current, locked }: { current: string; locked: Locked }) 
     <>
       <li className="nav-section-title" role="presentation">GET STARTED</li>
       {PRODUCT_LINKS.map(link => {
-        const active = link.id === current;
+        const active = link.id === current || (link.id === 'tools' && current === 'app-e');
         // the setup is part of the paid handbook; the tools row is Appendix E
         const lock = locked[link.id === 'start' ? 'start' : link.id === 'tools' ? 'app-e' : ''];
         return (
@@ -367,7 +389,9 @@ function SectionGroup({ group, current, read, locked }: { group: (typeof NAV)[nu
               data-page={page.id}
               aria-current={active ? 'page' : undefined}
             >
-              {page.label}<LockBadge label={lock} />
+              {page.label}
+              {read[page.id] && !lock && <span className="nav-read"><span aria-hidden="true">✓</span><span className="visually-hidden"> (read)</span></span>}
+              <LockBadge label={lock} />
             </Link>
           </li>
         );
