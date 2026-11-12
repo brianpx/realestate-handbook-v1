@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { extractSearchable, indexPage } from './search-index';
-import { searchEntries, type SearchEntry } from './search-query';
+import { searchEntries, searchIndex, type SearchEntry } from './search-query';
 import { PAGE_IDS, type PageId } from './pages';
 
 describe('extractSearchable', () => {
@@ -64,6 +64,12 @@ describe('searchEntries', () => {
   it('caps results at 12', () => {
     const many: SearchEntry[] = Array.from({ length: 30 }, (_, i) => ({ pageId: 'ch1', text: `thing ${i}`, occurrence: 0, isTerm: false, isHeading: false }));
     expect(searchEntries(many, 'thing')).toHaveLength(12);
+  });
+  it('reports how many entries matched beyond the cap', () => {
+    const many: SearchEntry[] = Array.from({ length: 30 }, (_, i) => ({ pageId: 'ch1', text: `thing ${i}`, occurrence: 0, isTerm: false, isHeading: false }));
+    expect(searchIndex(many, 'thing')).toMatchObject({ total: 30 });
+    expect(searchIndex(many, 'thing').entries).toHaveLength(12);
+    expect(searchIndex(many, 'nothing here')).toEqual({ entries: [], total: 0 });
   });
 });
 
