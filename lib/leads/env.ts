@@ -13,6 +13,7 @@ export async function leadRequestFrom(request: Request): Promise<LeadRequest> {
     // behind Vercel's proxy the first x-forwarded-for entry is the client; locally there is no header
     ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local',
     body: await request.text(),
+    search: new URL(request.url).search,
   };
 }
 

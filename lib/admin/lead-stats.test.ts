@@ -7,7 +7,7 @@ const daysAgo = (n: number) => new Date(now.getTime() - n * 24 * 3600 * 1000);
 let seq = 0;
 const row = (over: Partial<LeadRow> = {}): LeadRow => {
   seq += 1;
-  return { id: `l-${seq}`, email: `r${seq}@example.com`, source: 'gate', createdAt: daysAgo(1), consentVersion: 'v1', emailStatus: null, confirmedAt: null, ...over };
+  return { id: `l-${seq}`, email: `r${seq}@example.com`, source: 'gate', createdAt: daysAgo(1), consentVersion: 'v1', emailStatus: null, confirmedAt: null, unsubscribedAt: null, ...over };
 };
 
 describe('leadStats', () => {
@@ -21,6 +21,11 @@ describe('leadStats', () => {
   it('counts the addresses that confirmed their link', () => {
     const rows = [row({ confirmedAt: now }), row({ confirmedAt: daysAgo(2) }), row()];
     expect(leadStats(rows, now).confirmed).toBe(2);
+  });
+
+  it('leaves out the confirmed addresses that have since unsubscribed', () => {
+    const rows = [row({ confirmedAt: now }), row({ confirmedAt: daysAgo(2), unsubscribedAt: daysAgo(1) })];
+    expect(leadStats(rows, now).confirmed).toBe(1);
   });
 
   it('counts the windows from `now`, including a lead exactly at the edge', () => {

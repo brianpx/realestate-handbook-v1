@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type APIRequestContext } from './fixtures';
-import { linkFor } from './mail';
+import { linkFor, MAILPIT_URL } from './mail';
 import { BASE_URL } from './target';
 
 // /api/lead, the marketing list's route, on the local build with a throwaway file store. The first-visit dialog
@@ -9,7 +9,7 @@ import { BASE_URL } from './target';
 let n = 0;
 const ip = () => `198.51.100.${(++n % 250) + 1}`;
 const fresh = () => `reader-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
-const leads = async () => (JSON.parse(await readFile('.data/e2e-leads.json', 'utf8')) as { leads: { email: string; consentVersion: string; consentText: string; source: string; confirmedAt: string | null }[] }).leads;
+const leads = async () => (JSON.parse(await readFile('.data/e2e-leads.json', 'utf8')) as { leads: { email: string; consentVersion: string; consentText: string; source: string; confirmedAt: string | null; unsubscribedAt?: string | null }[] }).leads;
 const post = (request: APIRequestContext, data: unknown, headers: Record<string, string> = {}) =>
   request.post('/api/lead', { data, headers: { Origin: BASE_URL, 'x-forwarded-for': ip(), ...headers } });
 
@@ -79,4 +79,44 @@ test('a new address gets a confirmation link; looking at it confirms nothing, po
   const refused = await confirm({ token }, {});
   expect(refused.status()).toBe(303);
   expect(refused.headers().location).toBe('/subscribe/confirm?error=1');
+});
+
+test('the confirmation email carries an unsubscribe link and the one-click headers; looking at the link changes nothing, posting it unsubscribes once, a bad token does not', async ({ request }) => {
+  const email = fresh();
+  expect((await post(request, { email, consentVersion: 'v2', source: 'sample' })).status()).toBe(200);
+  await linkFor(request, email, 'Confirm your email');
+  const search = (await (await request.get(`${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`)).json()) as { messages: { ID: string }[] };
+  const id = search.messages[0]!.ID;
+  const { Text } = (await (await request.get(`${MAILPIT_URL}/api/v1/message/${id}`)).json()) as { Text: string };
+  const headers = (await (await request.get(`${MAILPIT_URL}/api/v1/message/${id}/headers`)).json()) as Record<string, string[]>;
+  const link = new RegExp(`${BASE_URL}/subscribe/unsubscribe\\?token=\\S+`).exec(Text)?.[0];
+  expect(link).toBeTruthy();
+  const token = new URL(link!).searchParams.get('token')!;
+  expect(headers['List-Unsubscribe']).toEqual([`<${BASE_URL}/api/lead/unsubscribe?token=${token}>`]);
+  expect(headers['List-Unsubscribe-Post']).toEqual(['List-Unsubscribe=One-Click']);
+
+  expect((await request.get(link!)).status()).toBe(200);
+  expect((await request.get(`/api/lead/unsubscribe?token=${token}`)).status()).toBe(405);
+  expect((await leads()).find(l => l.email === email)!.unsubscribedAt ?? null).toBeNull();
+
+  const unsubscribe = (data: Record<string, string>) => request.post('/api/lead/unsubscribe', { form: data, headers: { 'x-forwarded-for': ip() }, maxRedirects: 0 });
+  const done = await unsubscribe({ token });
+  expect(done.status()).toBe(303);
+  expect(done.headers().location).toBe('/subscribe/unsubscribe?done=1');
+  const at = (await leads()).find(l => l.email === email)!.unsubscribedAt;
+  expect(at).toBeTruthy();
+  expect((await unsubscribe({ token })).headers().location).toBe('/subscribe/unsubscribe?done=1'); // a second click: same page, same time
+  expect((await leads()).find(l => l.email === email)!.unsubscribedAt).toBe(at);
+  expect((await unsubscribe({ token: `${token.slice(0, -1)}${token.endsWith('A') ? 'B' : 'A'}` })).headers().location).toBe('/subscribe/unsubscribe?error=1');
+
+  // a mail client's one-click POST: no Origin header, the token in the query string
+  const other = fresh();
+  expect((await post(request, { email: other, consentVersion: 'v2', source: 'sample' })).status()).toBe(200);
+  await linkFor(request, other, 'Confirm your email');
+  const found = (await (await request.get(`${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${other}"`)}`)).json()) as { messages: { ID: string }[] };
+  const otherHeaders = (await (await request.get(`${MAILPIT_URL}/api/v1/message/${found.messages[0]!.ID}/headers`)).json()) as Record<string, string[]>;
+  const oneClick = otherHeaders['List-Unsubscribe']![0]!.slice(1, -1);
+  const clicked = await request.post(oneClick, { data: 'List-Unsubscribe=One-Click', headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+  expect(clicked.status()).toBe(200);
+  expect((await leads()).find(l => l.email === other)!.unsubscribedAt).toBeTruthy();
 });

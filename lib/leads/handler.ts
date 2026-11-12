@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import { hashSecret, isSecretShape, newSecret } from '@/lib/auth/token';
 import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
-import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT } from './config';
+import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONFIRM_TTL_SECONDS, CONSENT_TEXTS, MAX_BODY_BYTES, RATE_LIMIT, UNSUBSCRIBE_API, UNSUBSCRIBE_PATH } from './config';
 import { sendConfirmation, type MailConfig } from './mail';
 import type { LeadStore } from './store';
+import { signUnsubscribe, verifyUnsubscribe } from './unsubscribe';
 import { leadSchema } from './validate';
 
-export type LeadRequest = { origin: string | null; ip: string; body: string };
+export type LeadRequest = { origin: string | null; ip: string; body: string; /** The URL's query string, for the one-click unsubscribe POST, which carries its token there. */ search?: string };
 export type LeadReply = { status: number; body?: Record<string, unknown>; headers?: Record<string, string> };
 export type LeadDeps = {
   store: LeadStore | null;
@@ -27,6 +28,8 @@ const OK: LeadReply = { status: 200, body: { ok: true } };
 const redirect = (location: string): LeadReply => ({ status: 303, headers: { Location: location } });
 export const CONFIRMED = `${CONFIRM_PATH}?done=1`;
 export const CONFIRM_FAILED = `${CONFIRM_PATH}?error=1`;
+export const UNSUBSCRIBED = `${UNSUBSCRIBE_PATH}?done=1`;
+export const UNSUBSCRIBE_FAILED = `${UNSUBSCRIBE_PATH}?error=1`;
 
 export const hashIp = (ip: string, salt: string): string => createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 32);
 
@@ -78,7 +81,9 @@ export async function handleLead(req: LeadRequest, deps: LeadDeps): Promise<Lead
     // interruption leaves a lease that an explicit later submission can reclaim. A reclaimed link replaces the old
     // hash: provider acceptance may have been uncertain, so this is not a promise of exactly-once email delivery.
     if (await deps.store.claimConfirmation(row.id, tokenHash, expiresAt, now, retryBefore)) {
-      const status = await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, deps.fetchImpl);
+      const unsubscribeToken = signUnsubscribe(row.id, deps.ipSalt);
+      const unsubscribe = { page: `${deps.siteUrl}${UNSUBSCRIBE_PATH}?token=${unsubscribeToken}`, oneClick: `${deps.siteUrl}${UNSUBSCRIBE_API}?token=${unsubscribeToken}` };
+      const status = await sendConfirmation(deps.mail, email, `${deps.siteUrl}${CONFIRM_PATH}?token=${raw}`, unsubscribe, deps.fetchImpl);
       await deps.store.completeConfirmation(row.id, tokenHash, status);
     }
     return OK;
@@ -109,5 +114,33 @@ export async function handleConfirm(req: LeadRequest, deps: LeadDeps): Promise<L
   } catch (err) {
     console.error('lead: confirmation failed', err instanceof Error ? err.name : 'error');
     return redirect(CONFIRM_FAILED);
+  }
+}
+
+/**
+ * Ends a subscription from an unsubscribe link: a form POST from the unsubscribe page (`token` in the body, so a mail
+ * scanner that fetches the page unsubscribes nobody), or the one-click POST a mail client sends from the
+ * List-Unsubscribe header (`List-Unsubscribe=One-Click` in the body, the token in the query string), which answers
+ * 200 or 400 because a mail client, not a reader, is waiting.
+ *
+ * The signed token is the whole authorization, so there is no Origin check (a mail client sends none) and no attempt
+ * counter (mail providers share addresses, and a guess has to forge an HMAC). Unsubscribing twice, or an address the
+ * list no longer holds, ends the same as the first time.
+ */
+export async function handleUnsubscribe(req: LeadRequest, deps: LeadDeps): Promise<LeadReply> {
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  const form = new URLSearchParams(req.body);
+  const oneClick = form.get('List-Unsubscribe') === 'One-Click';
+  const fail = oneClick ? reply(400, 'invalid_request') : redirect(UNSUBSCRIBE_FAILED);
+  if (!deps.store) return oneClick ? reply(503, 'unavailable') : fail;
+
+  const id = verifyUnsubscribe(oneClick ? new URLSearchParams(req.search ?? '').get('token') : form.get('token'), deps.ipSalt);
+  if (!id) return fail;
+  try {
+    if (!(await deps.store.unsubscribe(id, deps.now()))) return fail;
+    return oneClick ? OK : redirect(UNSUBSCRIBED);
+  } catch (err) {
+    console.error('lead: unsubscribe failed', err instanceof Error ? err.name : 'error');
+    return oneClick ? reply(503, 'unavailable') : fail;
   }
 }

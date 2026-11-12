@@ -4,7 +4,7 @@ import { LEAD_LIST_CAP, type EmailStatus, type Inserted, type LeadRow, type Lead
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql and
-// the confirmation columns in 004_leads_confirmation.sql.
+// the confirmation columns in 004_leads_confirmation.sql and the unsubscribe column in 008_leads_unsubscribe.sql.
 export type { Sql };
 
 // The column is checked in the database, so anything else can only be a null.
@@ -64,6 +64,12 @@ export class NeonLeadStore implements LeadStore {
     return rows.length > 0;
   }
 
+  async unsubscribe(id: string, now: Date) {
+    // one statement: a second click keeps the first time, and no row back means the id is unknown
+    const rows = await this.sql`update leads set unsubscribed_at = coalesce(unsubscribed_at, ${now.toISOString()}) where id = ${id} returning id`;
+    return rows.length > 0;
+  }
+
   async recordAttempt(ipHash: string, at: Date) {
     await this.sql`insert into lead_attempts (ip_hash, at) values (${ipHash}, ${at.toISOString()})`;
   }
@@ -102,7 +108,7 @@ export class NeonLeadStore implements LeadStore {
 
   async list(): Promise<LeadRow[]> {
     const rows = await this.sql`
-      select id, email, source, created_at, consent_version, email_status, confirmed_at from leads
+      select id, email, source, created_at, consent_version, email_status, confirmed_at, unsubscribed_at from leads
       order by created_at desc limit ${LEAD_LIST_CAP}`;
     return rows.map(r => ({
       id: String(r.id),
@@ -112,6 +118,7 @@ export class NeonLeadStore implements LeadStore {
       consentVersion: String(r.consent_version),
       emailStatus: emailStatus(r.email_status),
       confirmedAt: toDateOrNull(r.confirmed_at),
+      unsubscribedAt: toDateOrNull(r.unsubscribed_at),
     }));
   }
 

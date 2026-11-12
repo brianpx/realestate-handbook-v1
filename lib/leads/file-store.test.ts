@@ -49,6 +49,16 @@ describe('FileLeadStore', () => {
     expect(await store.confirm('h-b@b.co', new Date('2026-11-20T12:00:00Z'))).toBe(false);
     expect((await store.list()).find(r => r.email === 'b@b.co')!.confirmedAt).toBeNull();
   });
+  it('unsubscribes the lead with that id, keeps the first time on a second click, and knows no other id', async () => {
+    const store = new FileLeadStore(file);
+    const { id } = await store.insert(lead('a@b.co'));
+    const first = new Date('2026-11-02T13:00:00Z');
+    expect(await store.unsubscribe(id, first)).toBe(true);
+    expect(await store.unsubscribe(id, new Date('2026-11-02T14:00:00Z'))).toBe(true);
+    expect(await store.unsubscribe('nobody', first)).toBe(false);
+    expect((await store.list())[0]!.unsubscribedAt).toEqual(first);
+    expect((await store.list())[0]!.confirmedAt).toBeNull();
+  });
   it('resets the confirmation token, so the old link stops working and the new one works, and reports the state of a repeat', async () => {
     const store = new FileLeadStore(file);
     const { id } = await store.insert(lead('a@b.co'));
@@ -99,7 +109,7 @@ describe('FileLeadStore', () => {
     await store.setEmailStatus(newer, 'sent');
     const rows = await store.list();
     expect(rows.map(r => r.id)).toEqual([newer, older]);
-    expect(rows[0]).toEqual({ id: newer, email: 'b@b.co', source: 'sample', createdAt: new Date('2026-11-03T08:00:00Z'), consentVersion: 'v1', emailStatus: 'sent', confirmedAt: null });
+    expect(rows[0]).toEqual({ id: newer, email: 'b@b.co', source: 'sample', createdAt: new Date('2026-11-03T08:00:00Z'), consentVersion: 'v1', emailStatus: 'sent', confirmedAt: null, unsubscribedAt: null });
     expect(rows[1]!.emailStatus).toBeNull();
     expect(rows[1]).not.toHaveProperty('consentText');
     expect(rows[1]).not.toHaveProperty('confirmTokenHash');
