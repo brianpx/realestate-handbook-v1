@@ -2,7 +2,7 @@ import { bootstrapOwnerGrant } from '@/lib/access/grants';
 import { audit } from '@/lib/audit';
 import type { MailConfig } from '@/lib/leads/mail';
 import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
-import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, REQUEST_LINK_LIMITS, VERIFY_PATH, VERIFY_LIMIT } from './config';
+import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, VERIFY_PATH, type AuthRateLimits } from './config';
 import { clearedCookieHeaders, isSecureRequest, sessionCookieHeaders } from './cookie';
 import { sendSignInLink } from './mail';
 import { sessionExpiry, tokenExpiry } from './session';
@@ -28,6 +28,8 @@ export type AuthDeps = {
   ipSalt: string;
   /** Sign-in emails allowed per window over all callers (lib/send-ceiling.ts). */
   sendCeiling: number;
+  /** Per-connection and per-address attempt windows (tight in production, high in development). */
+  limits: AuthRateLimits;
   /** Addresses that become the first administrator on sign-in, only while no administrator exists. */
   bootstrapEmails: readonly string[];
   now: () => Date;
@@ -39,8 +41,11 @@ const OK: AuthReply = { status: 200, body: { ok: true } };
 const limited = (windowSeconds: number): AuthReply => reply(429, 'rate_limited', { retryAfterSeconds: windowSeconds }, { 'Retry-After': String(windowSeconds) });
 const redirect = (location: string, headers: Record<string, string | string[]> = {}): AuthReply => ({ status: 303, headers: { Location: location, ...headers } });
 const FAILED = `${VERIFY_PATH}?error=1`;
+const VERIFY_RATE = `${VERIFY_PATH}?error=rate`;
+const VERIFY_UNAVAILABLE = `${VERIFY_PATH}?error=unavailable`;
 
-// Every state-changing POST needs an allow-listed Origin; a missing one is a 403 (stricter than the lead form).
+// Every state-changing POST needs an allow-listed Origin (stricter than the lead form). Request-link and sign-out
+// answer 403; verify redirects, because that POST is a browser navigation.
 const originRefused = (req: AuthRequest, deps: AuthDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
 
 /**
@@ -58,7 +63,7 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
   const now = deps.now();
   const ipHash = hashKey(req.ip, deps.ipSalt);
   try {
-    const ipWindow = REQUEST_LINK_LIMITS.ip;
+    const ipWindow = deps.limits.requestLink.ip;
     if ((await auth.recordAndCount('ip', ipHash, now, new Date(now.getTime() - ipWindow.windowSeconds * 1000))) > ipWindow.attempts) return limited(ipWindow.windowSeconds);
 
     let json: unknown;
@@ -68,7 +73,7 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
     const { email, termsVersion, source, next, _gotcha } = parsed.data;
     if (_gotcha) return OK; // a bot filled the hidden field: look successful, store nothing
 
-    const emailWindow = REQUEST_LINK_LIMITS.email;
+    const emailWindow = deps.limits.requestLink.email;
     const emailHash = hashKey(email, deps.ipSalt);
     if ((await auth.recordAndCount('email', emailHash, now, new Date(now.getTime() - emailWindow.windowSeconds * 1000))) > emailWindow.attempts) return limited(emailWindow.windowSeconds);
     // the ceiling over all callers: every request past this point sends one email
@@ -93,13 +98,16 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
  * path stored with the token.
  */
 export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
-  if (originRefused(req, deps)) return reply(403, 'forbidden');
-  if (!deps.stores) return reply(503, 'unavailable');
-  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  // A browser navigates here. JSON would render as a page, so failures redirect and do not clear a cookie.
+  if (originRefused(req, deps)) return redirect(FAILED);
+  if (!deps.stores) return redirect(VERIFY_UNAVAILABLE);
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(VERIFY_UNAVAILABLE);
   const { auth, users, access } = deps.stores;
   const now = deps.now();
   try {
-    if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - VERIFY_LIMIT.windowSeconds * 1000))) > VERIFY_LIMIT.attempts) return limited(VERIFY_LIMIT.windowSeconds);
+    const verifyWindow = deps.limits.verify;
+    // its own key under the same scope: sharing request-link's counter made every sign-in cost two of its five tries
+    if ((await auth.recordAndCount('ip', hashKey(`verify:${req.ip}`, deps.ipSalt), now, new Date(now.getTime() - verifyWindow.windowSeconds * 1000))) > verifyWindow.attempts) return redirect(VERIFY_RATE, { 'Retry-After': String(verifyWindow.windowSeconds) });
 
     const raw = new URLSearchParams(req.body).get('token');
     if (!isSecretShape(raw)) return redirect(FAILED);
@@ -125,7 +133,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeaders(isSecureRequest(req.url), sessionId) });
   } catch (err) {
     console.error('auth: verify failed', err instanceof Error ? err.name : 'error');
-    return reply(503, 'unavailable');
+    return redirect(VERIFY_UNAVAILABLE);
   }
 }
 

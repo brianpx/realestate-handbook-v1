@@ -18,10 +18,10 @@ export default async function ConfirmPage({ searchParams }: Props) {
   if (isSecretShape(token)) {
     return (
       <>
-        <PageHead eyebrow="Handbook notes" title="One more step." />
+        <PageHead eyebrow="Handbook notes" title="One moment…" />
         <div className="pub-wrap pub-narrow pub-prose">
           <div className="pub-card signup-card">
-            <p>Press the button to confirm your address. It happens on its own when JavaScript is on.</p>
+            <p>Confirming your address. If nothing happens, press the button.</p>
             <AutoSubmit action="/api/lead/confirm" token={token} label="Confirm my email" busyLabel="Confirming…" />
           </div>
         </div>

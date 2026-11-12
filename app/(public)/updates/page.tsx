@@ -31,7 +31,19 @@ export default function UpdatesPage() {
 
         <h2>Updates</h2>
         <p>The current edition is version 1.0, October 2026. Corrections and improvements to the chapters and tools appear in the handbook when you next open it. A change to how progress is stored is migrated automatically, and the previous copy is kept as a backup in your browser.</p>
-        <p>{OFFER.updatesTerm ?? NOT_PUBLISHED}</p>
+        <ul>
+          <li><strong>Basic:</strong> {OFFER.updatesByPlan.basic}</li>
+          <li><strong>Pro:</strong> {OFFER.updatesByPlan.pro}</li>
+        </ul>
+        <p>
+          An edition is a re-write of the book under a new edition number. A new chapter, tool or script added to the current edition is an addition, not a new edition.
+          Pro covers both for as long as the handbook is published; if it is ever retired, notice will be given here first.
+        </p>
+
+        <p>
+          A Basic owner can upgrade to Pro by paying the difference between the two prices, with no time limit. The upgrade covers the edition you bought. When a new edition is
+          published, a Basic owner gets the existing-buyer discount on it as above, and Pro is priced at that edition’s Pro price.
+        </p>
 
         <h2>Support</h2>
         <p>Self-help is on the <Link href="/support">support page</Link>.</p>

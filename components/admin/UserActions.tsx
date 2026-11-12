@@ -148,8 +148,8 @@ export function UserActions({ userId, self, role, status, suspended, liveGrants 
         <Input id="billing-record" name="billingRecordId" required placeholder="uuid" />
       </ActionForm>
 
-      <ActionForm userId={userId} action="resync-billing" title="Resync billing" description="Re-reads this account's records from the billing provider. No provider is configured yet." submit="Resync" />
-      <ActionForm userId={userId} action="resend-ready-email" title="Resend the ready email" description="Sends the 'your handbook is ready' sign-in link again. No provider is configured yet." submit="Resend" />
+      <ActionForm userId={userId} action="resync-billing" title="Resync billing" description="Re-reads this account's records from the billing provider." submit="Resync" />
+      <ActionForm userId={userId} action="resend-ready-email" title="Resend the ready email" description="Sends the 'your handbook is ready' sign-in link again." submit="Resend" />
     </div>
   );
 }

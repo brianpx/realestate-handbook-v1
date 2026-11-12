@@ -4,7 +4,7 @@ import { LEAD_LIST_CAP, type EmailStatus, type Inserted, type LeadRow, type Lead
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql and
-// the confirmation columns in 004_leads_confirmation.sql and the unsubscribe column in 007_leads_unsubscribe.sql.
+// the confirmation columns in 004_leads_confirmation.sql and the unsubscribe column in 008_leads_unsubscribe.sql.
 export type { Sql };
 
 // The column is checked in the database, so anything else can only be a null.
@@ -28,6 +28,22 @@ export class NeonLeadStore implements LeadStore {
     if (created[0]) return { created: true, id: String(created[0].id), emailStatus: null, confirmedAt: null };
     const existing = await sql`select id, email_status, confirmed_at from leads where email = ${lead.email}`;
     return { created: false, id: String(existing[0]?.id ?? ''), emailStatus: emailStatus(existing[0]?.email_status), confirmedAt: toDateOrNull(existing[0]?.confirmed_at) };
+  }
+
+  async claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date) {
+    // UPDATE rechecks its predicate after a competing row writer commits, so only one active claim wins.
+    const rows = await this.sql`
+      update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()},
+        email_status = null, confirm_delivery_started_at = ${at.toISOString()}
+      where id = ${id} and confirmed_at is null and (
+        email_status in ('failed', 'skipped') or confirm_token_expires_at <= ${at.toISOString()} or
+        (email_status is null and (confirm_delivery_started_at is null or confirm_delivery_started_at <= ${retryBefore.toISOString()}))
+      ) returning id`;
+    return rows.length > 0;
+  }
+
+  async completeConfirmation(id: string, tokenHash: string, status: EmailStatus) {
+    await this.sql`update leads set email_status = ${status} where id = ${id} and confirm_token_hash = ${tokenHash}`;
   }
 
   async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {

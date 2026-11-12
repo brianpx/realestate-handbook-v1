@@ -77,18 +77,20 @@ test.describe('public pages', () => {
     await expect(table.getByRole('button', { name: 'Not on sale yet' })).toHaveCount(2);
     await expect(table.locator('a[href^="https://"]')).toHaveCount(0);
     await expect(table.getByRole('link', { name: 'Try the sample lesson' })).toHaveAttribute('href', '/preview');
-    // the update and support rows carry the terms the owner published on 9 Nov 2026 (lib/offer.ts, OD-20, OD-23); a
-    // future edition is a separate purchase, so neither paid plan promises the next one
+    // the update and support rows carry the owner's terms (lib/offer.ts, OD-20, OD-23, 11 Nov 2026): both plans get
+    // corrections, only Pro is promised new chapters, tools and editions
     await expect(table.getByText('Not published yet')).toHaveCount(0);
-    await expect(table.getByText('Corrections and updates to this edition').first()).toBeVisible();
+    await expect(table.getByText('Corrections and improvements to edition 1.0').first()).toBeVisible();
+    await expect(table.getByText('Discount on a new edition').first()).toBeVisible();
     await expect(table.getByText('This edition and the next')).toHaveCount(0);
     // email support is the same plain cell on both paid plans: no priority tier was decided (decision log, 9 Nov)
     await expect(table.getByText('Priority')).toHaveCount(0);
     const terms = page.locator('section[aria-labelledby="termsTitle"]');
-    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, not transferable.');
+    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.');
+    await expect(terms).toContainText('14 days from each purchase, for any reason');
     await expect(terms.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');
     await expect(terms).toContainText('Price');
-    await expect(terms).toContainText('Not published yet'); // the price and the refund policy
+    await expect(terms).toContainText('Not published yet'); // the price
 
     await page.setViewportSize({ width: 390, height: 800 });
     await expect(table.getByRole('tab', { name: 'Basic' })).toHaveAttribute('aria-selected', 'true');
@@ -102,11 +104,23 @@ test.describe('public pages', () => {
   test('the hero calculator uses the Chapter 1 arithmetic and flags bad input', async ({ page }) => {
     await page.goto('/');
     const stats = page.locator('.pub-stats');
-    await expect(stats.locator('b')).toHaveText(['13', '16', '3']); // 3.25 a day rounds to 3
+    await expect(stats.locator('b')).toHaveText(['13', '16', '3–4']); // 3.25 a day is shown as a range
+    await expect(page.locator('.pub-device-note')).toContainText('48 working weeks of 5 days each');
+    const breakdown = page.locator('.pub-calc-details');
+    await expect(breakdown.locator('table')).toBeHidden();
+    const toggle = page.getByRole('button', { name: 'How it’s calculated' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(breakdown.locator('table')).toBeVisible();
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['13', '39', '780', '16.25', '3.25']);
+    await page.keyboard.press('Escape');
+    await expect(toggle).toBeFocused();
     await page.getByLabel('Yearly income goal').fill('120000');
-    await expect(stats.locator('b')).toHaveText(['19', '24', '5']); // 19 closings; 23.75 a week and 4.75 a day, rounded
+    await expect(stats.locator('b')).toHaveText(['19', '24', '4–5']); // 19 closings; 23.75 a week and 4.75 a day
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['19', '57', '1,140', '23.75', '4.75']);
     await page.getByLabel('Yearly income goal').fill('');
     await expect(stats).toContainText('Enter both numbers');
+    await expect(breakdown).toHaveCount(0);
     // a signed-in reader is pointed at the chapter, not asked for an address
     await expect(page.locator('.pub-device-prompt').getByRole('link', { name: 'Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
     await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
@@ -213,13 +227,14 @@ test.describe('public pages', () => {
   });
 
   // CR-M9: a same-page hash link changes no pathname, so the menu has to close on the tap itself
-  test('the phone menu closes on a same-page hash link, which is marked as a location on its page', async ({ page }) => {
+  test('the phone menu closes on a same-page hash link without claiming an untracked current section', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Main' });
     // the links are hidden until the menu opens, and role queries skip hidden elements
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(nav.getByRole('link', { name: 'How it works' })).toHaveAttribute('aria-current', 'location');
+    await expect(nav.getByRole('link', { name: 'How it works' })).not.toHaveAttribute('aria-current', /.+/);
+    await expect(nav.getByRole('link', { name: "What's included" })).not.toHaveAttribute('aria-current', /.+/);
     await expect(nav.getByRole('link', { name: 'Sample lesson' })).not.toHaveAttribute('aria-current', /.+/);
     await nav.getByRole('link', { name: 'How it works' }).click();
     await expect(page).toHaveURL(/\/#how-it-works$/);
@@ -276,16 +291,18 @@ test.describe('public pages', () => {
     }
   });
 
-  // M8 step 4 in part: the support address resolves the contact placeholders; the postal address is still owed
-  test('the privacy and refund policies give the support address, and the terms still want a postal address', async ({ page }) => {
+  // M8 step 4 in part: the support address, the seller's name, and a temporary postal address. Prices and approvals stay open.
+  test('the privacy and refund policies give the support address, and the terms name the seller', async ({ page }) => {
     for (const path of ['/privacy', '/refunds', '/support']) {
       await page.goto(path);
       await expect(page.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');
     }
     await page.goto('/terms');
-    await expect(page.getByText('the legal name of the seller and a postal address')).toBeVisible();
+    await expect(page.getByText('Brian Pitts').first()).toBeVisible();
+    await expect(page.getByText('The postal address is synthetic temp address.')).toBeVisible();
+    await expect(page.getByText('the legal name of the seller and a postal address')).toHaveCount(0);
     await page.goto('/updates');
-    await expect(page.getByText('Lifetime access to edition 1.0 for one person, not transferable.')).toBeVisible();
+    await expect(page.getByText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.')).toBeVisible();
   });
 
   // M7 step 7: the strictly necessary cookies are disclosed by name (lib/auth/cookie.ts), with no banner to go with them

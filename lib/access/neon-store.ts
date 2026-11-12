@@ -2,7 +2,7 @@ import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
 import { toDate, toDateOrNull, toText, type Row, type Sql } from '@/lib/db/sql';
 import type { Page } from '@/lib/users/store';
 import type { Role } from '@/lib/users/types';
-import type { AccessStore, AccessSummary, Anonymisation, NewGrant, Revocation, Suspension } from './store';
+import type { AccessStore, AccessSummary, Anonymisation, MembershipProjection, NewGrant, Revocation, Suspension } from './store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from './types';
 
 export const rowToGrant = (row: Row): Grant => ({
@@ -129,15 +129,20 @@ export class NeonAccessStore implements AccessStore {
     return rows[0] ? rowToMembership(rows[0]) : null;
   }
 
-  async saveMembership(m: Membership) {
-    await this.sql`
-      insert into memberships (user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at)
-      values (${m.userId}, ${m.status}, ${m.tier}, ${iso(m.startedAt)}, ${iso(m.endsAt)}, ${m.currentGrantId}, ${m.complimentary}, ${iso(m.suspendedAt)}, ${m.suspendedBy}, ${m.suspendReason}, ${m.updatedAt.toISOString()})
+  async saveMembership(m: MembershipProjection): Promise<Membership> {
+    // Only derived fields change here. ON CONFLICT locks the current row, so a suspension completed after the
+    // grant read cannot be overwritten by this refresh (nor can a stale refresh restore a lifted suspension).
+    const rows = await this.sql`
+      insert into memberships (user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, updated_at)
+      values (${m.userId}, ${m.status}, ${m.tier}, ${iso(m.startedAt)}, ${iso(m.endsAt)}, ${m.currentGrantId}, ${m.complimentary}, ${m.updatedAt.toISOString()})
       on conflict (user_id) do update set
-        status = excluded.status, tier = excluded.tier, started_at = excluded.started_at, ends_at = excluded.ends_at,
+        status = case when memberships.suspended_at is not null then 'suspended' else excluded.status end,
+        tier = excluded.tier, started_at = excluded.started_at, ends_at = excluded.ends_at,
         current_grant_id = excluded.current_grant_id, complimentary = excluded.complimentary,
-        suspended_at = excluded.suspended_at, suspended_by = excluded.suspended_by, suspend_reason = excluded.suspend_reason,
-        updated_at = excluded.updated_at`;
+        updated_at = excluded.updated_at
+      returning user_id, status, tier, started_at, ends_at, current_grant_id, complimentary, suspended_at, suspended_by, suspend_reason, updated_at`;
+    if (!rows[0]) throw new Error('memberships upsert returned no row');
+    return rowToMembership(rows[0]);
   }
 
   async anonymise({ userId, email, emailHash, at }: Anonymisation, a: AuditStub) {
@@ -145,7 +150,13 @@ export class NeonAccessStore implements AccessStore {
     // the audit entry carries the status and role change only, never the address; `exists (select 1 from before)`
     // keeps the deletes from running for an account that was already deleted. The role goes back to reader so a
     // deleted administrator no longer counts for the bootstrap rule; the membership projection goes, the grants stay.
-    const rows = await this.sql`
+    // Profiles and marketing leads share this database: delete them atomically so an interruption cannot leave
+    // personal data behind after the identifying address and sessions have been removed.
+    // Profile saves lock this same user row. Acquire it before the cleanup snapshot so a first
+    // profile inserted by an earlier request is visible and deleted after that request commits.
+    const [, rows] = await this.sql.transaction([
+      this.sql`select id from users where id = ${userId} for update`,
+      this.sql`
       with before as (
         select id, status, role from users where id = ${userId} and status <> 'deleted'
       ), changed as (
@@ -159,6 +170,10 @@ export class NeonAccessStore implements AccessStore {
         delete from sessions where user_id = ${userId} and exists (select 1 from before)
       ), tokens_gone as (
         delete from auth_tokens where email = ${email} and exists (select 1 from before)
+      ), profiles_gone as (
+        delete from realtor_profiles where user_id = ${userId} and exists (select 1 from before)
+      ), leads_gone as (
+        delete from leads where email = ${email} and exists (select 1 from before)
       ), billing_hashed as (
         update billing_customers set email_at_provider = ${emailHash}, updated_at = ${atIso}
         where user_id = ${userId} and email_at_provider is not null and exists (select 1 from before)
@@ -168,8 +183,9 @@ export class NeonAccessStore implements AccessStore {
           jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader'), ${a.reason}, ${a.ipHash}
         from before
       )
-      select id from changed`;
-    return rows.length > 0;
+      select id from changed`,
+    ]);
+    return (rows?.length ?? 0) > 0;
   }
 
   async appendAudit(e: AuditEntry) {

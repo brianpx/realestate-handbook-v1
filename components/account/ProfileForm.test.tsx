@@ -16,7 +16,7 @@ let root: Root;
 let fetchMock: Mock<typeof fetch>;
 
 const reply = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-const render = (initial: ProfileFields, updatedAt: string | null) => act(() => root.render(<ProfileForm initial={initial} updatedAt={updatedAt} />));
+const render = (initial: ProfileFields, updatedAt: string | null) => act(() => root.render(<ProfileForm accountId="account-a" initial={initial} updatedAt={updatedAt} />));
 const field = (name: string) => container.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"]`)!;
 const button = () => container.querySelector('button')!;
 // React watches the node's own `value`, so the prototype setter is used to slip past its tracker the way typing would
@@ -28,6 +28,7 @@ const submit = () => act(async () => { container.querySelector('form')!.dispatch
 const sentBody = () => JSON.parse(String((fetchMock.mock.calls[0]![1] as RequestInit).body)) as Record<string, unknown>;
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -120,4 +121,45 @@ describe('ProfileForm', () => {
     expect(container.querySelector('[role="alert"]')!.textContent).toBe('Something went wrong. Please try again in a moment.');
     expect(field('teamName').value).toBe('The A Team');
   });
+});
+
+
+it('locks all editable fields until the pending save completes', async () => {
+  await render(FULL, SAVED);
+  let resolve!: (response: Response) => void;
+  fetchMock.mockReturnValueOnce(new Promise<Response>(done => { resolve = done; }));
+  await submit();
+  expect([...container.querySelectorAll('input, select')].every(el => (el as HTMLInputElement).disabled)).toBe(true);
+  await act(async () => resolve(reply(200, { profile: FULL, updatedAt: SAVED })));
+  expect(field('phone').disabled).toBe(false);
+});
+
+it('recovers an expired-session draft only for its account and clears it after saving', async () => {
+  await render(FULL, SAVED);
+  await setNative(field('teamName'), 'Unsaved team');
+  fetchMock.mockResolvedValueOnce(reply(401, { error: 'unauthorized' }));
+  await submit();
+  expect(container.querySelector('a')?.getAttribute('href')).toBe('/signin?next=%2Faccount');
+  await setNative(field('teamName'), 'Updated after session expired');
+  await act(() => container.querySelector('a')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+
+  await act(() => root.unmount());
+  root = createRoot(container);
+  await render(FULL, SAVED);
+  expect(field('teamName').value).toBe('Updated after session expired');
+  expect(container.textContent).toContain('Your unsaved draft was recovered');
+  fetchMock.mockResolvedValueOnce(reply(200, { profile: FULL, updatedAt: SAVED }));
+  await submit();
+  expect(sessionStorage.getItem('handbook-profile-draft')).toBeNull();
+});
+
+it.each(['expired', 'different-account'])('discards a %s draft', async kind => {
+  sessionStorage.setItem('handbook-profile-draft', JSON.stringify({
+    accountId: kind === 'different-account' ? 'other' : 'account-a',
+    expiresAt: Date.now() + (kind === 'expired' ? -1 : 60_000),
+    values: { teamName: 'Private draft' },
+  }));
+  await render(FULL, SAVED);
+  expect(field('teamName').value).toBe('');
+  expect(sessionStorage.getItem('handbook-profile-draft')).toBeNull();
 });

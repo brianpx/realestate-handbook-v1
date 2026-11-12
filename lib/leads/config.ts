@@ -17,6 +17,8 @@ export type LeadSource = (typeof LEAD_SOURCES)[number];
 // the emailed link within a week. The page at CONFIRM_PATH shows the one-button form that posts to /api/lead/confirm.
 export const CONFIRM_PATH = '/subscribe/confirm';
 export const CONFIRM_TTL_SECONDS = 7 * 24 * 3600;
+// Longer than the mail deadline: a user may explicitly retry an interrupted send after this lease expires.
+export const CONFIRM_RETRY_SECONDS = 60;
 
 // The unsubscribe page a reader opens from a note, and the route it posts to. The same route takes the one-click POST a mail
 // client sends from the List-Unsubscribe header, with the token in the query string (RFC 8058).

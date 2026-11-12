@@ -9,15 +9,17 @@ import { hashSecret, isSecretShape } from '@/lib/auth/token';
 
 export const metadata: Metadata = { title: 'Signing you in', robots: { index: false, follow: false } };
 
-type Props = { searchParams: Promise<{ token?: string | string[] }> };
+type Props = { searchParams: Promise<{ token?: string | string[]; error?: string | string[] }> };
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-// Where the emailed link lands (and where a failed POST comes back to, with ?error=1 so the address bar says so).
-// This page only looks: a usable token gets the one-button form that consumes it
-// (components/auth/AutoSubmit.tsx), anything else gets the same card with a fresh form. Fetching this URL, as mail
-// scanners and link previews do, changes nothing.
+// Where the emailed link lands. A usable token gets the one-button form that consumes it
+// (components/auth/AutoSubmit.tsx); the error query is ignored then, so a stall retry can still post. Anything else
+// gets the failure card. A form POST that cannot finish comes back here with ?error=1, ?error=rate, or
+// ?error=unavailable instead of a JSON page. Fetching this URL, as mail scanners and link previews do, changes nothing.
 export default async function VerifyPage({ searchParams }: Props) {
   const params = await searchParams;
-  const raw = Array.isArray(params.token) ? params.token[0] : params.token;
+  const raw = first(params.token);
+  const error = first(params.error);
   const stores = authStoresFromEnv(process.env);
 
   let usable = false;
@@ -29,10 +31,10 @@ export default async function VerifyPage({ searchParams }: Props) {
   if (usable && raw) {
     return (
       <>
-        <PageHead eyebrow="Sign in" title="One more step." />
+        <PageHead eyebrow="Sign in" title="One moment…" />
         <div className="pub-wrap pub-narrow pub-prose">
           <div className="pub-card signup-card">
-            <p>Press the button to finish signing in. It happens on its own when JavaScript is on.</p>
+            <p>Finishing sign-in. If nothing happens, press the button.</p>
             <AutoSubmit action="/api/auth/verify" token={raw} />
           </div>
         </div>
@@ -40,6 +42,8 @@ export default async function VerifyPage({ searchParams }: Props) {
     );
   }
 
+  const rateLimited = error === 'rate';
+  const unavailable = error === 'unavailable' || !stores;
   return (
     <>
       <PageHead eyebrow="Sign in" title="That link has expired or was already used.">
@@ -47,7 +51,9 @@ export default async function VerifyPage({ searchParams }: Props) {
       </PageHead>
       <div className="pub-wrap pub-narrow pub-prose">
         <div className="pub-card signup-card">
-          {stores ? <SignupForm source="signin" /> : <p role="alert">Sign-in is not available right now. Please try again later.</p>}
+          {rateLimited && <p role="alert">Too many tries. Please wait a few minutes and try again.</p>}
+          {unavailable && <p role="alert">Sign-in is not available right now. Please try again later.</p>}
+          {stores ? <SignupForm source="signin" /> : null}
         </div>
         <p className="pub-small"><Link href="/preview">Try the sample lesson</Link> without an email.</p>
       </div>

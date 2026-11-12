@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { NeonLeadStore } from './neon-store';
 
 /** `confirmTokenHash` is the SHA-256 hex of the token in the confirmation link; the raw token is never stored. */
@@ -21,6 +22,10 @@ export interface LeadStore {
   /** `created` is false when the address is already on file (case-insensitive); nothing is changed then. */
   insert(lead: NewLead): Promise<Inserted>;
   setEmailStatus(id: string, status: EmailStatus): Promise<void>;
+  /** Atomically elects one sender for a pending/failed/expired unconfirmed row; retries replace its old token. */
+  claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date): Promise<boolean>;
+  /** Only the current claim may record its result; late completion cannot overwrite a successor. */
+  completeConfirmation(id: string, tokenHash: string, status: EmailStatus): Promise<void>;
   /** A fresh confirmation token for a lead whose first email failed; the old link stops working. */
   resetConfirmation(id: string, tokenHash: string, expiresAt: Date): Promise<void>;
   /** Marks the lead with this token confirmed (a second click changes nothing); false when no lead has it or the link expired. */
@@ -40,7 +45,7 @@ export interface LeadStore {
 }
 
 // Rows written before confirmation existed have no `confirmedAt`; they read as unconfirmed, like the database's null.
-type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmedAt?: Date | string | null; unsubscribedAt?: Date | string | null };
+type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmDeliveryStartedAt?: Date | string | null; confirmedAt?: Date | string | null; unsubscribedAt?: Date | string | null };
 type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[]; sends: { windowStart: string; n: number }[] };
 
 // `at` is a Date in memory but a string once it has been through JSON, so both are accepted here.
@@ -48,6 +53,17 @@ const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.so
 // A confirmed row answers its link whatever the expiry; an unconfirmed one only while the link is live. A row with no
 // expiry (written before the column existed) never confirms.
 const confirmable = (r: Row, now: Date): boolean => r.confirmedAt != null || (r.confirmExpiresAt !== undefined && new Date(r.confirmExpiresAt) > now);
+const canClaimConfirmation = (r: Row, at: Date, retryBefore: Date): boolean => r.confirmedAt == null && (
+  r.emailStatus === 'failed' || r.emailStatus === 'skipped' ||
+  (r.confirmExpiresAt !== undefined && new Date(r.confirmExpiresAt) <= at) ||
+  (r.emailStatus === null && (r.confirmDeliveryStartedAt == null || new Date(r.confirmDeliveryStartedAt) <= retryBefore))
+);
+const claimConfirmation = (r: Row, tokenHash: string, expiresAt: Date, at: Date): void => {
+  r.confirmTokenHash = tokenHash;
+  r.confirmExpiresAt = expiresAt.toISOString();
+  r.emailStatus = null;
+  r.confirmDeliveryStartedAt = at.toISOString();
+};
 const newestFirst = (rows: Row[]): LeadRow[] => rows.map(toLeadRow).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, LEAD_LIST_CAP);
 
 export class FileLeadStore implements LeadStore {
@@ -92,6 +108,22 @@ export class FileLeadStore implements LeadStore {
 
   setEmailStatus(id: string, status: EmailStatus) {
     return this.change(data => { const row = data.leads.find(l => l.id === id); if (row) row.emailStatus = status; });
+  }
+
+  claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date) {
+    return this.change(data => {
+      const row = data.leads.find(l => l.id === id);
+      if (!row || !canClaimConfirmation(row, at, retryBefore)) return false;
+      claimConfirmation(row, tokenHash, expiresAt, at);
+      return true;
+    });
+  }
+
+  completeConfirmation(id: string, tokenHash: string, status: EmailStatus) {
+    return this.change(data => {
+      const row = data.leads.find(l => l.id === id && l.confirmTokenHash === tokenHash);
+      if (row) row.emailStatus = status;
+    });
   }
 
   resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {
@@ -176,6 +208,18 @@ export class MemoryLeadStore implements LeadStore {
     return { created: true, id: row.id, emailStatus: null, confirmedAt: null };
   }
   async setEmailStatus(id: string, status: EmailStatus) { const r = this.leads.find(l => l.id === id); if (r) r.emailStatus = status; }
+  async claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date) {
+    this.check();
+    const row = this.leads.find(l => l.id === id);
+    if (!row || !canClaimConfirmation(row, at, retryBefore)) return false;
+    claimConfirmation(row, tokenHash, expiresAt, at);
+    return true;
+  }
+  async completeConfirmation(id: string, tokenHash: string, status: EmailStatus) {
+    this.check();
+    const row = this.leads.find(l => l.id === id && l.confirmTokenHash === tokenHash);
+    if (row) row.emailStatus = status;
+  }
   async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) { this.check(); const r = this.leads.find(l => l.id === id); if (r) { r.confirmTokenHash = tokenHash; r.confirmExpiresAt = expiresAt; } }
   async confirm(tokenHash: string, now: Date) {
     this.check();
@@ -222,9 +266,11 @@ const fileStore = (file: string): FileLeadStore => {
  * asked for by name, otherwise none (the route then refuses with 503). A hosted Vercel deployment (VERCEL_ENV is
  * production or preview) never gets the file store, whatever LEAD_STORE says: its disk is ephemeral and the leads
  * would vanish with the instance. `vercel dev` (VERCEL_ENV=development) and a local production build (the e2e
- * suite) may still use it.
+ * suite) may still use it. A non-production deployment whose DATABASE_URL is the production host gets none
+ * instead, and this function does not open that database.
  */
 export function storeFromEnv(env: Record<string, string | undefined>): LeadStore | null {
+  if (productionDatabaseRefused(env)) return null;
   const hosted = Boolean(env.VERCEL_ENV) && env.VERCEL_ENV !== 'development';
   if (env.LEAD_STORE === 'file' && !hosted) return fileStore(env.LEAD_STORE_PATH ?? path.join(process.cwd(), '.data', 'leads.json'));
   if (env.DATABASE_URL) return NeonLeadStore.fromUrl(env.DATABASE_URL);

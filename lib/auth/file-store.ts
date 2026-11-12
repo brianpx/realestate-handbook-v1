@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { projectMembership } from '@/lib/access/membership';
-import type { AccessStore, Anonymisation, NewGrant, Revocation, Suspension } from '@/lib/access/store';
+import type { AccessStore, Anonymisation, MembershipProjection, NewGrant, Revocation, Suspension } from '@/lib/access/store';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from '@/lib/access/types';
 import type { AuditEntry, AuditRow, AuditStub } from '@/lib/audit';
 import { fillVerified, newUser, type Page, type UserStore, type VerifiedSignIn } from '@/lib/users/store';
@@ -232,10 +232,19 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
     });
   }
   findMembership(userId: string) { return this.view(d => { const m = d.memberships.find(x => x.userId === userId); return m ? membershipOut(m) : null; }); }
-  saveMembership(m: Membership) {
+  saveMembership(projection: MembershipProjection): Promise<Membership> {
     return this.change(d => {
-      const i = d.memberships.findIndex(x => x.userId === m.userId);
-      if (i >= 0) d.memberships[i] = membershipIn(m); else d.memberships.push(membershipIn(m));
+      const i = d.memberships.findIndex(x => x.userId === projection.userId);
+      const existing = i >= 0 ? membershipOut(d.memberships[i]!) : null;
+      const next: Membership = {
+        ...projection,
+        status: existing?.suspendedAt ? 'suspended' : projection.status,
+        suspendedAt: existing?.suspendedAt ?? null,
+        suspendedBy: existing?.suspendedBy ?? null,
+        suspendReason: existing?.suspendReason ?? null,
+      };
+      if (i >= 0) d.memberships[i] = membershipIn(next); else d.memberships.push(membershipIn(next));
+      return next;
     });
   }
   anonymise({ userId, email }: Anonymisation, audit: AuditStub) {

@@ -76,7 +76,9 @@ test('a new address gets a confirmation link; looking at it confirms nothing, po
   expect((await confirm({ token })).headers().location).toBe('/subscribe/confirm?done=1'); // a second click: same page, same time
   expect((await leads()).find(l => l.email === email)!.confirmedAt).toBe(confirmedAt);
   expect((await confirm({ token: 'x'.repeat(43) })).headers().location).toBe('/subscribe/confirm?error=1');
-  expect((await confirm({ token }, {})).status()).toBe(403); // no Origin
+  const refused = await confirm({ token }, {});
+  expect(refused.status()).toBe(303);
+  expect(refused.headers().location).toBe('/subscribe/confirm?error=1');
 });
 
 test('the confirmation email carries an unsubscribe link and the one-click headers; looking at the link changes nothing, posting it unsubscribes once, a bad token does not', async ({ request }) => {

@@ -33,6 +33,13 @@ describe('projectMembership', () => {
     expect(currentGrant([shortPromo, comp], NOW)?.id).toBe('comp');
     expect(projectMembership('u1', [comp, purchase], null, NOW)).toMatchObject({ tier: 'pro', complimentary: false, endsAt: days(30) });
   });
+  it('shows Pro over Basic when a Basic purchase and its upgrade are both indefinite, in either order', () => {
+    const basic = grant({ id: 'b', kind: 'purchase', tier: 'basic', billingRecordId: 'rb', grantedBy: null });
+    const pro = grant({ id: 'p', kind: 'purchase', tier: 'pro', billingRecordId: 'rp', grantedBy: null });
+    expect(currentGrant([basic, pro], NOW)?.id).toBe('p');
+    expect(currentGrant([pro, basic], NOW)?.id).toBe('p');
+    expect(projectMembership('u1', [basic, pro], null, NOW)).toMatchObject({ tier: 'pro', currentGrantId: 'p' });
+  });
   it('knows when the cached row has gone stale', () => {
     expect(membershipStale(null, NOW)).toBe(false);
     expect(membershipStale({ ...suspended, status: 'active', suspendedAt: null, endsAt: days(-1) }, NOW)).toBe(true);

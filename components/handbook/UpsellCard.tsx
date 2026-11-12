@@ -12,7 +12,8 @@ import { paidTiers } from '@/lib/tiers';
 type Locked =
   | { page: PageId }
   | { feature: 'start' | 'coach' };
-type Props = Locked & { entitlement: Entitlement };
+/** `upgrade` is set only for a Basic member while the Basic-to-Pro upgrade is on sale (upgradeFor in lib/offer.ts). */
+type Props = Locked & { entitlement: Entitlement; upgrade?: { href: string; price: string } | null };
 
 const FEATURES = {
   start: {
@@ -64,7 +65,15 @@ export function UpsellCard(props: Props) {
                 <strong>{basic ? `This is part of the ${locked.tiers} plan.` : `This is part of the paid handbook (${locked.tiers}).`}</strong>{' '}
                 {basic ? 'Your plan is Basic, which includes every chapter and the essential tools.' : 'You are signed in with the free set: the overview, Chapter 1 and Chapter 7.'}
               </p>
-              {open ? (
+              {open && basic && props.upgrade ? (
+                <>
+                  <p>You pay only the difference between Basic and Pro: {props.upgrade.price}, one time.</p>
+                  <div className="hb-actions">
+                    <a className="btn-nav hb-primary" href={props.upgrade.href} rel="noopener" data-upgrade>Upgrade to Pro, {props.upgrade.price}</a>
+                    <Link className="btn-mini" href="/pricing">Compare the plans</Link>
+                  </div>
+                </>
+              ) : open ? (
                 <>
                   <p>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}, each a one-time purchase.</p>
                   <div className="hb-actions">

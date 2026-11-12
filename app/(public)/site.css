@@ -21,7 +21,7 @@
   flex-direction: column}
 .pub :where(a) { color: var(--color-link); text-underline-offset: 3px}
 .pub :where(a):hover { color: var(--color-ink)}
-.pub-main { flex: 1; outline: none}
+.pub-main { flex: 1; min-width: 0; overflow-wrap: anywhere; outline: none}
 .pub-crumbs { padding: 18px 0 0}
 .pub-crumbs a { text-decoration: none}
 .pub-return { margin: 0; padding: 18px 0 0}
@@ -31,13 +31,12 @@
 .pub-narrow { max-width: 760px}
 
 /* ---- header ---- */
-/* Flat and fixed-height: 88px on a desktop, 72px once the links fold into the menu. scroll-padding-top at the end of
-   this file clears it, so keep the two in step. */
+/* Minimum header height preserves the compact layout; enlarged text may wrap. The measured height clears anchors and menus. */
 .pub-header { --pub-header-h: 88px; position: sticky; top: 0; z-index: 50; background: var(--color-surface); border-bottom: 1px solid var(--color-subtle)}
-.pub-header-row { display: flex; align-items: center; gap: 24px; height: var(--pub-header-h); max-width: 1440px; margin: 0 auto; padding: 0 32px}
-.pub-brand { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--pub-ink) !important; font-weight: 700; text-decoration: none; font-size: 18px; line-height: 22px}
+.pub-header-row { display: flex; align-items: center; gap: 24px; min-height: var(--pub-header-h); max-width: 1440px; margin: 0 auto; padding: 0 32px}
+.pub-brand { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--pub-ink) !important; font-weight: 700; text-decoration: none; font-size: 1.125rem; line-height: 1.375rem}
 .pub-brand img { width: 44px; height: 44px; flex: none}
-.pub-brand-title > span { display: block; white-space: nowrap}
+.pub-brand-title > span { display: block; overflow-wrap: anywhere}
 .pub-nav { display: flex; align-items: center; gap: 28px; margin-left: auto}
 .pub-nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--pub-body); text-decoration: none; font-weight: 500; font-size: 15px; white-space: nowrap; transition: color 0.15s}
 .pub-nav a:hover, .pub-nav a[aria-current="page"] { color: var(--pub-green)}
@@ -51,13 +50,13 @@
   .pub-header { --pub-header-h: 72px}
   .pub-header-row { padding: 0 16px; gap: 12px}
   .pub-menu-btn { display: inline-flex}
-  .pub-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: 8px 16px 16px; max-height: calc(100dvh - var(--pub-header-h)); overflow-y: auto; overscroll-behavior: contain; background: var(--color-surface); border-bottom: 1px solid var(--color-subtle)}
+  .pub-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 0; padding: 8px 16px 16px; max-height: calc(100dvh - var(--pub-header-actual-h, var(--pub-header-h))); overflow-y: auto; overscroll-behavior: contain; background: var(--color-surface); border-bottom: 1px solid var(--color-subtle)}
   .pub-nav.open { display: flex}
   .pub-nav a { min-height: 48px; padding: 0 4px}
   .pub-nav a.pub-nav-cta { margin-top: 8px; padding: 0 20px}
 }
 @media (width <= 420px) {
-  .pub-brand { gap: 10px; font-size: 14px; line-height: 18px}
+  .pub-brand { gap: 10px; font-size: 0.875rem; line-height: 1.125rem}
   .pub-brand img { width: 32px; height: 32px}
 }
 
@@ -82,7 +81,7 @@
 @media (width <= 700px) { .pub-section { padding: 52px 0} }
 
 /* ---- buttons ---- */
-.pub-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 1.02rem; text-decoration: none; cursor: pointer; border: 2px solid var(--pub-navy); transition: background 0.15s, color 0.15s; text-align: center}
+.pub-btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 1.02rem; text-decoration: none; cursor: pointer; border: 2px solid var(--pub-navy); transition: background 0.15s, color 0.15s; text-align: center}
 .pub a.pub-btn-primary, .pub .pub-btn-primary { background: var(--pub-navy); color: var(--color-on-brand); border-color: var(--color-line-strong)}
 .pub a.pub-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand); border-color: var(--color-line-strong)}
 .pub a.pub-btn-secondary { background: var(--color-surface); color: var(--color-link); border-color: var(--color-line-strong)}
@@ -95,7 +94,7 @@
 /* ---- hero ---- */
 .pub-hero { padding: 64px 0 72px; background: linear-gradient(180deg, var(--pub-tint) 0%, var(--color-surface) 100%)}
 .pub-hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 56px; align-items: center}
-@media (width <= 1000px) { .pub-hero { padding: 40px 0 52px} .pub-hero-grid { grid-template-columns: 1fr; gap: 36px} }
+@media (width <= 1000px) { .pub-hero { padding: 40px 0 52px} .pub-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px} }
 
 /* the live preview card in the hero and the first-session result */
 .pub-card { background: var(--color-surface); border: 1px solid var(--pub-line); border-radius: var(--pub-radius); box-shadow: 0 18px 40px -22px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.05)}
@@ -104,7 +103,7 @@
 .pub-device h2, .pub-device h3 { font-size: 1.15rem; line-height: 1.25; margin: 0 0 4px; color: var(--pub-ink)}
 .pub-device .pub-device-sub { font-size: 0.9rem; color: var(--pub-muted); margin: 0 0 16px}
 .pub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; margin-bottom: 18px}
-@media (width <= 420px) { .pub-fields { grid-template-columns: 1fr} }
+@media (width <= 420px) { .pub-fields { grid-template-columns: minmax(0, 1fr)} }
 .pub-field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--pub-ink); margin-bottom: 6px}
 .pub-field .calc-field { display: flex; align-items: center}
 .pub-field .calc-prefix { padding: 10px 0 10px 12px; border: 1.5px solid var(--color-line-strong); border-right: 0; border-radius: 8px 0 0 8px; background: var(--color-canvas); font-weight: 600}
@@ -118,12 +117,14 @@
 /* Three tiles need about 300px ("conversations" cannot wrap), which is wider than a 320 to 360 phone's column.
    Below the field breakpoint each tile becomes a row: number, then label. */
 @media (width <= 420px) {
-  .pub-stats { grid-template-columns: 1fr; gap: 8px}
+  .pub-stats { grid-template-columns: minmax(0, 1fr); gap: 8px}
   .pub-stat { display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 8px 12px}
   .pub-stat b { font-size: 1.4rem}
   .pub-stat span { margin-top: 0; font-size: 0.9rem}
 }
 .pub .pub-device-note { font-size: 0.82rem; color: var(--pub-muted); margin: 14px 0 0}
+.pub-device .pub-device-tag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: currentColor; vertical-align: 1px}
+.pub-device h2 { font-weight: 700}
 .pub-device .pub-field .calc-field { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0}
 .pub-device .pub-field .calc-prefix { grid-area: 1 / 1 / 2 / 2; font-size: 1rem; line-height: 1.5; background: var(--color-surface)}
 .pub-device .pub-field .calc-prefix + .calc-input { grid-area: 1 / 2 / 2 / 3; border-left: 0; line-height: 1.5}
@@ -132,14 +133,40 @@
 .pub-device .pub-field .calc-field:has(.calc-input:focus-visible)::after { content: ""; grid-area: 1 / 1 / 2 / -1; align-self: stretch; border-radius: 8px; border: 2px solid var(--color-link); pointer-events: none; z-index: 1}
 .pub-device .pub-field .calc-error { grid-column: 1 / -1; grid-row: 2}
 .pub-device .pub-field .calc-error:empty { display: none}
+.pub-device .pub-stat b { font-family: inherit; font-weight: 700}
+.pub-device .pub-device-income-note { font-size: 0.78rem; line-height: 1.5; color: var(--pub-muted); margin: -6px 0 18px}
+.pub-device .pub-stat-daily { background: var(--pub-green); border-color: var(--pub-green)}
+.pub-device .pub-stat-daily b, .pub-device .pub-stat-daily span { color: var(--color-on-brand-soft)}
+.pub-device .pub-device-note { border-top: 1px solid var(--pub-line); padding-top: 16px; margin-top: 20px}
+.pub-device-content { display: grid; grid-template-areas: "content" "toggle"; grid-template-columns: minmax(0, 1fr)}
+.pub-device-calculator { grid-area: content; min-width: 0}
+.pub-device-calculator[aria-hidden="true"] { visibility: hidden}
+.pub-calc-toggle { grid-area: toggle; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; margin-top: 12px; padding: 12px 0; border: 0; border-top: 1px solid var(--pub-line); background: var(--color-surface); cursor: pointer; color: var(--pub-ink); font: inherit; font-size: 0.85rem; font-weight: 600; text-align: left}
+.pub-calc-toggle svg { width: 18px; height: 18px; flex: none; color: var(--pub-green)}
+/* Clip the sliding panel to the shared row while the calculator keeps its height. */
+.pub-calc-viewport { grid-area: content; contain: size; min-width: 0; min-height: 0; overflow: hidden; pointer-events: none}
+.pub-calc-viewport:has(.pub-calc-details:not([hidden])) { background: var(--color-surface)}
+.pub-calc-details { height: 100%; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--color-surface); padding: 8px 2px 2px; scrollbar-gutter: stable; transform: translateY(0); transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1), display 480ms allow-discrete}
+.pub-calc-details:not([hidden]) { pointer-events: auto}
+.pub-calc-details[hidden] { display: none; transform: translateY(100%); pointer-events: none}
+@starting-style { .pub-calc-details:not([hidden]) { transform: translateY(100%)} }
+.pub-calc-details table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 10px; font-size: 0.75rem; line-height: 1.35; font-variant-numeric: tabular-nums}
+.pub-calc-details th, .pub-calc-details td { padding: 6px 3px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--pub-line); overflow-wrap: anywhere}
+.pub-calc-details th:first-child { width: 41%; padding-left: 0}
+.pub-calc-details th:last-child, .pub-calc-details td:last-child { width: 19%; padding-right: 0; text-align: right}
+.pub-calc-details thead th { font-weight: 700; color: var(--pub-ink)}
+.pub-calc-details tbody th { font-weight: 500; color: var(--pub-body)}
+.pub-calc-details tbody tr:last-child { background: var(--pub-tint)}
+.pub .pub-calc-details p { font-size: 0.75rem; line-height: 1.45; color: var(--pub-muted); margin: 0 0 8px}
+.pub .pub-calc-details p:last-child { margin-bottom: 0}
 
 /* ---- grids and cards ---- */
 .pub-grid { display: grid; gap: 20px}
 .pub-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr))}
 .pub-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr))}
 .pub-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr))}
-@media (width <= 1000px) { .pub-grid.four { grid-template-columns: repeat(2, minmax(0, 1fr))} .pub-grid.three { grid-template-columns: 1fr} }
-@media (width <= 700px) { .pub-grid.two, .pub-grid.four { grid-template-columns: 1fr} }
+@media (width <= 1000px) { .pub-grid.four { grid-template-columns: repeat(2, minmax(0, 1fr))} .pub-grid.three { grid-template-columns: minmax(0, 1fr)} }
+@media (width <= 700px) { .pub-grid.two, .pub-grid.four { grid-template-columns: minmax(0, 1fr)} }
 .pub-tile { padding: 24px; border: 1px solid var(--pub-line); border-radius: var(--pub-radius); background: var(--color-surface)}
 .pub-tile p:last-child { margin-bottom: 0}
 .pub-tile-num { width: 34px; height: 34px; border-radius: 50%; background: var(--pub-navy); color: var(--color-on-brand); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 14px}
@@ -147,7 +174,7 @@
 
 /* ---- first session result ---- */
 .pub-result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start}
-@media (width <= 900px) { .pub-result { grid-template-columns: 1fr; gap: 32px} }
+@media (width <= 900px) { .pub-result { grid-template-columns: minmax(0, 1fr); gap: 32px} }
 .pub-checks { list-style: none}
 .pub-checks li { position: relative; padding: 0 0 0 38px; margin-bottom: 20px; font-size: 1.02rem}
 .pub-checks li::before { content: "✓"; position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.9rem}
@@ -164,7 +191,7 @@
    pinned to the bottom. Same height on every preview so the four cards read as one row, not four different lists. */
 /* subgrid lines the preview, chapter, title, copy and link rows up across the row; without it each tile is a plain grid */
 .pub-tools .pub-tool { grid-row: span 5}
-.pub-tool { display: grid; grid-template-rows: subgrid; row-gap: 0; align-content: start; padding: 16px 16px 22px; transition: border-color 0.15s, box-shadow 0.15s}
+.pub-tool { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; row-gap: 0; align-content: start; padding: 16px 16px 22px; transition: border-color 0.15s, box-shadow 0.15s}
 .pub-tool:hover { border-color: var(--color-line-strong); box-shadow: 0 10px 28px -18px rgba(15,23,42,0.35)}
 .pub-tool .pub-tool-visual { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 184px; align-self: stretch; margin: 0 0 18px; padding: 16px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-canvas); font-size: 0.86rem; line-height: 1.4; color: var(--pub-body); overflow-wrap: normal; word-break: normal}
 .pub .pub-tool-caption { font-size: 0.78rem; color: var(--pub-muted); margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap}
@@ -195,7 +222,7 @@
 
 /* planner: the morning rows */
 .pub-blocks { list-style: none; margin: 0; padding: 0}
-.pub-blocks li { display: flex; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--color-line); margin: 0}
+.pub-blocks li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--color-line); margin: 0}
 .pub-blocks li:last-child { border-bottom: 0}
 .pub-blocks time { flex: none; width: 4.2rem; color: var(--pub-muted); font-variant-numeric: tabular-nums}
 .pub-blocks span { color: var(--pub-ink); font-weight: 600; min-width: 0}
@@ -220,7 +247,7 @@
 .pub-phase-days { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pub-green); margin: 0 0 6px}
 .pub-phase ul { padding-left: 20px; margin: 10px 0 0}
 .pub-phase li { font-size: 0.98rem; margin-bottom: 6px; color: var(--pub-body)}
-@media (width <= 900px) { .pub-phases { grid-template-columns: 1fr} .pub-phase { border-right: 0; border-bottom: 1px solid var(--pub-line)} .pub-phase:last-child { border-bottom: 0} }
+@media (width <= 900px) { .pub-phases { grid-template-columns: minmax(0, 1fr)} .pub-phase { border-right: 0; border-bottom: 1px solid var(--pub-line)} .pub-phase:last-child { border-bottom: 0} }
 
 /* ---- included ---- */
 .pub-included h3 { margin-bottom: 6px}
@@ -241,7 +268,7 @@
 /* On a phone each row stacks; the header row stays in the accessibility tree (clipped, not display: none) */
 @media (width <= 700px) {
   .pub-tool-index .visually-hidden-phone { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0}
-  .pub-tool-index tr { display: grid; padding: 8px 0; border-bottom: 1px solid var(--pub-line)}
+  .pub-tool-index tr { display: grid; grid-template-columns: minmax(0, 1fr); padding: 8px 0; border-bottom: 1px solid var(--pub-line)}
   .pub-tool-index th, .pub-tool-index td { padding: 2px 0; border: 0}
 }
 
@@ -273,9 +300,9 @@
 .pub-terms dt { font-weight: 700; color: var(--pub-ink)}
 .pub-terms dd { margin: 0}
 @media (width <= 900px) {
-  .pub-pricing-grid { grid-template-columns: 1fr; gap: 32px}
+  .pub-pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 32px}
   .pub-buy { position: static; padding: 24px}
-  .pub-terms > div { grid-template-columns: 1fr; gap: 4px}
+  .pub-terms > div { grid-template-columns: minmax(0, 1fr); gap: 4px}
 }
 
 /* ---- FAQ ---- */
@@ -335,9 +362,9 @@
 }
 
 /* ---- footer ---- */
-.pub-footer { border-top: 1px solid var(--pub-line); background: var(--color-canvas); padding: 40px 0 48px; margin-top: auto}
+.pub-footer { border-top: 1px solid var(--pub-line); background: var(--color-canvas); padding: 40px 0 48px; margin-top: auto; overflow-wrap: anywhere}
 .pub-footer-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 32px}
-@media (width <= 900px) { .pub-footer-grid { grid-template-columns: 1fr 1fr} .pub-footer-grid > :first-child { grid-column: 1 / -1} }
+@media (width <= 900px) { .pub-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr))} .pub-footer-grid > :first-child { grid-column: 1 / -1} }
 .pub-footer h2 { font-size: 0.8rem; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pub-muted); margin: 0 0 10px}
 .pub-footer ul { list-style: none}
 .pub-footer li { margin-bottom: 6px}
@@ -346,12 +373,13 @@
 .pub-legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--pub-line); font-size: 0.85rem; color: var(--pub-muted)}
 
 @media (prefers-reduced-motion: reduce) { .pub * { transition: none !important; scroll-behavior: auto !important} }
-.pub { scroll-padding-top: 104px}
-html:has(.pub) { scroll-padding-top: 104px}
-@media (width <= 1100px) { .pub, html:has(.pub) { scroll-padding-top: 88px} }
+.pub { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16px)}
+html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16px)}
+@media (width <= 1100px) { .pub, html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 72px) + 16px)} }
 
 /* Sign-in form (components/site/SignupForm.tsx): on /signup, the verify page and, later, the home page. */
 .pub .signup-card { padding: 28px; margin: 0 0 20px}
+.pub .pub-hero-grid .signup-card { margin-top: 28px}
 .pub .signup-form .pub-field { margin-bottom: 14px}
 .pub .signup-trap { position: absolute; left: -9999px}
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
@@ -392,6 +420,42 @@ html:has(.pub) { scroll-padding-top: 104px}
 .pub .signup-inline .pub-btn { min-height: 44px}
 .pub .signup-optin { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0 0; font-size: 0.92rem; color: var(--pub-body); cursor: pointer}
 .pub .signup-optin input { margin: 3px 0 0; width: 18px; height: 18px; flex: none; accent-color: var(--pub-navy)}
+/* The sign-in reference: one centered column, a green full-width action, and a separate inbox state. */
+.pub-main:has(.auth-page) > .pub-wrap { max-width: 680px}
+.pub-main:has(.auth-page) .pub-crumbs { padding-top: 30px}
+.pub .auth-page { max-width: 680px; padding-top: 40px; padding-bottom: 72px}
+.pub .auth-intro { margin-bottom: 36px}
+.pub .auth-intro p:not(.pub-eyebrow), .pub .signup-page .signup-sent > p:not(.pub-eyebrow, .pub-small, .signup-actions, .signup-error) { font-size: 1.125rem; line-height: 1.6}
+.pub .auth-intro .pub-h1 { font-size: clamp(2.25rem, 4.6vw, 2.875rem); margin-bottom: 24px}
+.pub .signup-page .signup-form { max-width: 520px; padding: 28px; border-radius: 16px; box-shadow: 0 12px 32px rgba(15,23,42,0.05)}
+.pub .signup-page .signup-row { display: flex; flex-direction: column; gap: 20px}
+.pub .signup-page .signup-row .pub-field { flex: none; width: 100%; margin: 0}
+.pub .signup-page .pub-field label { font-size: 0.95rem; margin-bottom: 8px}
+.pub .signup-page .calc-input { min-height: 52px; padding: 12px 14px; border-radius: 10px}
+.pub .signup-row input[aria-invalid="true"] { border-color: var(--color-danger)}
+.pub .signup-error { display: flex; align-items: flex-start; gap: 7px; margin: 8px 0 0}
+.pub .signup-error svg { width: 16px; height: 16px; flex: none; margin-top: 3px}
+.pub .signup-page .signup-row .pub-btn { width: 100%; min-height: 52px; background: var(--pub-green); color: var(--color-on-brand-soft); border-color: var(--pub-green)}
+.pub .signup-page .signup-row .pub-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--pub-green) 85%, #000); border-color: var(--pub-green)}
+.pub .signup-page .pub-btn:disabled { cursor: default; opacity: 0.65}
+.pub .signup-page .signup-optin { gap: 12px; margin-top: 24px; line-height: 1.55}
+.pub .signup-page .signup-optin input { width: 20px; height: 20px; accent-color: var(--pub-green)}
+.pub .signup-page .signup-terms { border-top: 1px solid var(--pub-line); padding-top: 18px; margin-top: 24px; line-height: 1.6}
+.pub .auth-alternative { margin-top: 24px; max-width: 520px}
+.pub .auth-mail { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; background: var(--pub-tint); color: var(--pub-green); margin-bottom: 20px}
+.pub .auth-mail svg { width: 28px; height: 28px}
+.pub .signup-page .signup-sent .pub-h1 { font-size: clamp(2.25rem, 4.6vw, 2.875rem); margin-bottom: 20px}
+.pub .signup-page .signup-actions { margin-top: 28px; margin-bottom: 10px}
+.pub .signup-page .signup-actions .pub-btn { min-height: 48px; padding: 10px 18px; border: 1px solid var(--pub-line); background: var(--color-surface); color: var(--pub-ink); font-size: 0.95rem}
+.pub .signup-page .signup-actions .pub-btn:disabled { background: var(--color-canvas)}
+.pub .auth-help { padding: 20px; margin-top: 28px; border-radius: 12px; background: var(--color-canvas)}
+.pub .auth-help p { margin: 0; font-size: 0.98rem}
+@media (width <= 700px) {
+  .pub .auth-page { padding-top: 28px; padding-bottom: 48px}
+  .pub .signup-page .signup-form { padding: 24px 20px}
+  .pub .signup-page .signup-optin input { width: 22px; height: 22px}
+  .pub .signup-page .signup-actions { flex-direction: column; align-items: stretch}
+}
 .pub .pub-trust { font-size: 0.95rem; color: var(--pub-body); margin: 0 0 12px}
 .pub .pub-hero-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 14px 0 0; font-size: 0.95rem}
 .pub .pub-hero-links a { font-weight: 600}
@@ -408,7 +472,7 @@ html:has(.pub) { scroll-padding-top: 104px}
 .pub .lead-trap { position: absolute; left: -9999px}
 .pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
 .pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
-.pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
+.pub .pub-hero-side { display: grid; gap: 20px; align-content: start; align-self: start}
 .pub .pub-final-form { display: flex; justify-content: center}
 .pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
 .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}

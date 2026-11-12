@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "schedules": {
+    "billing-reconcile": {
+      "schedule": "0 8 * * *",
+      "path": "/api/cron/billing-reconcile",
+      "requestMethod": "GET"
+    }
+  }
+}

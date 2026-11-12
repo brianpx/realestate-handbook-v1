@@ -2,9 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { grantAccess } from '@/lib/access/grants';
 import { MemoryAccessStore } from '@/lib/access/memory-store';
+import { sendReadyLink } from '@/lib/auth/mail';
 import { MemoryAuthStore } from '@/lib/auth/memory-store';
-import { sessionExpiry } from '@/lib/auth/session';
+import { sessionExpiry, tokenExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
+import { LemonSqueezyAdapter } from '@/lib/billing/adapters/lemonsqueezy';
+import { MemoryBillingStore } from '@/lib/billing/memory-store';
+import type { ReconcileDeps } from '@/lib/billing/reconcile';
+import type { MirrorInput } from '@/lib/billing/types';
 import { MemoryUserStore } from '@/lib/users/store';
 import { handleAdminAction, type AdminDeps } from './handler';
 
@@ -238,4 +243,96 @@ describe('billing', () => {
     }
     expect(access.audit).toHaveLength(0);
   });
+
+  it('resends the ready email once for a paid record and refuses one that is not paid', async () => {
+    const { post, deps, access, reader, auth, users } = await setup();
+    const store = new MemoryBillingStore({ access, users, auth });
+    const fetchImpl = vi.fn<typeof fetch>(async () => new Response('ok', { status: 200 }));
+    const billing: Omit<ReconcileDeps, 'origin'> = {
+      store,
+      adapter: new LemonSqueezyAdapter({ webhookSecret: 'secret', apiKey: 'key', apiBase: 'https://api.lemonsqueezy.com/v1', fixturePath: null }),
+      now: () => NOW,
+      mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'handbook@example.test', fromName: 'Handbook', mailingAddress: '' },
+      fetchImpl,
+      issueSignIn: async (email, at) => {
+        const raw = newSecret();
+        await auth.createToken({ tokenHash: hashSecret(raw), email, nextPath: '/handbook', termsVersion: 'v1', source: null, expiresAt: tokenExpiry(at), createdIpHash: null, createdAt: at });
+        return raw;
+      },
+      sendReady: sendReadyLink,
+    };
+    const withBilling = { ...deps, billing };
+    await store.commitMirror(purchase(reader.user.id, { status: 'pending', providerStatus: 'pending', grant: 'none', paidAt: null }));
+    const refused = await post('resend-ready-email', {}, { deps: withBilling });
+    expect(refused.status).toBe(400);
+    expect(refused.body).toMatchObject({ ok: false, error: 'not_paid' });
+    expect(auth.tokens).toHaveLength(0);
+    expect(access.audit.filter(row => row.action === 'billing.resend_ready_email')).toHaveLength(0);
+
+    await store.commitMirror(purchase(reader.user.id, { lastEventAt: new Date(NOW.getTime() + 1000), at: new Date(NOW.getTime() + 1000) }));
+    const sent = await post('resend-ready-email', {}, { deps: withBilling });
+    expect(sent.body).toEqual({ ok: true, changed: true });
+    expect(store.records[0]?.readyEmailSentAt).toEqual(NOW);
+    expect(access.audit.filter(row => row.action === 'billing.resend_ready_email')).toHaveLength(1);
+    expect(auth.tokens).toHaveLength(1);
+    expect(auth.tokens[0]).toMatchObject({ email: reader.user.email, nextPath: '/handbook', termsVersion: 'v1', source: null });
+    expect(reader.user.role).toBe('reader');
+
+    fetchImpl.mockImplementation(async () => new Response('no', { status: 500 }));
+    const paid = store.records[0];
+    if (!paid) throw new Error('expected a record');
+    paid.readyEmailSentAt = null;
+    const failed = await post('resend-ready-email', {}, { deps: withBilling });
+    expect(failed.status).toBe(503);
+    expect(store.records[0]?.readyEmailSentAt).toBeNull();
+    expect(access.audit.filter(row => row.action === 'billing.resend_ready_email')).toHaveLength(1);
+  });
+
+  it('resyncs the user records from the fetched order and does not change role', async () => {
+    const { post, deps, access, reader, auth, users } = await setup();
+    const store = new MemoryBillingStore({ access, users, auth });
+    const fetched = {
+      meta: { event_name: 'order_created' },
+      data: {
+        type: 'orders', id: '99',
+        attributes: {
+          status: 'paid', user_email: reader.user.email, customer_id: 55, total: 4321, currency: 'USD',
+          refunded_amount: 0, first_order_item: { variant_id: 2357693 }, role: 'admin',
+          created_at: NOW.toISOString(), updated_at: new Date(NOW.getTime() + 60_000).toISOString(),
+        },
+      },
+    };
+    const fetchImpl = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(fetched), { status: 200 }));
+    const billing: Omit<ReconcileDeps, 'origin'> = {
+      store,
+      adapter: new LemonSqueezyAdapter({ webhookSecret: 'secret', apiKey: 'key', apiBase: 'https://api.lemonsqueezy.com/v1', fixturePath: null }),
+      now: () => NOW,
+      mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'handbook@example.test', fromName: 'Handbook', mailingAddress: '' },
+      fetchImpl,
+      issueSignIn: async () => 'unused',
+      sendReady: sendReadyLink,
+    };
+    await store.commitMirror(purchase(reader.user.id, { status: 'pending', providerStatus: 'pending', grant: 'none', paidAt: null }));
+    const first = await post('resync-billing', {}, { deps: { ...deps, billing } });
+    expect(first.body).toEqual({ ok: true, changed: true });
+    expect(store.records[0]).toMatchObject({ status: 'paid', amountCents: 4321 });
+    expect(access.grants).toHaveLength(1);
+    expect(reader.user.role).toBe('reader');
+    expect(access.audit.filter(row => row.action === 'billing.event' && row.actorKind === 'admin')).toHaveLength(1);
+    const second = await post('resync-billing', {}, { deps: { ...deps, billing } });
+    expect(second.body).toEqual({ ok: true, changed: false });
+    expect(access.audit.filter(row => row.action === 'billing.event' && row.actorKind === 'admin')).toHaveLength(1);
+    expect(access.grants).toHaveLength(1);
+  });
 });
+
+function purchase(userId: string, over: Partial<MirrorInput> = {}): MirrorInput {
+  return {
+    provider: 'lemonsqueezy', providerObjectId: '99', kind: 'purchase', tier: 'basic', productKey: 'handbook-v1',
+    status: 'paid', providerStatus: 'paid', userId, customerId: '55', customerEmail: 'reader@example.com',
+    providerPaymentId: null, providerPriceId: '2357693', amountCents: 4321, currency: 'USD',
+    paidAt: NOW, refundedAt: null, disputedAt: null, trialEndsAt: null, currentPeriodStart: null, currentPeriodEnd: null,
+    cancelRequestedAt: null, cancelEffectiveAt: null, accessEndsAt: null, lastEventAt: NOW, notes: null,
+    manageUrl: null, grant: 'grant', revokeReason: null, actor: { kind: 'webhook', userId: null }, at: NOW, ...over,
+  };
+}
