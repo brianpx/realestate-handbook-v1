@@ -12,6 +12,12 @@ export type Segment =
   | { kind: 'html'; html: string }
   | { kind: 'widget'; name: string; slug?: string; /** page HTML a wrapping marker encloses */ html?: string };
 
+// A block wrapped in <!--pro-only-->...<!--/pro-only--> is kept for Pro readers and dropped for everyone else, so a
+// Basic reader never receives a link to something their plan does not include.
+export function withProOnly(html: string, pro: boolean): string {
+  return html.replace(/<!--pro-only-->([\s\S]*?)<!--\/pro-only-->/g, (_, inner: string) => (pro ? inner : ''));
+}
+
 // Throws on a bad marker so `next build` fails instead of shipping a page with a dead widget slot.
 export function splitSegments(pageId: string, html: string): Segment[] {
   const problems = validateMarkers(pageId, html);
