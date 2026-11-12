@@ -11,6 +11,7 @@ export type MediaFile = { page: PageId; type: string };
 export const MEDIA: Readonly<Record<string, MediaFile>> = {
   'downloads/The_Blueprint_for_New_Real_Estate_Agents.mp4': { page: 'pref', type: 'video/mp4' },
   'downloads/The_Blueprint_for_New_Real_Estate_Agents.en.vtt': { page: 'pref', type: 'text/vtt; charset=utf-8' },
+  'downloads/Finding-Nurturing-and-Keeping-Clients.pdf': { page: 'pref', type: 'application/pdf' },
   'audio/objection-just-looking-role-play.mp3': { page: 'ch6', type: 'audio/mpeg' },
 };
 
