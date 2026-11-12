@@ -1,4 +1,4 @@
-import { OFFER, OWNER, POLICY_STATUS, purchaseOpen } from '@/lib/offer';
+import { OFFER, OWNER, POLICY_STATUS, purchaseOpen, REFUND_DAYS, upgradeOffered, upgradePriceDisplay } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
 
 export type Faq = { q: string; a: string };
@@ -35,7 +35,7 @@ export function faqs(): Faq[] {
     },
     {
       q: 'Does it work across my devices?',
-      a: 'There is no automatic sync. To move to a new phone or computer, download your progress file on the old one and restore it on the new one. That takes a minute and is explained on the Account and Support pages.',
+      a: 'Your purchase does: sign in with the same email on any phone, tablet or computer. Your progress does not follow you, because it is saved in each browser separately with no automatic sync. To move to another device or browser, download your progress file on the first and restore it on the second. That takes a minute and is explained on the Account and Support pages.',
     },
     { q: 'What support and updates are included?', a: terms },
     {
@@ -62,10 +62,18 @@ export function pricingFaqs(): Faq[] {
         : 'Nothing, today. This site has no checkout. When purchase opens, checkout will be on a payment provider’s own page, and the Access and updates page will explain how you get in afterwards.',
     },
     {
+      q: 'Can I upgrade from Basic to Pro later?',
+      a: upgradeOffered()
+        ? `Yes. A Basic owner pays only the difference, ${upgradePriceDisplay()}, once, with no time limit. It covers the edition you bought. Sign in and open your account page to find your upgrade link.`
+        : open
+          ? `The upgrade is not on sale yet. Write to ${OWNER.supportEmail ?? 'the support address'} and ask.`
+          : 'That is the plan: when purchase opens, a Basic owner will be able to move to Pro by paying the difference between the two prices. The price will be on this page before you are asked to pay.',
+    },
+    {
       q: 'Can I get a refund?',
       a: POLICY_STATUS.refunds === 'approved'
-        ? 'Yes, under the terms on the refund policy page. Read it before you buy.'
-        : 'The refund policy has not been approved yet. It will be published, and linked from here, before purchase opens.',
+        ? `Yes. Each purchase can be refunded in full within ${REFUND_DAYS} days, for any reason, under the terms on the refund policy page. Read it before you buy.`
+        : `The refund policy has not been approved yet. It is being drafted as ${REFUND_DAYS} days from each purchase, for any reason, and will be published, and linked from here, before purchase opens.`,
     },
     {
       q: 'Can I try it first?',

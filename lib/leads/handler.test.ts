@@ -1,14 +1,16 @@
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { hashSecret } from '@/lib/auth/token';
 import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ceiling';
-import { CONFIRM_PATH, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
-import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, hashIp, type LeadDeps } from './handler';
+import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT, UNSUBSCRIBE_API, UNSUBSCRIBE_PATH } from './config';
+import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, handleUnsubscribe, hashIp, UNSUBSCRIBE_FAILED, UNSUBSCRIBED, type LeadDeps } from './handler';
 import { confirmationMessage, mailFromEnv, sendConfirmation, type MailConfig } from './mail';
 import { MemoryLeadStore } from './store';
+import { signUnsubscribe } from './unsubscribe';
 
 const NOW = new Date('2026-11-02T12:00:00Z');
 const SITE = 'https://handbook.example';
 const body = (o: Record<string, unknown>) => JSON.stringify({ consentVersion: CONSENT_VERSION, source: 'sample', ...o });
+const UNSUB = { page: 'https://x.co/subscribe/unsubscribe?token=u', oneClick: 'https://x.co/api/lead/unsubscribe?token=u' };
 const ok = (init?: Partial<Response>) => Promise.resolve({ ok: true, status: 202, ...init } as Response);
 
 function setup(over: Partial<LeadDeps> & { fetchImpl?: Mock<typeof fetch> } = {}) {
@@ -113,8 +115,8 @@ describe('confirmation', () => {
     const { confirm, store } = setup();
     expect(await confirm('x'.repeat(43))).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(await confirm('short')).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
-    expect((await confirm('x'.repeat(43), { origin: null })).status).toBe(403);
-    expect((await confirm('x'.repeat(43), { origin: 'https://evil.example' })).status).toBe(403);
+    expect(await confirm('x'.repeat(43), { origin: null })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
+    expect(await confirm('x'.repeat(43), { origin: 'https://evil.example' })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(store.leads).toHaveLength(0);
   });
   it('refuses a link older than a week, but still answers a confirmed one', async () => {
@@ -228,6 +230,33 @@ describe('send ceiling', () => {
   });
 });
 
+describe('confirmation lease', () => {
+  it('sends once for a null status whose lease is older than the retry window, and a fresh lease is not claimed again', async () => {
+    const { store, post, fetchImpl } = setup();
+    await store.insert({ email: 'a@b.co', source: 'sample', consentVersion: CONSENT_VERSION, consentText: CONSENT_TEXTS[CONSENT_VERSION], confirmTokenHash: 'a'.repeat(64), confirmExpiresAt: new Date(NOW.getTime() + 7 * 24 * 3600 * 1000), at: NOW });
+    const row = store.leads[0]!;
+    row.emailStatus = null;
+    row.confirmDeliveryStartedAt = new Date(NOW.getTime() - (CONFIRM_RETRY_SECONDS + 1) * 1000).toISOString();
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.emailStatus).toBe('sent');
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+  it('sends one email for overlapping submits, and never emails a confirmed address', async () => {
+    const { store, post, fetchImpl, confirm, sentLink } = setup();
+    const [first, second] = await Promise.all([post(body({ email: 'a@b.co' })), post(body({ email: 'a@b.co' }))]);
+    expect([first.status, second.status]).toEqual([200, 200]);
+    expect(store.leads).toHaveLength(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const token = new URL(sentLink()).searchParams.get('token')!;
+    expect(await confirm(token)).toEqual({ status: 303, headers: { Location: CONFIRMED } });
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.confirmedAt).toEqual(NOW);
+  });
+});
+
 describe('storage trouble', () => {
   it('answers 503 when no store is configured, and when the store throws', async () => {
     expect((await setup({ store: null }).post(body({ email: 'a@b.co' }))).body).toEqual({ ok: false, error: 'unavailable' });
@@ -251,15 +280,86 @@ describe('mail', () => {
   it('posts to Mailpit\'s send API in its own shape', async () => {
     const fetchImpl = vi.fn<typeof fetch>(() => ok());
     const cfg = mailFromEnv({ MAILPIT_URL: 'http://localhost:8025', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' });
-    expect(await sendConfirmation(cfg, 'to@y.co', 'https://x.co/subscribe/confirm?token=t', fetchImpl)).toBe('sent');
+    expect(await sendConfirmation(cfg, 'to@y.co', 'https://x.co/subscribe/confirm?token=t', UNSUB, fetchImpl)).toBe('sent');
     expect(fetchImpl.mock.calls[0]![0]).toBe('http://localhost:8025/api/v1/send');
-    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('x', 'y').subject });
+    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('x', 'y', UNSUB).subject });
+    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string).Headers).toEqual({ 'List-Unsubscribe': `<${UNSUB.oneClick}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' });
   });
   it('carries the link, says nothing is sent without it, how to stop later, and the postal address', () => {
-    const { text } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield');
+    const { text } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield', UNSUB);
     expect(text).toContain('https://x.co/subscribe/confirm?token=t');
     expect(text).toContain('Nothing is sent until you do');
     expect(text).toContain('reply "unsubscribe"');
+    expect(text).toContain(UNSUB.page);
     expect(text.endsWith('1 Main St, Springfield')).toBe(true);
+  });
+});
+
+describe('unsubscribing', () => {
+  const tokenOf = (link: string) => new URL(link).searchParams.get('token')!;
+  const form = (token: string) => new URLSearchParams({ token }).toString();
+  const subscribed = async () => {
+    const s = setup();
+    await s.post(body({ email: 'a@b.co' }));
+    await s.confirm(tokenOf(s.sentLink(0)));
+    return { ...s, id: s.store.leads[0]!.id };
+  };
+
+  it('puts a signed page link and the one-click headers in the confirmation email, and nothing about the address in the link', async () => {
+    const { fetchImpl, store, post } = setup();
+    await post(body({ email: 'sam@example.com' }));
+    const sent = JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string) as { content: { value: string }[]; headers: Record<string, string> };
+    const token = signUnsubscribe(store.leads[0]!.id, 's');
+    expect(sent.content[0]!.value).toContain(`${SITE}${UNSUBSCRIBE_PATH}?token=${token}`);
+    expect(sent.headers).toEqual({ 'List-Unsubscribe': `<${SITE}${UNSUBSCRIBE_API}?token=${token}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' });
+    expect(token).not.toContain('sam');
+  });
+  it('unsubscribes from the page form and ends on the done state, keeping the first time on a second click', async () => {
+    const { store, deps, id } = await subscribed();
+    const token = signUnsubscribe(id, deps.ipSalt);
+    expect(await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(token) }, deps)).toEqual({ status: 303, headers: { Location: UNSUBSCRIBED } });
+    const first = store.leads[0]!.unsubscribedAt;
+    expect(first).toEqual(NOW);
+    expect(await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(token) }, { ...deps, now: () => new Date(NOW.getTime() + 1000) })).toEqual({ status: 303, headers: { Location: UNSUBSCRIBED } });
+    expect(store.leads[0]!.unsubscribedAt).toBe(first);
+  });
+  it('answers a mail client\'s one-click POST with 200, no Origin and the token in the query string', async () => {
+    const { store, deps, id } = await subscribed();
+    const r = await handleUnsubscribe({ origin: null, ip: 'mx', body: 'List-Unsubscribe=One-Click', search: `?token=${signUnsubscribe(id, deps.ipSalt)}` }, deps);
+    expect(r).toEqual({ status: 200, body: { ok: true } });
+    expect(store.leads[0]!.unsubscribedAt).toEqual(NOW);
+  });
+  it('refuses a forged, foreign, malformed or unknown token, changing nothing', async () => {
+    const { store, deps, id } = await subscribed();
+    const bad = [signUnsubscribe(id, 'another-secret'), `${id}.${'A'.repeat(43)}`, 'junk', '', signUnsubscribe('00000000-0000-4000-8000-000000000000', deps.ipSalt)];
+    for (const token of bad) {
+      expect(await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(token) }, deps)).toEqual({ status: 303, headers: { Location: UNSUBSCRIBE_FAILED } });
+      expect((await handleUnsubscribe({ origin: null, ip: 'x', body: 'List-Unsubscribe=One-Click', search: `?token=${token}` }, deps)).status).toBe(400);
+    }
+    expect(store.leads[0]!.unsubscribedAt ?? null).toBeNull();
+  });
+  it('is not undone by confirming afterwards, and does not count as an attempt against the connection', async () => {
+    const { store, deps, confirm, sentLink } = setup();
+    await handleLead({ origin: SITE, ip: '203.0.113.9', body: body({ email: 'a@b.co' }) }, deps);
+    const id = store.leads[0]!.id;
+    await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(signUnsubscribe(id, deps.ipSalt)) }, deps);
+    await confirm(new URL(sentLink(0)).searchParams.get('token')!);
+    expect(store.leads[0]!.unsubscribedAt).toEqual(NOW);
+    expect(store.attempts.filter(a => a.ipHash === hashIp('x', deps.ipSalt))).toHaveLength(0);
+  });
+  it('ends on the failure state, or 503 for a mail client, when there is no store or the store throws, without logging the address', async () => {
+    const { store, deps, id } = await subscribed();
+    const token = signUnsubscribe(id, deps.ipSalt);
+    expect(await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(token) }, { ...deps, store: null })).toEqual({ status: 303, headers: { Location: UNSUBSCRIBE_FAILED } });
+    expect((await handleUnsubscribe({ origin: null, ip: 'x', body: 'List-Unsubscribe=One-Click', search: `?token=${token}` }, { ...deps, store: null })).status).toBe(503);
+    store.failWith = new Error('db down');
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await handleUnsubscribe({ origin: SITE, ip: 'x', body: form(token) }, deps)).toEqual({ status: 303, headers: { Location: UNSUBSCRIBE_FAILED } });
+    expect(JSON.stringify(spy.mock.calls)).not.toContain('a@b.co');
+    spy.mockRestore();
+  });
+  it('refuses an oversized body', async () => {
+    const { deps } = setup();
+    expect((await handleUnsubscribe({ origin: null, ip: 'x', body: 'x'.repeat(5000) }, deps)).status).toBe(413);
   });
 });

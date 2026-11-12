@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         <h2>Your choices and contact</h2>
         <p>
           Clear your browser data to remove everything stored on your device. Sign out everywhere, or delete your account, from the <Link href="/account">Account page</Link>.
-          Reply “unsubscribe” to any note to stop them.
+          Use the unsubscribe link in a note, or reply “unsubscribe”, to stop them.
         </p>
         {OWNER.supportEmail
           ? <p>For other privacy questions, or to have an address removed from the notes list without an account, write to <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a>.</p>

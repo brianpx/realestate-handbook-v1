@@ -1,6 +1,6 @@
 # Offer plan: pricing, upgrade, terms and policies
 
-Status: owner decisions recorded 2026-11-11; nothing here is built. Only the launch price (1.3) is still open. Supersedes the prices in OD-23 (Pro was $149) and `docs/plans/COMPLETION-PLAN.md` wave 3 item 2, which should be updated when this is adopted. Detail for part 2 lives in `docs/plans/UPGRADE-PLAN.md`.
+Status: owner decisions recorded 2026-11-11. Part B (copy and configuration) is built on `docs/offer-terms`; parts C and D are not. Corrected against `origin/main` at `a2fe58f`: billing is already merged, which the first draft missed. Only the launch price (1.3) is still open. Supersedes the prices in OD-23 (Pro was $149) and `docs/plans/COMPLETION-PLAN.md` wave 3 item 2, which should be updated when this is adopted. Detail for part 2 lives in `docs/plans/UPGRADE-PLAN.md`.
 
 Read before this plan: `lib/tiers.ts`, `lib/offer.ts`, `app/(public)/{pricing,refunds,updates,terms}/page.tsx`, `content/site/faq.ts`, `lib/access/entitlement.ts`.
 
@@ -50,8 +50,9 @@ At about 50 paid sales, compare Basic to Pro share and upgrade take-up. Mostly B
 
 Full design, code changes and tests are in `docs/plans/UPGRADE-PLAN.md`. In short:
 - `entitlement()` already takes the highest tier across live grants, so an upgrade is a second `pro` grant with its own billing record. No migration.
-- The upgrade is a third Lemon Squeezy product with `product_key` `handbook-1.0-upgrade`. The webhook grants Pro only if the user has a live Basic purchase grant and no live Pro grant; otherwise the order is stored as `unmatched`, no grant is made, and you review it.
+- The upgrade is a third Lemon Squeezy product with `product_key` `handbook-v1-upgrade`. The webhook grants Pro only if the user has a live Basic purchase grant and no live Pro grant; otherwise the order is stored as `unmatched`, no grant is made, and you review it.
 - Fix the membership projection tie-break so it shows `pro` over `basic` (display only).
+- The billing webhook this extends is already merged (PR #51); the file-by-file changes are in the upgrade plan.
 - The upgrade link shows only to signed-in Basic members: pricing page, account page, and the coach upsell card.
 
 ### 2.1 How the refund window works with an upgrade
@@ -98,7 +99,7 @@ Current `OFFER.updatesTerm`: corrections and updates to edition 1.0; a future ed
 Rules this needs, none of which are in the code yet:
 1. **"Lifetime" must be bounded.** Use "for as long as the handbook is published" and reserve the right to retire it with notice. Without that, a Pro sale is an obligation with no end.
 2. **What counts as a new edition versus an addition** is your call; keep it plain. Suggested: an edition is a re-write of the book with a new title/edition number; anything else is an addition.
-3. **Entitlement.** Grants have no edition field today. `product_key` on the billing record carries the edition (`handbook-1.0`). When edition 2 ships, `entitlement()` must treat any live `pro` grant as covering every edition and a `basic` grant as covering only its own. No migration is needed now, but write that rule into a test the day a second edition exists.
+3. **Entitlement.** Grants have no edition field today. `product_key` on the billing record carries the edition (`handbook-v1`; `lib/billing/types.ts` says a later edition is a different key and "does not ride these grants", which must change for Pro). When edition 2 ships, `entitlement()` must treat any live `pro` grant as covering every edition and a `basic` grant as covering only its own. No migration is needed now, but write that rule into a test the day a second edition exists.
 4. **Access term** ("lifetime access to edition 1.0 for one person, not transferable") stays, and gains "Pro: and later editions".
 
 ### 3.3 Terms at a glance (pricing page)
@@ -147,13 +148,13 @@ Optional, not in this plan: cross-device progress sync is the obvious future Pro
 4. Tests: `lib/offer.test.ts`, `lib/tiers.test.ts`, and any `e2e/site.spec.ts` text assertions on the changed copy. Verify with `pnpm typecheck`, `pnpm test`, then `pnpm e2e`.
 5. Policies stay `draft` in `POLICY_STATUS`. Nothing opens purchase.
 
-**C. Billing lane (COMPLETION-PLAN wave 4, M7).** Add the upgrade product mapping, eligibility rule, `unmatched` path, refund cascade and membership tie-break from the upgrade plan. Tests as listed there, plus a webhook fixture for each row of 2.1.
+**C. Billing follow-on (the webhook is merged).** Extend `lib/billing/**` with the upgrade product mapping, eligibility rule, `unmatched` path, refund cascade and membership tie-break from the upgrade plan. Tests as listed there, plus a webhook fixture for each row of 2.1.
 
-**D. Launch readiness (wave 5).** In Lemon Squeezy test mode create the three products (Basic $79, Pro $129, Pro upgrade $50) and buy, upgrade and refund each way in 2.1 on a preview deployment; get a professional's read of `/terms`, `/refunds` and `/updates`; approve the policies in `POLICY_STATUS`; replace the stand-in postal address; enter prices and checkout URLs in `lib/tiers.ts`; then ask before the deploy that makes purchase live.
+**D. Launch readiness (wave 5).** In Lemon Squeezy test mode create the third product (the Basic and Pro variants exist) and confirm the three (Basic $79, Pro $129, Pro upgrade $50) and buy, upgrade and refund each way in 2.1 on a preview deployment; get a professional's read of `/terms`, `/refunds` and `/updates`; approve the policies in `POLICY_STATUS`; replace the stand-in postal address; enter prices and checkout URLs in `lib/tiers.ts`; then ask before the deploy that makes purchase live.
 
 ## 5. Risks and unverified points
 
 - The refund window and the "future editions" wording are commitments to customers. Both need a professional's review before approval; I have not had one.
-- I did not check Lemon Squeezy's refund mechanics, fees, or whether its checkout can carry a user reference. The eligibility design assumes manual review for that reason.
-- `lib/offer.ts` is modified and uncommitted on `feat/owner-postal`; other sessions edit this tree. Re-check `git status` before starting part B.
+- I did not check Lemon Squeezy's refund mechanics, fees, or whether it can issue single-use discount codes. The signed-in checkout link already carries the user id.
+- `lib/offer.ts` is also modified and uncommitted on `feat/owner-postal` (it sets the stand-in business name and postal address). Part B's edit of that file will need a merge when both land.
 - Not examined: `/privacy` (the billing data it must disclose changes when payments go live) and `/support`.

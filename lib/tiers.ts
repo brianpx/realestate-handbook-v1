@@ -35,9 +35,10 @@ export const FEATURES: readonly Feature[] = [
   { label: 'Reading-plan coach (plan and review)', values: { free: false, basic: false, pro: true } },
   { label: 'Search and glossary pop-ups', values: { free: false, basic: true, pro: true } },
   { label: 'Print-friendly pages', values: { free: false, basic: true, pro: true } },
-  { label: 'Progress saved on this device, with a backup file', values: { free: true, basic: true, pro: true } },
+  { label: 'Progress saved in each browser, with a backup file', values: { free: true, basic: true, pro: true } },
   { label: 'PDF edition', values: { free: false, basic: false, pro: true } },
-  { label: 'Updates', values: { free: false, basic: 'Corrections and updates to this edition', pro: 'Corrections and updates to this edition' }, publishedWhen: 'updatesTerm' },
+  { label: 'Corrections and improvements to edition 1.0', values: { free: false, basic: true, pro: true }, publishedWhen: 'updatesTerm' },
+  { label: 'New chapters, tools and editions', values: { free: false, basic: 'Discount on a new edition', pro: 'Included' }, publishedWhen: 'updatesTerm' },
   { label: 'Email support', values: { free: false, basic: true, pro: true }, publishedWhen: 'supportEmail' },
 ];
 

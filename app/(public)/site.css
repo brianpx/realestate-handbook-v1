@@ -123,6 +123,8 @@
   .pub-stat span { margin-top: 0; font-size: 0.9rem}
 }
 .pub .pub-device-note { font-size: 0.82rem; color: var(--pub-muted); margin: 14px 0 0}
+.pub-device .pub-device-tag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: currentColor; vertical-align: 1px}
+.pub-device h2 { font-weight: 700}
 .pub-device .pub-field .calc-field { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0}
 .pub-device .pub-field .calc-prefix { grid-area: 1 / 1 / 2 / 2; font-size: 1rem; line-height: 1.5; background: var(--color-surface)}
 .pub-device .pub-field .calc-prefix + .calc-input { grid-area: 1 / 2 / 2 / 3; border-left: 0; line-height: 1.5}
@@ -131,6 +133,32 @@
 .pub-device .pub-field .calc-field:has(.calc-input:focus-visible)::after { content: ""; grid-area: 1 / 1 / 2 / -1; align-self: stretch; border-radius: 8px; border: 2px solid var(--color-link); pointer-events: none; z-index: 1}
 .pub-device .pub-field .calc-error { grid-column: 1 / -1; grid-row: 2}
 .pub-device .pub-field .calc-error:empty { display: none}
+.pub-device .pub-stat b { font-family: inherit; font-weight: 700}
+.pub-device .pub-device-income-note { font-size: 0.78rem; line-height: 1.5; color: var(--pub-muted); margin: -6px 0 18px}
+.pub-device .pub-stat-daily { background: var(--pub-green); border-color: var(--pub-green)}
+.pub-device .pub-stat-daily b, .pub-device .pub-stat-daily span { color: var(--color-on-brand-soft)}
+.pub-device .pub-device-note { border-top: 1px solid var(--pub-line); padding-top: 16px; margin-top: 20px}
+.pub-device-content { display: grid; grid-template-areas: "content" "toggle"; grid-template-columns: minmax(0, 1fr)}
+.pub-device-calculator { grid-area: content; min-width: 0}
+.pub-device-calculator[aria-hidden="true"] { visibility: hidden}
+.pub-calc-toggle { grid-area: toggle; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; margin-top: 12px; padding: 12px 0; border: 0; border-top: 1px solid var(--pub-line); background: var(--color-surface); cursor: pointer; color: var(--pub-ink); font: inherit; font-size: 0.85rem; font-weight: 600; text-align: left}
+.pub-calc-toggle svg { width: 18px; height: 18px; flex: none; color: var(--pub-green)}
+/* Clip the sliding panel to the shared row while the calculator keeps its height. */
+.pub-calc-viewport { grid-area: content; contain: size; min-width: 0; min-height: 0; overflow: hidden; pointer-events: none}
+.pub-calc-viewport:has(.pub-calc-details:not([hidden])) { background: var(--color-surface)}
+.pub-calc-details { height: 100%; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--color-surface); padding: 8px 2px 2px; scrollbar-gutter: stable; transform: translateY(0); transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1), display 480ms allow-discrete}
+.pub-calc-details:not([hidden]) { pointer-events: auto}
+.pub-calc-details[hidden] { display: none; transform: translateY(100%); pointer-events: none}
+@starting-style { .pub-calc-details:not([hidden]) { transform: translateY(100%)} }
+.pub-calc-details table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 10px; font-size: 0.75rem; line-height: 1.35; font-variant-numeric: tabular-nums}
+.pub-calc-details th, .pub-calc-details td { padding: 6px 3px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--pub-line); overflow-wrap: anywhere}
+.pub-calc-details th:first-child { width: 41%; padding-left: 0}
+.pub-calc-details th:last-child, .pub-calc-details td:last-child { width: 19%; padding-right: 0; text-align: right}
+.pub-calc-details thead th { font-weight: 700; color: var(--pub-ink)}
+.pub-calc-details tbody th { font-weight: 500; color: var(--pub-body)}
+.pub-calc-details tbody tr:last-child { background: var(--pub-tint)}
+.pub .pub-calc-details p { font-size: 0.75rem; line-height: 1.45; color: var(--pub-muted); margin: 0 0 8px}
+.pub .pub-calc-details p:last-child { margin-bottom: 0}
 
 /* ---- grids and cards ---- */
 .pub-grid { display: grid; gap: 20px}
@@ -334,9 +362,9 @@
 }
 
 /* ---- footer ---- */
-.pub-footer { border-top: 1px solid var(--pub-line); background: var(--color-canvas); padding: 40px 0 48px; margin-top: auto}
+.pub-footer { border-top: 1px solid var(--pub-line); background: var(--color-canvas); padding: 40px 0 48px; margin-top: auto; overflow-wrap: anywhere}
 .pub-footer-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 32px}
-@media (width <= 900px) { .pub-footer-grid { grid-template-columns: 1fr 1fr} .pub-footer-grid > :first-child { grid-column: 1 / -1} }
+@media (width <= 900px) { .pub-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr))} .pub-footer-grid > :first-child { grid-column: 1 / -1} }
 .pub-footer h2 { font-size: 0.8rem; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pub-muted); margin: 0 0 10px}
 .pub-footer ul { list-style: none}
 .pub-footer li { margin-bottom: 6px}
@@ -351,6 +379,7 @@ html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16p
 
 /* Sign-in form (components/site/SignupForm.tsx): on /signup, the verify page and, later, the home page. */
 .pub .signup-card { padding: 28px; margin: 0 0 20px}
+.pub .pub-hero-grid .signup-card { margin-top: 28px}
 .pub .signup-form .pub-field { margin-bottom: 14px}
 .pub .signup-trap { position: absolute; left: -9999px}
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
@@ -442,7 +471,7 @@ html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16p
 .pub .lead-trap { position: absolute; left: -9999px}
 .pub .lead-error { color: var(--color-danger); font-size: 0.9rem; margin: 0}
 .pub .lead-consent { margin: 0; font-size: 0.85rem; color: var(--pub-muted)}
-.pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
+.pub .pub-hero-side { display: grid; gap: 20px; align-content: start; align-self: start}
 .pub .pub-final-form { display: flex; justify-content: center}
 .pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
 .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}
