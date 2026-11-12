@@ -277,6 +277,22 @@
             border-left-color: var(--color-link);
             font-weight: 600}
 
+        /* The main column: a slim bar for the user menu above the scrolling panel. */
+        .shell-column {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            min-width: 0;
+            min-height: 0}
+        .shell-topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex: none;
+            padding: 6px 24px;
+            border-bottom: 1px solid var(--color-line)}
+        .shell-column > #main-content { flex: 1 1 0; min-height: 0}
+
         /* Main Content Styling */
         #main-content {
             flex-grow: 1;
@@ -841,10 +857,11 @@
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
         @media print {
-            #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline, .handbook-footer { display: none !important}
+            #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline, .handbook-footer, .shell-topbar { display: none !important}
             .chapter-frame { display: block !important}
             .chapter-frame > .content-container { max-width: none; width: auto; margin: 0}
             .shell-handbook { display: block; height: auto; overflow: visible}
+            .shell-column { display: block}
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
             .chapter-next { break-after: avoid}
@@ -1115,6 +1132,8 @@
                header away and leaves the search row pinned. */
             .shell-handbook { display: block; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible}
             #sidebar { width: 100%; height: auto; position: sticky; top: calc(-1 * var(--header-h, 57px)); z-index: 100}
+            .shell-column { display: block}
+            .shell-topbar { padding: 4px 8px}
             #main-content { min-height: 0; overflow: visible}
             /* The document is the scroll root here, so anything brought into view (anchored jumps, search hits,
                focused inputs and buttons) must land below the sticky search row. The public site has the same rule

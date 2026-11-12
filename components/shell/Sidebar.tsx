@@ -81,7 +81,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     const root = document.documentElement;
     const locked = root.classList.contains('scroll-locked');
     const lock = open && window.matchMedia(PHONE_QUERY).matches;
-    const behind = document.querySelectorAll<HTMLElement>('.skip-link, #main-content');
+    const behind = document.querySelectorAll<HTMLElement>('.skip-link, .shell-topbar, #main-content');
     if (lock && !locked) {
       if (!sidebar) return;
       lockedScrollY.current = window.scrollY;

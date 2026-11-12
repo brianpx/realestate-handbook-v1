@@ -112,7 +112,7 @@ test.describe('signed out', () => {
     await expect(page.locator('[data-welcome-back]')).toContainText('Welcome back.');
     await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
     await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
-    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: /^Account menu for/ })).toBeVisible();
     // the notes form after the sample is for everyone: signing in never implied marketing consent
     await page.goto('/preview');
     await expect(page.locator('form[data-source="sample"]')).toContainText('Tell me when purchase opens');
