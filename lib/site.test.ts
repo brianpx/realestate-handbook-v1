@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isIndexable, resolveSiteUrl } from './site';
+import { allowedOrigins, isIndexable, resolveSiteUrl } from './site';
 
 describe('resolveSiteUrl', () => {
   it('falls back to localhost with no configuration', () => {
@@ -33,5 +33,24 @@ describe('isIndexable', () => {
     expect(isIndexable({})).toBe(false);
     expect(isIndexable({ SITE_INDEXABLE: '1' })).toBe(false);
     expect(isIndexable({ SITE_INDEXABLE: 'true' })).toBe(true);
+  });
+});
+
+describe('allowedOrigins', () => {
+  it('adds the preview deployment URL beside the site origin', () => {
+    const origins = allowedOrigins({ VERCEL_ENV: 'preview', VERCEL_URL: 'app-abc123-team.vercel.app' });
+    expect(origins).toContain('https://app-abc123-team.vercel.app');
+    expect(origins.length).toBeGreaterThan(1);
+  });
+
+  it('does not add the deployment URL on Production or outside Vercel', () => {
+    expect(allowedOrigins({ VERCEL_ENV: 'production', VERCEL_URL: 'app-abc123-team.vercel.app' })).not.toContain('https://app-abc123-team.vercel.app');
+    expect(allowedOrigins({ VERCEL_URL: 'app-abc123-team.vercel.app' })).not.toContain('https://app-abc123-team.vercel.app');
+  });
+
+  it('keeps LEAD_ALLOWED_ORIGINS and drops duplicates', () => {
+    const origins = allowedOrigins({ LEAD_ALLOWED_ORIGINS: 'http://localhost:3000, http://localhost:3100' });
+    expect(origins).toContain('http://localhost:3100');
+    expect(new Set(origins).size).toBe(origins.length);
   });
 });

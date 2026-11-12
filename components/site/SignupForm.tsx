@@ -9,6 +9,7 @@ import { emailSchema } from '@/lib/validate/email';
 
 const RESEND_AFTER_SECONDS = 30;
 const GENERIC_ERROR = 'Something went wrong. Please try again in a moment.';
+const FORBIDDEN_ERROR = 'This address can’t send sign-in links. Open the site at its main address and try again.';
 const INVALID_EMAIL = 'Please enter a valid email address.';
 
 /** `hero`: a field and a button in one row, the label spoken only; `card`: the stacked form on its own page; `inline`: the row inside another card. */
@@ -103,6 +104,7 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       const message = body.error === 'invalid_email' ? INVALID_EMAIL
         : res.status === 429 ? 'Too many tries. Please wait a few minutes and try again.'
+        : res.status === 403 ? FORBIDDEN_ERROR
         : res.status === 503 ? 'Sign-in email is not available right now. Please try again later.' : GENERIC_ERROR;
       if (previous) setResendError(message);
       else fail(message);

@@ -135,7 +135,7 @@ test.describe('sidebar search', () => {
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
   });
 
-  test('says so when the index cannot be loaded, and recovers on the next try', async ({ page }) => {
+  test('says so when the index cannot be loaded, and recovers when the reader retries', async ({ page }) => {
     let fail = true;
     await page.route('**/search-index.json', route => (fail ? route.fulfill({ status: 500, body: 'no' }) : route.continue()));
     await page.goto('/handbook/ch1');
@@ -143,10 +143,7 @@ test.describe('sidebar search', () => {
     await expect(page.locator('.search-empty')).toContainText('Search could not load.');
     await expect(page.getByRole('button', { name: 'Retry search' })).toBeVisible();
     fail = false;
-    await page.getByLabel('Search the handbook').fill('crm ');
-    await page.getByLabel('Search the handbook').fill('crm');
-    await page.getByLabel('Search the handbook').blur();
-    await page.getByLabel('Search the handbook').focus();
+    await page.getByRole('button', { name: 'Retry search' }).click();
     await expect(page.locator('.search-result').first()).toBeVisible({ timeout: 8000 });
   });
 });

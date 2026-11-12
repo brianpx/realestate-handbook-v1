@@ -7,15 +7,13 @@ describe('crumbsFor', () => {
     expect(crumbsFor('')).toEqual([]);
   });
 
-  test('a chapter shows the handbook, its part and its own label', () => {
+  test('a chapter shows the handbook and its own label', () => {
     expect(crumbsFor('/handbook/ch5')).toEqual([
       { label: 'Handbook', href: '/handbook' },
-      { label: 'Nurture' },
       { label: '5. Nurturing Leads' },
     ]);
     expect(crumbsFor('/handbook/app-d/')).toEqual([
       { label: 'Handbook', href: '/handbook' },
-      { label: 'Appendices' },
       { label: 'App D: Glossary' },
     ]);
   });
@@ -25,7 +23,7 @@ describe('crumbsFor', () => {
   });
 
   test('the handbook home and its sections', () => {
-    expect(crumbsFor('/handbook')).toEqual([{ label: 'Handbook' }]);
+    expect(crumbsFor('/handbook')).toEqual([]);
     expect(crumbsFor('/handbook/start')).toEqual([{ label: 'Handbook', href: '/handbook' }, { label: 'Start here' }]);
     expect(crumbsFor('/handbook/plan')).toEqual([{ label: 'Handbook', href: '/handbook' }, { label: 'My plan' }]);
   });

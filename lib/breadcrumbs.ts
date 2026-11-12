@@ -36,13 +36,12 @@ const humanize = (segment: string) => decodeURIComponent(segment).replace(/[-_]+
 export function crumbsFor(pathname: string): Crumb[] {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/') return [];
-  if (path === HANDBOOK) return [{ label: 'Handbook' }];
+  if (path === HANDBOOK) return [];
   const handbook: Crumb = { label: 'Handbook', href: HANDBOOK };
   const slug = pageIdFromPath(path);
   if (slug !== null) {
     if (isPageId(slug)) {
-      const part = partLabel(slug);
-      return [handbook, ...(part ? [{ label: part }] : []), { label: pageById(slug).label }];
+      return [handbook, { label: pageById(slug).label }];
     }
     const section = HANDBOOK_SECTIONS[slug];
     if (section) return [handbook, { label: section }];

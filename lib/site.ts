@@ -19,5 +19,13 @@ export const isIndexable = (env: Env): boolean => env.SITE_INDEXABLE === 'true';
 // the site (proxy.ts). Read per request, so turning it off is removing the variable and redeploying.
 export const isComingSoon = (env: Env): boolean => env.COMING_SOON === 'true';
 
-/** The origins a state-changing POST may come from: the site itself plus any named in LEAD_ALLOWED_ORIGINS (previews). */
-export const allowedOrigins = (env: Env): string[] => [new URL(SITE_URL).origin, ...(env.LEAD_ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean) ?? [])];
+/**
+ * The origins a state-changing POST may come from: the site itself, any named in LEAD_ALLOWED_ORIGINS, and, off
+ * Production, this deployment's own address. A preview is reachable on both its branch alias (SITE_URL) and its
+ * per-deployment URL, and a form posted from either is the same deployment talking to itself.
+ */
+export const allowedOrigins = (env: Env): string[] => {
+  const deployment = env.VERCEL_ENV && env.VERCEL_ENV !== 'production' && env.VERCEL_URL ? [`https://${env.VERCEL_URL}`] : [];
+  const named = env.LEAD_ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean) ?? [];
+  return [...new Set([new URL(SITE_URL).origin, ...deployment, ...named])];
+};
