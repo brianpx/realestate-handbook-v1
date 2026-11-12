@@ -793,13 +793,18 @@
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
         @media print {
-            #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline { display: none !important}
+            #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline, .handbook-footer { display: none !important}
             .chapter-frame { display: block !important}
             .chapter-frame > .content-container { max-width: none; width: auto; margin: 0}
             .shell-handbook { display: block; height: auto; overflow: visible}
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
             .chapter-next { break-after: avoid}
+        .handbook-footer { max-width: 900px; margin: 24px auto 0; padding: 16px 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
+        .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 8px; padding: 0; list-style: none}
+        .handbook-footer a { display: inline-block; padding: 6px 0; color: var(--color-link)}
+        .handbook-footer p { margin: 0}
+        html.wide .handbook-footer { max-width: 1400px}
             .chapter-foot, .load-error { break-inside: avoid; color: #000; border-color: #000}
         }
 

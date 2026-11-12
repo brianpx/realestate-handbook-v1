@@ -1,0 +1,21 @@
+import Link from 'next/link';
+import { copyright, HELP_LINKS, POLICY_LINKS } from '@/lib/footer';
+
+// Sits at the end of the scrolling #main-content, after every handbook and account page. It is not sticky: reading
+// space matters more on a phone. The legal disclaimer stays in ChapterEnd, so
+// this carries only the links and the copyright line.
+export function HandbookFooter() {
+  const notice = copyright();
+  return (
+    <footer className="handbook-footer">
+      <nav aria-label="Policies and help">
+        <ul role="list">
+          {[...HELP_LINKS, ...POLICY_LINKS].map((link) => (
+            <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
+          ))}
+        </ul>
+      </nav>
+      {notice ? <p>{notice}</p> : null}
+    </footer>
+  );
+}

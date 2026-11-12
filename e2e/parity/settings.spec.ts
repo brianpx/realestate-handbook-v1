@@ -87,6 +87,14 @@ test.describe('chapter end parity', () => {
     ]);
   });
 
+  test('a chapter ends with the site footer after the chapter disclaimer', async ({ page }) => {
+    await open(page, 'ch1');
+    const footer = page.locator('footer.handbook-footer');
+    await expect(footer.getByRole('link')).toHaveText(['Support', 'Access and updates', 'Privacy', 'Terms of use', 'Refunds']);
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer).toBeVisible();
+  });
+
   test('the last page links back to the handbook home', async ({ page }) => {
     await open(page, 'app-f');
     await expect(page.locator('.chapter-next a')).toHaveText('Back to the handbook home');

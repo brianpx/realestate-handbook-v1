@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { DeepLinks } from '@/components/shell/DeepLinks';
+import { HandbookFooter } from '@/components/shell/HandbookFooter';
 import { HydrationMark } from '@/components/shell/HydrationMark';
 import { Sidebar } from '@/components/shell/Sidebar';
 import { TermPopover } from '@/components/shell/TermPopover';
@@ -30,7 +31,10 @@ export default async function ProductLayout({ children }: { children: ReactNode 
         <Sidebar locked={locked} />
         <DeepLinks />
         <TermPopover />
-        <main id="main-content" tabIndex={-1}>{children}</main>
+        <main id="main-content" tabIndex={-1}>
+          {children}
+          <HandbookFooter />
+        </main>
         <HydrationMark />
       </div>
     </>

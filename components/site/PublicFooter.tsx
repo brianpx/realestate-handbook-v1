@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { OWNER } from '@/lib/offer';
+import { copyright, HELP_LINKS, LEGAL_NOTE, POLICY_LINKS } from '@/lib/footer';
 import { BOOK_TITLE } from '@/lib/pages';
 
 export function PublicFooter() {
@@ -24,23 +24,19 @@ export function PublicFooter() {
             <h2>About</h2>
             <ul role="list">
               <li><Link href="/about">About the handbook</Link></li>
-              <li><Link href="/support">Support</Link></li>
-              <li><Link href="/updates">Access and updates</Link></li>
+              {HELP_LINKS.map((link) => <li key={link.href}><Link href={link.href}>{link.label}</Link></li>)}
             </ul>
           </nav>
           <nav aria-label="Policies">
             <h2>Policies</h2>
             <ul role="list">
-              <li><Link href="/privacy">Privacy</Link></li>
-              <li><Link href="/terms">Terms of use</Link></li>
-              <li><Link href="/refunds">Refunds</Link></li>
+              {POLICY_LINKS.map((link) => <li key={link.href}><Link href={link.href}>{link.label}</Link></li>)}
             </ul>
           </nav>
         </div>
         <p className="pub-legal">
-          Training material, not legal advice. Confirm forms, compensation and prospecting rules with your broker. Worked examples use
-          Keller Williams Command screens and terms, and each is labeled; that is an example, not an endorsement.
-          {OWNER.businessName ? ` © ${new Date().getFullYear()} ${OWNER.businessName}.` : ''}
+          {LEGAL_NOTE}
+          {copyright() ? ` ${copyright()}` : ''}
         </p>
       </div>
     </footer>
