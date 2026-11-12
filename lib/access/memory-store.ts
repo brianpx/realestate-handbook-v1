@@ -74,6 +74,8 @@ export class MemoryAccessStore implements AccessStore {
     user.status = 'deleted';
     user.role = 'reader';
     user.email = `deleted+${userId}@invalid.local`;
+    user.avatarKey = null;
+    user.avatarUpdatedAt = null;
     this.memberships = this.memberships.filter(m => m.userId !== userId);
     if (this.linked) {
       this.linked.auth.sessions = this.linked.auth.sessions.filter(s => s.userId !== userId);

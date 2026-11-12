@@ -64,6 +64,7 @@ describe('NeonAccessStore', () => {
     expect(text).toContain("where id = ? and status <> 'deleted'");
     expect(text).toContain("set status = 'deleted', role = 'reader'");
     expect(text).toContain("email = 'deleted+' || users.id || '@invalid.local'");
+    expect(text).toContain('avatar_key = null, avatar_updated_at = null');
     expect(text).toContain('delete from memberships where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from sessions where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from auth_tokens where email = ? and exists (select 1 from before)');

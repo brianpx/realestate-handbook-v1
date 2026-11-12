@@ -20,6 +20,11 @@ export interface UserStore {
   touchSignIn(id: string, at: Date): Promise<void>;
   /** Sets (or, with null, clears) the name the reader chose; false when no active user has that id. */
   setDisplayName(id: string, displayName: string | null, at: Date): Promise<boolean>;
+  /**
+   * Sets (or, with a null key, removes) the reader's picture and stamps the change; answers the key it replaced so
+   * the caller can delete that blob, or null when no active user has that id.
+   */
+  setAvatar(id: string, key: string | null, at: Date): Promise<{ previousKey: string | null } | null>;
   /** Newest first, with the count over every row, for the admin list. */
   list(page: Page): Promise<{ users: User[]; total: number }>;
   /** The rows for a set of ids, in no particular order; unknown ids are simply absent (the audit list resolves actors). */
@@ -33,6 +38,8 @@ export const newUser = (input: VerifiedSignIn): User => ({
   firstName: null,
   lastName: null,
   displayName: null,
+  avatarKey: null,
+  avatarUpdatedAt: null,
   role: 'reader',
   status: 'active',
   acceptedTermsVersion: input.termsVersion,
@@ -77,6 +84,15 @@ export class MemoryUserStore implements UserStore {
     const u = this.users.find(x => x.id === id && x.status === 'active');
     if (u) u.displayName = displayName;
     return Boolean(u);
+  }
+  async setAvatar(id: string, key: string | null, at: Date) {
+    this.check();
+    const u = this.users.find(x => x.id === id && x.status === 'active');
+    if (!u) return null;
+    const previousKey = u.avatarKey;
+    u.avatarKey = key;
+    u.avatarUpdatedAt = key ? at : null;
+    return { previousKey };
   }
   async list({ offset, limit }: Page) {
     this.check();

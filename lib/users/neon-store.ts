@@ -12,6 +12,8 @@ export function rowToUser(row: Record<string, unknown>): User {
     firstName: textOrNull(row.first_name),
     lastName: textOrNull(row.last_name),
     displayName: textOrNull(row.display_name),
+    avatarKey: textOrNull(row.avatar_key),
+    avatarUpdatedAt: toDateOrNull(row.avatar_updated_at),
     role: row.role as Role,
     status: row.status as UserStatus,
     acceptedTermsVersion: textOrNull(row.accepted_terms_version),
@@ -28,14 +30,14 @@ export class NeonUserStore implements UserStore {
 
   async findByEmail(email: string) {
     const rows = await this.sql`
-      select id, email, email_verified_at, first_name, last_name, display_name, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+      select id, email, email_verified_at, first_name, last_name, display_name, avatar_key, avatar_updated_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
       from users where email = ${email}`;
     return rows[0] ? rowToUser(rows[0]) : null;
   }
 
   async findById(id: string) {
     const rows = await this.sql`
-      select id, email, email_verified_at, first_name, last_name, display_name, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+      select id, email, email_verified_at, first_name, last_name, display_name, avatar_key, avatar_updated_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
       from users where id = ${id}`;
     return rows[0] ? rowToUser(rows[0]) : null;
   }
@@ -51,7 +53,7 @@ export class NeonUserStore implements UserStore {
         accepted_terms_version = coalesce(users.accepted_terms_version, excluded.accepted_terms_version),
         accepted_terms_at = coalesce(users.accepted_terms_at, excluded.accepted_terms_at),
         updated_at = excluded.updated_at
-      returning id, email, email_verified_at, first_name, last_name, display_name, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at,
+      returning id, email, email_verified_at, first_name, last_name, display_name, avatar_key, avatar_updated_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at,
         (xmax = 0) as created`;
     const row = rows[0];
     if (!row) throw new Error('users upsert returned no row');
@@ -77,12 +79,23 @@ export class NeonUserStore implements UserStore {
     return rows.length > 0;
   }
 
+  async setAvatar(id: string, key: string | null, at: Date) {
+    const atIso = at.toISOString();
+    // the old key is read under the row lock the update takes, so two uploads each learn the key they replaced
+    const rows = await this.sql`
+      with old as (select avatar_key from users where id = ${id} and status = 'active' for update)
+      update users set avatar_key = ${key}, avatar_updated_at = ${key ? atIso : null}, updated_at = ${atIso}
+      from old where users.id = ${id}
+      returning old.avatar_key as previous_key`;
+    return rows[0] ? { previousKey: textOrNull(rows[0].previous_key) } : null;
+  }
+
   async list({ offset, limit }: Page) {
     // the count and the page in one round trip, so the two agree on a listing that is being written to
     const [counted, rows] = await this.sql.transaction([
       this.sql`select count(*)::int as n from users`,
       this.sql`
-        select id, email, email_verified_at, first_name, last_name, display_name, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+        select id, email, email_verified_at, first_name, last_name, display_name, avatar_key, avatar_updated_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
         from users order by created_at desc, id desc limit ${limit} offset ${offset}`,
     ]);
     return { users: rows!.map(rowToUser), total: Number(counted![0]?.n ?? 0) };
@@ -91,7 +104,7 @@ export class NeonUserStore implements UserStore {
   async findByIds(ids: string[]) {
     if (ids.length === 0) return [];
     const rows = await this.sql`
-      select id, email, email_verified_at, first_name, last_name, display_name, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+      select id, email, email_verified_at, first_name, last_name, display_name, avatar_key, avatar_updated_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
       from users where id = any(${ids}::uuid[])`;
     return rows.map(rowToUser);
   }

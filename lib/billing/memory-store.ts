@@ -231,6 +231,8 @@ export class MemoryBillingStore implements BillingStore {
       firstName: null,
       lastName: null,
       displayName: null,
+      avatarKey: null,
+      avatarUpdatedAt: null,
       role: 'reader',
       status: 'active',
       acceptedTermsVersion: null,

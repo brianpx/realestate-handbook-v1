@@ -24,6 +24,15 @@ describe('accountSummary', () => {
   });
 });
 
+describe('accountSummary avatar', () => {
+  it('points at the avatar route, versioned by the time of the last change, and only when a picture is set', () => {
+    const at = new Date('2026-11-08T12:00:00Z');
+    expect(accountSummary({ email: 'sam@example.com', avatarKey: 'avatars/u/k.webp', avatarUpdatedAt: at }).avatarUrl).toBe(`/api/account/avatar?v=${at.getTime()}`);
+    expect(accountSummary({ email: 'sam@example.com', avatarKey: null, avatarUpdatedAt: null }).avatarUrl).toBeNull();
+    expect(accountSummary({ email: 'sam@example.com', avatarKey: 'avatars/u/k.webp', avatarUpdatedAt: null }).avatarUrl).toBeNull();
+  });
+});
+
 describe('GET /api/account/me handler', () => {
   async function setup() {
     const users = new MemoryUserStore();

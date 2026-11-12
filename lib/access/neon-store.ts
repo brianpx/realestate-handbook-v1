@@ -161,7 +161,7 @@ export class NeonAccessStore implements AccessStore {
         select id, status, role from users where id = ${userId} and status <> 'deleted'
       ), changed as (
         update users set status = 'deleted', role = 'reader', deleted_at = ${atIso}, email = 'deleted+' || users.id || '@invalid.local',
-          first_name = null, last_name = null, auth_provider_id = null, updated_at = ${atIso}
+          first_name = null, last_name = null, avatar_key = null, avatar_updated_at = null, auth_provider_id = null, updated_at = ${atIso}
         from before where users.id = before.id
         returning users.id
       ), membership_gone as (

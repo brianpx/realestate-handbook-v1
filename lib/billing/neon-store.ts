@@ -457,6 +457,8 @@ function rowToUser(row: Row): User {
     firstName: toText(row.first_name),
     lastName: toText(row.last_name),
     displayName: toText(row.display_name),
+    avatarKey: toText(row.avatar_key),
+    avatarUpdatedAt: toDateOrNull(row.avatar_updated_at),
     role,
     status,
     acceptedTermsVersion: toText(row.accepted_terms_version),
