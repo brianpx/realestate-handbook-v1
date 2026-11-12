@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { PaidTier } from './access/types';
 import type { PageId } from './pages';
 
 // The files the handbook embeds that are not public (decision OD-17): they live in media/ at the repo root, outside
@@ -7,10 +8,12 @@ import type { PageId } from './pages';
 export const MEDIA_ROUTE = '/api/media';
 export const MEDIA_DIR = path.join(process.cwd(), 'media');
 
-export type MediaFile = { page: PageId; type: string };
+// `tier`: the lowest paid plan that gets the file, on top of opening `page`. Absent means any reader who opens the page.
+export type MediaFile = { page: PageId; type: string; tier?: PaidTier };
 export const MEDIA: Readonly<Record<string, MediaFile>> = {
   'downloads/The_Blueprint_for_New_Real_Estate_Agents.mp4': { page: 'pref', type: 'video/mp4' },
   'downloads/The_Blueprint_for_New_Real_Estate_Agents.en.vtt': { page: 'pref', type: 'text/vtt; charset=utf-8' },
+  'downloads/Finding-Nurturing-and-Keeping-Clients.pdf': { page: 'pref', type: 'application/pdf', tier: 'pro' },
   'audio/objection-just-looking-role-play.mp3': { page: 'ch6', type: 'audio/mpeg' },
 };
 

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { readPageHtml, splitSegments, type Segment } from '@/lib/content';
+import { readPageHtml, splitSegments, withProOnly, type Segment } from '@/lib/content';
 import { NO_GLOSSARY_PAGES, wrapGlossary } from '@/lib/glossary';
 import { collectOutline, introCut } from '@/lib/outline';
 import { glossaryDefs } from '@/lib/page-html';
-import { toolOpen, type Entitlement } from '@/lib/access/entitlement';
+import { isPro, toolOpen, type Entitlement } from '@/lib/access/entitlement';
 import type { PageId } from '@/lib/pages';
 import { widgetInstanceId } from '@/lib/widget-markers';
 import { LockedWidget, Widget } from '../widgets/registry';
@@ -14,7 +14,7 @@ import { ReadTracker } from './ReadTracker';
 
 // The page is already open to this reader (the route checked); the entitlement decides which tools are built.
 export async function ChapterView({ id, entitlement }: { id: PageId; entitlement: Entitlement }) {
-  const html = await readPageHtml(id);
+  const html = withProOnly(await readPageHtml(id), isPro(entitlement));
   // The first use of each glossary term on the page gets a popover, for members: the definitions are Appendix D, a
   // member page, and the pricing table lists the pop-ups with the paid plans. Checkpoint boxes are tool markup and are skipped.
   const defs = NO_GLOSSARY_PAGES.includes(id) || entitlement.level !== 'member' ? null : await glossaryDefs();
