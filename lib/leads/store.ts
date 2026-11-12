@@ -9,7 +9,7 @@ export type NewLead = { email: string; source: string; consentVersion: string; c
 export type Inserted = { created: boolean; id: string; emailStatus: EmailStatus | null; confirmedAt: Date | null };
 export type EmailStatus = 'sent' | 'failed' | 'skipped';
 /** One stored lead as the admin pages read it; the consent text and the token hash stay in the store. */
-export type LeadRow = { id: string; email: string; source: string; createdAt: Date; consentVersion: string; emailStatus: EmailStatus | null; confirmedAt: Date | null };
+export type LeadRow = { id: string; email: string; source: string; createdAt: Date; consentVersion: string; emailStatus: EmailStatus | null; confirmedAt: Date | null; unsubscribedAt: Date | null };
 /** The most a listing returns, newest first; the admin table filters client-side, so it stays in memory. */
 export const LEAD_LIST_CAP = 5000;
 
@@ -25,6 +25,8 @@ export interface LeadStore {
   resetConfirmation(id: string, tokenHash: string, expiresAt: Date): Promise<void>;
   /** Marks the lead with this token confirmed (a second click changes nothing); false when no lead has it or the link expired. */
   confirm(tokenHash: string, now: Date): Promise<boolean>;
+  /** Marks the lead unsubscribed (a second click keeps the first time); false when no lead has this id. */
+  unsubscribe(id: string, now: Date): Promise<boolean>;
   recordAttempt(ipHash: string, at: Date): Promise<void>;
   countAttempts(ipHash: string, since: Date): Promise<number>;
   /** Insert and in-window count in one step, including the new row, so two requests cannot both slip under the limit. */
@@ -38,11 +40,11 @@ export interface LeadStore {
 }
 
 // Rows written before confirmation existed have no `confirmedAt`; they read as unconfirmed, like the database's null.
-type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmedAt?: Date | string | null };
+type Row = Omit<NewLead, 'confirmExpiresAt'> & { id: string; emailStatus: EmailStatus | null; confirmExpiresAt?: Date | string; confirmedAt?: Date | string | null; unsubscribedAt?: Date | string | null };
 type Shape = { leads: Row[]; attempts: { ipHash: string; at: string }[]; sends: { windowStart: string; n: number }[] };
 
 // `at` is a Date in memory but a string once it has been through JSON, so both are accepted here.
-const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus, confirmedAt: r.confirmedAt ? new Date(r.confirmedAt) : null });
+const toLeadRow = (r: Row): LeadRow => ({ id: r.id, email: r.email, source: r.source, createdAt: new Date(r.at), consentVersion: r.consentVersion, emailStatus: r.emailStatus, confirmedAt: r.confirmedAt ? new Date(r.confirmedAt) : null, unsubscribedAt: r.unsubscribedAt ? new Date(r.unsubscribedAt) : null });
 // A confirmed row answers its link whatever the expiry; an unconfirmed one only while the link is live. A row with no
 // expiry (written before the column existed) never confirms.
 const confirmable = (r: Row, now: Date): boolean => r.confirmedAt != null || (r.confirmExpiresAt !== undefined && new Date(r.confirmExpiresAt) > now);
@@ -101,6 +103,15 @@ export class FileLeadStore implements LeadStore {
       const row = data.leads.find(l => l.confirmTokenHash === tokenHash);
       if (!row || !confirmable(row, now)) return false;
       row.confirmedAt ??= now.toISOString();
+      return true;
+    });
+  }
+
+  unsubscribe(id: string, now: Date) {
+    return this.change(data => {
+      const row = data.leads.find(l => l.id === id);
+      if (!row) return false;
+      row.unsubscribedAt ??= now.toISOString();
       return true;
     });
   }
@@ -171,6 +182,13 @@ export class MemoryLeadStore implements LeadStore {
     const r = this.leads.find(l => l.confirmTokenHash === tokenHash);
     if (!r || !confirmable(r, now)) return false;
     r.confirmedAt ??= now;
+    return true;
+  }
+  async unsubscribe(id: string, now: Date) {
+    this.check();
+    const r = this.leads.find(l => l.id === id);
+    if (!r) return false;
+    r.unsubscribedAt ??= now;
     return true;
   }
   async recordAttempt(ipHash: string, at: Date) { this.check(); this.attempts.push({ ipHash, at }); }

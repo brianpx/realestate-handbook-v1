@@ -32,7 +32,7 @@ export default async function ConfirmPage({ searchParams }: Props) {
     return (
       <>
         <PageHead eyebrow="Handbook notes" title="You are on the list.">
-          Thanks. The next note about the handbook comes to this address; reply &ldquo;unsubscribe&rdquo; to any of them and they stop.
+          Thanks. The next note about the handbook comes to this address; use the unsubscribe link in any of them, or reply &ldquo;unsubscribe&rdquo;, and they stop.
         </PageHead>
         <div className="pub-wrap pub-narrow pub-prose">
           <p><Link href="/preview">Read the sample lesson</Link> while you wait, or <Link href="/signup">sign in</Link> to open the free chapters.</p>
