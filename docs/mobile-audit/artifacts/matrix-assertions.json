@@ -1,0 +1,24 @@
+{
+  "records": 1104,
+  "routes": 46,
+  "engines": [
+    "chromium",
+    "webkit"
+  ],
+  "widths": [
+    320,
+    360,
+    375,
+    390,
+    402,
+    430,
+    480,
+    768,
+    820,
+    1024,
+    1280,
+    1440
+  ],
+  "expected_statuses": "pass",
+  "document_overflow_default_text": "pass"
+}

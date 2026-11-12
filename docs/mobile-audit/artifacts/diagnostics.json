@@ -1,0 +1,584 @@
+[
+  {
+    "route": "/",
+    "elements": [
+      {
+        "tag": "SPAN",
+        "cls": "",
+        "text": "Prospecting",
+        "width": 151.109375,
+        "right": 351.5
+      },
+      {
+        "tag": "P",
+        "cls": "pub-tool-caption",
+        "text": "✓ Before noon Lead generation lands at 9:15",
+        "width": 293.5,
+        "right": 351.5
+      },
+      {
+        "tag": "P",
+        "cls": "pub-tool-meta",
+        "text": "Chapter 8Free sample",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "H3",
+        "cls": "pub-h3",
+        "text": "Protect your mornings",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "P",
+        "cls": "",
+        "text": "The weekly planner lays out your day and tells you whether lead generation ",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "ARTICLE",
+        "cls": "pub-tile pub-tool",
+        "text": "Day 30Install the systemDay 60Build the rhythmDay 90Grow the pipelineChapte",
+        "width": 361.5,
+        "right": 385.5
+      },
+      {
+        "tag": "DIV",
+        "cls": "pub-tool-visual",
+        "text": "Day 30Install the systemDay 60Build the rhythmDay 90Grow the pipeline",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "OL",
+        "cls": "pub-milestones",
+        "text": "Day 30Install the systemDay 60Build the rhythmDay 90Grow the pipeline",
+        "width": 293.5,
+        "right": 351.5
+      },
+      {
+        "tag": "LI",
+        "cls": "",
+        "text": "Day 30Install the system",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "text": "Day 30",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "SPAN",
+        "cls": "",
+        "text": "Install the system",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "LI",
+        "cls": "",
+        "text": "Day 60Build the rhythm",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "text": "Day 60",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "SPAN",
+        "cls": "",
+        "text": "Build the rhythm",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "LI",
+        "cls": "",
+        "text": "Day 90Grow the pipeline",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "text": "Day 90",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "SPAN",
+        "cls": "",
+        "text": "Grow the pipeline",
+        "width": 273.5,
+        "right": 351.5
+      },
+      {
+        "tag": "P",
+        "cls": "pub-tool-meta",
+        "text": "Chapter 12",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "H3",
+        "cls": "pub-h3",
+        "text": "See the whole 90 days",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "P",
+        "cls": "",
+        "text": "The roadmap puts dates on three milestones and tracks the checklist items b",
+        "width": 327.5,
+        "right": 368.5
+      },
+      {
+        "tag": "A",
+        "cls": "pub-link",
+        "text": "See the roadmap",
+        "width": 289.046875,
+        "right": 330.046875
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "Tool",
+        "width": 286.328125,
+        "right": 330.328125
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "Where",
+        "width": 286.328125,
+        "right": 330.328125
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "What you practice",
+        "width": 286.328125,
+        "right": 330.328125
+      },
+      {
+        "tag": "BUTTON",
+        "cls": "pub-btn pub-btn-primary",
+        "text": "Send me the free chapters",
+        "width": 455.375,
+        "right": 479.375
+      }
+    ]
+  },
+  {
+    "route": "/preview",
+    "elements": [
+      {
+        "tag": "TBODY",
+        "cls": "",
+        "text": "\n                            Slow or inconsistent follow-upLeads answered n",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Slow or inconsistent follow-upLeads answered next day; plans never launched",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Leads answered next day; plans never launched; \"I'll call them later.\"",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "The leads that would have converted go to the agent who called first.",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Speed-to-lead automation and a daily follow-up block (Ch. 4).",
+        "width": 188.4375,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Paying for leads before the system is ready, or relying only on portalsAll ",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "All money and hope on Zillow; sphere never called.",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Low conversion, high cost, no referral engine.",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Work the sphere first; buy leads only with a system in place (Ch. 2).",
+        "width": 188.4375,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "No system or database hygieneContacts in the phone, notes in email, tasks i",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Contacts in the phone, notes in email, tasks in memory.",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Lost leads, missed anniversaries, no way to measure.",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Everything in your CRM, every day (Ch. 4).",
+        "width": 188.4375,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Unstructured daysBusy all day with errands, social media and email; zero co",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Busy all day with errands, social media and email; zero conversations.",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Activity without leading indicators; nothing compounds.",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Time-blocked daily rhythm (Ch. 8).",
+        "width": 188.4375,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Under-documentingVerbal agreements, no notes on offers or disclosures.Risk,",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Verbal agreements, no notes on offers or disclosures.",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Risk, disputes, and forgotten details that lose trust. A client says \"you t",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Notes in your CRM after every conversation (Ch. 11).",
+        "width": 188.4375,
+        "right": 844.90625
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Expecting results too fastDiscouraged after 30 days with no closing; activi",
+        "width": 803.40625,
+        "right": 844.90625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Discouraged after 30 days with no closing; activity drops.",
+        "width": 208.8125,
+        "right": 458.734375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Quitting at the exact point the pipeline would have paid.",
+        "width": 197.734375,
+        "right": 656.46875
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Track leading indicators; review weekly; 90-day horizon (Ch. 12).",
+        "width": 188.4375,
+        "right": 844.90625
+      }
+    ]
+  },
+  {
+    "route": "/handbook/ch1",
+    "elements": [
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "LINEHOW TO FILL IT INEXAMPLEYOUR NUMBER",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "HOW TO FILL IT IN",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "EXAMPLE",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "text": "YOUR NUMBER",
+        "width": 150.453125,
+        "right": 732.34375
+      },
+      {
+        "tag": "TBODY",
+        "cls": "",
+        "text": "\n                            Monthly business costsAssociation and MLS dues",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Monthly business costsAssociation and MLS dues, CRM, errors-and-omissions i",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Association and MLS dues, CRM, errors-and-omissions insurance, phone, milea",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "$600",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "",
+        "width": 150.453125,
+        "right": 732.34375
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Monthly living costsRent or mortgage, food, insurance, debt payments. The b",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Rent or mortgage, food, insurance, debt payments. The business has to cover",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "$3,400",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "",
+        "width": 150.453125,
+        "right": 732.34375
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Months to first checkClosings lag activity by 60 to 120 days, and a contrac",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Closings lag activity by 60 to 120 days, and a contract takes another 30 to",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "5",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "",
+        "width": 150.453125,
+        "right": 732.34375
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "Runway needed(Business costs + living costs) × months to first check. Savin",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "(Business costs + living costs) × months to first check. Savings, a working",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "$20,000",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "",
+        "width": 150.453125,
+        "right": 732.34375
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "text": "From every commission checkSet aside a share for taxes first (you are self-",
+        "width": 682.84375,
+        "right": 732.34375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "Set aside a share for taxes first (you are self-employed; a tax professiona",
+        "width": 178.546875,
+        "right": 419.4375
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "30% taxes, 10% business, 60% pay",
+        "width": 162.453125,
+        "right": 581.890625
+      },
+      {
+        "tag": "TD",
+        "cls": "",
+        "text": "",
+        "width": 150.453125,
+        "right": 732.34375
+      }
+    ]
+  },
+  {
+    "route": "/account",
+    "elements": [
+      {
+        "tag": "A",
+        "cls": "",
+        "text": "support@findnurturekeep.com",
+        "width": 410.921875,
+        "right": 435.921875
+      }
+    ]
+  },
+  {
+    "focusEscape": 31,
+    "tag": "NEXTJS-PORTAL",
+    "html": "<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>",
+    "inSidebar": false
+  },
+  {
+    "lists": [
+      {
+        "tag": "UL",
+        "type": "none"
+      },
+      {
+        "tag": "UL",
+        "type": "none"
+      },
+      {
+        "tag": "OL",
+        "type": "none"
+      },
+      {
+        "tag": "UL",
+        "type": "none"
+      },
+      {
+        "tag": "UL",
+        "type": "none"
+      }
+    ]
+  }
+]

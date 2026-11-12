@@ -839,6 +839,11 @@
         .chapter-next a { color: var(--color-link)}
         .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--color-line); font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
         .chapter-foot p { margin: 0 0 8px}
+        .handbook-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin: 48px 0 0; padding: 20px 0 16px; border-top: 1px solid var(--color-line); font-size: 0.875rem; line-height: 1.5; color: var(--color-ink-muted)}
+        .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 0; padding: 0; list-style: none}
+        .handbook-footer a { display: inline-block; padding: 10px; margin: 0 -2px; color: var(--color-ink-muted); text-decoration: none; border-radius: 6px}
+        .handbook-footer a:hover { color: var(--color-link); text-decoration: underline; text-underline-offset: 3px}
+        .handbook-footer p { margin: 0}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
         @media print {
             #sidebar, .scorecard-tools, .menu-toggle, .chapter-outline, .handbook-footer { display: none !important}
@@ -848,11 +853,6 @@
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
             .chapter-next { break-after: avoid}
-        .handbook-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin: 48px 0 0; padding: 20px 0 16px; border-top: 1px solid var(--color-line); font-size: 0.875rem; line-height: 1.5; color: var(--color-ink-muted)}
-        .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 0; padding: 0; list-style: none}
-        .handbook-footer a { display: inline-block; padding: 10px; margin: 0 -2px; color: var(--color-ink-muted); text-decoration: none; border-radius: 6px}
-        .handbook-footer a:hover { color: var(--color-link); text-decoration: underline; text-underline-offset: 3px}
-        .handbook-footer p { margin: 0}
             .chapter-foot, .load-error { break-inside: avoid; color: #000; border-color: #000}
         }
 
