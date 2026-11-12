@@ -15,6 +15,9 @@ describe('the media manifest', () => {
     expect(isFreePage(MEDIA['downloads/The_Blueprint_for_New_Real_Estate_Agents.mp4']!.page)).toBe(true);
     expect(isFreePage(MEDIA['audio/objection-just-looking-role-play.mp3']!.page)).toBe(false);
   });
+  it('gives the clients guide PDF to Pro only', () => {
+    expect(MEDIA['downloads/Finding-Nurturing-and-Keeping-Clients.pdf']).toEqual({ page: 'pref', type: 'application/pdf', tier: 'pro' });
+  });
   it('builds the route URL for a listed file and refuses one that is not listed', () => {
     expect(mediaUrl('audio/objection-just-looking-role-play.mp3')).toBe('/api/media/audio/objection-just-looking-role-play.mp3');
     expect(() => mediaUrl('audio/other.mp3')).toThrow(/manifest/);

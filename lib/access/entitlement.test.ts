@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { UserStatus } from '@/lib/users/types';
-import { coachOpen, entitlement, higherTier, pageOpen, toolOpen, type Entitlement } from './entitlement';
+import { coachOpen, entitlement, higherTier, isPro, mediaOpen, pageOpen, toolOpen, type Entitlement } from './entitlement';
 import type { AccessSnapshot, BillingAccess, Grant, Membership } from './types';
 
 const NOW = new Date('2026-11-08T12:00:00Z');
@@ -89,6 +89,16 @@ describe('what each level opens', () => {
     expect(coachOpen(PRO)).toBe(true);
     expect(coachOpen(BASIC)).toBe(false);
     expect(coachOpen(PREVIEW)).toBe(false);
+  });
+  it('a Pro-tier file needs a Pro grant on top of its page; an untiered file only needs the page', () => {
+    const pdf = { page: 'pref', tier: 'pro' } as const;
+    expect(mediaOpen(PRO, pdf)).toBe(true);
+    expect(mediaOpen(BASIC, pdf)).toBe(false);
+    expect(mediaOpen(PREVIEW, pdf)).toBe(false);
+    expect(mediaOpen(BASIC, { page: 'pref' })).toBe(true);
+    expect(mediaOpen(PREVIEW, { page: 'ch6' })).toBe(false);
+    expect(isPro(PRO)).toBe(true);
+    expect(isPro(BASIC)).toBe(false);
   });
   it('tools: Basic gets the essential set on member pages and everything on free pages; Pro gets everything', () => {
     expect(toolOpen(BASIC, 'ch2', 'lead-sources')).toBe(false);

@@ -51,6 +51,13 @@ export function entitlement({ status, snapshot, now }: { status: UserStatus; sna
 /** Whether a handbook page opens, or shows the upsell card instead. */
 export const pageOpen = (e: Entitlement, id: PageId): boolean => e.level === 'member' || (e.level === 'preview' && isFreePage(id));
 
+/** Pro members only: Basic is a paid plan, but it does not include everything Pro does. */
+export const isPro = (e: Entitlement): boolean => e.level === 'member' && e.tier === 'pro';
+
+/** Whether a listed media file is served: the page it belongs to opens, and the plan meets the file's tier if it has one. */
+export const mediaOpen = (e: Entitlement, media: { page: PageId; tier?: PaidTier }): boolean =>
+  pageOpen(e, media.page) && (media.tier === undefined || (e.level === 'member' && RANK[e.tier] >= RANK[media.tier]));
+
 /** The reading-plan coach (plan and review) is a Pro feature (OD-31). */
 export const coachOpen = (e: Entitlement): boolean => e.level === 'member' && e.tier === 'pro';
 
