@@ -11,6 +11,8 @@ export type Anonymisation = { userId: string; email: string; emailHash: string; 
 export type Suspension = { at: Date; by: string; reason: string };
 /** What the admin user list shows beside each row: the cached projection and how many billing records exist. */
 export type AccessSummary = { userId: string; membership: Membership | null; billingRecords: number };
+/** Derived grant fields only; suspension belongs exclusively to the explicit admin state-setters. */
+export type MembershipProjection = Omit<Membership, 'status' | 'suspendedAt' | 'suspendedBy' | 'suspendReason'> & { status: 'active' | 'lapsed' | 'none' };
 
 /**
  * Where grants, the membership projection, the billing slice entitlement reads, and the audit log live. The
@@ -27,8 +29,8 @@ export interface AccessStore {
   /** One conditional update: null when the grant is unknown or already revoked, and then no audit row either. */
   revokeGrant(id: string, revocation: Revocation, audit: AuditStub): Promise<Grant | null>;
   findMembership(userId: string): Promise<Membership | null>;
-  /** Rewrites the projection whole (recomputeMembership builds it, suspension fields included). */
-  saveMembership(membership: Membership): Promise<void>;
+  /** Saves derived grant fields while preserving the current suspension atomically; returns the stored row. */
+  saveMembership(membership: MembershipProjection): Promise<Membership>;
   /**
    * Account deletion (user-database plan, section 12.4), one batch: the user row is anonymised and marked deleted,
    * its sessions and tokens go, billing rows stay with the provider address hashed. False when already deleted.

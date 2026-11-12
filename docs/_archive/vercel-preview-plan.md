@@ -4,6 +4,8 @@ Drafted 20 October 2026. Companion to `nextjs-migration-plan.md` (phase 6) and `
 
 Everything under "What is true today" was read with `vercel env ls`, `vercel ls`, `vercel inspect`, GET calls to the Vercel API, and `curl` against the public alias. Nothing was deployed, no variable was changed, nothing was pushed. Anything not checked is marked **unchecked**.
 
+*10 November 2026. The table below is the 20 October snapshot and is not rewritten. The project now lives on the Pro team `meded`. What is true after that move is `vercel-pro-migration-meded-result.md` in this folder.*
+
 ## What is true today
 
 | Fact | Evidence |

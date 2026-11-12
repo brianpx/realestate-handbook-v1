@@ -91,7 +91,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   };
 
   const links = () => [...(listRef.current?.querySelectorAll<HTMLAnchorElement>('a') ?? [])];
-  let status = '';
+  let status = searching ? (failed ? 'Search could not load. Use Retry search to try again.' : !index ? 'Loading search results…' : '') : '';
   if (searching && index) status = results.length ? `${results.length} result${results.length === 1 ? '' : 's'}` : 'No matches';
 
   return (
@@ -131,7 +131,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
           e.preventDefault();
         }}
       >
-        {searching && failed && <li className="search-empty">Search could not load. Try again.</li>}
+        {searching && failed && <li className="search-empty">Search could not load. <button type="button" className="btn-nav btn-secondary" onClick={() => { inputRef.current?.focus(); load(); }}>Retry search</button></li>}
         {searching && !failed && !index && <li className="search-empty">Loading…</li>}
         {searching && index && results.length === 0 && <li className="search-empty">No matches.</li>}
         {results.map((entry, n) => (

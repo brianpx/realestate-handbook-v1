@@ -1,0 +1,244 @@
+import { VERIFY_PATH } from '@/lib/auth/config';
+import type { MailConfig } from '@/lib/leads/mail';
+import type { EmailStatus } from '@/lib/leads/store';
+import type { Actor } from '@/lib/audit';
+import type { User } from '@/lib/users/types';
+import { providerEventId, withinEventWindow, type LemonSqueezyAdapter, type ParsedWebhook, type ProductOrder } from './adapters/lemonsqueezy';
+import type { BillingStore } from './store';
+import { decideGrant, UPGRADE_HELD_NOTE } from './upgrade';
+import { BILLING_PROVIDER, UPGRADE_PRODUCT_KEY, type BillingRecord, type GrantEffect, type MirrorInput } from './types';
+
+/**
+ * A Lemon Squeezy delivery is a signal. The signature and the five-minute window are decided before any store
+ * call. The fetched order is what gets mirrored. The ready email sits outside that write: the flag is set only
+ * after the send returns `sent`.
+ *
+ * A metadata user id that matches nobody is stored with a null user and no grant, and the event is `processed`,
+ * so the purchase can be linked later. `unmatched` stays for a subscription, the wrong variant, or a failed
+ * order. `billing_events` has no `ignored` status.
+ */
+
+export type WebhookInput = {
+  raw: string;
+  signature: string | null;
+  eventName: string | null;
+  /** Origin of the webhook request URL. The ready link is built from this, never from a client Origin header. */
+  origin: string;
+};
+
+export type ProcessResult =
+  | { status: 400; error: 'bad_signature' | 'bad_payload' | 'stale_timestamp' }
+  | { status: 200; duplicate: true }
+  | { status: 200; outcome: 'processed' | 'ignored_stale' | 'unmatched' }
+  | { status: 500; error: string };
+
+export type ReadySender = (cfg: MailConfig, to: string, link: string, fetchImpl?: typeof fetch) => Promise<EmailStatus>;
+
+export type ProcessDeps = {
+  store: BillingStore;
+  adapter: LemonSqueezyAdapter;
+  now: () => Date;
+  mail: MailConfig;
+  fetchImpl?: typeof fetch;
+  /** Puts a one-time sign-in token on file and returns the raw token for the link. */
+  issueSignIn: (email: string, at: Date) => Promise<string>;
+  sendReady: ReadySender;
+};
+
+const ACTOR = { kind: 'webhook' as const, userId: null };
+/** Longer than the webhook route's 60s limit, so a live attempt is not stolen. A retry after that reclaims a dead one. */
+const ABANDON_RECEIVED_MS = 2 * 60 * 1000;
+
+export async function processBillingWebhook(input: WebhookInput, deps: ProcessDeps): Promise<ProcessResult> {
+  const { store, adapter } = deps;
+  if (!adapter.verify(input.raw, input.signature)) return { status: 400, error: 'bad_signature' };
+  const parsed = adapter.parse(input.raw, input.eventName);
+  if (!parsed) return { status: 400, error: 'bad_payload' };
+  const at = deps.now();
+  if (!withinEventWindow(parsed.eventTime, at)) return { status: 400, error: 'stale_timestamp' };
+
+  const event = {
+    provider: BILLING_PROVIDER,
+    providerEventId: providerEventId(parsed.eventName, parsed.objectId, parsed.eventTime),
+    eventType: parsed.eventName,
+    objectId: parsed.objectId,
+    eventCreatedAt: parsed.eventTime,
+    payload: { event: parsed.eventName, objectId: parsed.objectId },
+  };
+  let claim = await store.claimEvent(event, at);
+  // A killed attempt leaves `received`. Saying 200 would stop the provider, and the order would never be fetched.
+  if (!claim.claimed && claim.status === 'received' && claim.receivedAt && at.getTime() - claim.receivedAt.getTime() >= ABANDON_RECEIVED_MS) {
+    await store.requeueStuckReceived(new Date(at.getTime() - ABANDON_RECEIVED_MS));
+    claim = await store.claimEvent(event, at);
+  }
+  if (!claim.claimed) {
+    // Only a finished row is a duplicate. An unknown status must not answer 200, or the provider stops retrying.
+    if (claim.status === 'processed' || claim.status === 'ignored_stale' || claim.status === 'unmatched') return { status: 200, duplicate: true };
+    return { status: 500, error: 'in_progress' };
+  }
+
+  try {
+    return await finishClaimed(parsed, claim.id, at, input.origin, deps);
+  } catch (err) {
+    const name = err instanceof Error && err.name ? err.name : 'Error';
+    try {
+      await store.setEventStatus(claim.id, 'failed', name, deps.now());
+    } catch (statusErr) {
+      console.error('billing: event status failed', statusErr instanceof Error ? statusErr.name : 'error');
+    }
+    console.error('billing: webhook failed', name);
+    return { status: 500, error: name };
+  }
+}
+
+async function finishClaimed(parsed: ParsedWebhook, eventId: string, at: Date, origin: string, deps: ProcessDeps): Promise<ProcessResult> {
+  const { store, adapter } = deps;
+  if (parsed.objectType !== 'orders' && parsed.objectType !== 'subscriptions') {
+    await store.setEventStatus(eventId, 'unmatched', null, at);
+    return { status: 200, outcome: 'unmatched' };
+  }
+
+  const mapped = await adapter.fetch({ type: parsed.objectType, id: parsed.objectId }, deps.fetchImpl);
+  if (mapped.outcome === 'unmatched') {
+    await store.setEventStatus(eventId, 'unmatched', null, at);
+    return { status: 200, outcome: 'unmatched' };
+  }
+
+  const order = mapped.order;
+  const existing = await store.findRecord(BILLING_PROVIDER, order.providerObjectId);
+  if (existing?.lastEventAt && existing.lastEventAt > parsed.eventTime) {
+    await store.setEventStatus(eventId, 'ignored_stale', null, at);
+    return { status: 200, outcome: 'ignored_stale' };
+  }
+
+  const metadataUserId = parsed.metadataUserId ?? order.metadataUserId;
+  const metaUser = metadataUserId ? await store.findUserById(metadataUserId) : null;
+  // A named user who is not on file must not fall through to the checkout address.
+  const metadataMiss = Boolean(metadataUserId) && !metaUser && !existing?.userId;
+  const user = metadataMiss ? null : await resolveUser(store, metaUser, order.email, existing?.userId ?? null, at);
+  const decided = await decideGrant(store, order, user?.id ?? null, metadataMiss ? 'none' : order.grant, at);
+  const dates = orderDates(order, existing, at);
+  const mirrored = await store.commitMirror(mirrorFromOrder(order, {
+    at,
+    lastEventAt: parsed.eventTime,
+    userId: user?.id ?? null,
+    grant: decided.grant,
+    notes: decided.held ? UPGRADE_HELD_NOTE : null,
+    revokeReason: metadataMiss ? null : order.revokeReason,
+    ...dates,
+    // A held upgrade has no access, and keeps the day that was first written so a re-read changes nothing.
+    accessEndsAt: decided.held ? existing?.accessEndsAt ?? at : dates.accessEndsAt,
+    actor: ACTOR,
+  }));
+
+  if (!mirrored.applied) {
+    await store.setEventStatus(eventId, 'ignored_stale', null, at);
+    return { status: 200, outcome: 'ignored_stale' };
+  }
+
+  const record = mirrored.record;
+  // An upgrade is bought by someone already signed in, so it has no "your handbook is ready" email.
+  if (record.status === 'paid' && record.readyEmailSentAt === null && record.userId && record.productKey !== UPGRADE_PRODUCT_KEY) {
+    const recipient = await store.findUserById(record.userId);
+    if (recipient) await sendReadyEmail(recipient.email, at, origin, record.id, deps);
+  }
+  // A held upgrade is stored but granted nothing, which is what `unmatched` means here: someone has to look at it.
+  const outcome = decided.held ? 'unmatched' : 'processed';
+  await store.setEventStatus(eventId, outcome, null, at);
+  return { status: 200, outcome };
+}
+
+async function resolveUser(store: BillingStore, metaUser: User | null, email: string | null, existingUserId: string | null, at: Date): Promise<User | null> {
+  if (metaUser) return metaUser;
+  if (existingUserId) return store.findUserById(existingUserId);
+  if (!email) return null;
+  return (await store.findUserByEmail(email)) ?? store.createReader(email, at);
+}
+
+/**
+ * The three dates a mirror writes. Only a refund has a refund date; an order the provider flagged gets a dispute
+ * date instead. A record that has already lost access keeps the day it did, and a refund or dispute date on
+ * file survives a later read, so a repeat delivery or a resync changes nothing and writes no audit row.
+ */
+export function orderDates(order: ProductOrder, existing: BillingRecord | null, at: Date): Pick<MirrorInput, 'accessEndsAt' | 'refundedAt' | 'disputedAt'> {
+  if (order.grant !== 'revoke') return { accessEndsAt: order.accessEndsAt, refundedAt: order.refundedAt, disputedAt: null };
+  const ended = existing?.status === 'refunded' || existing?.status === 'chargeback_lost';
+  const refunding = order.revokeReason === 'refund';
+  return {
+    accessEndsAt: (ended && existing?.accessEndsAt) || at,
+    refundedAt: refunding ? (existing?.status === 'refunded' && existing.refundedAt) || at : existing?.refundedAt ?? null,
+    disputedAt: existing?.disputedAt ?? (refunding ? null : at),
+  };
+}
+
+/** The fetched order, translated into the one mirror the stores know. The caller chooses the actor and the event time. */
+export function mirrorFromOrder(order: ProductOrder, over: {
+  at: Date;
+  lastEventAt: Date;
+  userId: string | null;
+  grant: GrantEffect;
+  revokeReason: 'refund' | 'chargeback' | null;
+  accessEndsAt: Date | null;
+  refundedAt: Date | null;
+  disputedAt: Date | null;
+  actor: Actor;
+  notes?: string | null;
+}): MirrorInput {
+  return {
+    provider: BILLING_PROVIDER,
+    providerObjectId: order.providerObjectId,
+    kind: 'purchase',
+    tier: order.tier,
+    productKey: order.productKey,
+    status: order.status,
+    providerStatus: order.providerStatus,
+    userId: over.userId,
+    customerId: order.customerId,
+    customerEmail: order.email,
+    providerPaymentId: order.providerPaymentId,
+    providerPriceId: order.providerPriceId,
+    amountCents: order.amountCents,
+    currency: order.currency,
+    paidAt: order.paidAt,
+    refundedAt: over.refundedAt,
+    disputedAt: over.disputedAt,
+    trialEndsAt: null,
+    currentPeriodStart: null,
+    currentPeriodEnd: null,
+    cancelRequestedAt: null,
+    cancelEffectiveAt: null,
+    accessEndsAt: over.accessEndsAt,
+    lastEventAt: over.lastEventAt,
+    notes: over.notes ?? null,
+    manageUrl: order.manageUrl,
+    grant: over.grant,
+    revokeReason: over.revokeReason,
+    actor: over.actor,
+    at: over.at,
+  };
+}
+
+/** Sends the ready link and does not touch the flag. Callers write the flag only after this returns `sent`. */
+export async function sendReadyLinkTo(email: string, at: Date, origin: string, deps: Pick<ProcessDeps, 'issueSignIn' | 'sendReady' | 'mail' | 'fetchImpl'>): Promise<EmailStatus> {
+  // No mailer means the link cannot be delivered. Minting a token would only leave a live secret nobody receives.
+  if (deps.mail.provider === 'none') return 'skipped';
+  const raw = await deps.issueSignIn(email, at);
+  return deps.sendReady(deps.mail, email, `${origin}${VERIFY_PATH}?token=${raw}`, deps.fetchImpl);
+}
+
+async function sendReadyEmail(email: string, at: Date, origin: string, recordId: string, deps: ProcessDeps): Promise<void> {
+  const status = await sendReadyLinkTo(email, at, origin, deps);
+  if (status !== 'sent') {
+    const error = new Error('ready email');
+    error.name = 'ReadyEmailNotSent';
+    throw error;
+  }
+  await deps.store.markReadyEmailSent(recordId, at);
+}
+
+export function billingWebhookResponse(result: ProcessResult): Response {
+  const headers = { 'Cache-Control': 'no-store' };
+  if (result.status === 200 && 'duplicate' in result) return Response.json({ ok: true, duplicate: true }, { status: 200, headers });
+  if (result.status === 200) return Response.json({ ok: true, outcome: result.outcome }, { status: 200, headers });
+  return Response.json({ ok: false, error: result.error }, { status: result.status, headers });
+}

@@ -33,6 +33,7 @@
   --color-link: #1d4ed8;
   --color-focus: #4338ca;
   --color-success: #166534;
+  --color-success-tint: #dcfce7;
   --color-warning: #854d0e;
   --color-danger: #b91c1c;
 }
@@ -76,6 +77,10 @@
   --chart-5: var(--color-danger);
   /* 6px, the radius the handbook already uses on fields and buttons. */
   --radius: 0.375rem;
+  --touch-target: 44px;
+  /* The handbook home's own corners: buttons and notices; cards and panels. */
+  --hb-radius: 10px;
+  --hb-radius-card: 12px;
   --sidebar: var(--color-canvas);
   --sidebar-foreground: var(--color-body);
   --sidebar-primary: var(--color-brand);
@@ -109,6 +114,7 @@
     --color-link: #93c5fd;
     --color-focus: #a5b4fc;
     --color-success: #86efac;
+    --color-success-tint: #14532d;
     --color-warning: #fde047;
     --color-danger: #fca5a5;
   }
@@ -251,10 +257,13 @@
         /* Main Content Styling */
         #main-content {
             flex-grow: 1;
+            min-width: 0;
             overflow-y: auto;
             padding: 40px 60px}
 
         .content-container {
+            min-width: 0;
+            overflow-wrap: anywhere;
             max-width: 900px;
             margin: 0 auto;
             background: var(--card-bg);
@@ -429,13 +438,16 @@
             color: var(--color-body)}
         .content-container :where(a) { color: var(--color-link); text-underline-offset: 3px; }
         /* Text links darken on hover. Button links are excluded: this rule would paint their label --color-ink, which is unreadable on a brand fill in light mode and drops the link color on a mini button in both themes. */
-        .content-container :where(a):not(.btn-nav):not(.btn-mini):not(.link-btn):hover { color: var(--color-ink); }
+        .content-container :where(a):not(.btn-nav):not(.btn-mini):not(.link-btn):not(.hb-btn):hover { color: var(--color-ink); }
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
         textarea, select { background-color: var(--color-surface); color: var(--color-ink); }
 
         :where(.chapter-body, .content-container) :is(ul, ol) {
             margin-bottom: 20px;
             padding-left: 24px}
+
+        :where(.chapter-body, .content-container) ul { list-style-type: disc}
+        :where(.chapter-body, .content-container) ol { list-style-type: decimal}
 
         :where(.chapter-body, .content-container) li {
             margin-bottom: 8px}
@@ -550,6 +562,8 @@
 
         /* Tables */
         .table-wrapper {
+            min-width: 0;
+            max-width: 100%;
             overflow-x: auto;
             margin: 24px 0}
 
@@ -1027,7 +1041,7 @@
         .postclose-purpose { margin-top: 2px; font-size: 0.9rem; color: var(--color-ink-muted)}
         .term { display: inline; padding: 0; font: inherit; color: inherit; background: none; border: 0; border-bottom: 2px dotted var(--color-focus); cursor: help; text-align: inherit; text-decoration: none}
         .term:hover, .term[aria-expanded="true"] { background: var(--color-accent-tint)}
-        .term-pop { position: fixed; z-index: 300; padding: 10px 12px; background: #1e1b4b; color: #fff; border-radius: 8px; font-size: 0.85rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25)}
+        .term-pop { overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; position: fixed; z-index: 300; padding: 10px 12px; background: #1e1b4b; color: #fff; border-radius: 8px; font-size: 0.85rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25)}
         .term-pop[hidden] { display: none}
         .term-pop strong { display: block; margin-bottom: 2px}
         .term-more { display: block; margin-top: 6px; font-size: 0.75rem; opacity: 0.75}
@@ -1080,12 +1094,12 @@
             .sidebar-header { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 10px 14px}
             .sidebar-header .sidebar-title {
                 grid-column: 2; grid-row: 1; align-self: end; margin: 0;
-                /* sized from the window width so the whole title always fits on one line */
-                font-size: clamp(11px, calc((100vw - 75px) / 19), 22px);
-                line-height: 1.2; white-space: nowrap}
+                /* Scale with reader text settings; wrapping is preferable to clipping the title. */
+                font-size: clamp(0.875rem, 2.8vw, 1.375rem);
+                line-height: 1.2; overflow-wrap: anywhere}
             .sidebar-header p:not(.sidebar-title) {
                 display: block; grid-column: 2; grid-row: 2; align-self: start; margin: 2px 0 0;
-                font-size: 13.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
+                font-size: 0.84375rem; line-height: 1.3; overflow-wrap: anywhere}
             .sidebar-logo { grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; max-width: none; margin: 0}
             .menu-toggle {
                 display: block;
@@ -1105,7 +1119,8 @@
                 top: 100%;
                 left: 0;
                 right: 0;
-                max-height: 70vh;
+                max-height: max(0px, calc(100vh - var(--overlay-top, 132px)));
+                max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px)));
                 overflow-y: auto;
                 padding-bottom: 0; /* the Close bar sits flush with the bottom edge */
                 background: var(--color-surface);
@@ -1120,14 +1135,14 @@
             .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 90; background: var(--color-tint); touch-action: none} /* fully opaque: nothing of the page shows or can be reached */
             .nav-list, .search-results { overscroll-behavior: contain} /* scrolling the list never chains to the page */
             /* the desktop "searching" rule lifts the height limit; on phones the dropdown must stay within the screen and scroll */
-            #sidebar.searching .search-results { max-height: 70vh; max-height: 70dvh}
+            #sidebar.searching .search-results { max-height: max(0px, calc(100vh - var(--overlay-top, 132px))); max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px)))}
             /* phones are already full width, so the option does nothing there */
             .settings-row.settings-wide { display: none}
             .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: var(--color-canvas); border-top: 1px solid var(--color-line-strong); list-style: none}
             .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px; cursor: pointer}
             .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px}
             .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto}
-            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: 70vh; padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
+            .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px))); padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
             #main-content { padding: 8px}
             .content-container { padding: 16px; border-radius: 8px}
             .lifecycle-container { flex-direction: column}
@@ -1147,28 +1162,91 @@
             padding-bottom: 12px}
         .hb-title { font-size: 2.2rem; line-height: 1.2; color: var(--primary-color); margin: 4px 0 16px}
         .hb-h2 { font-size: 1.5rem; margin: 40px 0 14px; padding-bottom: 8px}
-        .hb-continue { margin: 28px 0 8px; padding: 24px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-accent-tint)}
-        .hb-free-set .hb-actions .btn-mini { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
-        .hb-continue h2 { font-size: 1.35rem; border: 0; padding: 0; margin: 0 0 10px}
-        .hb-continue p { margin-bottom: 10px}
         .hb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px}
         .hb-primary { display: inline-block; padding: 14px 28px; font-size: 1.05rem; text-decoration: none; min-height: 48px}
         .hb-actions .btn-mini { display: inline-flex; align-items: center; text-decoration: none}
-        .hb-how li { margin-bottom: 10px}
-        .hb-tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 14px}
-        .hb-tool { display: block; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--color-surface); color: var(--text-main); text-decoration: none}
-        .hb-tool:hover { border-color: var(--accent-color); background: var(--color-canvas)}
-        .hb-tool strong { display: block; color: var(--secondary-color); margin-bottom: 4px}
-        .hb-tool span { font-size: 0.92rem; color: var(--color-ink-muted)}
-        .hb-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 32px}
-        .hb-part h3 { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-ink-muted); margin: 18px 0 6px}
-        .hb-part ul { list-style: none; padding: 0; margin: 0}
-        .hb-part li { margin-bottom: 4px}
-        .hb-read { color: var(--color-brand-soft); font-weight: 700}
+        /* Text that is read out and copied but takes no room, and stays inline: for punctuation inside a label */
+        .undrawn { font-size: 0}
+        /* Handbook home and panels on the page background. The element rules above are
+           written for running text, so each piece here states its own margins. */
+        .hb-home { display: flex; flex-direction: column; gap: 48px; padding-bottom: 32px}
+        .hb-block { display: flex; flex-direction: column; gap: 20px}
+        .hb-home h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--color-ink)}
+        .hb-block-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px}
+        .hb-more { font-size: 0.9375rem; font-weight: 600}
+        .hb-kicker { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted)}
+
+        .hb-hero { display: flex; flex-wrap: wrap; align-items: stretch; gap: 32px}
+        .hb-hero-text { flex: 1 1 420px; display: flex; flex-direction: column; gap: 16px}
+        .hb-home .hb-title { margin: 0; font-size: 2.375rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-ink)}
+        .hb-lead { max-width: 62ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--color-body)}
+        .hb-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px}
+        .hb-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid transparent; border-radius: var(--hb-radius); font: inherit; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer}
+        .hb-btn svg { flex: none; width: 16px; height: 16px}
+        .hb-btn-primary { background: var(--color-brand); color: var(--color-on-brand)}
+        .hb-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand)}
+        .hb-btn-ghost { background: var(--color-surface); border-color: var(--color-line); color: var(--color-ink)}
+        .hb-btn-ghost:hover { border-color: var(--color-ink); color: var(--color-ink)}
+        .hb-btn:disabled { opacity: 0.45; cursor: default}
+
+        .hb-progress { flex: 0 1 260px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-meter { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem}
+        .hb-meter-head { display: flex; justify-content: space-between; gap: 12px; color: var(--color-ink-muted)}
+        .hb-meter-head b { color: var(--color-ink); font-variant-numeric: tabular-nums}
+        .hb-bar { height: 6px; border-radius: 999px; background: var(--color-subtle); overflow: hidden}
+        .hb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--color-brand-soft); transition: width 0.3s}
+        .hb-fine { margin: 0; font-size: 0.8125rem; color: var(--color-ink-muted)}
+
+        .hb-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 14px 18px; background: var(--color-tint); border-radius: var(--hb-radius); font-size: 0.9375rem; color: var(--color-body)}
+        .hb-notice p { flex: 1 1 360px; margin: 0; font-size: inherit}
+        .hb-notice > a { font-weight: 600; white-space: nowrap}
+        .hb-free { flex: none; display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--color-success-tint); color: var(--color-success); font-size: 0.75rem; font-weight: 600; line-height: 1.5}
+        .hb-continue { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-continue-text { flex: 1 1 360px}
+        .hb-continue h2 { margin: 0 0 4px; font-size: 1.0625rem; letter-spacing: 0}
+        .hb-continue p { margin: 0; font-size: 0.9375rem}
+
+        .hb-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none}
+        .hb-step, .hb-card { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-step-num { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: var(--color-brand); color: var(--color-on-brand); font-size: 0.9375rem; font-weight: 600}
+        .hb-step h3, .hb-card strong { margin: 0; font-size: 1.0625rem; font-weight: 600; line-height: 1.4; color: var(--color-ink)}
+        .hb-step h3 { margin-top: 4px}
+        .hb-step p, .hb-card span { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--color-body)}
+        .hb-card { text-decoration: none}
+        .hb-card:hover { border-color: var(--color-link)}
+
+        /* The chapter list: one band per part, its name on the left and its pages on the right */
+        .hb-chapters .hb-block-head { padding-bottom: 16px}
+        .hb-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 0; font-size: 0.875rem; color: var(--color-ink-muted)}
+        .hb-legend > span { display: inline-flex; align-items: center; gap: 8px}
+        .hb-legend svg { width: 16px; height: 16px}
+        .hb-part { display: flex; flex-wrap: wrap; gap: 8px 32px; padding: 22px 0; border-top: 1px solid var(--color-subtle)}
+        .hb-part-label { flex: 0 0 190px}
+        .hb-part h3 { margin: 4px 0 0; font-size: 1.125rem; font-weight: 600; color: var(--color-ink)}
+        .hb-part ul { flex: 1 1 380px; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none}
+        .hb-part li { margin: 0; border-top: 1px solid var(--color-subtle)}
+        .hb-part li:first-child { border-top: 0}
+        .hb-ch { display: flex; align-items: center; gap: 16px; min-height: 46px; font-size: 1.0625rem; font-weight: 500; text-decoration: none}
+        .hb-ch .page-mark { flex: 0 0 28px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums}
+        .hb-ch .page-title { flex: 1; min-width: 0}
+        .hb-ch:hover .page-title { text-decoration: underline}
         /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts); the pages show the upsell card */
         .nav-lock, .hb-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
         .nav-item .nav-lock { float: right; margin-top: 3px}
         .nav-item.locked { color: var(--color-ink-muted)}
+        /* On the handbook home a padlock or a tick is an icon, not the menu's text pill */
+        .hb-lock, .hb-read { display: inline-flex; flex: none; margin: 0; padding: 0; border: 0; background: none; color: var(--color-ink-muted)}
+        .hb-read { color: var(--color-brand-soft)}
+        :is(.hb-lock, .hb-read) svg { width: 16px; height: 16px}
+        @media (width <= 900px) {
+            /* on a phone the home page is panels on the page background too, not one sheet */
+            .content-container:has(> .hb-home) { padding: 16px 8px 40px; background: none; border: 0; box-shadow: none}
+            .hb-home { gap: 36px}
+            .hb-home .hb-title { font-size: 1.875rem}
+            .hb-home h2 { font-size: 1.3125rem}
+            .hb-continue h2 { font-size: 1.0625rem}
+            .hb-progress { flex: 1 1 100%}
+        }
         .hb-upsell { max-width: 760px}
         .hb-upsell-lede { font-size: 1.1rem; line-height: 1.55; color: var(--color-ink-muted)}
         .hb-upsell-status { margin: 24px 0 8px; padding: 20px 24px; border: 1px solid var(--color-line-strong); border-left: 5px solid var(--accent-color); border-radius: 10px; background: var(--color-accent-tint)}
@@ -1273,6 +1351,7 @@
         }
         @media (width <= 600px) {
             .hb-title { font-size: 1.7rem}
+            .hb-btns .hb-btn { flex: 1 1 100%}
             .setup-step span:not(.setup-step-num) { font-size: 0.85rem}
         }
 

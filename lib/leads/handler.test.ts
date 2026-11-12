@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { hashSecret } from '@/lib/auth/token';
 import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ceiling';
-import { CONFIRM_PATH, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
+import { CONFIRM_PATH, CONFIRM_RETRY_SECONDS, CONSENT_TEXTS, CONSENT_VERSION, RATE_LIMIT } from './config';
 import { CONFIRM_FAILED, CONFIRMED, handleConfirm, handleLead, hashIp, type LeadDeps } from './handler';
 import { confirmationMessage, mailFromEnv, sendConfirmation, type MailConfig } from './mail';
 import { MemoryLeadStore } from './store';
@@ -113,8 +113,8 @@ describe('confirmation', () => {
     const { confirm, store } = setup();
     expect(await confirm('x'.repeat(43))).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(await confirm('short')).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
-    expect((await confirm('x'.repeat(43), { origin: null })).status).toBe(403);
-    expect((await confirm('x'.repeat(43), { origin: 'https://evil.example' })).status).toBe(403);
+    expect(await confirm('x'.repeat(43), { origin: null })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
+    expect(await confirm('x'.repeat(43), { origin: 'https://evil.example' })).toEqual({ status: 303, headers: { Location: CONFIRM_FAILED } });
     expect(store.leads).toHaveLength(0);
   });
   it('refuses a link older than a week, but still answers a confirmed one', async () => {
@@ -228,6 +228,33 @@ describe('send ceiling', () => {
   });
 });
 
+describe('confirmation lease', () => {
+  it('sends once for a null status whose lease is older than the retry window, and a fresh lease is not claimed again', async () => {
+    const { store, post, fetchImpl } = setup();
+    await store.insert({ email: 'a@b.co', source: 'sample', consentVersion: CONSENT_VERSION, consentText: CONSENT_TEXTS[CONSENT_VERSION], confirmTokenHash: 'a'.repeat(64), confirmExpiresAt: new Date(NOW.getTime() + 7 * 24 * 3600 * 1000), at: NOW });
+    const row = store.leads[0]!;
+    row.emailStatus = null;
+    row.confirmDeliveryStartedAt = new Date(NOW.getTime() - (CONFIRM_RETRY_SECONDS + 1) * 1000).toISOString();
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.emailStatus).toBe('sent');
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+  it('sends one email for overlapping submits, and never emails a confirmed address', async () => {
+    const { store, post, fetchImpl, confirm, sentLink } = setup();
+    const [first, second] = await Promise.all([post(body({ email: 'a@b.co' })), post(body({ email: 'a@b.co' }))]);
+    expect([first.status, second.status]).toEqual([200, 200]);
+    expect(store.leads).toHaveLength(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const token = new URL(sentLink()).searchParams.get('token')!;
+    expect(await confirm(token)).toEqual({ status: 303, headers: { Location: CONFIRMED } });
+    expect((await post(body({ email: 'a@b.co' }))).status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(store.leads[0]!.confirmedAt).toEqual(NOW);
+  });
+});
+
 describe('storage trouble', () => {
   it('answers 503 when no store is configured, and when the store throws', async () => {
     expect((await setup({ store: null }).post(body({ email: 'a@b.co' }))).body).toEqual({ ok: false, error: 'unavailable' });
@@ -244,8 +271,8 @@ describe('mail', () => {
   it('uses SendGrid only with a sender and a postal address, Mailpit in development, else nothing', () => {
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k' })).toEqual({ provider: 'none' });
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co' })).toEqual({ provider: 'none' });
-    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co' });
-    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025' });
+    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co', mailingAddress: '1 Main St' });
+    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025', mailingAddress: 'synthetic temp address' });
     expect(mailFromEnv({})).toEqual({ provider: 'none' });
   });
   it('posts to Mailpit\'s send API in its own shape', async () => {

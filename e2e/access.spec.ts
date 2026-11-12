@@ -36,8 +36,6 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await page.goto('/handbook');
     await expect(page.locator('[data-free-set]')).toContainText('You are reading the free set');
     await expect(page.getByRole('navigation', { name: 'breadcrumb' })).toHaveCount(0);
-    await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
-    await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 7' })).toHaveAttribute('href', '/handbook/ch7');
     const nav = page.locator('#sidebar');
     await expect(nav.locator('a[data-page="ch2"] .nav-lock')).toHaveText(/Members/);
     await expect(nav.locator('a[data-page="ch1"] .nav-lock')).toHaveCount(0);

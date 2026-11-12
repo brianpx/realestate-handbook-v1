@@ -33,7 +33,9 @@ describe('NeonProfileStore', () => {
     expect(saved).toEqual({ ...fields, userId: 'u-1', profileSource: 'user', updatedAt: AT });
     expect(calls).toHaveLength(1);
     const { text, values } = calls[0]!;
+    expect(text).toContain("select id from users where id = ? and status = 'active' for update");
     expect(text).toContain('insert into realtor_profiles');
+    expect(text).toContain('from active_user where true');
     expect(text).toContain('on conflict (user_id) do update set');
     expect(text).toContain('profile_source = excluded.profile_source');
     expect(text).toContain('updated_at = excluded.updated_at');

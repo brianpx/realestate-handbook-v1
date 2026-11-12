@@ -1,3 +1,4 @@
+import { productionDatabaseRefused } from '@/lib/db/production-refusal';
 import { sqlFromUrl } from '@/lib/db/sql';
 import type { Profile, ProfileFields, ProfileSource } from './profile';
 import { NeonProfileStore } from './profile-neon-store';
@@ -33,7 +34,11 @@ export class MemoryProfileStore implements ProfileStore {
   async deleteByUser(userId: string) { this.check(); this.profiles = this.profiles.filter(p => p.userId !== userId); }
 }
 
-/** The database store when DATABASE_URL is set, otherwise none (the route answers 503; the page shows a note). */
+/**
+ * The database store when DATABASE_URL is set, otherwise none (the route answers 503; the page shows a note).
+ * A non-production deployment pointed at the production host is also none, and this function does not open it.
+ */
 export function profileStoreFromEnv(env: Record<string, string | undefined>): ProfileStore | null {
+  if (productionDatabaseRefused(env)) return null;
   return env.DATABASE_URL ? new NeonProfileStore(sqlFromUrl(env.DATABASE_URL)) : null;
 }
