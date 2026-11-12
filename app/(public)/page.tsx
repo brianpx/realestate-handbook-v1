@@ -8,7 +8,7 @@ import { faqs } from '@/content/site/faq';
 import { bookJsonLd } from '@/lib/jsonld';
 import { OFFER, OWNER, primaryAction, purchaseOpen, REFUND_DAYS, upgradeOffered, upgradePriceDisplay } from '@/lib/offer';
 import { paidTiers } from '@/lib/tiers';
-import { NAV } from '@/lib/pages';
+import { PAGES } from '@/lib/pages';
 import { fmtClock, planBlocks, ROADMAP_PHASES, TIMEBLOCK_DEFAULTS } from '@/lib/plan';
 import { roundPerDay } from '@/lib/goal';
 import { readSetup, sourceName, summarize } from '@/lib/setup';
@@ -28,7 +28,6 @@ export default function SalesPage() {
       <FirstSession />
       <Tools />
       <NinetyDays />
-      <Included />
       <Fit />
       <Offer open={open} />
       <Faq />
@@ -239,14 +238,56 @@ function Tools() {
                 {ROADMAP_PHASES.map(p => <li key={p.name}><time>Day {p.endDay}</time><span>{p.name}</span></li>)}
               </ol>
             </div>
-            <p className="pub-tool-meta"><span>Chapter 12</span></p>
+            <p className="pub-tool-meta"><span>Chapter 12</span><span className="pub-tool-free is-plain">In the handbook</span></p>
             <h3 className="pub-h3">See the whole 90 days</h3>
             <p>The roadmap puts dates on three milestones and tracks the checklist items behind each one.</p>
-            <Link className="pub-link" href="/#how-it-works">See the roadmap</Link>
+            <Link className="pub-link" href="#how-it-works">See the three phases below</Link>
           </article>
         </div>
+        <SignedInSwitch signedIn={null} signedOut={<ToolsCta />} />
+        <Inside />
       </div>
     </section>
+  );
+}
+
+/* A conversion point at the moment the tools have just shown what the handbook does. Visitors only: a signed-in reader already has the way in at the top. */
+function ToolsCta() {
+  return (
+    <div className="pub-card pub-cta-band">
+      <div>
+        <p className="pub-h3">Try the first tools with your own numbers.</p>
+        <p>The sample lesson is free and needs no sign-up.</p>
+      </div>
+      <div className="pub-actions">
+        <Link className="pub-btn pub-btn-primary" href="/preview">Try a sample lesson</Link>
+        <Link className="pub-btn pub-btn-secondary" href="#start">Get the free chapters</Link>
+      </div>
+    </div>
+  );
+}
+
+/* 6. What is inside. The counts come from the page list, so they follow the handbook. */
+const CHAPTER_COUNT = PAGES.filter(p => p.id.startsWith('ch')).length;
+const APPENDIX_COUNT = PAGES.filter(p => p.id.startsWith('app-')).length;
+
+function Inside() {
+  return (
+    <div className="pub-inside" id="included">
+      <h3 className="pub-h3">Everything inside</h3>
+      <p>
+        {CHAPTER_COUNT} chapters in a fixed order, each ending with an exercise and a short checkpoint, plus an overview, a 90-day plan and {APPENDIX_COUNT} appendices.
+        Search, a glossary and print-friendly pages come with it. Progress is saved on your device, with a file you can download to back it up or move devices,
+        and light, dark and text size settings are built in.
+      </p>
+      <details className="pub-details">
+        <summary>Every chapter and appendix</summary>
+        <div className="pub-details-body">
+          <ol>{PAGES.map(p => <li key={p.id}>{p.label}</li>)}</ol>
+        </div>
+      </details>
+      <ToolIndex />
+    </div>
   );
 }
 
@@ -286,66 +327,6 @@ function NinetyDays() {
         <p className="pub-small" style={{ marginTop: 16 }}>
           These are planning targets from Chapter 12, not predictions. Closings usually follow in the second 90 days, and income lags the work by roughly 60 to 120 days.
         </p>
-      </div>
-    </section>
-  );
-}
-
-/* 6. What is included */
-const CHAPTER_NAV = NAV.flatMap(g => g.pages);
-
-function Included() {
-  return (
-    <section className="pub-section" id="included" aria-labelledby="includedTitle">
-      <div className="pub-wrap">
-        <div className="pub-section-head">
-          <h2 id="includedTitle" className="pub-h2">What is inside.</h2>
-          <p>One handbook, organized around three jobs: find conversations, nurture leads on a plan, and keep clients so they send you the next ones.</p>
-        </div>
-        <div className="pub-grid four pub-included">
-          <div>
-            <h3 className="pub-h3">Read</h3>
-            <ul role="list">
-              <li>13 chapters in a fixed order, each ending with an exercise and a short checkpoint</li>
-              <li>An overview and a 90-day plan</li>
-              <li>Six appendices: scorecard, follow-up starter kit, CRM checklist, glossary, tools index and links</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="pub-h3">Do</h3>
-            <ul role="list">
-              <li>Income goal calculator and lead source comparison</li>
-              <li>Weekly time-block planner with calendar export</li>
-              <li>CRM setup checklists and a weekly activity scorecard</li>
-              <li>Pipeline value calculator and post-close scheduler</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="pub-h3">Practice</h3>
-            <ul role="list">
-              <li>More than 20 word-for-word scripts with a practice mode</li>
-              <li>An objection trainer and a consultation lab</li>
-              <li>Qualifying and Fair Housing drills</li>
-              <li>Three multiple-choice questions and one fill-in per chapter</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="pub-h3">Keep track</h3>
-            <ul role="list">
-              <li>Chapters read and checklist progress, saved on your device</li>
-              <li>Search, a glossary and print-friendly pages</li>
-              <li>Download a progress file to back up or move devices</li>
-              <li>Light, dark and text size settings</li>
-            </ul>
-          </div>
-        </div>
-        <details className="pub-details">
-          <summary>Every chapter and appendix</summary>
-          <div className="pub-details-body">
-            <ol>{CHAPTER_NAV.map(p => <li key={p.id}>{p.label}</li>)}</ol>
-          </div>
-        </details>
-        <ToolIndex />
       </div>
     </section>
   );
@@ -480,7 +461,7 @@ function Final({ action }: { action: Action }) {
     </>
   );
   return (
-    <section className="pub-section pub-final" aria-labelledby="finalTitle">
+    <section className="pub-section pub-final" id="start" aria-labelledby="finalTitle">
       <div className="pub-wrap pub-narrow">
         <h2 id="finalTitle" className="pub-h2">Start with tomorrow morning.</h2>
         <p className="pub-lede" style={{ margin: '0 auto 24px' }}>Open the free chapters, set your daily number, and see whether this is the routine you want to follow for the next 90 days.</p>
