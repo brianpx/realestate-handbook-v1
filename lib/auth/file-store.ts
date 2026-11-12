@@ -262,18 +262,20 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   anonymise({ userId, email }: Anonymisation, audit: AuditStub) {
     return this.change(d => {
       const user = d.users.find(u => u.id === userId);
-      if (!user || user.status === 'deleted') return false;
+      if (!user || user.status === 'deleted') return null;
+      const avatarKey = user.avatarKey ?? null;
       const before = { status: user.status, role: user.role };
       user.status = 'deleted';
       user.role = 'reader';
       user.email = `deleted+${userId}@invalid.local`;
+      user.displayName = null;
       user.avatarKey = null;
       user.avatarUpdatedAt = null;
       d.memberships = d.memberships.filter(m => m.userId !== userId);
       d.sessions = d.sessions.filter(s => s.userId !== userId);
       d.tokens = d.tokens.filter(t => t.email !== email);
       FileAuthStore.log(d, audit, { table: 'users', id: userId }, before, { status: 'deleted', role: 'reader' });
-      return true;
+      return { avatarKey };
     });
   }
   appendAudit(entry: AuditEntry) { return this.change(d => { d.audit.push(auditIn({ ...entry, id: randomUUID() })); }); }

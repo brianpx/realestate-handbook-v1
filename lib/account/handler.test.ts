@@ -31,6 +31,7 @@ async function setup() {
   const avatarKey = newAvatarKey(user.id);
   await avatars.put(avatarKey, new Uint8Array([1]));
   await users.setAvatar(user.id, avatarKey, NOW);
+  await users.setDisplayName(user.id, 'Pat', NOW);
   await billingInfo.save(user.id, { companyName: 'Example LLC', taxIdType: 'us_ein', taxIdValue: '12-3456789' }, NOW);
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
@@ -98,12 +99,28 @@ describe('delete account', () => {
     expect(profiles.profiles).toHaveLength(0);
     expect(billingInfo.rows).toHaveLength(0);
     expect(avatars.objects.size).toBe(0);
-    expect(users.users[0]).toMatchObject({ avatarKey: null, avatarUpdatedAt: null });
+    expect(users.users[0]).toMatchObject({ displayName: null, avatarKey: null, avatarUpdatedAt: null });
     expect(access.grants).toHaveLength(1);
     expect(access.memberships).toHaveLength(0);
     const anonymised = access.audit.find(a => a.action === 'user.anonymize');
     expect(anonymised).toMatchObject({ actorKind: 'user', actorUserId: user.id, subjectTable: 'users', subjectId: user.id, before: { status: 'active', role: 'reader' }, after: { status: 'deleted', role: 'reader' } });
     expect(JSON.stringify(access.audit)).not.toContain(EMAIL);
+  });
+  it('deletes a picture uploaded between the read and the anonymise, and leaves the account active when the picture cannot be removed for want of storage', async () => {
+    const { users, access, avatars, deps, user, req } = await setup();
+    const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
+    expect(await handleDeleteAccount(req(body), { ...deps, avatars: null })).toEqual({ status: 303, headers: { Location: '/account?error=unavailable' } });
+    expect(users.users[0]!.status).toBe('active');
+
+    const real = access.anonymise.bind(access);
+    const late = newAvatarKey(user.id);
+    vi.spyOn(access, 'anonymise').mockImplementationOnce(async (...args) => {
+      await avatars.put(late, new Uint8Array([2]));
+      await users.setAvatar(user.id, late, NOW);
+      return real(...args);
+    });
+    expect((await handleDeleteAccount(req(body), deps)).headers?.Location).toBe('/goodbye');
+    expect(avatars.objects.size).toBe(0);
   });
   it('a deleted administrator no longer counts as one, so the bootstrap rule can run again', async () => {
     const { users, deps, user, req } = await setup();

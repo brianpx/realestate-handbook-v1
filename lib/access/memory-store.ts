@@ -69,11 +69,13 @@ export class MemoryAccessStore implements AccessStore {
   async anonymise({ userId, email }: Anonymisation, audit: AuditStub) {
     this.check();
     const user = this.linked?.users.users.find(u => u.id === userId);
-    if (!user || user.status === 'deleted') return false;
+    if (!user || user.status === 'deleted') return null;
+    const avatarKey = user.avatarKey;
     const before = { status: user.status, role: user.role };
     user.status = 'deleted';
     user.role = 'reader';
     user.email = `deleted+${userId}@invalid.local`;
+    user.displayName = null;
     user.avatarKey = null;
     user.avatarUpdatedAt = null;
     this.memberships = this.memberships.filter(m => m.userId !== userId);
@@ -82,7 +84,7 @@ export class MemoryAccessStore implements AccessStore {
       this.linked.auth.tokens = this.linked.auth.tokens.filter(t => t.email !== email);
     }
     this.log(audit, { table: 'users', id: userId }, before, { status: 'deleted', role: 'reader' });
-    return true;
+    return { avatarKey };
   }
   async appendAudit(entry: AuditEntry) { this.check(); this.audit.push({ ...entry, id: randomUUID() }); }
   async listAudit(subjectTable: string, subjectId: string) { this.check(); return this.audit.filter(a => a.subjectTable === subjectTable && a.subjectId === subjectId); }

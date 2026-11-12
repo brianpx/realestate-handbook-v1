@@ -53,18 +53,19 @@ describe('NeonAccessStore', () => {
     expect(saved).toEqual(rowToMembership(row));
   });
   it('locks the user before the atomic anonymisation statement that never carries the address into the audit row, and says whether anything changed', async () => {
-    const { sql, calls, transactions } = fakeSql([], [{ id: 'u' }], [], []);
+    const { sql, calls, transactions } = fakeSql([], [{ id: 'u', cleared_avatar_key: 'avatars/u/k.webp' }], [], []);
     const store = new NeonAccessStore(sql);
     const input = { userId: 'u', email: 'a@b.co', emailHash: 'h', at: NOW };
-    expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBe(true);
-    expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBe(false);
+    expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toEqual({ avatarKey: 'avatars/u/k.webp' });
+    expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBeNull();
     expect(transactions).toEqual([2, 2]);
     expect(calls[0]!.text).toBe('select id from users where id = ? for update');
     const { text, values } = calls[1]!;
     expect(text).toContain("where id = ? and status <> 'deleted'");
     expect(text).toContain("set status = 'deleted', role = 'reader'");
     expect(text).toContain("email = 'deleted+' || users.id || '@invalid.local'");
-    expect(text).toContain('avatar_key = null, avatar_updated_at = null');
+    expect(text).toContain('display_name = null, avatar_key = null, avatar_updated_at = null');
+    expect(text).toContain('before.avatar_key as cleared_avatar_key');
     expect(text).toContain('delete from memberships where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from sessions where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from auth_tokens where email = ? and exists (select 1 from before)');

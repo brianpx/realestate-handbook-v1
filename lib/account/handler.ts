@@ -66,14 +66,24 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     const parsed = deleteAccountSchema.safeParse({ confirmEmail: new URLSearchParams(req.body).get('confirmEmail') ?? '' });
     if (!parsed.success || parsed.data.confirmEmail !== email) return redirect(`${ACCOUNT_PATH}?error=confirm`);
 
+    // Without storage the picture's blob cannot be removed, so the account stays active rather than keep it.
+    if (avatarKey && !deps.avatars) return redirect(UNAVAILABLE);
     // Before anonymise, so a throw here leaves the account active. The Neon statement deletes the same rows.
     if (deps.profiles) await deps.profiles.deleteByUser(userId);
     if (deps.billingInfo) await deps.billingInfo.deleteByUser(userId);
-    if (deps.avatars && avatarKey) await deps.avatars.delete(avatarKey); // the statement below clears the key; the blob is not in the database
+    // the blob is not in the database, so it is deleted here; a picture uploaded since the read is deleted after anonymise
+    if (deps.avatars && avatarKey) await deps.avatars.delete(avatarKey);
     if (deps.leads) await deps.leads.deleteByEmail(email);
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));
     if (!done) return redirect(SIGN_IN, cleared); // deleted by a concurrent request a moment ago: nothing to say goodbye to
+    if (deps.avatars && done.avatarKey && done.avatarKey !== avatarKey) {
+      try {
+        await deps.avatars.delete(done.avatarKey);
+      } catch (err) {
+        console.error('account: avatar cleanup failed', err instanceof Error ? err.name : 'error'); // the account is gone either way
+      }
+    }
     return redirect(GOODBYE_PATH, cleared);
   } catch (err) {
     console.error('account: delete failed', err instanceof Error ? err.name : 'error');
