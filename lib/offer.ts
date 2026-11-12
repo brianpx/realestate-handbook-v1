@@ -42,12 +42,15 @@ const PRO_UPDATES = 'Everything in Basic, plus every new chapter, tool and scrip
 export const OFFER: {
   /** One sentence on how long access lasts (OD-23), shown on the pricing and updates pages. */
   accessTerm: string | null;
+  /** The access line without the Pro-only promise, for the hero's fine print, where the longer term would crowd the calls to action. */
+  accessSummary: string;
   /** What updates are included for both plans in one line (OD-20), shown beside it. */
   updatesTerm: string | null;
   /** The same terms by plan, for the pages that set them out one under the other. */
   updatesByPlan: { basic: string; pro: string };
 } = {
   accessTerm: 'Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.',
+  accessSummary: 'Lifetime access to edition 1.0 for one person, not transferable.',
   updatesTerm: `Basic: ${BASIC_UPDATES} Pro: ${PRO_UPDATES}`,
   updatesByPlan: { basic: BASIC_UPDATES, pro: PRO_UPDATES },
 };
