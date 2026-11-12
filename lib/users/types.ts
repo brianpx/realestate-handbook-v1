@@ -7,6 +7,9 @@ export type User = {
   id: string;
   email: string;
   emailVerifiedAt: Date | null;
+  /** Selected by findById only; the other reads leave them null. */
+  firstName?: string | null;
+  lastName?: string | null;
   role: Role;
   status: UserStatus;
   acceptedTermsVersion: string | null;

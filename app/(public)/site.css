@@ -45,6 +45,20 @@
 .pub-nav-cta svg { width: 18px; height: 18px; flex: none}
 .pub-menu-btn { display: none; margin-left: auto; flex: none; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; background: var(--color-surface); color: var(--pub-ink); border: 1px solid var(--color-subtle); border-radius: 8px; cursor: pointer}
 .pub-menu-btn svg { width: 22px; height: 22px}
+.pub-user { display: flex; align-items: center}
+.pub-account { display: none}
+.pub-account-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; padding: 0 4px; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--pub-body); text-align: left; text-decoration: none; cursor: pointer}
+.pub-account-link svg, .pub-account-gear svg { width: 18px; height: 18px; flex: none; stroke-width: 1.5; color: var(--color-ink-muted)}
+.pub-account-head { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--color-subtle)}
+.pub-account-who { display: flex; flex-direction: column; min-width: 0; flex: 1}
+.pub-account-who strong { color: var(--pub-ink); font-size: 15px; overflow-wrap: anywhere}
+.pub-account-who span { color: var(--color-ink-muted); font-size: 14px; overflow-wrap: anywhere}
+.pub-account-gear { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px}
+.pub-account-theme { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 4px; font-size: 15px; font-weight: 500; color: var(--pub-body)}
+.pub-theme-pill { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--color-subtle); border-radius: 999px}
+.pub-theme-pill button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--color-ink-muted); cursor: pointer}
+.pub-theme-pill button[aria-pressed="true"] { background: var(--color-accent-tint); color: var(--color-ink)}
+.pub-theme-pill svg { width: 16px; height: 16px; stroke-width: 1.5}
 /* 1100px, not the shared 900px: below it the four links and the button no longer fit beside the two-line title */
 @media (width <= 1100px) {
   .pub-header { --pub-header-h: 72px}
@@ -54,6 +68,8 @@
   .pub-nav.open { display: flex}
   .pub-nav a { min-height: 48px; padding: 0 4px}
   .pub-nav a.pub-nav-cta { margin-top: 8px; padding: 0 20px}
+  .pub-user { display: none}
+  .pub-account { display: block; margin-top: 8px; border-top: 1px solid var(--color-subtle)}
 }
 @media (width <= 420px) {
   .pub-brand { gap: 10px; font-size: 0.875rem; line-height: 1.125rem}

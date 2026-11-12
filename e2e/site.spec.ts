@@ -37,7 +37,26 @@ test.describe('public pages', () => {
     // the suite runs signed in: the hero welcomes the reader back instead of asking for the address again
     await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
     await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
-    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: /^Account menu for/ })).toBeVisible();
+    await expect(page.locator('.pub-nav-cta')).toHaveCount(0);
+  });
+
+  test('the header avatar opens the account menu, and Escape closes it and returns focus', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 800 });
+    await page.goto('/');
+    const avatar = page.getByRole('button', { name: /^Account menu for/ });
+    await avatar.click();
+    const menu = page.getByRole('menu');
+    await expect(menu).toContainText('reader@e2e.test');
+    for (const [name, href] of [['Feedback', '/support?topic=feedback'], ['Home Page', '/'], ['Help', '/support'], ['Docs', '/handbook'], ['Changelog', '/updates']] as const) {
+      await expect(menu.getByRole('menuitem', { name })).toHaveAttribute('href', href);
+    }
+    await menu.getByRole('menuitemradio', { name: 'Dark' }).click();
+    await expect(menu).toBeVisible();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(avatar).toBeFocused();
   });
 
   test.describe('signed out', () => {
@@ -260,7 +279,7 @@ test.describe('public pages', () => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto('/');
       const nav = page.getByRole('navigation', { name: 'Main' });
-      await expect(nav.getByRole('link', { name: 'Open handbook' })).toBeVisible();
+      await expect(nav.getByRole('button', { name: /^Account menu for/ })).toBeVisible();
       for (const link of await nav.getByRole('link').all()) {
         expect((await link.boundingBox())?.height).toBe(44); // a wrapped label would grow past the 44px target
         expect(await link.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);

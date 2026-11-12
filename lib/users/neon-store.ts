@@ -7,6 +7,7 @@ export function rowToUser(row: Record<string, unknown>): User {
     id: String(row.id),
     email: String(row.email),
     emailVerifiedAt: toDateOrNull(row.email_verified_at),
+    ...('first_name' in row ? { firstName: row.first_name === null ? null : String(row.first_name), lastName: row.last_name === null ? null : String(row.last_name) } : {}),
     role: row.role as Role,
     status: row.status as UserStatus,
     acceptedTermsVersion: row.accepted_terms_version === null || row.accepted_terms_version === undefined ? null : String(row.accepted_terms_version),
@@ -30,7 +31,7 @@ export class NeonUserStore implements UserStore {
 
   async findById(id: string) {
     const rows = await this.sql`
-      select id, email, email_verified_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
+      select id, email, first_name, last_name, email_verified_at, role, status, accepted_terms_version, accepted_terms_at, last_sign_in_at, created_at
       from users where id = ${id}`;
     return rows[0] ? rowToUser(rows[0]) : null;
   }
