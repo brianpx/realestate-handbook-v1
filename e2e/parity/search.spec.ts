@@ -120,8 +120,8 @@ test.describe('sidebar search', () => {
     await toggle.click();
     await expect(page.getByLabel('Search the handbook')).toHaveValue('');
     await expect(toggle).toHaveText('☰');
-    await expect(toggle).toHaveAttribute('aria-label', 'Table of contents');
-    await expect(toggle).toHaveAttribute('aria-controls', 'navList');
+    await expect(toggle).toHaveAttribute('aria-label', 'Handbook menu');
+    await expect(toggle).toHaveAttribute('aria-controls', 'sidebarBody');
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
     await expect(page.locator('#sidebar')).not.toHaveClass(/menu-open/);
   });

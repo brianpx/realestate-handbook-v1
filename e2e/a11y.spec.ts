@@ -132,7 +132,7 @@ test.describe('phone menu', () => {
   test('tapping the backdrop closes open search results and clears the box', async ({ page }) => {
     await page.goto('/handbook/ch1');
     const box = page.getByLabel('Search the handbook');
-    await box.fill('crm');
+    await box.fill('zzzq'); // no matches: the results are short, so the backdrop shows below them
     await expect(page.locator('html')).toHaveClass(/scroll-locked/);
     await page.locator('.menu-backdrop').click({ position: { x: 5, y: 700 } });
     await expect(page.locator('html')).not.toHaveClass(/scroll-locked/);
