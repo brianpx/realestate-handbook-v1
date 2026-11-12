@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { DisplayNameForm } from '@/components/account/DisplayNameForm';
 import { ProfileForm } from '@/components/account/ProfileForm';
+import { SettingsCard } from '@/components/account/SettingsCard';
 import { SavedProgress } from '@/components/handbook/AccountPanels';
+import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/shell/ProductCard';
 import { requireViewer } from '@/lib/auth/dal';
 import { sessionLive } from '@/lib/auth/session';
@@ -11,6 +14,7 @@ import { UPGRADE_PRODUCT_KEY, type BillingRecord } from '@/lib/billing/types';
 import { OWNER, purchaseOpen, upgradeFor } from '@/lib/offer';
 import { pageHref } from '@/lib/routes';
 import { tierById } from '@/lib/tiers';
+import { resolveDisplayName } from '@/lib/users/display-name';
 import { EMPTY_PROFILE, profileFields, type Profile } from '@/lib/users/profile';
 import { profileStoreFromEnv } from '@/lib/users/profile-store';
 
@@ -137,68 +141,92 @@ export default async function AccountPage({ searchParams }: Props) {
 
   const upgrade = upgradeFor(entitlement, user);
   const plan = entitlement.level === 'member' ? `${tierById(entitlement.tier).name} plan` : entitlement.level === 'preview' && entitlement.suspended ? 'Paused' : 'Free set';
+  const planCopy = (
+    <>
+      {entitlement.level === 'member' && <>Every chapter and appendix is open to you{entitlement.tier === 'pro' ? ', with every tool and the reading-plan coach' : ', with the five essential tools'}.</>}
+      {entitlement.level === 'preview' && entitlement.suspended && <>Your access is paused: the free chapters and this page stay open. {OWNER.supportEmail ? <>To ask about it, write to <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a>.</> : <>To ask about it, see <Link href="/support">the support page</Link>.</>}</>}
+      {entitlement.level === 'preview' && !entitlement.suspended && (
+        <>
+          You have the free set: <Link href={pageHref('pref')}>the overview</Link>, <Link href={pageHref('ch1')}>Chapter 1</Link> and <Link href={pageHref('ch7')}>Chapter 7</Link> in full.{' '}
+          {purchaseOpen() ? <><Link href="/pricing">See plans and buy</Link> to open the rest.</> : <>Purchase is not open yet; <Link href="/pricing">the pricing page</Link> says where things stand.</>}
+        </>
+      )}
+    </>
+  );
 
   return (
     <ProductCard>
       <p className="part-label">Account</p>
       <h1 className="hb-title">Account and saved progress</h1>
 
-      <h2 className="hb-h2">Who you are signed in as</h2>
-      <dl className="account-facts">
-        <div><dt>Email</dt><dd data-account-email>{user.email}</dd></div>
-        <div><dt>Account since</dt><dd>{day.format(user.createdAt)}</dd></div>
-        <div><dt>Last sign-in</dt><dd>{user.lastSignInAt ? `${moment.format(user.lastSignInAt)} UTC` : 'Not recorded'}</dd></div>
-        <div><dt>Your plan</dt><dd data-account-plan>{plan}</dd></div>
-      </dl>
-      <p>
-        {entitlement.level === 'member' && <>Every chapter and appendix is open to you{entitlement.tier === 'pro' ? ', with every tool and the reading-plan coach' : ', with the five essential tools'}.</>}
-        {entitlement.level === 'preview' && entitlement.suspended && <>Your access is paused: the free chapters and this page stay open. {OWNER.supportEmail ? <>To ask about it, write to <a href={`mailto:${OWNER.supportEmail}`}>{OWNER.supportEmail}</a>.</> : <>To ask about it, see <Link href="/support">the support page</Link>.</>}</>}
-        {entitlement.level === 'preview' && !entitlement.suspended && (
-          <>
-            You have the free set: <Link href={pageHref('pref')}>the overview</Link>, <Link href={pageHref('ch1')}>Chapter 1</Link> and <Link href={pageHref('ch7')}>Chapter 7</Link> in full.{' '}
-            {purchaseOpen() ? <><Link href="/pricing">See plans and buy</Link> to open the rest.</> : <>Purchase is not open yet; <Link href="/pricing">the pricing page</Link> says where things stand.</>}
-          </>
+      <DisplayNameForm initial={user.displayName} placeholder={resolveDisplayName(user)} />
+
+      <SettingsCard
+        id="email"
+        title="Email"
+        description="The address you sign in with. We send your sign-in link here."
+        footer="Emails must be verified to be able to log in with them."
+      >
+        <div className="flex flex-wrap items-center gap-2 rounded-[6px] border border-border px-3 py-2.5">
+          <span className="min-w-0 break-all font-medium" data-account-email>{user.email}</span>
+          {user.emailVerifiedAt && <Badge variant="ghost" className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">Verified</Badge>}
+          <Badge variant="ghost" className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">Primary</Badge>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard id="plan" title="Your plan" description={planCopy}>
+        <dl className="account-facts">
+          <div><dt>Account since</dt><dd>{day.format(user.createdAt)}</dd></div>
+          <div><dt>Last sign-in</dt><dd>{user.lastSignInAt ? `${moment.format(user.lastSignInAt)} UTC` : 'Not recorded'}</dd></div>
+          <div><dt>Your plan</dt><dd data-account-plan>{plan}</dd></div>
+        </dl>
+        {upgrade && (
+          <p data-upgrade-offer className="m-0">
+            Want the reading-plan coach and every tool? <a href={upgrade.href} rel="noopener" data-upgrade>Upgrade to Pro for {upgrade.price}</a>: you pay only the difference from Basic, once.
+          </p>
         )}
-      </p>
-      {upgrade && (
-        <p data-upgrade-offer>
-          Want the reading-plan coach and every tool? <a href={upgrade.href} rel="noopener" data-upgrade>Upgrade to Pro for {upgrade.price}</a>: you pay only the difference from Basic, once.
-        </p>
-      )}
+        <PurchasePanel purchases={purchases} />
+      </SettingsCard>
 
-      <PurchasePanel purchases={purchases} />
+      <SettingsCard
+        id="profile"
+        title="Realtor profile"
+        description="Where you practice and how far along you are, if you care to say: it lets the handbook and its tools speak to your situation later on. Every field is optional, nothing here is shared, and it is yours to change or clear at any time. Your license and any REALTOR® membership are separate facts; neither is assumed from the other."
+      >
+        {loaded.kind === 'none' && <p className="setup-hint m-0">Profile editing needs the account database, which this setup does not have.</p>}
+        {loaded.kind === 'failed' && <p className="setup-error m-0" role="alert">Your profile could not be loaded just now. Reload the page to try again.</p>}
+        {loaded.kind === 'ok' && <ProfileForm accountId={user.id} initial={loaded.profile ? profileFields(loaded.profile) : EMPTY_PROFILE} updatedAt={loaded.profile?.updatedAt.toISOString() ?? null} />}
+      </SettingsCard>
 
-      <h2 className="hb-h2" id="profile">Your profile</h2>
-      <p>
-        Where you practice and how far along you are, if you care to say: it lets the handbook and its tools speak to your situation later on. Every field is optional, nothing here is shared, and it is yours to change or clear at any time.
-        Your license and any REALTOR® membership are separate facts; neither is assumed from the other.
-      </p>
-      {loaded.kind === 'none' && <p className="setup-hint">Profile editing needs the account database, which this setup does not have.</p>}
-      {loaded.kind === 'failed' && <p className="setup-error" role="alert">Your profile could not be loaded just now. Reload the page to try again.</p>}
-      {loaded.kind === 'ok' && <ProfileForm accountId={user.id} initial={loaded.profile ? profileFields(loaded.profile) : EMPTY_PROFILE} updatedAt={loaded.profile?.updatedAt.toISOString() ?? null} />}
+      <SettingsCard
+        id="sessions"
+        title="Where you are signed in"
+        description={`${liveSessions === 1 ? 'This is the only browser signed in to your account.' : `Your account is signed in on ${liveSessions} browsers or devices, this one included.`} A sign-in lasts 90 days from your last visit, or until you sign out.`}
+        footer="Ends every sign-in, this one too. You get a fresh link by email next time."
+        form={{ method: 'post', action: '/api/account/sign-out-all' }}
+        action={<button type="submit" className="btn-nav btn-secondary">Sign out everywhere</button>}
+      >
+        {error === 'unavailable' && <p className="setup-error m-0" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
+      </SettingsCard>
 
-      <h2 className="hb-h2" id="sessions">Where you are signed in</h2>
-      <p>{liveSessions === 1 ? 'This is the only browser signed in to your account.' : `Your account is signed in on ${liveSessions} browsers or devices, this one included.`} A sign-in lasts 90 days from your last visit, or until you sign out.</p>
-      {error === 'unavailable' && <p className="setup-error" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
-      <form method="post" action="/api/account/sign-out-all" className="account-form">
-        <button type="submit" className="btn-nav btn-secondary">Sign out everywhere</button>
-        <span className="setup-hint">Ends every sign-in, this one too. You get a fresh link by email next time.</span>
-      </form>
+      <SettingsCard id="saved-progress" title="Saved progress" description="What this browser remembers, and how to back it up.">
+        <SavedProgress />
+      </SettingsCard>
 
-      <SavedProgress />
-
-      <h2 className="hb-h2" id="delete">Delete your account</h2>
-      <p>
-        Deleting removes your account, your profile and every sign-in, and then removes your entry from the mailing list (if that last step fails, write to us). Purchase records, if any, are kept for seven years for accounting, with no address on them.
-        What you saved while reading is only in this browser, so clear this site's data there as well if you want it gone.
-      </p>
-      {error === 'unavailable' && <p className="setup-error" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
-      {error === 'confirm' && <p className="setup-error" role="alert">The address you typed did not match the one on this account. Nothing was deleted.</p>}
-      <form method="post" action="/api/account/delete" className="account-form account-danger">
-        <label htmlFor="confirmEmail">Type your email address to confirm</label>
-        <input id="confirmEmail" name="confirmEmail" type="email" autoComplete="off" inputMode="email" required className="account-input" />
-        <button type="submit" className="btn-nav btn-secondary">Delete my account</button>
-      </form>
+      <SettingsCard
+        id="delete"
+        tone="danger"
+        title="Delete your account"
+        description="Deleting removes your account, your profile and every sign-in, and then removes your entry from the mailing list (if that last step fails, write to us). Purchase records, if any, are kept for seven years for accounting, with no address on them. What you saved while reading is only in this browser, so clear this site's data there as well if you want it gone."
+        footer="This cannot be undone."
+        form={{ method: 'post', action: '/api/account/delete' }}
+        action={<button type="submit" className="inline-flex min-h-9 items-center justify-center rounded-[6px] bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-700 dark:hover:bg-red-600">Delete my account</button>}
+      >
+        {error === 'unavailable' && <p className="setup-error m-0" role="alert">That did not go through. Nothing was changed. Please try again in a moment.</p>}
+        {error === 'confirm' && <p className="setup-error m-0" role="alert">The address you typed did not match the one on this account. Nothing was deleted.</p>}
+        <label htmlFor="confirmEmail" className="font-semibold">Type your email address to confirm</label>
+        <input id="confirmEmail" name="confirmEmail" type="email" autoComplete="off" inputMode="email" required className="account-input max-w-sm" />
+      </SettingsCard>
 
       <h2 className="hb-h2">Recovering your place</h2>
       <ul>

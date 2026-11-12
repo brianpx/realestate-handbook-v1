@@ -246,7 +246,7 @@ export class FileBillingStore implements BillingStore {
       const existing = users.map(reviveUser).find(u => u?.email === email);
       if (existing) return existing;
       const user: User = {
-        id: randomUUID(), email, emailVerifiedAt: null, role: 'reader', status: 'active',
+        id: randomUUID(), email, emailVerifiedAt: null, firstName: null, lastName: null, displayName: null, role: 'reader', status: 'active',
         acceptedTermsVersion: null, acceptedTermsAt: null, lastSignInAt: null, createdAt: at,
       };
       users.push(freezeUser(user));
@@ -478,7 +478,8 @@ function reviveUser(value: unknown): User | null {
   if (!createdAt) return null;
   return {
     id: value.id, email: value.email, role: value.role, status: value.status, createdAt,
-    emailVerifiedAt: dateOf(value.emailVerifiedAt), acceptedTermsVersion: text(value.acceptedTermsVersion),
+    emailVerifiedAt: dateOf(value.emailVerifiedAt), firstName: text(value.firstName), lastName: text(value.lastName), displayName: text(value.displayName),
+    acceptedTermsVersion: text(value.acceptedTermsVersion),
     acceptedTermsAt: dateOf(value.acceptedTermsAt), lastSignInAt: dateOf(value.lastSignInAt),
   };
 }

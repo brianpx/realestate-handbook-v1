@@ -32,7 +32,8 @@ const LOCK_STALE_MS = 5000;
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 const date = (s: string | null): Date | null => (s ? new Date(s) : null);
-const userOut = (u: Iso<User>): User => ({ ...u, emailVerifiedAt: date(u.emailVerifiedAt), acceptedTermsAt: date(u.acceptedTermsAt), lastSignInAt: date(u.lastSignInAt), createdAt: new Date(u.createdAt) });
+// a file written before the name columns existed has no such keys; they read back as null
+const userOut = (u: Iso<User>): User => ({ ...u, firstName: u.firstName ?? null, lastName: u.lastName ?? null, displayName: u.displayName ?? null, emailVerifiedAt: date(u.emailVerifiedAt), acceptedTermsAt: date(u.acceptedTermsAt), lastSignInAt: date(u.lastSignInAt), createdAt: new Date(u.createdAt) });
 const userIn = (u: User): Iso<User> => ({ ...u, emailVerifiedAt: iso(u.emailVerifiedAt), acceptedTermsAt: iso(u.acceptedTermsAt), lastSignInAt: iso(u.lastSignInAt), createdAt: u.createdAt.toISOString() });
 const tokenOut = (t: Iso<AuthToken>): AuthToken => ({ ...t, expiresAt: new Date(t.expiresAt), consumedAt: date(t.consumedAt), createdAt: new Date(t.createdAt) });
 const sessionOut = (s: Iso<Session>): Session => ({ ...s, createdAt: new Date(s.createdAt), expiresAt: new Date(s.expiresAt), lastSeenAt: new Date(s.lastSeenAt), revokedAt: date(s.revokedAt) });
@@ -135,6 +136,7 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   countAdmins() { return this.view(d => d.users.filter(u => u.role === 'admin').length); }
   setRole(id: string, role: Role) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.role = role; }); }
   touchSignIn(id: string, at: Date) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.lastSignInAt = at.toISOString(); }); }
+  setDisplayName(id: string, displayName: string | null) { return this.change(d => { const u = d.users.find(x => x.id === id && x.status === 'active'); if (u) u.displayName = displayName; return Boolean(u); }); }
   list({ offset, limit }: Page) {
     return this.view(d => {
       const sorted = [...d.users].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));

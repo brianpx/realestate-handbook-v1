@@ -3,11 +3,11 @@ import { fakeSql } from '@/lib/db/fake-sql';
 import { NeonUserStore, rowToUser } from './neon-store';
 
 const AT = new Date('2026-11-08T12:00:00Z');
-const row = { id: 'u-1', email: 'a@b.co', email_verified_at: '2026-11-08T12:00:00.000Z', role: 'reader', status: 'active', accepted_terms_version: 'v1', accepted_terms_at: AT, last_sign_in_at: null, created_at: AT };
+const row = { id: 'u-1', email: 'a@b.co', email_verified_at: '2026-11-08T12:00:00.000Z', first_name: null, last_name: 'Realtor', display_name: 'Pat', role: 'reader', status: 'active', accepted_terms_version: 'v1', accepted_terms_at: AT, last_sign_in_at: null, created_at: AT };
 
 describe('NeonUserStore', () => {
   it('maps a row, taking dates as the driver gives them (Date or string)', () => {
-    expect(rowToUser(row)).toEqual({ id: 'u-1', email: 'a@b.co', emailVerifiedAt: AT, role: 'reader', status: 'active', acceptedTermsVersion: 'v1', acceptedTermsAt: AT, lastSignInAt: null, createdAt: AT });
+    expect(rowToUser(row)).toEqual({ id: 'u-1', email: 'a@b.co', emailVerifiedAt: AT, firstName: null, lastName: 'Realtor', displayName: 'Pat', role: 'reader', status: 'active', acceptedTermsVersion: 'v1', acceptedTermsAt: AT, lastSignInAt: null, createdAt: AT });
   });
   it('upserts in one statement with the values bound, and reads created from xmax', async () => {
     const { sql, calls } = fakeSql([{ ...row, created: true }]);
@@ -40,6 +40,13 @@ describe('NeonUserStore', () => {
     await store.touchSignIn('u-1', AT);
     expect(calls[1]).toEqual({ text: 'update users set role = ?, updated_at = ? where id = ?', values: ['admin', AT.toISOString(), 'u-1'] });
     expect(calls[2]!.values).toEqual([AT.toISOString(), AT.toISOString(), 'u-1']);
+  });
+  it('sets the display name for an active user and says whether a row changed', async () => {
+    const { sql, calls } = fakeSql([{ id: 'u-1' }], []);
+    const store = new NeonUserStore(sql);
+    expect(await store.setDisplayName('u-1', 'Pat', AT)).toBe(true);
+    expect(await store.setDisplayName('gone', 'Pat', AT)).toBe(false);
+    expect(calls[0]).toEqual({ text: expect.stringContaining("where id = ? and status = 'active'"), values: ['Pat', AT.toISOString(), 'u-1'] });
   });
   it('lists a page with its total in one round trip, and finds a set of ids without a query for none', async () => {
     const { sql, calls, transactions } = fakeSql([{ n: 7 }], [row], [row]);

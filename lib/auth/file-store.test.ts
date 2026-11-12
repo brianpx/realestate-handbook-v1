@@ -76,6 +76,15 @@ describe('FileAuthStore', () => {
     expect(await store.countAdmins()).toBe(1);
     expect((await store.findById(user.id))?.lastSignInAt).toEqual(hours(1));
   });
+  it('sets and clears a display name for an active user only', async () => {
+    const store = new FileAuthStore(file);
+    const { user } = await store.upsertVerified({ email: 'a@b.co', termsVersion: 'v1', at: NOW });
+    expect(await store.setDisplayName(user.id, 'Pat')).toBe(true);
+    expect((await store.findById(user.id))?.displayName).toBe('Pat');
+    expect(await store.setDisplayName(user.id, null)).toBe(true);
+    expect((await store.findById(user.id))?.displayName).toBeNull();
+    expect(await store.setDisplayName('missing', 'Pat')).toBe(false);
+  });
 });
 
 describe('authStoresFromEnv', () => {

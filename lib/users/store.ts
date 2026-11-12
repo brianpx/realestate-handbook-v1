@@ -18,6 +18,8 @@ export interface UserStore {
   countAdmins(): Promise<number>;
   setRole(id: string, role: Role, at: Date): Promise<void>;
   touchSignIn(id: string, at: Date): Promise<void>;
+  /** Sets (or, with null, clears) the name the reader chose; false when no active user has that id. */
+  setDisplayName(id: string, displayName: string | null, at: Date): Promise<boolean>;
   /** Newest first, with the count over every row, for the admin list. */
   list(page: Page): Promise<{ users: User[]; total: number }>;
   /** The rows for a set of ids, in no particular order; unknown ids are simply absent (the audit list resolves actors). */
@@ -28,6 +30,9 @@ export const newUser = (input: VerifiedSignIn): User => ({
   id: randomUUID(),
   email: input.email,
   emailVerifiedAt: input.at,
+  firstName: null,
+  lastName: null,
+  displayName: null,
   role: 'reader',
   status: 'active',
   acceptedTermsVersion: input.termsVersion,
@@ -67,6 +72,12 @@ export class MemoryUserStore implements UserStore {
   async countAdmins() { this.check(); return this.users.filter(u => u.role === 'admin').length; }
   async setRole(id: string, role: Role) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.role = role; }
   async touchSignIn(id: string, at: Date) { this.check(); const u = this.users.find(x => x.id === id); if (u) u.lastSignInAt = at; }
+  async setDisplayName(id: string, displayName: string | null) {
+    this.check();
+    const u = this.users.find(x => x.id === id && x.status === 'active');
+    if (u) u.displayName = displayName;
+    return Boolean(u);
+  }
   async list({ offset, limit }: Page) {
     this.check();
     const sorted = [...this.users].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
