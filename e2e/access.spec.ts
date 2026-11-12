@@ -7,7 +7,9 @@ import { BASE_URL } from './target';
 // layer: a grant taken away shows the upsell card on the member's very next request, session untouched.
 const VIDEO = '/api/media/downloads/The_Blueprint_for_New_Real_Estate_Agents.mp4';
 const AUDIO = '/api/media/audio/objection-just-looking-role-play.mp3';
+const PDF = '/api/media/downloads/Finding-Nurturing-and-Keeping-Clients.pdf';
 const upsell = (page: import('@playwright/test').Page) => page.locator('[data-upsell]');
+const pdfLink = (page: import('@playwright/test').Page) => page.getByRole('link', { name: 'Download the book as a PDF' });
 
 test.describe('a preview reader (signed in, no grant)', () => {
   test.use({ storageState: signedInState([], PREVIEW_SESSION_ID) });
@@ -88,6 +90,14 @@ test.describe('a preview reader (signed in, no grant)', () => {
     expect((await request.get('/api/media/audio/nope.mp3')).status()).toBe(404);
   });
 
+  test('does not get the Pro-only book PDF, and the overview page does not offer it', async ({ page, request }) => {
+    await page.goto('/handbook/pref');
+    await expect(page.locator('article.chapter-body')).toBeVisible();
+    await expect(pdfLink(page)).toHaveCount(0);
+    await expect(page.getByText('Prefer paper?')).toHaveCount(0);
+    expect((await request.get(PDF)).status()).toBe(403);
+  });
+
   test('the account page shows the free set and no admin', async ({ page }) => {
     await page.goto('/account');
     await expect(page.locator('[data-account-plan]')).toHaveText('Free set');
@@ -108,6 +118,7 @@ test.describe('signed out', () => {
   test('the media route refuses without a session', async ({ request }) => {
     expect((await request.get(VIDEO)).status()).toBe(401);
     expect((await request.get(AUDIO)).status()).toBe(401);
+    expect((await request.get(PDF)).status()).toBe(401);
   });
 });
 
@@ -120,6 +131,17 @@ test.describe('members', () => {
     expect((await request.head(AUDIO)).status()).toBe(200);
     await page.goto('/account');
     await expect(page.locator('[data-account-plan]')).toHaveText('Pro plan');
+  });
+
+  test('the seeded Pro member sees the book PDF link on the overview and downloads the file', async ({ page, request }) => {
+    await page.goto('/handbook/pref');
+    const link = pdfLink(page);
+    await expect(link).toHaveAttribute('href', PDF);
+    const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+    expect(download.suggestedFilename()).toBe('Finding-Nurturing-and-Keeping-Clients.pdf');
+    const res = await request.get(PDF);
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toBe('application/pdf');
   });
 
   test('a Basic member reads every chapter but meets a Pro note where a non-essential tool would be', async ({ browser }) => {
@@ -135,6 +157,10 @@ test.describe('members', () => {
     await expect(page.locator('[data-upsell]')).toHaveAttribute('data-upsell', 'coach');
     await expect(page.getByText('Your plan is Basic')).toBeVisible();
     await expect(page.locator('#sidebar a[data-page="plan"] .nav-lock')).toHaveText(/Pro/);
+    await page.goto('/handbook/pref');
+    await expect(page.locator('article.chapter-body')).toBeVisible();
+    await expect(pdfLink(page)).toHaveCount(0);
+    expect((await context.request.get(PDF)).status()).toBe(403);
     await context.close();
   });
 
