@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { COACH_ENABLED } from '@/lib/coach/enabled';
 import { BOOK_TITLE, NAV } from '@/lib/pages';
 import { HANDBOOK, pageHref, pageIdFromPath } from '@/lib/routes';
@@ -50,6 +50,9 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
   const lockedScrollY = useRef(0);
   const releaseSwipes = useRef<(() => void) | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Parts of the book start folded except the one holding the current page, which cannot be folded while it is current.
+  const currentPart = NAV.find(group => group.pages.some(page => page.id === current))?.part ?? null;
+  const [unfolded, setUnfolded] = useState<Readonly<Record<string, boolean>>>({});
   // true while search results are open; they pin the page like the menu does and the menu button closes them
   const [searching, setSearching] = useState(false);
   const searchApi = useRef<SearchApi>(null);
@@ -217,6 +220,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     if (heading) {
       heading.tabIndex = -1;
       heading.focus({ preventScroll: true });
+      return; // a focused heading is announced as it is; the status line would say the page name twice
     }
     const region = document.getElementById('pageStatus');
     const current = document.querySelector('.nav-item.active:not([data-page="tools"])')?.cloneNode(true) as HTMLElement | undefined;
@@ -280,8 +284,18 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
               <ProgressItem />
               <ProductLinks current={current} locked={locked} />
               {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}
-              {NAV.map(group => (
-                <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} locked={locked} />
+              {NAV.map((group, index) => (
+                <SectionGroup
+                  key={group.part ?? 'top'}
+                  group={group}
+                  index={index}
+                  current={current}
+                  read={read}
+                  locked={locked}
+                  here={group.part === currentPart}
+                  open={group.part === null || group.part === currentPart || unfolded[group.part] === true}
+                  onToggle={() => { if (group.part && group.part !== currentPart) setUnfolded(u => ({ ...u, [group.part!]: !u[group.part!] })); }}
+                />
               ))}
               <HelpLinks current={current} />
             </ul>
@@ -324,10 +338,19 @@ function LockBadge({ label }: { label: string | undefined }) {
   return <span className="nav-lock"><span aria-hidden="true">{label}</span><span className="visually-hidden"> ({label} only)</span></span>;
 }
 
+/** A titled group of rows: a heading and a nested list, so assistive technology hears the sections and their sizes. */
+function NavGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <li className="nav-group">
+      <h2 className="nav-section-title">{title}</h2>
+      <ul className="nav-group-list" role="list">{children}</ul>
+    </li>
+  );
+}
+
 function ProductLinks({ current, locked }: { current: string; locked: Locked }) {
   return (
-    <>
-      <li className="nav-section-title" role="presentation">GET STARTED</li>
+    <NavGroup title="GET STARTED">
       {PRODUCT_LINKS.map(link => {
         const active = link.id === current || (link.id === 'tools' && current === 'app-e');
         // the setup is part of the paid handbook; the tools row is Appendix E
@@ -338,26 +361,24 @@ function ProductLinks({ current, locked }: { current: string; locked: Locked }) 
           </li>
         );
       })}
-    </>
+    </NavGroup>
   );
 }
 
 // Progress and help live outside the book, on the public and account routes.
 function HelpLinks({ current }: { current: string }) {
   return (
-    <>
-      <li className="nav-section-title" role="presentation">PROGRESS AND HELP</li>
+    <NavGroup title="PROGRESS AND HELP">
       <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}>Account and saved progress</Link></li>
       <li><Link href="/support" className="nav-item" data-page="support">Support</Link></li>
       <li><Link href="/" className="nav-item" data-page="site">Back to the website</Link></li>
-    </>
+    </NavGroup>
   );
 }
 
 function StudyLinks({ current, locked }: { current: string; locked: Locked }) {
   return (
-    <>
-      <li className="nav-section-title" role="presentation">MY STUDY</li>
+    <NavGroup title="MY STUDY">
       {STUDY_LINKS.map(link => {
         const active = link.id === current;
         return (
@@ -368,32 +389,55 @@ function StudyLinks({ current, locked }: { current: string; locked: Locked }) {
           </li>
         );
       })}
-    </>
+    </NavGroup>
   );
 }
 
-function SectionGroup({ group, current, read, locked }: { group: (typeof NAV)[number]; current: string; read: Record<string, boolean>; locked: Locked }) {
+/**
+ * One part of the book. The first group has no part name and is always shown. A named part is a heading holding a
+ * disclosure button; folded, its list is `hidden`, so its links leave the tab order and the accessibility tree.
+ * The part that holds the current page stays open (`here`), so the reader never loses sight of where they are.
+ */
+function SectionGroup({ group, index, current, read, locked, here, open, onToggle }: {
+  group: (typeof NAV)[number];
+  index: number;
+  current: string;
+  read: Record<string, boolean>;
+  locked: Locked;
+  here: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const listId = `navGroup${index}`;
   return (
-    <>
-      {group.part && <li className="nav-section-title" role="presentation">{group.part}</li>}
-      {group.pages.map(page => {
-        const active = page.id === current;
-        const lock = locked[page.id];
-        return (
-          <li key={page.id}>
-            <Link
-              href={pageHref(page.id)}
-              className={`nav-item${active ? ' active' : ''}${read[page.id] && !lock ? ' read' : ''}${lock ? ' locked' : ''}`}
-              data-page={page.id}
-              aria-current={active ? 'page' : undefined}
-            >
-              {page.label}
-              {read[page.id] && !lock && <span className="nav-read"><span aria-hidden="true">✓</span><span className="visually-hidden"> (read)</span></span>}
-              <LockBadge label={lock} />
-            </Link>
-          </li>
-        );
-      })}
-    </>
+    <li className="nav-group">
+      {group.part && (
+        <h2 className="nav-section-title nav-part-title">
+          <button type="button" className="nav-section-toggle" aria-expanded={open} aria-controls={listId} aria-disabled={here || undefined} onClick={onToggle}>
+            {group.part}
+          </button>
+        </h2>
+      )}
+      <ul className="nav-group-list" role="list" id={listId} hidden={!open}>
+        {group.pages.map(page => {
+          const active = page.id === current;
+          const lock = locked[page.id];
+          return (
+            <li key={page.id}>
+              <Link
+                href={pageHref(page.id)}
+                className={`nav-item${active ? ' active' : ''}${read[page.id] && !lock ? ' read' : ''}${lock ? ' locked' : ''}`}
+                data-page={page.id}
+                aria-current={active ? 'page' : undefined}
+              >
+                {page.label}
+                {read[page.id] && !lock && <span className="nav-read"><span aria-hidden="true">✓</span><span className="visually-hidden"> (read)</span></span>}
+                <LockBadge label={lock} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </li>
   );
 }

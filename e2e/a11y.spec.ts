@@ -154,6 +154,7 @@ test.describe('phone menu', () => {
     await page.goto('/handbook/ch1');
     await page.locator('#menuToggle').click();
     await expect(page.locator('#sidebar')).toHaveClass(/menu-open/);
+    await page.getByRole('button', { name: /^PART II:/i }).click(); // Part II is folded while Chapter 1 is open
     await page.locator('#sidebar').getByRole('link', { name: /^2\. / }).click();
     await expect(page).toHaveURL(/\/handbook\/ch2$/);
     await expect(page.locator('#content-container h1')).toBeFocused();
@@ -249,15 +250,61 @@ test('the current row is back in view after search closes on the same page', asy
   })).toBe(true);
 });
 
-test('the page announcement leaves out the read tick', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('handbookState', JSON.stringify({ read: { ch2: true } })));
+test('moving to another page focuses its heading and does not also write the name to the status line', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/handbook/ch1');
-  const row = page.locator('#sidebar a[data-page="ch2"]');
-  await row.click();
+  await page.getByRole('button', { name: /^PART II:/i }).click();
+  await page.locator('#sidebar a[data-page="ch2"]').click();
   await expect(page).toHaveURL(/\/handbook\/ch2$/);
-  await expect(row.locator('.nav-read')).toHaveCount(1);
-  await expect(page.locator('#pageStatus')).toHaveText('2. Finding Clients');
+  await expect(page.locator('#content-container h1')).toBeFocused();
+  await page.waitForTimeout(300); // the status line used to be written 50ms after the move; give that write time to show
+  await expect(page.locator('#pageStatus')).toHaveText('');
+});
+
+test.describe('grouped navigation', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+  const partButton = (page: import('@playwright/test').Page, name: RegExp) => page.locator('#sidebar').getByRole('button', { name });
+
+  test('sections are headings over nested lists, and only the current part of the book starts open', async ({ page }) => {
+    await page.goto('/handbook/ch5');
+    const nav = page.getByRole('navigation', { name: 'Handbook' });
+    await expect(nav.getByRole('heading', { level: 2 })).toHaveCount(await nav.locator('li.nav-group > h2').count());
+    expect(await nav.locator('li.nav-group > h2').count()).toBeGreaterThan(8);
+    await expect(partButton(page, /^PART IV:/i)).toHaveAttribute('aria-expanded', 'true');
+    await expect(partButton(page, /^PART II:/i)).toHaveAttribute('aria-expanded', 'false');
+    await expect(nav.getByRole('link', { name: /^5\. Nurturing/ })).toBeVisible();
+    // a folded part's links are out of the accessibility tree, not just out of sight
+    await expect(nav.getByRole('link', { name: /^2\. Finding/ })).toHaveCount(0);
+    await expect(nav.locator('ul[role="list"] ul[role="list"]').first()).toBeAttached();
+  });
+
+  test('a part opens and folds from the keyboard, except the one holding the current page', async ({ page }) => {
+    await page.goto('/handbook/ch5');
+    const part2 = partButton(page, /^PART II:/i);
+    await part2.focus();
+    await page.keyboard.press('Enter');
+    await expect(part2).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#sidebar a[data-page="ch2"]')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(part2).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#sidebar a[data-page="ch2"]')).toBeHidden();
+
+    const here = partButton(page, /^PART IV:/i);
+    await expect(here).toHaveAttribute('aria-disabled', 'true');
+    await here.click({ force: true }); // Playwright waits forever on aria-disabled; a reader can still press it
+    await expect(here).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#sidebar a[data-page="ch5"]')).toBeVisible();
+  });
+
+  test('going to another part opens it, and the list is far shorter than all rows', async ({ page }) => {
+    await page.goto('/handbook/ch1');
+    const rows = () => page.locator('#navList a.nav-item:visible').count();
+    expect(await rows()).toBeLessThan(15);
+    await page.goto('/handbook/ch9');
+    await expect(partButton(page, /^PART VI:/i)).toHaveAttribute('aria-expanded', 'true');
+    await expect(partButton(page, /^PART I:/i)).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#sidebar a[data-page="ch9"]')).toBeVisible();
+  });
 });
 
 // M6 step 14: the sidebar names the product, and lists drawn without bullets keep their list role (Safari and

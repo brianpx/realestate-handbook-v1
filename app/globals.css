@@ -217,7 +217,22 @@
             color: var(--color-ink-muted);
             padding: 12px 20px 4px;
             font-weight: 700;
-            margin-bottom: 0}
+            margin: 0}
+
+        /* Rows sit in nested lists, one per titled group. A named part of the book is a heading holding a disclosure
+           button that spans the whole title row; folded, its list is hidden. */
+        .nav-group { list-style: none}
+        .nav-group-list { list-style: none; margin: 0; padding: 0}
+        .nav-part-title { padding: 0}
+        .nav-section-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; padding: 12px 20px 4px; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; color: inherit; background: none; border: 0; cursor: pointer}
+        .nav-section-toggle::after { content: ""; flex-shrink: 0; width: 6px; height: 6px; margin: -3px 2px 0 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.2s ease}
+        .nav-section-toggle[aria-expanded="true"]::after { margin-top: 3px; transform: rotate(-135deg)}
+        .nav-section-toggle:hover { color: var(--color-ink)}
+        .nav-section-toggle[aria-disabled="true"] { cursor: default}
+        .nav-section-toggle[aria-disabled="true"]::after { opacity: 0.35}
+        .nav-section-toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-link)}
+        @media (forced-colors: active) { .nav-section-toggle:focus-visible { outline: 3px solid; outline-offset: -3px} }
+        @media (prefers-reduced-motion: reduce) { .nav-section-toggle::after { transition: none} }
 
         .nav-item {
             display: block;
@@ -692,6 +707,7 @@
         @media (width > 900px) {
             /* the search box stays pinned and the results fill the rest of the column and scroll in it */
             #sidebar.searching .nav-search { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0}
+            #sidebar.searching .nav-search-field { flex: 1; min-height: 0; display: flex; flex-direction: column}
             #sidebar.searching .search-results { flex: 1; min-height: 0; max-height: none}
             #sidebar.searching .sidebar-body { flex: none}
         }
@@ -1157,7 +1173,7 @@
             .menu-close { display: block; position: sticky; bottom: 0; padding: 10px 12px; background: var(--color-canvas); border-top: 1px solid var(--color-line-strong); list-style: none}
             .menu-close button { width: 100%; min-height: 44px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: 6px; cursor: pointer}
             .nav-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px}
-            .nav-search .nav-search-input { flex: 1; min-width: 0; width: auto}
+            .nav-search-field { flex: 1; min-width: 0}
             .search-results { position: absolute; top: 100%; left: 0; right: 0; margin: 0; max-height: max(0px, calc(var(--overlay-height, 100dvh) - var(--overlay-top, 132px))); padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25); z-index: 100}
             #main-content { padding: 8px}
             .content-container { padding: 16px; border-radius: 8px}
