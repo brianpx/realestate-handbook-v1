@@ -73,7 +73,6 @@ function Hero({ action, open }: { action: Action; open: boolean }) {
       <div className="pub-hero-form">
         <SignupForm variant="hero" source="hero" buttonLabel="Send me the free chapters" />
       </div>
-      <p className="pub-trust">{TRUST_LINE}</p>
       <p className="pub-hero-links">
         <Link href="/preview">Try the sample lesson without an email</Link>
         <Link href="/pricing">Pricing and availability</Link>
@@ -475,7 +474,6 @@ function Final({ action }: { action: Action }) {
       <div className="pub-hero-form pub-final-form">
         <SignupForm variant="hero" source="final" buttonLabel="Send me the free chapters" />
       </div>
-      <p className="pub-trust">{TRUST_LINE}</p>
       <p className="pub-hero-links">
         <Link href="/preview">Try the sample lesson without an email</Link>
         <ActionLink action={action} className="" />

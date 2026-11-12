@@ -61,7 +61,6 @@ test.describe('signed out', () => {
     const email = fresh();
     await page.goto('/');
     await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/signin');
-    await expect(page.getByText('No password, no card. The link we email also signs you in next time.').first()).toBeVisible();
     const hero = page.locator('form[data-source="hero"]');
     await expect(hero).toHaveAttribute('data-ready', 'true'); // hydrated: the submit reaches React, not the server
     await hero.getByLabel('Email address').fill(email);

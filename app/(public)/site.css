@@ -408,5 +408,5 @@ html:has(.pub) { scroll-padding-top: 104px}
 .pub .pub-hero-side { display: grid; gap: 20px; align-content: start}
 .pub .pub-final-form { display: flex; justify-content: center}
 .pub .pub-final-form .signup-form, .pub .pub-final-form .signup-sent { text-align: left}
-.pub .pub-final .pub-trust, .pub .pub-final .pub-hero-links { justify-content: center; text-align: center}
+.pub .pub-final .pub-hero-links { justify-content: center; text-align: center}
 }

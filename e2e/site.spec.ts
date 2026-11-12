@@ -48,7 +48,6 @@ test.describe('public pages', () => {
       const hero = page.locator('form[data-source="hero"]');
       await expect(hero.getByRole('button', { name: 'Send me the free chapters' })).toBeVisible();
       await expect(hero.getByLabel(/Also email me occasional notes/)).not.toBeChecked(); // marketing is a separate choice (OD-22)
-      await expect(page.getByText('No password, no card. The link we email also signs you in next time.').first()).toBeVisible();
       await expect(page.getByRole('link', { name: 'Try the sample lesson without an email' }).first()).toHaveAttribute('href', '/preview');
       await expect(page.getByRole('link', { name: 'Pricing and availability' }).first()).toHaveAttribute('href', '/pricing');
       await expect(page.locator('form[data-source="final"]')).toBeVisible();
