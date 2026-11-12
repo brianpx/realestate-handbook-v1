@@ -75,7 +75,8 @@ test.describe('css', () => {
     await page.goto('/handbook/ch2');
     await expect(page.locator('.chapter-body th').first()).toHaveCSS('background-color', 'rgb(241, 245, 249)');
     // the product's own pages keep their look through the .content-container scope
-    await page.goto('/handbook');
+    // (the handbook home draws its own headings under .hb-home, so the account page stands in for the product cards)
+    await page.goto('/account');
     await expect(page.locator('.hb-h2').first()).toHaveCSS('border-bottom-width', '2px');
     await expect(page.locator('.content-container > p:not([class])').first()).toHaveCSS('margin-bottom', '16px');
     // the sidebar is outside both: no 8px gap between menu items

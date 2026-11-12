@@ -41,8 +41,11 @@ const OK: AuthReply = { status: 200, body: { ok: true } };
 const limited = (windowSeconds: number): AuthReply => reply(429, 'rate_limited', { retryAfterSeconds: windowSeconds }, { 'Retry-After': String(windowSeconds) });
 const redirect = (location: string, headers: Record<string, string | string[]> = {}): AuthReply => ({ status: 303, headers: { Location: location, ...headers } });
 const FAILED = `${VERIFY_PATH}?error=1`;
+const VERIFY_RATE = `${VERIFY_PATH}?error=rate`;
+const VERIFY_UNAVAILABLE = `${VERIFY_PATH}?error=unavailable`;
 
-// Every state-changing POST needs an allow-listed Origin; a missing one is a 403 (stricter than the lead form).
+// Every state-changing POST needs an allow-listed Origin (stricter than the lead form). Request-link and sign-out
+// answer 403; verify redirects, because that POST is a browser navigation.
 const originRefused = (req: AuthRequest, deps: AuthDeps) => !req.origin || !deps.allowedOrigins.includes(req.origin);
 
 /**
@@ -95,15 +98,17 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
  * path stored with the token.
  */
 export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
+  // A browser navigates here. JSON would render as a page, so failures redirect and do not clear a cookie.
   const origin = req.origin;
-  if (originRefused(req, deps) || origin === null) return reply(403, 'forbidden');
-  if (!deps.stores) return reply(503, 'unavailable');
-  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
+  if (originRefused(req, deps) || origin === null) return redirect(FAILED);
+  if (!deps.stores) return redirect(VERIFY_UNAVAILABLE);
+  if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(VERIFY_UNAVAILABLE);
   const { auth, users, access } = deps.stores;
   const now = deps.now();
   try {
     const verifyWindow = deps.limits.verify;
-    if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - verifyWindow.windowSeconds * 1000))) > verifyWindow.attempts) return limited(verifyWindow.windowSeconds);
+    // its own key under the same scope: sharing request-link's counter made every sign-in cost two of its five tries
+    if ((await auth.recordAndCount('ip', hashKey(`verify:${req.ip}`, deps.ipSalt), now, new Date(now.getTime() - verifyWindow.windowSeconds * 1000))) > verifyWindow.attempts) return redirect(VERIFY_RATE, { 'Retry-After': String(verifyWindow.windowSeconds) });
 
     const raw = new URLSearchParams(req.body).get('token');
     if (!isSecretShape(raw)) return redirect(FAILED);
@@ -138,7 +143,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeaders(isSecureRequest(req.url), sessionId) });
   } catch (err) {
     console.error('auth: verify failed', err instanceof Error ? err.name : 'error');
-    return reply(503, 'unavailable');
+    return redirect(VERIFY_UNAVAILABLE);
   }
 }
 

@@ -36,6 +36,14 @@ describe('NeonLeadStore', () => {
     expect(calls[0]!.text).toBe('update leads set confirmed_at = coalesce(confirmed_at, ?) where confirm_token_hash = ? and (confirmed_at is not null or confirm_token_expires_at > ?) returning id');
     expect(calls[0]!.values).toEqual([now.toISOString(), 't'.repeat(64), now.toISOString()]);
   });
+  it('unsubscribes in one statement that keeps the first time, and answers false for an unknown id', async () => {
+    const { sql, calls } = fake([{ id: 'u-1' }], []);
+    const store = new NeonLeadStore(sql);
+    const now = new Date('2026-11-02T13:00:00Z');
+    expect(await store.unsubscribe('u-1', now)).toBe(true);
+    expect(await store.unsubscribe('u-2', now)).toBe(false);
+    expect(calls[0]).toEqual({ text: 'update leads set unsubscribed_at = coalesce(unsubscribed_at, ?) where id = ? returning id', values: [now.toISOString(), 'u-1'] });
+  });
   it('records an attempt with the hash and time, and counts them within the window', async () => {
     const { sql, calls } = fake([], [{ n: 3 }]);
     const store = new NeonLeadStore(sql);
@@ -93,16 +101,33 @@ describe('NeonLeadStore', () => {
   });
   it('lists leads newest first from one capped statement, with dates and a missing status mapped', async () => {
     const { sql, calls } = fake([
-      { id: 'u-2', email: 'b@b.co', source: 'gate', created_at: '2026-11-03T09:00:00Z', consent_version: 'v1', email_status: 'sent', confirmed_at: '2026-11-03T09:05:00Z' },
-      { id: 'u-1', email: 'a@b.co', source: 'gate', created_at: new Date('2026-11-02T12:00:00Z'), consent_version: 'v1', email_status: null, confirmed_at: null },
+      { id: 'u-2', email: 'b@b.co', source: 'gate', created_at: '2026-11-03T09:00:00Z', consent_version: 'v1', email_status: 'sent', confirmed_at: '2026-11-03T09:05:00Z', unsubscribed_at: '2026-11-04T10:00:00Z' },
+      { id: 'u-1', email: 'a@b.co', source: 'gate', created_at: new Date('2026-11-02T12:00:00Z'), consent_version: 'v1', email_status: null, confirmed_at: null, unsubscribed_at: null },
     ]);
     const rows = await new NeonLeadStore(sql).list();
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.text).toBe('select id, email, source, created_at, consent_version, email_status, confirmed_at from leads order by created_at desc limit ?');
+    expect(calls[0]!.text).toBe('select id, email, source, created_at, consent_version, email_status, confirmed_at, unsubscribed_at from leads order by created_at desc limit ?');
     expect(calls[0]!.values).toEqual([5000]);
     expect(rows).toEqual([
-      { id: 'u-2', email: 'b@b.co', source: 'gate', createdAt: new Date('2026-11-03T09:00:00Z'), consentVersion: 'v1', emailStatus: 'sent', confirmedAt: new Date('2026-11-03T09:05:00Z') },
-      { id: 'u-1', email: 'a@b.co', source: 'gate', createdAt: new Date('2026-11-02T12:00:00Z'), consentVersion: 'v1', emailStatus: null, confirmedAt: null },
+      { id: 'u-2', email: 'b@b.co', source: 'gate', createdAt: new Date('2026-11-03T09:00:00Z'), consentVersion: 'v1', emailStatus: 'sent', confirmedAt: new Date('2026-11-03T09:05:00Z'), unsubscribedAt: new Date('2026-11-04T10:00:00Z') },
+      { id: 'u-1', email: 'a@b.co', source: 'gate', createdAt: new Date('2026-11-02T12:00:00Z'), consentVersion: 'v1', emailStatus: null, confirmedAt: null, unsubscribedAt: null },
     ]);
+  });
+  it('claims confirmation delivery atomically only while unconfirmed and retryable', async () => {
+    const { sql, calls } = fake([{ id: 'u-1' }], []);
+    const store = new NeonLeadStore(sql);
+    const at = new Date('2026-11-10T12:00:00Z');
+    const retryBefore = new Date('2026-11-10T11:59:00Z');
+    expect(await store.claimConfirmation('u-1', 'new-hash', lead.confirmExpiresAt, at, retryBefore)).toBe(true);
+    expect(await store.claimConfirmation('u-1', 'other-hash', lead.confirmExpiresAt, at, retryBefore)).toBe(false);
+    expect(calls[0]!.text).toContain('where id = ? and confirmed_at is null');
+    expect(calls[0]!.text).toContain("email_status in ('failed', 'skipped') or confirm_token_expires_at <= ?");
+    expect(calls[0]!.text).toContain('confirm_delivery_started_at is null or confirm_delivery_started_at <= ?');
+    expect(calls[0]!.values).toEqual(['new-hash', lead.confirmExpiresAt.toISOString(), at.toISOString(), 'u-1', at.toISOString(), retryBefore.toISOString()]);
+  });
+  it('qualifies completion by token hash so an obsolete sender cannot change its successor', async () => {
+    const { sql, calls } = fake([]);
+    await new NeonLeadStore(sql).completeConfirmation('u-1', 'claim-hash', 'sent');
+    expect(calls[0]).toEqual({ text: 'update leads set email_status = ? where id = ? and confirm_token_hash = ?', values: ['sent', 'u-1', 'claim-hash'] });
   });
 });

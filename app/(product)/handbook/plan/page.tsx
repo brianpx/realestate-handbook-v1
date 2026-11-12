@@ -6,13 +6,14 @@ import { ProductCard } from '@/components/shell/ProductCard';
 import { coachOpen } from '@/lib/access/entitlement';
 import { requireViewer } from '@/lib/auth/dal';
 import { COACH_ENABLED } from '@/lib/coach/enabled';
+import { upgradeFor } from '@/lib/offer';
 
 export const metadata: Metadata = { title: 'My plan', alternates: { canonical: '/handbook/plan' } };
 
 export default async function Page() {
   const viewer = await requireViewer();
   if (!COACH_ENABLED) notFound();
-  if (!coachOpen(viewer.entitlement)) return <UpsellCard feature="coach" entitlement={viewer.entitlement} />;
+  if (!coachOpen(viewer.entitlement)) return <UpsellCard feature="coach" entitlement={viewer.entitlement} upgrade={upgradeFor(viewer.entitlement, viewer.user)} />;
   return (
     <ProductCard>
       <h1>My reading plan</h1>

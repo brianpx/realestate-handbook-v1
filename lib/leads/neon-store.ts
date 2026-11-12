@@ -4,7 +4,7 @@ import { LEAD_LIST_CAP, type EmailStatus, type Inserted, type LeadRow, type Lead
 
 // The production store: Postgres on Neon over its HTTP driver, so each call is one stateless request and
 // every server instance shares the same rate-limit counters. Tables are defined in db/migrations/001_leads.sql and
-// the confirmation columns in 004_leads_confirmation.sql.
+// the confirmation columns in 004_leads_confirmation.sql and the unsubscribe column in 008_leads_unsubscribe.sql.
 export type { Sql };
 
 // The column is checked in the database, so anything else can only be a null.
@@ -30,6 +30,22 @@ export class NeonLeadStore implements LeadStore {
     return { created: false, id: String(existing[0]?.id ?? ''), emailStatus: emailStatus(existing[0]?.email_status), confirmedAt: toDateOrNull(existing[0]?.confirmed_at) };
   }
 
+  async claimConfirmation(id: string, tokenHash: string, expiresAt: Date, at: Date, retryBefore: Date) {
+    // UPDATE rechecks its predicate after a competing row writer commits, so only one active claim wins.
+    const rows = await this.sql`
+      update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()},
+        email_status = null, confirm_delivery_started_at = ${at.toISOString()}
+      where id = ${id} and confirmed_at is null and (
+        email_status in ('failed', 'skipped') or confirm_token_expires_at <= ${at.toISOString()} or
+        (email_status is null and (confirm_delivery_started_at is null or confirm_delivery_started_at <= ${retryBefore.toISOString()}))
+      ) returning id`;
+    return rows.length > 0;
+  }
+
+  async completeConfirmation(id: string, tokenHash: string, status: EmailStatus) {
+    await this.sql`update leads set email_status = ${status} where id = ${id} and confirm_token_hash = ${tokenHash}`;
+  }
+
   async resetConfirmation(id: string, tokenHash: string, expiresAt: Date) {
     await this.sql`update leads set confirm_token_hash = ${tokenHash}, confirm_token_expires_at = ${expiresAt.toISOString()} where id = ${id}`;
   }
@@ -45,6 +61,12 @@ export class NeonLeadStore implements LeadStore {
       update leads set confirmed_at = coalesce(confirmed_at, ${nowIso})
       where confirm_token_hash = ${tokenHash} and (confirmed_at is not null or confirm_token_expires_at > ${nowIso})
       returning id`;
+    return rows.length > 0;
+  }
+
+  async unsubscribe(id: string, now: Date) {
+    // one statement: a second click keeps the first time, and no row back means the id is unknown
+    const rows = await this.sql`update leads set unsubscribed_at = coalesce(unsubscribed_at, ${now.toISOString()}) where id = ${id} returning id`;
     return rows.length > 0;
   }
 
@@ -86,7 +108,7 @@ export class NeonLeadStore implements LeadStore {
 
   async list(): Promise<LeadRow[]> {
     const rows = await this.sql`
-      select id, email, source, created_at, consent_version, email_status, confirmed_at from leads
+      select id, email, source, created_at, consent_version, email_status, confirmed_at, unsubscribed_at from leads
       order by created_at desc limit ${LEAD_LIST_CAP}`;
     return rows.map(r => ({
       id: String(r.id),
@@ -96,6 +118,7 @@ export class NeonLeadStore implements LeadStore {
       consentVersion: String(r.consent_version),
       emailStatus: emailStatus(r.email_status),
       confirmedAt: toDateOrNull(r.confirmed_at),
+      unsubscribedAt: toDateOrNull(r.unsubscribed_at),
     }));
   }
 

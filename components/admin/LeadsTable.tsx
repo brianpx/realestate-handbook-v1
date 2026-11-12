@@ -28,7 +28,7 @@ import type { LeadRow } from '@/lib/leads/store';
 import { cn } from '@/lib/utils';
 
 /** A LeadRow as it crosses from the server: the times as ISO strings, which also sort correctly as text. */
-export type SerializedLead = Omit<LeadRow, 'createdAt' | 'confirmedAt'> & { createdAt: string; confirmedAt: string | null };
+export type SerializedLead = Omit<LeadRow, 'createdAt' | 'confirmedAt' | 'unsubscribedAt'> & { createdAt: string; confirmedAt: string | null; unsubscribedAt: string | null };
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 const STATUS_LABEL: Record<NonNullable<LeadRow['emailStatus']> | 'pending', string> = { sent: 'sent', failed: 'failed', skipped: 'skipped', pending: 'pending' };
@@ -56,7 +56,7 @@ const columns: ColumnDef<SerializedLead>[] = [
       const q = value.toLowerCase();
       const { email, source } = row.original;
       // "failed" and "unconfirmed" find the addresses whose confirmation never went out or was never opened
-      return email.toLowerCase().includes(q) || source.toLowerCase().includes(q) || statusOf(row.original).includes(q) || (row.original.confirmedAt ? 'confirmed' : 'unconfirmed').includes(q);
+      return email.toLowerCase().includes(q) || source.toLowerCase().includes(q) || statusOf(row.original).includes(q) || (row.original.unsubscribedAt ? 'unsubscribed' : row.original.confirmedAt ? 'confirmed' : 'unconfirmed').includes(q);
     },
     cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
   },
@@ -76,7 +76,7 @@ const columns: ColumnDef<SerializedLead>[] = [
     // a string, so the sort puts the unconfirmed together instead of comparing null to a date
     accessorFn: lead => lead.confirmedAt ?? '',
     header: sortHeader('Confirmed'),
-    cell: ({ row }) => (row.original.confirmedAt ? <span className="tabular-nums">{formatWhen(row.original.confirmedAt)}</span> : <Badge variant="outline">not yet</Badge>),
+    cell: ({ row }) => (row.original.unsubscribedAt ? <Badge variant="outline">unsubscribed</Badge> : row.original.confirmedAt ? <span className="tabular-nums">{formatWhen(row.original.confirmedAt)}</span> : <Badge variant="outline">not yet</Badge>),
   },
   { accessorKey: 'consentVersion', header: sortHeader('Consent version'), cell: ({ row }) => <span className="text-muted-foreground">{row.original.consentVersion}</span> },
 ];
@@ -86,8 +86,8 @@ const ariaSort = (sorted: false | 'asc' | 'desc') => (sorted === 'asc' ? 'ascend
 // Built in the browser from the rows the admin is looking at, so a search narrows the file too.
 function downloadCsv(rows: SerializedLead[]) {
   const csv = toCsv([
-    ['email', 'source', 'signed_up', 'email_status', 'confirmed', 'consent_version'],
-    ...rows.map(r => [r.email, r.source, r.createdAt, statusOf(r), r.confirmedAt ?? '', r.consentVersion]),
+    ['email', 'source', 'signed_up', 'email_status', 'confirmed', 'unsubscribed', 'consent_version'],
+    ...rows.map(r => [r.email, r.source, r.createdAt, statusOf(r), r.confirmedAt ?? '', r.unsubscribedAt ?? '', r.consentVersion]),
   ]);
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');

@@ -209,13 +209,21 @@ describe('verify', () => {
       spy.mockRestore();
     }
   });
+  it('counts sign-ins apart from link requests, so a reader can sign in five times in ten minutes', async () => {
+    const t = setup();
+    for (let i = 0; i < REQUEST_LINK_LIMITS.ip.attempts; i++) {
+      expect((await t.request(body({ email: `r${i}@b.co` }))).status).toBe(200);
+      expect((await t.verify(t.rawToken(i))).status).toBe(303);
+    }
+    expect(t.auth.sessions).toHaveLength(REQUEST_LINK_LIMITS.ip.attempts);
+  });
   it('refuses a missing Origin and limits one connection to ten tries in ten minutes', async () => {
     const t = setup();
-    expect((await t.verify(newSecret(), { origin: null })).status).toBe(403);
+    expect(await t.verify(newSecret(), { origin: null })).toEqual({ status: 303, headers: { Location: '/auth/verify?error=1' } });
+    expect(await t.verify(newSecret(), { origin: 'https://evil.example' })).toEqual({ status: 303, headers: { Location: '/auth/verify?error=1' } });
     for (let i = 0; i < VERIFY_LIMIT.attempts; i++) expect((await t.verify(newSecret())).status).toBe(303);
     const eleventh = await t.verify(newSecret());
-    expect(eleventh.status).toBe(429);
-    expect(eleventh.headers).toEqual({ 'Retry-After': '600' });
+    expect(eleventh).toEqual({ status: 303, headers: { Location: '/auth/verify?error=rate', 'Retry-After': '600' } });
   });
   it('makes the first bootstrap address an administrator and stays inert once one exists', async () => {
     const t = setup({ bootstrapEmails: ['owner@example.com', 'second@example.com'] });
@@ -233,13 +241,16 @@ describe('verify', () => {
     expect(t.access.audit.map(a => [a.action, a.actorKind, a.subjectId])).toEqual([['bootstrap_admin', 'system', owner.id], ['grant.create', 'system', t.access.grants[0]!.id]]);
     expect(t.access.audit[0]).toMatchObject({ before: { role: 'reader' }, after: { role: 'admin' } });
   });
-  it('is a 503 when the store is missing or fails', async () => {
-    expect((await setup({ stores: null }).verify(newSecret())).status).toBe(503);
+  it('redirects to the unavailable card when the body is too large, the store is missing, or the store fails', async () => {
+    const unavailable = { status: 303, headers: { Location: '/auth/verify?error=unavailable' } };
+    expect(await setup({ stores: null }).verify(newSecret())).toEqual(unavailable);
     const t = setup();
+    const huge = await handleVerify({ url: `${ORIGIN}/api/auth/verify`, origin: ORIGIN, ip: '203.0.113.9', body: 'x'.repeat(5000) }, t.deps);
+    expect(huge).toEqual(unavailable);
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       t.auth.failWith = new Error('db down');
-      expect((await t.verify(newSecret())).status).toBe(503);
+      expect(await t.verify(newSecret())).toEqual(unavailable);
     } finally {
       spy.mockRestore();
     }

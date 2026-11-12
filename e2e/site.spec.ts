@@ -77,18 +77,20 @@ test.describe('public pages', () => {
     await expect(table.getByRole('button', { name: 'Not on sale yet' })).toHaveCount(2);
     await expect(table.locator('a[href^="https://"]')).toHaveCount(0);
     await expect(table.getByRole('link', { name: 'Try the sample lesson' })).toHaveAttribute('href', '/preview');
-    // the update and support rows carry the terms the owner published on 9 Nov 2026 (lib/offer.ts, OD-20, OD-23); a
-    // future edition is a separate purchase, so neither paid plan promises the next one
+    // the update and support rows carry the owner's terms (lib/offer.ts, OD-20, OD-23, 11 Nov 2026): both plans get
+    // corrections, only Pro is promised new chapters, tools and editions
     await expect(table.getByText('Not published yet')).toHaveCount(0);
-    await expect(table.getByText('Corrections and updates to this edition').first()).toBeVisible();
+    await expect(table.getByText('Corrections and improvements to edition 1.0').first()).toBeVisible();
+    await expect(table.getByText('Discount on a new edition').first()).toBeVisible();
     await expect(table.getByText('This edition and the next')).toHaveCount(0);
     // email support is the same plain cell on both paid plans: no priority tier was decided (decision log, 9 Nov)
     await expect(table.getByText('Priority')).toHaveCount(0);
     const terms = page.locator('section[aria-labelledby="termsTitle"]');
-    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, not transferable.');
+    await expect(terms).toContainText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.');
+    await expect(terms).toContainText('14 days from each purchase, for any reason');
     await expect(terms.getByRole('link', { name: 'support@findnurturekeep.com' })).toHaveAttribute('href', 'mailto:support@findnurturekeep.com');
     await expect(terms).toContainText('Price');
-    await expect(terms).toContainText('Not published yet'); // the price and the refund policy
+    await expect(terms).toContainText('Not published yet'); // the price
 
     await page.setViewportSize({ width: 390, height: 800 });
     await expect(table.getByRole('tab', { name: 'Basic' })).toHaveAttribute('aria-selected', 'true');
@@ -102,11 +104,23 @@ test.describe('public pages', () => {
   test('the hero calculator uses the Chapter 1 arithmetic and flags bad input', async ({ page }) => {
     await page.goto('/');
     const stats = page.locator('.pub-stats');
-    await expect(stats.locator('b')).toHaveText(['13', '16', '3']); // 3.25 a day rounds to 3
+    await expect(stats.locator('b')).toHaveText(['13', '16', '3–4']); // 3.25 a day is shown as a range
+    await expect(page.locator('.pub-device-note')).toContainText('48 working weeks of 5 days each');
+    const breakdown = page.locator('.pub-calc-details');
+    await expect(breakdown.locator('table')).toBeHidden();
+    const toggle = page.getByRole('button', { name: 'How it’s calculated' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(breakdown.locator('table')).toBeVisible();
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['13', '39', '780', '16.25', '3.25']);
+    await page.keyboard.press('Escape');
+    await expect(toggle).toBeFocused();
     await page.getByLabel('Yearly income goal').fill('120000');
-    await expect(stats.locator('b')).toHaveText(['19', '24', '5']); // 19 closings; 23.75 a week and 4.75 a day, rounded
+    await expect(stats.locator('b')).toHaveText(['19', '24', '4–5']); // 19 closings; 23.75 a week and 4.75 a day
+    await expect(breakdown.locator('tbody tr td:last-child')).toHaveText(['19', '57', '1,140', '23.75', '4.75']);
     await page.getByLabel('Yearly income goal').fill('');
     await expect(stats).toContainText('Enter both numbers');
+    await expect(breakdown).toHaveCount(0);
     // a signed-in reader is pointed at the chapter, not asked for an address
     await expect(page.locator('.pub-device-prompt').getByRole('link', { name: 'Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
     await expect(page.locator('form[data-source="calculator"]')).toHaveCount(0);
@@ -288,7 +302,7 @@ test.describe('public pages', () => {
     await expect(page.getByText('The postal address is synthetic temp address.')).toBeVisible();
     await expect(page.getByText('the legal name of the seller and a postal address')).toHaveCount(0);
     await page.goto('/updates');
-    await expect(page.getByText('Lifetime access to edition 1.0 for one person, not transferable.')).toBeVisible();
+    await expect(page.getByText('Lifetime access to edition 1.0 for one person, on their own devices; not transferable. Pro also covers later editions.')).toBeVisible();
   });
 
   // M7 step 7: the strictly necessary cookies are disclosed by name (lib/auth/cookie.ts), with no banner to go with them

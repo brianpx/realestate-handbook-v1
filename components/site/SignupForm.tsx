@@ -144,16 +144,21 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
       </div>}
       {sent ? (
         <div className={`signup-sent${page ? '' : ' signup-notice'}`} data-source={source} role={page ? undefined : 'region'} aria-labelledby={page ? undefined : `${id}-sent-title`}>
-          {page && <><span className="auth-mail"><MailIcon aria-hidden="true" /></span><p className="pub-eyebrow">Link sent</p></>}
-          {page ? <SentHeading className="pub-h1">Check your email</SentHeading> : <div className="signup-notice-header">
-            <span className="signup-notice-icon"><MailIcon aria-hidden="true" /></span>
-            <div>
-              <SentHeading className="pub-h3" id={`${id}-sent-title`}>Check your inbox.</SentHeading>
-              <p className="signup-notice-email">{sent.email}</p>
+          {page ? <>
+            <span className="auth-mail"><MailIcon aria-hidden="true" /></span><p className="pub-eyebrow">Link sent</p>
+            <SentHeading className="pub-h1">Check your email</SentHeading>
+            <p>We sent a sign-in link to <strong>{sent.email}</strong>.</p><p>Open it on this device to go straight to the handbook. The link works once and expires after {TOKEN_TTL_SECONDS / 60} minutes.</p>
+          </> : <>
+            <div className="signup-notice-header">
+              <span className="signup-notice-icon"><MailIcon aria-hidden="true" /></span>
+              <div>
+                <SentHeading className="pub-h3" id={`${id}-sent-title`}>Check your inbox.</SentHeading>
+                <p className="signup-notice-email">{sent.email}</p>
+              </div>
             </div>
-          </div>}
-          {page ? <><p>We sent a sign-in link to <strong>{sent.email}</strong>.</p><p>Open it on this device to go straight to the handbook. The link works once and expires after {TOKEN_TTL_SECONDS / 60} minutes.</p></>
-            : <><p>If this address can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes.</p><p className="signup-notice-help"><strong>Don’t see it after a minute?</strong> Check spam or promotions.</p></>}
+            <p>If this address can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes.</p>
+            <p className="signup-notice-help"><strong>Don’t see it after a minute?</strong> Check spam or promotions.</p>
+          </>}
           {sent.notes === 'sent' && <p>If this address is not already on the notes list, a second email asks you to confirm it. Nothing is sent until you open that link.</p>}
           {sent.notes === 'failed' && <p>The notes sign-up did not go through. You can try again from the form after the sample lesson.</p>}
           <p className="signup-actions">
@@ -168,8 +173,8 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
           </>}
         </div>
       ) : (
-        // method and action are for the moment before hydration: Enter then posts to the route instead of putting
-        // the address in this page's URL
+        // method and action are the post target, but the button stays disabled until mount: Enter before hydration
+        // would post a form body, and the route accepts JSON only
         <form className={`signup-form${page ? ' pub-card' : ''}`} method="post" action="/api/auth/request-link" noValidate onSubmit={submit} data-source={source} data-ready={ready || undefined}>
           <div className="signup-row">
             <div className="pub-field">
@@ -177,7 +182,7 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
               <input ref={inputRef} className="calc-input" type="email" id={`${id}-email`} name="email" autoComplete="email" inputMode="email" value={emailDraft} onChange={e => setEmailDraft(e.target.value)} placeholder="you@example.com" required aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
               {error && <p className="signup-error" id={`${id}-error`} role="alert"><CircleAlertIcon aria-hidden="true" />{error}</p>}
             </div>
-            <button type="submit" className="pub-btn pub-btn-primary" disabled={sending}>{sending ? 'Sending…' : buttonLabel}</button>
+            <button type="submit" className="pub-btn pub-btn-primary" disabled={!ready || sending}>{sending ? 'Sending…' : buttonLabel}</button>
           </div>
           <input ref={trapRef} type="text" name="_gotcha" tabIndex={-1} autoComplete="off" className="signup-trap" aria-hidden="true" />
           <label className="signup-optin" htmlFor={`${id}-notes`}>

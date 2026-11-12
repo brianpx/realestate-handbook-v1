@@ -66,53 +66,26 @@ export function Settings() {
     applyScrollAnchor(anchor);
   }, [mounted, size]);
 
-  // Scrolling up folds Settings away. Only real user scrolling counts (wheel, swipe, keys, dragging the scrollbar),
-  // so programmatic jumps never collapse it, and never while a control inside has focus (folding would drop it).
-  // The summary itself stays visible through a fold, so focus on it does not hold the panel open.
+  // The open panel is a popover over the list on desktop: Escape, or a press anywhere outside it, closes it.
+  // A control that has focus inside keeps focus on the summary after Escape.
   useEffect(() => {
     const details = detailsRef.current;
-    const main = document.getElementById('main-content');
-    if (!details || !main) return;
-    const summary = details.querySelector('summary');
-    const collapse = () => {
-      const active = document.activeElement;
-      if (details.contains(active) && active !== summary) return;
-      details.open = false;
-    };
-    const inSidebar = (e: Event) => (e.target as Element | null)?.closest('#sidebar');
-    let touchY: number | null = null;
-    let dragging = false;
-    let lastTop = main.scrollTop;
-    const onWheel = (e: WheelEvent) => { if (e.deltaY < 0 && !inSidebar(e)) collapse(); };
-    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? null; };
-    const onTouchMove = (e: TouchEvent) => {
-      const y = e.touches[0]?.clientY ?? 0;
-      if (touchY !== null && !inSidebar(e) && y - touchY > 10) { collapse(); touchY = y; }
-    };
+    if (!details) return;
     const onKey = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) && !(e.target as Element).closest('input, textarea, select, #sidebar')) collapse();
+      if (e.key !== 'Escape' || !details.open || !details.contains(document.activeElement)) return;
+      details.open = false;
+      details.querySelector('summary')?.focus();
+      e.preventDefault(); // the phone menu's own Escape handler (Sidebar) then leaves the menu open
     };
-    const onPointerDown = (e: PointerEvent) => { dragging = e.target === main; };
-    const onPointerUp = () => { dragging = false; };
-    const onScroll = () => {
-      if (dragging && main.scrollTop < lastTop) collapse();
-      lastTop = main.scrollTop;
+    const onPointerDown = (e: PointerEvent) => {
+      // desktop only: on phones the panel is part of the scrolling menu, and closing it on a press would move the link being pressed
+      if (details.open && window.matchMedia('(min-width: 901px)').matches && !details.contains(e.target as Node)) details.open = false;
     };
-    document.addEventListener('wheel', onWheel, { passive: true });
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('keydown', onKey);
-    main.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointerup', onPointerUp);
-    main.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('pointerdown', onPointerDown);
     return () => {
-      document.removeEventListener('wheel', onWheel);
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('keydown', onKey);
-      main.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointerup', onPointerUp);
-      main.removeEventListener('scroll', onScroll);
+      document.removeEventListener('pointerdown', onPointerDown);
     };
   }, []);
 
@@ -129,41 +102,43 @@ export function Settings() {
   );
 
   return (
-    <li className="settings-item">
+    <div className="settings-item">
       <details className="settings" ref={detailsRef}>
         <summary>Settings</summary>
-        {toggle('settingDark', 'Dark mode', dark, checked => set({ dark: checked }))}
-        <FieldSet className="settings-size">
-          <FieldLegend variant="label" className={ROW_LABEL}>Text size</FieldLegend>
-          <RadioGroup name="textSize" value={size} onValueChange={value => { if (isTextSize(value)) set({ textSize: value }); }} className="gap-2">
-            {TEXT_SIZES.map(option => (
-              <Field key={option} orientation="horizontal" className={`settings-size-option size-${option}`}>
-                <RadioGroupItem value={option} id={`settingText-${option}`} {...AS_BUTTON} />
-                <FieldLabel htmlFor={`settingText-${option}`} className={ROW_LABEL}><span>{SIZE_LABELS[option]}</span></FieldLabel>
-              </Field>
-            ))}
-          </RadioGroup>
-        </FieldSet>
-        {toggle('settingWide', 'Full width', settings.fullWidth === true, checked => set({ fullWidth: checked }), 'settings-wide')}
-        {toggle('settingQuiz', 'Test your knowledge sections', quizzesShown(settings), checked => set({ hideQuizzes: !checked }))}
-        {toggle('settingEssential', 'Essential tools only (the 5 best)', essentialOnly(settings), checked => set({ essentialOnly: checked }))}
-        <Field orientation="horizontal" className="settings-row">
-          <Switch id="settingTrack" checked={tracking} onCheckedChange={checked => { if (set({ trackProgress: checked })) setNote(''); }} {...AS_BUTTON} />
-          <div className="settings-col">
-            <FieldLabel htmlFor="settingTrack" className={ROW_LABEL}>Keep track of progress</FieldLabel>
-            <div className="settings-sub" id="settingResetGroup" hidden={!tracking}>
-              <Button type="button" variant="outline" size="sm" className="settings-reset" id="settingReset" onClick={() => setNote(resetProgress() ? 'Progress reset.' : 'Nothing to reset.')}>
-                Reset progress
-              </Button>
-              <span className="settings-note" id="settingResetNote" role="status">{note}</span>
+        <div className="settings-panel">
+          {toggle('settingDark', 'Dark mode', dark, checked => set({ dark: checked }))}
+          <FieldSet className="settings-size">
+            <FieldLegend variant="label" className={ROW_LABEL}>Text size</FieldLegend>
+            <RadioGroup name="textSize" value={size} onValueChange={value => { if (isTextSize(value)) set({ textSize: value }); }} className="gap-2">
+              {TEXT_SIZES.map(option => (
+                <Field key={option} orientation="horizontal" className={`settings-size-option size-${option}`}>
+                  <RadioGroupItem value={option} id={`settingText-${option}`} {...AS_BUTTON} />
+                  <FieldLabel htmlFor={`settingText-${option}`} className={ROW_LABEL}><span>{SIZE_LABELS[option]}</span></FieldLabel>
+                </Field>
+              ))}
+            </RadioGroup>
+          </FieldSet>
+          {toggle('settingWide', 'Full width', settings.fullWidth === true, checked => set({ fullWidth: checked }), 'settings-wide')}
+          {toggle('settingQuiz', 'Test your knowledge sections', quizzesShown(settings), checked => set({ hideQuizzes: !checked }))}
+          {toggle('settingEssential', 'Essential tools only (the 5 best)', essentialOnly(settings), checked => set({ essentialOnly: checked }))}
+          <Field orientation="horizontal" className="settings-row">
+            <Switch id="settingTrack" checked={tracking} onCheckedChange={checked => { if (set({ trackProgress: checked })) setNote(''); }} {...AS_BUTTON} />
+            <div className="settings-col">
+              <FieldLabel htmlFor="settingTrack" className={ROW_LABEL}>Keep track of progress</FieldLabel>
+              <div className="settings-sub" id="settingResetGroup" hidden={!tracking}>
+                <Button type="button" variant="outline" size="sm" className="settings-reset" id="settingReset" onClick={() => setNote(resetProgress() ? 'Progress reset.' : 'Nothing to reset.')}>
+                  Reset progress
+                </Button>
+                <span className="settings-note" id="settingResetNote" role="status">{note}</span>
+              </div>
             </div>
-          </div>
-        </Field>
-        <ProgressTransfer />
+          </Field>
+          <ProgressTransfer />
+        </div>
       </details>
       <p className="settings-legal">
         <strong>Finding, Nurturing, and Keeping Clients</strong><br />A Practical Guide for New Real Estate Agents<br />v1.0 · October 2026 · All rights reserved.
       </p>
-    </li>
+    </div>
   );
 }

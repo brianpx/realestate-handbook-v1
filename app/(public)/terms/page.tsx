@@ -34,7 +34,7 @@ export default function TermsPage() {
 
         <h2>Your use</h2>
         <ul>
-          <li>Your access is for your own use. Do not copy, resell or publish the handbook or its tools.</li>
+          <li>Your access is for your own use, on your own devices. Do not share it, copy, resell or publish the handbook or its tools.</li>
           <li>You are responsible for following your license law, your broker’s policies and the rules on calls, texts and email you send.</li>
           <li>Progress you save is stored in your own browser. Keeping a backup is your responsibility.</li>
         </ul>

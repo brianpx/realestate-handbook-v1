@@ -41,29 +41,39 @@ describe('NeonAccessStore', () => {
     expect(text).toContain('from before join after on after.id = before.id');
     expect(values).toEqual(['g', ISO, 'admin', 'abuse', ISO, 'admin', 'admin', 'grant.revoke', 'abuse', null]);
   });
-  it('upserts the membership projection whole, suspension fields included', async () => {
-    const { sql, calls } = fakeSql([]);
-    await new NeonAccessStore(sql).saveMembership({ userId: 'u', status: 'suspended', tier: 'basic', startedAt: NOW, endsAt: null, currentGrantId: 'g', complimentary: true, suspendedAt: NOW, suspendedBy: 'admin', suspendReason: 'abuse', updatedAt: NOW });
-    expect(calls[0]!.text).toContain('on conflict (user_id) do update set');
-    expect(calls[0]!.text).toContain('suspended_at = excluded.suspended_at');
-    expect(calls[0]!.values).toEqual(['u', 'suspended', 'basic', ISO, null, 'g', true, ISO, 'admin', 'abuse', ISO]);
+  it('refreshes derived membership fields without overwriting the current suspension', async () => {
+    const row = { user_id: 'u', status: 'suspended', tier: 'basic', started_at: ISO, ends_at: null, current_grant_id: 'g', complimentary: true, suspended_at: ISO, suspended_by: 'admin', suspend_reason: 'abuse', updated_at: ISO };
+    const { sql, calls } = fakeSql([row]);
+    const saved = await new NeonAccessStore(sql).saveMembership({ userId: 'u', status: 'active', tier: 'basic', startedAt: NOW, endsAt: null, currentGrantId: 'g', complimentary: true, updatedAt: NOW });
+    expect(calls[0]!.text).toContain("status = case when memberships.suspended_at is not null then 'suspended' else excluded.status end");
+    expect(calls[0]!.text).not.toContain('suspended_at =');
+    expect(calls[0]!.text).not.toContain('suspended_by =');
+    expect(calls[0]!.text).not.toContain('suspend_reason =');
+    expect(calls[0]!.values).toEqual(['u', 'active', 'basic', ISO, null, 'g', true, ISO]);
+    expect(saved).toEqual(rowToMembership(row));
   });
-  it('anonymises in one statement that never carries the address into the audit row, and says whether anything changed', async () => {
-    const { sql, calls } = fakeSql([{ id: 'u' }], []);
+  it('locks the user before the atomic anonymisation statement that never carries the address into the audit row, and says whether anything changed', async () => {
+    const { sql, calls, transactions } = fakeSql([], [{ id: 'u' }], [], []);
     const store = new NeonAccessStore(sql);
     const input = { userId: 'u', email: 'a@b.co', emailHash: 'h', at: NOW };
     expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBe(true);
     expect(await store.anonymise(input, { ...STUB, actorKind: 'user', actorUserId: 'u', action: 'user.anonymize' })).toBe(false);
-    const { text, values } = calls[0]!;
+    expect(transactions).toEqual([2, 2]);
+    expect(calls[0]!.text).toBe('select id from users where id = ? for update');
+    const { text, values } = calls[1]!;
     expect(text).toContain("where id = ? and status <> 'deleted'");
     expect(text).toContain("set status = 'deleted', role = 'reader'");
     expect(text).toContain("email = 'deleted+' || users.id || '@invalid.local'");
     expect(text).toContain('delete from memberships where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from sessions where user_id = ? and exists (select 1 from before)');
     expect(text).toContain('delete from auth_tokens where email = ? and exists (select 1 from before)');
+    expect(text).toContain('delete from realtor_profiles where user_id = ? and exists (select 1 from before)');
+    expect(text).toContain('delete from leads where email = ? and exists (select 1 from before)');
     expect(text).toContain('update billing_customers set email_at_provider = ?');
+    expect(text).not.toContain('delete from access_grants');
+    expect(text).not.toContain('delete from billing_records');
     expect(text).toContain("jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader')");
-    expect(values).toEqual(['u', ISO, ISO, 'u', 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
+    expect(values).toEqual(['u', ISO, ISO, 'u', 'u', 'a@b.co', 'u', 'a@b.co', 'h', ISO, 'u', ISO, 'u', 'user', 'user.anonymize', null, null]);
   });
   it('appends and lists audit rows', async () => {
     const row = { id: 'a', at: ISO, actor_user_id: null, actor_kind: 'system', action: 'bootstrap_admin', subject_table: 'users', subject_id: 'u', before: { role: 'reader' }, after: { role: 'admin' }, reason: null, ip_hash: null };
