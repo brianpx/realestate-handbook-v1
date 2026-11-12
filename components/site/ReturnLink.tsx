@@ -2,12 +2,18 @@
 
 import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { RETURN_PARAM, returnTarget } from '@/lib/return-to';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { RETURN_PARAM, returnTarget, type ReturnTarget } from '@/lib/return-to';
 
-// "Back to <page>" for a reader who arrived from the handbook footer. Renders nothing without a valid ?from=.
+// Policy pages always offer a way back, even when opened without the footer's ?from=.
+const POLICY_PATHS = new Set(['/privacy', '/terms', '/refunds', '/updates']);
+const HOME: ReturnTarget = { href: '/', label: 'home' };
+
+// "Back to <page>" for a reader who arrived from the handbook footer. Without a valid ?from= only policy pages show a link, to home.
 export function ReturnLink() {
-  const target = returnTarget(useSearchParams().get(RETURN_PARAM));
+  const pathname = usePathname();
+  const from = returnTarget(useSearchParams().get(RETURN_PARAM));
+  const target = from ?? (POLICY_PATHS.has(pathname.replace(/\/+$/, '')) ? HOME : null);
   if (!target) return null;
   return (
     <p className="pub-return">
