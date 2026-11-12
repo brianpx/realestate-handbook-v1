@@ -58,6 +58,27 @@ test.describe('public pages', () => {
     await expect(page.locator('.pub-tool-index summary')).toBeInViewport();
   });
 
+  test('the signed-in reader gets no call-to-action band, and what is inside follows the handbook', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.pub-cta-band')).toHaveCount(0);
+    const inside = page.locator('#included');
+    await expect(inside.getByRole('heading', { name: 'Everything inside' })).toBeVisible();
+    await expect(inside).toContainText(/13 chapters in a fixed order/); // the count is read from the page list, so this fails if a chapter is added without a decision here
+    await expect(inside.locator('.pub-tool-index')).toHaveCount(1);
+    await expect(page.locator('#how-it-works')).toHaveCount(1);
+    await expect(page.getByRole('link', { name: 'See the three phases below' })).toHaveAttribute('href', '#how-it-works');
+  });
+
+  test('every row of the planner example on the sales page keeps its time beside its name', async ({ page }) => {
+    await page.goto('/');
+    const rows = page.locator('.pub-blocks li');
+    await expect(rows).toHaveCount(3);
+    for (const row of await rows.all()) {
+      const [time, name] = await Promise.all([row.locator('time').boundingBox(), row.locator('span').boundingBox()]);
+      expect(Math.abs(time!.y - name!.y)).toBeLessThan(name!.height); // same line: the name is not pushed below the time
+    }
+  });
+
   test('the sales page has no purchase button until a price and checkout are configured', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'See plans and pricing' }).first()).toHaveAttribute('href', '/pricing');
@@ -82,6 +103,15 @@ test.describe('public pages', () => {
       await expect(page.locator('form[data-source="final"]')).toBeVisible();
       await expect(page.locator('[data-welcome-back]')).toHaveCount(0);
       await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/signin');
+    });
+
+    test('a visitor gets a call to action after the tools, and its link reaches the final form', async ({ page }) => {
+      await page.goto('/');
+      const band = page.locator('.pub-cta-band');
+      await expect(band.getByRole('link', { name: 'Try a sample lesson' })).toHaveAttribute('href', '/preview');
+      await band.getByRole('link', { name: 'Get the free chapters' }).click();
+      await expect(page).toHaveURL(/\/#start$/);
+      await expect(page.locator('#start')).toBeInViewport();
     });
 
     test('editing the calculator offers the form once, after the effort', async ({ page }) => {
