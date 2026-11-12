@@ -35,6 +35,14 @@ describe('SettingsCard', () => {
     expect(card.getAttribute('data-tone')).toBe('default');
     expect(card.querySelector('form')).toBeNull();
   });
+  it('puts an aside beside the title inside the card, and adds nothing without one', async () => {
+    await render(<SettingsCard id="pic" title="Pic" description="About" aside={<img alt="Me" src="/me.webp" />} />);
+    const card = container.querySelector('section')!;
+    expect(card.querySelector('img[alt="Me"]')).not.toBeNull();
+    expect(card.querySelector('#pic-title')!.parentElement!.parentElement!.contains(card.querySelector('img'))).toBe(true);
+    await render(<SettingsCard id="plain" title="Plain" />);
+    expect(container.querySelector('img')).toBeNull();
+  });
   it('leaves the footer out when it has neither a hint nor an action', async () => {
     await render(<SettingsCard id="bare" title="Bare">body</SettingsCard>);
     expect(container.querySelector('[data-settings-card-footer]')).toBeNull();

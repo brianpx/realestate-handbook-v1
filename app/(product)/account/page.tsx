@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AvatarCard } from '@/components/account/AvatarCard';
 import { DisplayNameForm } from '@/components/account/DisplayNameForm';
 import { ProfileForm } from '@/components/account/ProfileForm';
 import { SettingsCard } from '@/components/account/SettingsCard';
 import { SavedProgress } from '@/components/handbook/AccountPanels';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/shell/ProductCard';
+import { accountSummary } from '@/lib/account/me';
 import { requireViewer } from '@/lib/auth/dal';
 import { sessionLive } from '@/lib/auth/session';
 import { authStoresFromEnv } from '@/lib/auth/store';
@@ -158,6 +160,8 @@ export default async function AccountPage({ searchParams }: Props) {
     <ProductCard>
       <p className="part-label">Account</p>
       <h1 className="hb-title">Account and saved progress</h1>
+
+      <AvatarCard account={accountSummary(user)} />
 
       <DisplayNameForm initial={user.displayName} placeholder={resolveDisplayName(user)} />
 

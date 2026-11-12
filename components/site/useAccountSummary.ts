@@ -17,6 +17,8 @@ const isSummary = (value: unknown): value is AccountSummary =>
 // answer is kept: a 401 or a summary. A failed request is asked again on the next mount.
 let cached: AccountState | null = null;
 let inflight: Promise<AccountState> | null = null;
+// Every mounted menu, told when a change on the account page replaces what the cache holds.
+const listeners = new Set<(state: AccountState) => void>();
 
 async function load(): Promise<AccountState> {
   try {
@@ -34,6 +36,17 @@ async function load(): Promise<AccountState> {
 export function resetAccountSummaryCache(): void {
   cached = null;
   inflight = null;
+  listeners.clear();
+}
+
+/**
+ * Puts a new picture (or none) into the summary the header shows, without asking the server again. Nothing happens
+ * before the summary has loaded: its own request will carry the current picture.
+ */
+export function setAccountSummaryAvatar(avatarUrl: string | null): void {
+  if (cached?.status !== 'ready') return;
+  cached = { status: 'ready', account: { ...cached.account, avatarUrl } };
+  for (const listener of listeners) listener(cached);
 }
 
 /** The signed-in reader's name, address and picture for the user menu; fetched after mount, and only when the sign-in flag is set. */
@@ -41,12 +54,13 @@ export function useAccountSummary(signedIn: boolean): AccountState {
   const [state, setState] = useState<AccountState>({ status: 'idle' });
   useEffect(() => {
     if (!signedIn) return;
-    if (cached) { setState(cached); return; }
+    listeners.add(setState);
+    if (cached) { setState(cached); return () => { listeners.delete(setState); }; }
     let live = true;
     setState({ status: 'loading' });
     inflight ??= load().finally(() => { inflight = null; });
     void inflight.then(result => { if (live) setState(result); });
-    return () => { live = false; };
+    return () => { live = false; listeners.delete(setState); };
   }, [signedIn]);
   return signedIn ? state : { status: 'idle' };
 }
