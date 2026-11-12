@@ -30,15 +30,16 @@ export default async function HandbookHome() {
       <p>A practical 90-day plan for your first year: find conversations, follow up on a plan, and keep clients so they send you the next ones. Work through it in order, and do each exercise the day you read the chapter.</p>
 
       {entitlement.level !== 'member' && (
-        <section className="hb-continue" aria-labelledby="freeSetTitle" data-free-set>
+        <section className="hb-continue hb-free-set" aria-labelledby="freeSetTitle" data-free-set>
           <h2 id="freeSetTitle">{entitlement.level === 'preview' && entitlement.suspended ? 'Your access is paused' : 'You are reading the free set'}</h2>
           <p>
             The overview, Chapter 1 and Chapter 7 are open in full, with their tools. The other chapters, the appendices and the guided setup are part of the paid handbook
             {purchaseOpen() ? '.' : ', which is not on sale yet.'}
           </p>
           <div className="hb-actions">
-            <Link className="btn-nav hb-primary" href="/pricing">{purchaseOpen() ? 'See plans and buy' : 'Pricing and availability'}</Link>
             <Link className="btn-mini" href={pageHref('ch1')}>Read Chapter 1</Link>
+            <Link className="btn-mini" href={pageHref('ch7')}>Read Chapter 7</Link>
+            <Link href="/pricing">{purchaseOpen() ? 'See plans and buy' : 'Pricing and availability'}</Link>
           </div>
         </section>
       )}
