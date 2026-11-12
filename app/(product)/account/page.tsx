@@ -76,7 +76,7 @@ export default async function AccountPage({ searchParams }: Props) {
       </p>
       {loaded.kind === 'none' && <p className="setup-hint">Profile editing needs the account database, which this setup does not have.</p>}
       {loaded.kind === 'failed' && <p className="setup-error" role="alert">Your profile could not be loaded just now. Reload the page to try again.</p>}
-      {loaded.kind === 'ok' && <ProfileForm initial={loaded.profile ? profileFields(loaded.profile) : EMPTY_PROFILE} updatedAt={loaded.profile?.updatedAt.toISOString() ?? null} />}
+      {loaded.kind === 'ok' && <ProfileForm accountId={user.id} initial={loaded.profile ? profileFields(loaded.profile) : EMPTY_PROFILE} updatedAt={loaded.profile?.updatedAt.toISOString() ?? null} />}
 
       <h2 className="hb-h2" id="sessions">Where you are signed in</h2>
       <p>{liveSessions === 1 ? 'This is the only browser signed in to your account.' : `Your account is signed in on ${liveSessions} browsers or devices, this one included.`} A sign-in lasts 90 days from your last visit, or until you sign out.</p>
@@ -103,7 +103,7 @@ export default async function AccountPage({ searchParams }: Props) {
       <ul>
         <li>Lost your place on the same device? Check you are in the same browser and the same web address, and not in a private window.</li>
         <li>Moving to a new device or browser? Download a file here first, then restore it there.</li>
-        <li>Restored a file by mistake? The progress that was here before is kept as a backup copy in this browser until your next restore, but there is no button to bring it back yet.</li>
+        <li>Restored a file by mistake? The progress that was here before is kept as a backup copy in this browser until your next restore, and you can recover it with “Restore previous backup” above.</li>
       </ul>
       <p>
         {OWNER.supportEmail

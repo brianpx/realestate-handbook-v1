@@ -2,9 +2,9 @@ import { bootstrapOwnerGrant } from '@/lib/access/grants';
 import { audit } from '@/lib/audit';
 import type { MailConfig } from '@/lib/leads/mail';
 import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
-import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, REQUEST_LINK_LIMITS, VERIFY_PATH, VERIFY_LIMIT } from './config';
+import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, VERIFY_PATH, type AuthRateLimits } from './config';
 import { clearedCookieHeaders, isSecureRequest, sessionCookieHeaders } from './cookie';
-import { sendSignInLink } from './mail';
+import { sendSignInLink, sendWelcome } from './mail';
 import { sessionExpiry, tokenExpiry } from './session';
 import type { AuthStores } from './store';
 import { hashKey, hashSecret, isSecretShape, newSecret } from './token';
@@ -28,6 +28,8 @@ export type AuthDeps = {
   ipSalt: string;
   /** Sign-in emails allowed per window over all callers (lib/send-ceiling.ts). */
   sendCeiling: number;
+  /** Per-connection and per-address attempt windows (tight in production, high in development). */
+  limits: AuthRateLimits;
   /** Addresses that become the first administrator on sign-in, only while no administrator exists. */
   bootstrapEmails: readonly string[];
   now: () => Date;
@@ -58,7 +60,7 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
   const now = deps.now();
   const ipHash = hashKey(req.ip, deps.ipSalt);
   try {
-    const ipWindow = REQUEST_LINK_LIMITS.ip;
+    const ipWindow = deps.limits.requestLink.ip;
     if ((await auth.recordAndCount('ip', ipHash, now, new Date(now.getTime() - ipWindow.windowSeconds * 1000))) > ipWindow.attempts) return limited(ipWindow.windowSeconds);
 
     let json: unknown;
@@ -68,7 +70,7 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
     const { email, termsVersion, source, next, _gotcha } = parsed.data;
     if (_gotcha) return OK; // a bot filled the hidden field: look successful, store nothing
 
-    const emailWindow = REQUEST_LINK_LIMITS.email;
+    const emailWindow = deps.limits.requestLink.email;
     const emailHash = hashKey(email, deps.ipSalt);
     if ((await auth.recordAndCount('email', emailHash, now, new Date(now.getTime() - emailWindow.windowSeconds * 1000))) > emailWindow.attempts) return limited(emailWindow.windowSeconds);
     // the ceiling over all callers: every request past this point sends one email
@@ -93,13 +95,15 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
  * path stored with the token.
  */
 export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
-  if (originRefused(req, deps)) return reply(403, 'forbidden');
+  const origin = req.origin;
+  if (originRefused(req, deps) || origin === null) return reply(403, 'forbidden');
   if (!deps.stores) return reply(503, 'unavailable');
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return reply(413, 'too_large');
   const { auth, users, access } = deps.stores;
   const now = deps.now();
   try {
-    if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - VERIFY_LIMIT.windowSeconds * 1000))) > VERIFY_LIMIT.attempts) return limited(VERIFY_LIMIT.windowSeconds);
+    const verifyWindow = deps.limits.verify;
+    if ((await auth.recordAndCount('ip', hashKey(req.ip, deps.ipSalt), now, new Date(now.getTime() - verifyWindow.windowSeconds * 1000))) > verifyWindow.attempts) return limited(verifyWindow.windowSeconds);
 
     const raw = new URLSearchParams(req.body).get('token');
     if (!isSecretShape(raw)) return redirect(FAILED);
@@ -108,7 +112,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
 
     const existing = await users.findByEmail(consumed.email);
     if (existing && existing.status !== 'active') return redirect(FAILED);
-    const { user } = await users.upsertVerified({ email: consumed.email, termsVersion: consumed.termsVersion, at: now });
+    const { user, created } = await users.upsertVerified({ email: consumed.email, termsVersion: consumed.termsVersion, at: now });
 
     // The first administrator: only while none exists, so the list is inert once an admin is in place. The role
     // change is audited and the owner gets a content grant, because the admin role opens nothing by itself (OD-13).
@@ -122,6 +126,15 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     const sessionId = newSecret();
     await auth.createSession({ idHash: hashSecret(sessionId), userId: user.id, createdAt: now, expiresAt: sessionExpiry(now) });
     await users.touchSignIn(user.id, now);
+    // The welcome is the one extra account email, and only for a brand-new row. A failed send must not
+    // turn a finished sign-in into an error: the session is already stored, and the reader is waiting to land.
+    if (created) {
+      try {
+        if ((await sendWelcome(deps.mail, user.email, origin, deps.fetchImpl)) === 'failed') console.error('auth: welcome email failed');
+      } catch (err) {
+        console.error('auth: welcome email failed', err instanceof Error ? err.name : 'error');
+      }
+    }
     return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeaders(isSecureRequest(req.url), sessionId) });
   } catch (err) {
     console.error('auth: verify failed', err instanceof Error ? err.name : 'error');

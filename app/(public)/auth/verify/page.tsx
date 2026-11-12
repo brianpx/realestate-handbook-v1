@@ -3,9 +3,8 @@ import Link from 'next/link';
 import { AutoSubmit } from '@/components/auth/AutoSubmit';
 import { PageHead } from '@/components/site/Draft';
 import { SignupForm } from '@/components/site/SignupForm';
-import { tokenUsable } from '@/lib/auth/session';
 import { authStoresFromEnv } from '@/lib/auth/store';
-import { hashSecret, isSecretShape } from '@/lib/auth/token';
+import { checkLink } from '@/lib/auth/verify-link';
 
 export const metadata: Metadata = { title: 'Signing you in', robots: { index: false, follow: false } };
 
@@ -20,19 +19,28 @@ export default async function VerifyPage({ searchParams }: Props) {
   const raw = Array.isArray(params.token) ? params.token[0] : params.token;
   const stores = authStoresFromEnv(process.env);
 
-  let usable = false;
-  if (stores && isSecretShape(raw)) {
-    const token = await stores.auth.peekToken(hashSecret(raw));
-    usable = token !== null && tokenUsable(token, new Date());
-  }
+  const check = stores ? await checkLink(stores.auth, raw, new Date()) : 'unusable';
 
-  if (usable && raw) {
+  if (check === 'unavailable') {
     return (
       <>
-        <PageHead eyebrow="Sign in" title="One more step." />
+        <PageHead eyebrow="Sign in" title="Sign-in is not available right now." />
         <div className="pub-wrap pub-narrow pub-prose">
           <div className="pub-card signup-card">
-            <p>Press the button to finish signing in. It happens on its own when JavaScript is on.</p>
+            <p role="alert">Your link has not been used up. Please open it again in a few minutes.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (check === 'usable' && raw) {
+    return (
+      <>
+        <PageHead eyebrow="Sign in" title="One moment…" />
+        <div className="pub-wrap pub-narrow pub-prose">
+          <div className="pub-card signup-card">
+            <p>Finishing sign-in. If nothing happens, press the button.</p>
             <AutoSubmit action="/api/auth/verify" token={raw} />
           </div>
         </div>

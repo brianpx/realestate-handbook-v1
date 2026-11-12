@@ -244,8 +244,8 @@ describe('mail', () => {
   it('uses SendGrid only with a sender and a postal address, Mailpit in development, else nothing', () => {
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k' })).toEqual({ provider: 'none' });
     expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co' })).toEqual({ provider: 'none' });
-    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co' });
-    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025' });
+    expect(mailFromEnv({ SENDGRID_API_KEY: 'k', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' })).toMatchObject({ provider: 'sendgrid', from: 'me@x.co', replyTo: 'me@x.co', mailingAddress: '1 Main St' });
+    expect(mailFromEnv({ MAILPIT_URL: 'http://localhost:8025/' })).toMatchObject({ provider: 'mailpit', url: 'http://localhost:8025', mailingAddress: 'synthetic temp address' });
     expect(mailFromEnv({})).toEqual({ provider: 'none' });
   });
   it('posts to Mailpit\'s send API in its own shape', async () => {
@@ -253,13 +253,15 @@ describe('mail', () => {
     const cfg = mailFromEnv({ MAILPIT_URL: 'http://localhost:8025', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' });
     expect(await sendConfirmation(cfg, 'to@y.co', 'https://x.co/subscribe/confirm?token=t', fetchImpl)).toBe('sent');
     expect(fetchImpl.mock.calls[0]![0]).toBe('http://localhost:8025/api/v1/send');
-    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('x', 'y').subject });
+    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('https://x.co/subscribe/confirm?token=t', 'y').subject });
   });
   it('carries the link, says nothing is sent without it, how to stop later, and the postal address', () => {
-    const { text } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield');
+    const { text, html } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield');
     expect(text).toContain('https://x.co/subscribe/confirm?token=t');
     expect(text).toContain('Nothing is sent until you do');
     expect(text).toContain('reply "unsubscribe"');
     expect(text.endsWith('1 Main St, Springfield')).toBe(true);
+    expect(html).toContain('Confirm my email');
+    expect(html).toContain('1 Main St, Springfield');
   });
 });

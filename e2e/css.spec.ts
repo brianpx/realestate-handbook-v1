@@ -21,7 +21,8 @@ test.describe('css', () => {
     await page.goto('/handbook/ch1');
     await expect(page.locator('html')).toHaveCSS('scroll-padding-top', 'auto');
     await page.goto('/');
-    await expect(page.locator('html')).toHaveCSS('scroll-padding-top', '104px');
+    const headerHeight = await page.locator('.pub-header').evaluate(el => el.getBoundingClientRect().height);
+    await expect(page.locator('html')).toHaveCSS('scroll-padding-top', `${headerHeight + 16}px`);
   });
 
   test('a filtered-out timeline touch keeps readable text and is not faded by opacity', async ({ page }) => {
