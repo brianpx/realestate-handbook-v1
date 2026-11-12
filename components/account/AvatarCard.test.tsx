@@ -6,6 +6,9 @@ import { resetAccountSummaryCache, useAccountSummary } from '@/components/site/u
 import type { AccountSummary } from '@/lib/account/me';
 import { AvatarCard } from './AvatarCard';
 
+const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
+
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const ACCOUNT: AccountSummary = { displayName: 'Sam Rivera', email: 'sam@example.com', avatarUrl: null };
@@ -37,6 +40,7 @@ class LoadingImage {
 }
 
 beforeEach(() => {
+  router.refresh.mockClear();
   vi.stubGlobal('Image', LoadingImage);
   resetAccountSummaryCache();
   container = document.createElement('div');
@@ -96,6 +100,7 @@ describe('AvatarCard', () => {
     expect(note()).toBe('Avatar updated.');
     expect(document.activeElement?.textContent).toBe('Avatar updated.');
     expect(header.textContent).toBe('/api/account/avatar?v=2');
+    expect(router.refresh).toHaveBeenCalledOnce();
     expect(remove()).toBeDefined();
     act(() => headerRoot.unmount());
     header.remove();
@@ -141,6 +146,7 @@ describe('AvatarCard', () => {
     expect(note()).toBe('Avatar removed.');
     expect(container.querySelector('img')).toBeNull();
     expect(remove()).toBeUndefined();
+    expect(router.refresh).toHaveBeenCalledOnce();
   });
   it('keeps the picture and says why when removal fails', async () => {
     fetchMock.mockResolvedValue(reply(503, { ok: false, error: 'unavailable' }));
@@ -148,6 +154,7 @@ describe('AvatarCard', () => {
     await act(async () => remove()!.click());
     expect(note()).toBe('Saving is not available right now. Please try again later.');
     expect(remove()).toBeDefined();
+    expect(router.refresh).not.toHaveBeenCalled();
   });
   it('turns the controls off while a request is in flight and ignores a second choice', async () => {
     let finish!: (res: Response) => void;

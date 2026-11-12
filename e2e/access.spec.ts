@@ -1,6 +1,7 @@
+import sharp from 'sharp';
 import { extraReader, extraSessionFor, PREVIEW_SESSION_ID, revokeGrant, signedInState, stores } from './auth';
 import { expect, test } from './fixtures';
-import { BASE_URL } from './target';
+import { BASE_URL, IS_REMOTE } from './target';
 
 // What each plan opens (M5 Phase 2): the free set for a signed-in reader with no grant, everything for a member,
 // the Pro-only tools, the media route, and the account page's two actions. Revocation is proven at the data-access
@@ -193,6 +194,62 @@ test.describe('members', () => {
     await expect(page.locator('[data-account-plan]')).toHaveText('Free set');
     expect((await context.cookies()).find(c => c.name === 'hb_session')?.value).toBe(member.sessionId);
     await context.close();
+  });
+});
+
+const redSquare = () => sharp({ create: { width: 40, height: 30, channels: 3, background: '#c33' } }).png().toBuffer();
+
+// The store behind the picture is a throwaway directory next to the auth file (lib/users/avatar-storage.ts); a
+// deployment has a real Blob store or none, so this runs against the local build only.
+test.describe('the avatar card', () => {
+  test.skip(IS_REMOTE, 'needs the local file-backed avatar storage');
+
+  test('uploads, shows in the header and on reload, refuses what is not a picture, and removes it', async ({ browser }) => {
+    const reader = await extraReader('basic');
+    const other = await extraReader('basic');
+    const context = await browser.newContext({ storageState: signedInState([], reader.sessionId) });
+    const otherContext = await browser.newContext({ storageState: signedInState([], other.sessionId) });
+    const page = await context.newPage();
+    await page.goto('/account');
+    const card = page.locator('#avatar');
+    await expect(card.getByText('An avatar is optional. PNG, JPEG or WebP, up to 2 MB.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Remove' })).toHaveCount(0);
+    const fileInput = card.locator('input[type="file"]');
+
+    // a text file that claims to be a PNG passes the browser's quick check and is refused by the server, from its bytes
+    await expect(card.getByRole('button', { name: 'Upload an avatar' })).toBeEnabled();
+    await fileInput.setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: Buffer.from('not a picture at all') });
+    await expect(card.getByRole('alert')).toHaveText('Choose a PNG, JPEG or WebP image.');
+
+    await fileInput.setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: (await redSquare()).subarray(0, 40) });
+    await expect(card.getByRole('alert')).toHaveText('That image could not be read. Try a different one.');
+
+    await fileInput.setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: await redSquare() });
+    await expect(card.getByRole('status')).toHaveText('Avatar updated.');
+    const shown = card.locator('img');
+    await expect(shown).toHaveAttribute('src', /^\/api\/account\/avatar\?v=\d+$/);
+    const src = (await shown.getAttribute('src'))!;
+    // the header's menu picks the new picture up without a reload
+    await expect(page.getByRole('button', { name: /^Account menu for/ }).locator('img')).toHaveAttribute('src', src);
+
+    const own = await context.request.get(src);
+    expect(own.status()).toBe(200);
+    expect(own.headers()['content-type']).toBe('image/webp');
+    expect(own.headers()['cache-control']).toBe('private, no-store');
+    expect(own.headers()['x-content-type-options']).toBe('nosniff');
+    expect((await otherContext.request.get(src)).status()).toBe(404);
+
+    await page.reload();
+    await expect(page.locator('#avatar img')).toHaveAttribute('src', src);
+
+    await page.locator('#avatar').getByRole('button', { name: 'Remove' }).click();
+    await expect(page.locator('#avatar').getByRole('status')).toHaveText('Avatar removed.');
+    await expect(page.locator('#avatar img')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Account menu for/ }).locator('img')).toHaveCount(0);
+    expect((await context.request.get(src)).status()).toBe(404);
+
+    await context.close();
+    await otherContext.close();
   });
 });
 

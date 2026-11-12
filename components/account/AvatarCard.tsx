@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { UserAvatar } from '@/components/site/UserMenu';
 import { setAccountSummaryAvatar } from '@/components/site/useAccountSummary';
@@ -27,11 +28,13 @@ const failureMessage = (status: number, error: unknown): string => {
 
 // The Avatar card: the picture is the control, as on Vercel. The browser checks type and size only for a quick answer;
 // the server decides from the bytes, re-encodes the picture to a small WebP and answers with the address to show.
-// After a change the header's cached summary is updated too, so the menu shows it without a reload.
+// After a change the header refreshes without a reload: the product layout's menu is server-rendered, so the page
+// is refreshed, and the public header's cached summary is updated.
 export function AvatarCard({ account }: Props) {
   const [avatarUrl, setAvatarUrl] = useState(account.avatarUrl);
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [ready, setReady] = useState(false);
+  const router = useRouter();
   const busy = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLParagraphElement>(null);
@@ -52,6 +55,7 @@ export function AvatarCard({ account }: Props) {
       if (res.ok && (typeof body.avatarUrl === 'string' || body.avatarUrl === null)) {
         setAvatarUrl(body.avatarUrl);
         setAccountSummaryAvatar(body.avatarUrl);
+        router.refresh();
         setState({ kind: 'done', message: done });
         return;
       }
