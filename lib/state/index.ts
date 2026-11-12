@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { COACH_KEY, coachSchema, type CoachState } from '../coach/schema';
 import { handbookStateSchema, migrate, settingsSchema, SETTINGS_KEY, STATE_KEY, type HandbookState, type Settings, type TextSize } from './schema';
 import { createStore } from './store';
-import { buildExport, type ImportResult } from './transfer';
+import { buildExport, parseImport, type ImportResult } from './transfer';
 
 export const stateStore = createStore({ key: STATE_KEY, schema: handbookStateSchema, migrate });
 // settings have no stored-shape history, so no migration: the handbook-state chain would stamp and back them up (CR-L6)
@@ -135,13 +135,35 @@ function readCoach(): unknown {
 /** Everything saved on this device, as the file the Settings panel offers to download. */
 export const exportProgress = (coach: unknown = readCoach()) => buildExport(stateStore.get(), settingsStore.get(), new Date(), coach);
 
+const PRE_IMPORT_KEY = 'handbook-progress.pre-import';
+
+/** Validate before exposing a recovery action. Legacy backups are read without modifying them. */
+export function readPreviousBackup(): ImportResult {
+  try {
+    const snapshot = window.localStorage.getItem(PRE_IMPORT_KEY);
+    if (snapshot !== null) return parseImport(snapshot);
+    const state = window.localStorage.getItem(`${STATE_KEY}.pre-import`);
+    const settings = window.localStorage.getItem(`${SETTINGS_KEY}.pre-import`);
+    if (state === null && settings === null) return { ok: false, error: 'No previous backup is available in this browser.' };
+    // Legacy imports did not record whether the coach was replaced, so leave it unchanged.
+    return parseImport(JSON.stringify(buildExport(JSON.parse(state ?? '{}'), JSON.parse(settings ?? '{}'), new Date())));
+  } catch {
+    return { ok: false, error: 'The previous backup could not be read. Your current progress has not changed.' };
+  }
+}
+
 /**
  * Replaces this device's progress with a validated import. What was there is first copied to `<key>.pre-import`
- * (one copy, overwritten by the next import) so a mistaken restore can be undone by hand. Returns false when the
- * browser would not save the new values. A file with no handbookCoach leaves that store as it is. `coachStore` is
+ * (one copy, overwritten by the next import) so a mistaken restore can be undone. Returns false when the
+ * browser would not save the new values. Throws before changing progress if a recovery snapshot cannot be saved. A file with no handbookCoach leaves that store as it is. `coachStore` is
  * the live one; this module cannot import it.
  */
 export function applyImport(result: Extract<ImportResult, { ok: true }>, coachStore?: { replace: (next: CoachState) => boolean }): boolean {
+  try {
+    window.localStorage.setItem(PRE_IMPORT_KEY, JSON.stringify(exportProgress()));
+  } catch {
+    throw new Error('Nothing was restored: this browser could not save a recovery backup. Download your current progress and free storage before trying again.');
+  }
   const keys = [STATE_KEY, SETTINGS_KEY];
   if (result.coach !== undefined) keys.push(COACH_KEY);
   for (const key of keys) {
@@ -155,7 +177,10 @@ export function applyImport(result: Extract<ImportResult, { ok: true }>, coachSt
   const a = stateStore.replace(result.state);
   const b = settingsStore.replace(result.settings);
   if (result.coach === undefined) return a && b;
-  if (coachStore) return a && b && coachStore.replace(result.coach);
+  if (coachStore) {
+    const c = coachStore.replace(result.coach);
+    return a && b && c;
+  }
   try {
     window.localStorage.setItem(COACH_KEY, JSON.stringify(result.coach));
   } catch {

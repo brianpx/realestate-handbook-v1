@@ -58,6 +58,7 @@ export function ResponseTimer() {
         ))}
         <button type="button" className="btn-mini" onClick={reset}>Reset</button>
       </div>
+      <p className="visually-hidden" role="status" aria-atomic="true">{results.at(-1)?.text ?? ''}</p>
       <ul className="timer-results" role="list">
         {results.map(r => <li key={r.key} className={r.meets ? 'timer-ok' : 'timer-slow'}>{r.text}</li>)}
       </ul>

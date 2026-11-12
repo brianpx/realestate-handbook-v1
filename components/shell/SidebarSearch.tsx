@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
 import { NAV, isPageId } from '@/lib/pages';
 import { pageHref } from '@/lib/routes';
-import { searchEntries, type SearchEntry } from '@/lib/search-query';
+import { searchIndex, type SearchEntry } from '@/lib/search-query';
 import { findSearchTarget, revealSearchTarget } from '@/lib/search-jump';
 
 const labelOf = (page: string) => NAV.flatMap(g => g.pages).find(p => p.id === page)?.label ?? page;
@@ -24,7 +24,7 @@ const loadIndex = (): Promise<SearchEntry[]> => {
 
 export type SearchApi = { clear: () => void };
 
-// Ported from legacy/js/search.js. `children` is the menu button, which sits beside the box on phones and, while
+// Ported from legacy/js/search.js. `children` is the menu button, which sits beside the search landmark (not inside it) on phones and, while
 // results are open, turns into the cross that closes them.
 export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   onSearching: (searching: boolean) => void;
@@ -51,7 +51,7 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   };
   useEffect(() => { if (searching && !index && !failed) load(); }, [searching, index, failed]);
 
-  const results = useMemo(() => (index && searching ? searchEntries(index, trimmed) : []), [index, searching, trimmed]);
+  const { entries: results, total } = useMemo(() => (index && searching ? searchIndex(index, trimmed) : { entries: [], total: 0 }), [index, searching, trimmed]);
 
   useImperativeHandle(apiRef, () => ({ clear: () => setQuery('') }), []);
 
@@ -91,64 +91,68 @@ export function SidebarSearch({ onSearching, onNavigate, apiRef, children }: {
   };
 
   const links = () => [...(listRef.current?.querySelectorAll<HTMLAnchorElement>('a') ?? [])];
-  let status = '';
+  let status = searching ? (failed ? 'Search could not load. Use Retry search to try again.' : !index ? 'Loading search results…' : '') : '';
   if (searching && index) status = results.length ? `${results.length} result${results.length === 1 ? '' : 's'}` : 'No matches';
 
   return (
-    <search className="nav-search">
-      <label className="visually-hidden" htmlFor="navSearch">Search the handbook</label>
-      <input
-        ref={inputRef}
-        type="search"
-        id="navSearch"
-        className="nav-search-input"
-        placeholder="Search the handbook"
-        aria-keyshortcuts="Control+K Meta+K"
-        autoComplete="off"
-        spellCheck={false}
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        onFocus={() => { if (!index) load(); }}
-        onKeyDown={e => {
-          if (e.key === 'ArrowDown') { links()[0]?.focus(); e.preventDefault(); }
-          else if (e.key === 'Escape' && query) { setQuery(''); e.stopPropagation(); } // keeps the mobile menu's own Escape handler from also firing
-        }}
-      />
-      <ul
-        ref={listRef}
-        className="search-results"
-        role="list"
-        id="searchResults"
-        aria-label="Search results"
-        hidden={!searching}
-        onKeyDown={e => {
-          const all = links();
-          const i = all.indexOf(document.activeElement as HTMLAnchorElement);
-          if (e.key === 'ArrowDown') all[Math.min(i + 1, all.length - 1)]?.focus();
-          else if (e.key === 'ArrowUp') (i > 0 ? all[i - 1] : inputRef.current)?.focus();
-          else if (e.key === 'Escape') { inputRef.current?.focus(); return; }
-          else return;
-          e.preventDefault();
-        }}
-      >
-        {searching && failed && <li className="search-empty">Search could not load. Try again.</li>}
-        {searching && !failed && !index && <li className="search-empty">Loading…</li>}
-        {searching && index && results.length === 0 && <li className="search-empty">No matches.</li>}
-        {results.map((entry, n) => (
-          <li key={`${entry.pageId}-${entry.text}-${entry.occurrence}-${n}`}>
-            <a className="search-result" href={pageHref(entry.pageId)} onClick={e => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-              e.preventDefault();
-              choose(entry);
-            }}>
-              <span className="search-result-title">{entry.text}</span>
-              <span className="search-result-where">{entry.isTerm ? 'Glossary term · ' : ''}{labelOf(entry.pageId)}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-      <div className="visually-hidden" id="searchStatus" role="status" aria-live="polite">{status}</div>
+    <div className="nav-search">
+      <search className="nav-search-field">
+        <label className="visually-hidden" htmlFor="navSearch">Search the handbook</label>
+        <input
+          ref={inputRef}
+          type="search"
+          id="navSearch"
+          className="nav-search-input"
+          placeholder="Search the handbook"
+          aria-keyshortcuts="Control+K Meta+K"
+          autoComplete="off"
+          spellCheck={false}
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onFocus={() => { if (!index) load(); }}
+          onKeyDown={e => {
+            if (e.key === 'ArrowDown') { links()[0]?.focus(); e.preventDefault(); }
+            else if (e.key === 'Enter' && !e.nativeEvent.isComposing && results[0]) { choose(results[0]); e.preventDefault(); }
+            else if (e.key === 'Escape' && query) { setQuery(''); e.stopPropagation(); } // keeps the mobile menu's own Escape handler from also firing
+          }}
+        />
+        <ul
+          ref={listRef}
+          className="search-results"
+          role="list"
+          id="searchResults"
+          aria-label="Search results"
+          hidden={!searching}
+          onKeyDown={e => {
+            const all = links();
+            const i = all.indexOf(document.activeElement as HTMLAnchorElement);
+            if (e.key === 'ArrowDown') all[Math.min(i + 1, all.length - 1)]?.focus();
+            else if (e.key === 'ArrowUp') (i > 0 ? all[i - 1] : inputRef.current)?.focus();
+            else if (e.key === 'Escape') { inputRef.current?.focus(); return; }
+            else return;
+            e.preventDefault();
+          }}
+        >
+          {searching && failed && <li className="search-empty">Search could not load. <button type="button" className="btn-nav btn-secondary" onClick={() => { inputRef.current?.focus(); load(); }}>Retry search</button></li>}
+          {searching && !failed && !index && <li className="search-empty">Loading…</li>}
+          {searching && index && results.length === 0 && <li className="search-empty">No matches.</li>}
+          {results.map((entry, n) => (
+            <li key={`${entry.pageId}-${entry.text}-${entry.occurrence}-${n}`}>
+              <a className="search-result" href={pageHref(entry.pageId)} onClick={e => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                e.preventDefault();
+                choose(entry);
+              }}>
+                <span className="search-result-title">{entry.text}</span>
+                <span className="search-result-where">{entry.isTerm ? 'Glossary term · ' : ''}{labelOf(entry.pageId)}</span>
+              </a>
+            </li>
+          ))}
+          {total > results.length && <li className="search-empty search-more">Showing {results.length} of {total}. Add a word to narrow them.</li>}
+        </ul>
+        <div className="visually-hidden" id="searchStatus" role="status" aria-live="polite">{status}</div>
+      </search>
       {children}
-    </search>
+    </div>
   );
 }

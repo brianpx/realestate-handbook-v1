@@ -19,6 +19,12 @@ export function DeepLinks() {
   const land = (page: string, key: string) => {
     const target = document.querySelector<HTMLElement>(`#content-container [data-widget="${key}"]`);
     if (!target) {
+      // A locked chapter is the upsell card, not a tool that failed to render.
+      const upsell = document.getElementById('upsellTitle');
+      if (upsell) {
+        if (document.activeElement !== upsell) announce(upsell.textContent ?? '');
+        return;
+      }
       announce(essentialOnly(settingsStore.get())
         ? 'That tool is off while Essential tools only is on. Turn it off in Settings to open this one.'
         : `Could not find that tool in ${labelOf(page)}.`);

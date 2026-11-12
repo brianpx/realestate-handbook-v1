@@ -14,19 +14,33 @@ const LINKS = [
   { href: '/#included', label: "What's included" },
   { href: '/pricing', label: 'Pricing' },
 ];
-// A plain link is the current page when the path matches; a same-page hash link is a location within it (CR-M9).
-const currentFor = (href: string, pathname: string): 'page' | 'location' | undefined => {
+// Only exact page links are current; pathname alone cannot identify the active section.
+const currentFor = (href: string, pathname: string): 'page' | undefined => {
   const [path, hash] = href.split('#');
-  if ((path || '/') !== pathname) return undefined;
-  return hash ? 'location' : 'page';
+  return !hash && path === pathname ? 'page' : undefined;
 };
 
 export function PublicHeader() {
   const pathname = usePathname();
   const signedIn = useSignedIn();
+  const signingIn = pathname === '/signin' || pathname === '/signup';
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const measure = () => document.documentElement.style.setProperty('--pub-header-actual-h', `${header.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--pub-header-actual-h');
+    };
+  }, []);
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
@@ -49,7 +63,7 @@ export function PublicHeader() {
   const onNavClick = (e: MouseEvent<HTMLElement>) => { if ((e.target as HTMLElement).closest('a')) setOpen(false); };
 
   return (
-    <header className="pub-header">
+    <header ref={headerRef} className="pub-header">
       <div className="pub-header-row">
         <Link href="/" className="pub-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,9 +78,9 @@ export function PublicHeader() {
           {LINKS.map(l => (
             <Link key={l.href} href={l.href} aria-current={currentFor(l.href, pathname)}>{l.label}</Link>
           ))}
-          {signedIn
+          {!signingIn && (signedIn
             ? <Link href="/handbook" className="pub-nav-cta">Open handbook<ArrowRightIcon aria-hidden="true" /></Link>
-            : <Link href="/signin" className="pub-nav-cta">Sign in<ArrowRightIcon aria-hidden="true" /></Link>}
+            : <Link href="/signin" className="pub-nav-cta">Sign in<ArrowRightIcon aria-hidden="true" /></Link>)}
         </nav>
       </div>
     </header>

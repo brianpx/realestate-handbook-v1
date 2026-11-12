@@ -12,4 +12,6 @@ playwright-report/
 .data/
 .vercel
 .env*
+!.env.example
+.claude/worktrees/
 .grok/
