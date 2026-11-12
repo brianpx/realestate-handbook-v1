@@ -17,17 +17,22 @@ const isSummary = (value: unknown): value is AccountSummary =>
 // answer is kept: a 401 or a summary. A failed request is asked again on the next mount.
 let cached: AccountState | null = null;
 let inflight: Promise<AccountState> | null = null;
+// A picture set while the first request is out; the response was read before it and would put the old one back.
+let changedDuringLoad: { avatarUrl: string | null } | null = null;
 // Every mounted menu, told when a change on the account page replaces what the cache holds.
 const listeners = new Set<(state: AccountState) => void>();
 
 async function load(): Promise<AccountState> {
+  changedDuringLoad = null;
   try {
     const res = await fetch('/api/account/me', { credentials: 'same-origin' });
     if (res.status === 401) return (cached = { status: 'out' });
     if (!res.ok) return { status: 'error' };
     const body: unknown = await res.json();
     if (!isSummary(body)) return { status: 'error' };
-    return (cached = { status: 'ready', account: { displayName: body.displayName, email: body.email, avatarUrl: body.avatarUrl } });
+    const avatarUrl = changedDuringLoad ? changedDuringLoad.avatarUrl : body.avatarUrl;
+    changedDuringLoad = null;
+    return (cached = { status: 'ready', account: { displayName: body.displayName, email: body.email, avatarUrl } });
   } catch {
     return { status: 'error' };
   }
@@ -36,14 +41,17 @@ async function load(): Promise<AccountState> {
 export function resetAccountSummaryCache(): void {
   cached = null;
   inflight = null;
+  changedDuringLoad = null;
   listeners.clear();
 }
 
 /**
- * Puts a new picture (or none) into the summary the header shows, without asking the server again. Nothing happens
- * before the summary has loaded: its own request will carry the current picture.
+ * Puts a new picture (or none) into the summary the header shows, without asking the server again. Before the
+ * summary has been asked for, nothing is kept: its request will carry the current picture. A request already out may
+ * have been answered before the change, so it is told to use this picture instead.
  */
 export function setAccountSummaryAvatar(avatarUrl: string | null): void {
+  if (inflight) changedDuringLoad = { avatarUrl };
   if (cached?.status !== 'ready') return;
   cached = { status: 'ready', account: { ...cached.account, avatarUrl } };
   for (const listener of listeners) listener(cached);

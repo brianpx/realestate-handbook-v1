@@ -71,7 +71,8 @@ export function AvatarCard({ account }: Props) {
     const file = e.target.files?.[0];
     e.target.value = ''; // choosing the same file again must still fire a change
     if (!file) return;
-    if (!(ACCEPTED_AVATAR_TYPES as readonly string[]).includes(file.type)) return fail(WRONG_TYPE);
+    // some browsers report no type for a file they do not know; the server decides from the bytes either way
+    if (file.type && !(ACCEPTED_AVATAR_TYPES as readonly string[]).includes(file.type)) return fail(WRONG_TYPE);
     if (file.size > MAX_AVATAR_BYTES) return fail(TOO_LARGE);
     const form = new FormData();
     form.append('file', file);

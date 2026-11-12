@@ -1,9 +1,9 @@
 import sharp from 'sharp';
 import { AVATAR_SIZE, MAX_AVATAR_BYTES, sniffAvatarFormat } from './avatar';
 
-// 6000 x 4000 is a 24 megapixel camera photo; anything larger is refused before it is decoded, so a small file that
-// declares enormous dimensions cannot exhaust memory.
-const MAX_INPUT_PIXELS = 24_000_000;
+// 16 megapixels (4608 x 3456) covers any phone photo a reader would crop to a face; anything larger is refused before
+// it is decoded, so a small file that declares enormous dimensions cannot exhaust memory.
+const MAX_INPUT_PIXELS = 16_000_000;
 
 export type ProcessedAvatar = { ok: true; webp: Buffer } | { ok: false; reason: 'too_large' | 'unsupported_type' | 'unreadable' };
 

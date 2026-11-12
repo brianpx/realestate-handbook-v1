@@ -69,4 +69,8 @@ describe('processAvatar', () => {
     expect(bomb.byteLength).toBeLessThan(MAX_AVATAR_BYTES);
     expect(await processAvatar(bomb)).toEqual({ ok: false, reason: 'unreadable' });
   });
+  it('draws the pixel limit at 16 megapixels', async () => {
+    expect(await processAvatar(await png(5000, 4000))).toEqual({ ok: false, reason: 'unreadable' });
+    expect((await processAvatar(await png(4000, 3000))).ok).toBe(true);
+  });
 });

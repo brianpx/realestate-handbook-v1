@@ -114,6 +114,13 @@ describe('AvatarCard', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(container.querySelector('[role="alert"]')).not.toBeNull();
   });
+  it('does not turn away a file the browser gave no type for, and lets the server decide', async () => {
+    fetchMock.mockResolvedValue(reply(415, { ok: false, error: 'unsupported_type' }));
+    await render();
+    await pick(picture('', 100, 'me.png'));
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(note()).toBe('Choose a PNG, JPEG or WebP image.');
+  });
   it.each([
     [413, 'too_large', 'That file is larger than 2 MB. Choose a smaller image.'],
     [415, 'unsupported_type', 'Choose a PNG, JPEG or WebP image.'],
