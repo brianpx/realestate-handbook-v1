@@ -65,12 +65,20 @@ test.describe('settings parity', () => {
     expect(await settings(page)).toMatchObject({ dark: true });
   });
 
-  test('scrolling up folds Settings away', async ({ page }) => {
+  test('Escape closes the Settings panel and puts focus back on its button', async ({ page }) => {
+    await open(page, 'ch1');
+    await openSettings(page);
+    await page.locator('#settingDark').focus();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('details.settings')).not.toHaveAttribute('open', '');
+    await expect(page.locator('details.settings summary')).toBeFocused();
+  });
+
+  test('a press outside the panel closes it', async ({ page }) => {
     await open(page, 'ch1');
     await openSettings(page);
     await expect(page.locator('details.settings')).toHaveAttribute('open', '');
-    await page.mouse.move(700, 400);
-    await page.mouse.wheel(0, -200);
+    await page.mouse.click(700, 400);
     await expect(page.locator('details.settings')).not.toHaveAttribute('open', '');
   });
 });

@@ -143,7 +143,7 @@ test.describe('phone menu', () => {
     await page.goto('/handbook/ch13');
     await page.locator('#menuToggle').click();
     const inside = await page.evaluate(() => {
-      const list = document.getElementById('navList')!.getBoundingClientRect();
+      const list = document.getElementById('sidebarBody')!.getBoundingClientRect();
       const row = document.querySelector('#sidebar .nav-item.active')!.getBoundingClientRect();
       return row.top >= list.top && row.bottom <= list.bottom;
     });
@@ -175,6 +175,65 @@ test('on desktop the list scrolls the current page into view, and Appendix E als
   await expect(page.locator('#sidebar a[data-page="tools"]')).toHaveAttribute('aria-current', 'page');
 });
 
+test.describe('desktop sidebar layout', () => {
+  test('the list has room on a short window, and nothing moves when the page scrolls', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await page.goto('/handbook/ch1');
+    const measure = () => page.evaluate(() => ({
+      list: document.getElementById('navList')!.clientHeight,
+      header: document.querySelector('.sidebar-header')!.getBoundingClientRect().height,
+      row: Math.round(document.querySelector('#sidebar a[data-page="ch1"]')!.getBoundingClientRect().top),
+    }));
+    const before = await measure();
+    expect(before.list).toBeGreaterThanOrEqual(300);
+    expect(before.header).toBeLessThan(160);
+    await page.evaluate(() => { document.getElementById('main-content')!.scrollTop = 300; });
+    await page.waitForTimeout(400);
+    expect(await measure()).toEqual(before);
+  });
+
+  for (const height of [600, 700]) {
+    test(`twelve search results scroll in their own region under a pinned box at ${height}px tall`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height });
+      await page.goto('/handbook/ch1');
+      await page.getByLabel('Search the handbook').fill('client');
+      await expect(page.locator('.search-result')).toHaveCount(12);
+      const more = page.locator('.search-more');
+      await more.scrollIntoViewIfNeeded();
+      const geometry = await page.evaluate(() => {
+        const box = document.getElementById('navSearch')!.getBoundingClientRect();
+        const list = document.getElementById('searchResults')!;
+        const last = [...list.querySelectorAll('li')].at(-1)!.getBoundingClientRect();
+        return { boxTop: box.top, boxBottom: box.bottom, lastBottom: last.bottom, listScrolls: list.scrollHeight > list.clientHeight, viewport: innerHeight };
+      });
+      expect(geometry.boxTop).toBeGreaterThanOrEqual(0);
+      expect(geometry.lastBottom).toBeLessThanOrEqual(geometry.viewport);
+      expect(geometry.listScrolls).toBe(true);
+    });
+  }
+
+  test('the rail narrows to 260px between 901 and 1100px, and is 320px above that', async ({ page }) => {
+    const rail = () => page.evaluate(() => Math.round(document.getElementById('sidebar')!.getBoundingClientRect().width));
+    await page.setViewportSize({ width: 1000, height: 800 });
+    await page.goto('/handbook/ch1');
+    expect(await rail()).toBe(260);
+    await page.setViewportSize({ width: 1101, height: 800 });
+    await expect.poll(rail).toBe(320);
+  });
+
+  test('opening Settings does not change the list, and the panel stays inside the window', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await page.goto('/handbook/ch1');
+    const listHeight = () => page.evaluate(() => document.getElementById('navList')!.clientHeight);
+    const before = await listHeight();
+    await page.locator('details.settings summary').click();
+    expect(await listHeight()).toBe(before);
+    const panel = await page.locator('.settings-panel').boundingBox();
+    expect(panel!.y).toBeGreaterThanOrEqual(0);
+    expect(panel!.y + panel!.height).toBeLessThanOrEqual(600);
+  });
+});
+
 test('the current row is back in view after search closes on the same page', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/handbook/app-e');
@@ -201,34 +260,18 @@ test('the page announcement leaves out the read tick', async ({ page }) => {
   await expect(page.locator('#pageStatus')).toHaveText('2. Finding Clients');
 });
 
-test('Settings stays open on a wheel-up while one of its controls has focus', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('/handbook/ch1');
-  const details = page.locator('details.settings');
-  await details.locator('summary').click();
-  await expect(details).toHaveAttribute('open', '');
-  await page.locator('#settingDark').focus();
-
-  const main = await page.locator('#main-content').boundingBox();
-  await page.mouse.move(main!.x + main!.width / 2, main!.y + main!.height / 2);
-  await page.mouse.wheel(0, -200);
-  await expect(details).toHaveAttribute('open', '');
-  await expect(page.locator('#settingDark')).toBeFocused();
-
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.mouse.wheel(0, -200);
-  await expect(details).not.toHaveAttribute('open', '');
-});
-
 // M6 step 14: the sidebar names the product, and lists drawn without bullets keep their list role (Safari and
 // VoiceOver drop it from a list-style: none list unless role="list" says otherwise).
 test('the sidebar is the Handbook navigation and its bullet-less lists keep the list role', async ({ page }) => {
   await page.goto('/handbook/ch1');
-  const sidebar = page.getByRole('navigation', { name: 'Handbook' });
-  await expect(sidebar).toHaveCount(1);
-  await expect(sidebar).toHaveId('sidebar');
-  await expect(sidebar.locator('#navList')).toHaveAttribute('role', 'list');
-  await expect(sidebar.locator('#searchResults')).toHaveAttribute('role', 'list');
+  const nav = page.getByRole('navigation', { name: 'Handbook' });
+  await expect(nav).toHaveCount(1);
+  await expect(page.locator('#sidebar').getByRole('navigation', { name: 'Handbook' })).toHaveCount(1);
+  await expect(nav.locator('#navList')).toHaveAttribute('role', 'list');
+  await expect(page.locator('#sidebar #searchResults')).toHaveAttribute('role', 'list');
+  // Settings is a control panel, not navigation, so it sits outside the landmark
+  await expect(nav.locator('details.settings')).toHaveCount(0);
+  await expect(page.locator('#sidebar details.settings')).toHaveCount(1);
   await expect(page.getByRole('navigation', { name: 'On this page' }).locator('ul')).toHaveAttribute('role', 'list');
 });
 

@@ -22,7 +22,7 @@ function guardSwipes(): () => void {
   let startY = 0;
   const onStart = (e: TouchEvent) => { startY = e.touches[0]?.clientY ?? 0; };
   const onMove = (e: TouchEvent) => {
-    const list = (e.target as Element | null)?.closest<HTMLElement>('.nav-list, .search-results');
+    const list = (e.target as Element | null)?.closest<HTMLElement>('.sidebar-body, .search-results');
     if (!list) { e.preventDefault(); return; }
     const down = (e.touches[0]?.clientY ?? 0) > startY;
     const atTop = list.scrollTop <= 0;
@@ -44,40 +44,30 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
   // Which sidebar row is active: a page id, or one of 'home', 'start', 'plan', 'review', 'account', 'support'.
   const current = pathname === HANDBOOK ? 'home' : (pageIdFromPath(pathname) ?? pathname.slice(1));
 
-  const sidebarRef = useRef<HTMLElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const lockedScrollY = useRef(0);
   const releaseSwipes = useRef<(() => void) | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   // true while search results are open; they pin the page like the menu does and the menu button closes them
   const [searching, setSearching] = useState(false);
   const searchApi = useRef<SearchApi>(null);
   const open = menuOpen || searching;
 
-  // Header slides out of the sidebar as the main panel scrolls; two thresholds avoid flicker.
+  // The phone layout sticks the sidebar so that its header sits just above the screen; --header-h is that offset.
   useEffect(() => {
     const sidebar = sidebarRef.current;
     const header = headerRef.current;
-    const main = document.getElementById('main-content');
-    if (!sidebar || !header || !main) return;
-    const phone = window.matchMedia(PHONE_QUERY);
+    if (!sidebar || !header) return;
     const measure = () => sidebar.style.setProperty('--header-h', `${header.offsetHeight}px`);
     measure();
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
     void document.fonts?.ready.then(measure);
-    const onScroll = () => {
-      if (phone.matches) return; // on phones the sticky header scrolls away with the page
-      if (main.scrollTop > 60) setHeaderCollapsed(true);
-      else if (main.scrollTop < 8) setHeaderCollapsed(false);
-    };
-    main.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', measure);
       window.removeEventListener('load', measure);
-      main.removeEventListener('scroll', onScroll);
     };
   }, []);
 
@@ -150,7 +140,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
       if (!sidebarRef.current?.contains(e.target as Node)) setMenuOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || !menuOpen) return;
+      if (e.key !== 'Escape' || !menuOpen || e.defaultPrevented) return;
       setMenuOpen(false);
       toggleRef.current?.focus();
     };
@@ -238,28 +228,30 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     }
   }, [pathname, syncScrollLock]);
 
-  // The list is long, so bring the current row into view whenever the list is showing (desktop at any route change,
-  // phones when the menu opens). Only the list scrolls: scrollIntoView would move the page too.
+  // The list is long, so bring the current row into view whenever it is showing (desktop at any route change, phones
+  // when the menu opens). Only the scrolling region moves: scrollIntoView would move the page too. That region is the
+  // list itself on desktop and the whole dropdown on phones.
   useEffect(() => {
     const list = document.getElementById('navList');
     const rows = list?.querySelectorAll<HTMLElement>('.nav-item.active');
     const row = rows?.item(rows.length - 1); // Appendix E also marks the tools row above it; the book row is the later one
-    if (!list || !row || list.clientHeight === 0) return; // hidden: a closed phone menu or open search results
+    const scroller = list && (getComputedStyle(list).overflowY === 'auto' ? list : list.closest<HTMLElement>('.sidebar-body'));
+    if (!scroller || !row || scroller.clientHeight === 0) return; // hidden: a closed phone menu or open search results
     const edge = 8;
-    const closeBar = list.querySelector<HTMLElement>('.menu-close')?.offsetHeight ?? 0; // sticky over the bottom on phones
-    const l = list.getBoundingClientRect();
+    const closeBar = scroller.querySelector<HTMLElement>('.menu-close')?.offsetHeight ?? 0; // sticky over the bottom on phones
+    const l = scroller.getBoundingClientRect();
     const r = row.getBoundingClientRect();
-    if (r.top < l.top + edge) list.scrollTop += r.top - l.top - edge;
-    else if (r.bottom > l.bottom - edge - closeBar) list.scrollTop += r.bottom - l.bottom + edge + closeBar;
+    if (r.top < l.top + edge) scroller.scrollTop += r.top - l.top - edge;
+    else if (r.bottom > l.bottom - edge - closeBar) scroller.scrollTop += r.bottom - l.bottom + edge + closeBar;
   }, [pathname, menuOpen, searching]); // searching: the list is hidden meanwhile and comes back unscrolled
 
   const settings = useSettings();
   const { read } = useHandbookState();
-  const classes = [menuOpen && 'menu-open', searching && 'searching', headerCollapsed && 'header-collapsed', !trackingProgress(settings) && 'progress-off'].filter(Boolean).join(' ');
+  const classes = [menuOpen && 'menu-open', searching && 'searching', !trackingProgress(settings) && 'progress-off'].filter(Boolean).join(' ');
 
   return (
     <>
-      <nav id="sidebar" ref={sidebarRef} className={classes} aria-label="Handbook">
+      <div id="sidebar" ref={sidebarRef} className={classes}>
         <div className="sidebar-header" ref={headerRef}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="sidebar-logo logo-light" src="/images/logo3-sidebar-transparent.png" width={320} height={320} alt="" />
@@ -276,26 +268,32 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
             id="menuToggle"
             aria-label={searching ? 'Close search results' : 'Handbook menu'}
             aria-expanded={searching ? true : menuOpen}
-            aria-controls={searching ? 'searchResults' : 'navList'}
+            aria-controls={searching ? 'searchResults' : 'sidebarBody'}
             onClick={() => (searching ? searchApi.current?.clear() : setMenuOpen(o => !o))}
           >
             {open ? '✕' : '☰'}
           </button>
         </SidebarSearch>
-        <ul className="nav-list" id="navList" role="list">
-          <ProgressItem />
-          <ProductLinks current={current} locked={locked} />
-          {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}
-          {NAV.map(group => (
-            <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} locked={locked} />
-          ))}
-          <HelpLinks current={current} />
-          <Settings />
-          <li className="menu-close">
+        <div className="sidebar-body" id="sidebarBody">
+          <nav className="sidebar-nav" aria-label="Handbook">
+            <ul className="nav-list" id="navList" role="list">
+              <ProgressItem />
+              <ProductLinks current={current} locked={locked} />
+              {COACH_ENABLED && trackingProgress(settings) && <StudyLinks current={current} locked={locked} />}
+              {NAV.map(group => (
+                <SectionGroup key={group.part ?? 'top'} group={group} current={current} read={read} locked={locked} />
+              ))}
+              <HelpLinks current={current} />
+            </ul>
+          </nav>
+          <div className="sidebar-footer">
+            <Settings />
+          </div>
+          <div className="menu-close">
             <button type="button" onClick={() => { setMenuOpen(false); toggleRef.current?.focus(); }}>Close menu</button>
-          </li>
-        </ul>
-      </nav>
+          </div>
+        </div>
+      </div>
       <div
         className="menu-backdrop"
         onClick={e => { e.preventDefault(); setMenuOpen(false); searchApi.current?.clear(); }}
