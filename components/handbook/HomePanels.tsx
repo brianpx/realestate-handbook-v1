@@ -37,27 +37,3 @@ export function ContinuePanel() {
     </section>
   );
 }
-
-// `locked` lists the pages the reader's plan does not open; they still link, to the upsell card.
-export function ChapterList({ locked = [] }: { locked?: readonly string[] }) {
-  const { read } = useHandbookState();
-  const tracking = trackingProgress(useSettings());
-  return (
-    <div className="hb-chapters">
-      {NAV.filter(g => g.pages.some(p => p.id !== 'cover')).map(g => (
-        <div key={g.part ?? 'top'} className="hb-part">
-          {g.part && <h3>{g.part}</h3>}
-          <ul role="list">
-            {g.pages.filter(p => p.id !== 'cover').map(p => (
-              <li key={p.id}>
-                <Link href={pageHref(p.id)}>{p.label}</Link>
-                {locked.includes(p.id) && <span className="hb-lock"><span aria-hidden="true">Members</span><span className="visually-hidden"> (members only)</span></span>}
-                {tracking && read[p.id] && !locked.includes(p.id) && <span className="hb-read"> <span aria-hidden="true">✓</span><span className="visually-hidden">read</span></span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-}

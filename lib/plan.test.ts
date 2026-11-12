@@ -49,7 +49,7 @@ describe('reading plan', () => {
     const week1 = UNITS[0]!.chapters.map(ch => ch.slice(2));
     const words = `Chapters ${week1.slice(0, -1).join(', ')} and ${week1.at(-1)}`;
     const setup = readFileSync('components/handbook/StartSetup.tsx', 'utf8');
-    expect(readFileSync('app/(product)/handbook/page.tsx', 'utf8')).toContain(`${words} set`);
+    expect(readFileSync('components/handbook/home/HowToUse.tsx', 'utf8')).toContain(`${words} set`);
     expect(setup).toContain(`first week is ${words}:`);
     const links = /What to read next[\s\S]*?<\/ul>/.exec(setup)?.[0] ?? '';
     expect([...links.matchAll(/pageHref\('(ch\d+)'\)/g)].map(m => m[1])).toEqual(UNITS[0]!.chapters);

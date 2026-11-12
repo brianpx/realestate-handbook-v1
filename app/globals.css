@@ -1148,25 +1148,13 @@
         .hb-title { font-size: 2.2rem; line-height: 1.2; color: var(--primary-color); margin: 4px 0 16px}
         .hb-h2 { font-size: 1.5rem; margin: 40px 0 14px; padding-bottom: 8px}
         .hb-continue { margin: 28px 0 8px; padding: 24px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-accent-tint)}
-        .hb-free-set .hb-actions .btn-mini { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
         .hb-continue h2 { font-size: 1.35rem; border: 0; padding: 0; margin: 0 0 10px}
         .hb-continue p { margin-bottom: 10px}
         .hb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px}
         .hb-primary { display: inline-block; padding: 14px 28px; font-size: 1.05rem; text-decoration: none; min-height: 48px}
         .hb-actions .btn-mini { display: inline-flex; align-items: center; text-decoration: none}
-        .hb-how li { margin-bottom: 10px}
-        .hb-tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 14px}
-        .hb-tool { display: block; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--color-surface); color: var(--text-main); text-decoration: none}
-        .hb-tool:hover { border-color: var(--accent-color); background: var(--color-canvas)}
-        .hb-tool strong { display: block; color: var(--secondary-color); margin-bottom: 4px}
-        .hb-tool span { font-size: 0.92rem; color: var(--color-ink-muted)}
-        .hb-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 32px}
-        .hb-part h3 { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-ink-muted); margin: 18px 0 6px}
-        .hb-part ul { list-style: none; padding: 0; margin: 0}
-        .hb-part li { margin-bottom: 4px}
-        .hb-read { color: var(--color-brand-soft); font-weight: 700}
         /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts); the pages show the upsell card */
-        .nav-lock, .hb-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
+        .nav-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
         .nav-item .nav-lock { float: right; margin-top: 3px}
         .nav-item.locked { color: var(--color-ink-muted)}
         .hb-upsell { max-width: 760px}
@@ -1185,6 +1173,71 @@
         .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
         .hb-upsell .lead-sent p { margin-bottom: 8px}
         .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}
+        /* Handbook home main body (components/handbook/home/*); scoped to .hb-home so the sidebar and other pages are untouched */
+        .hb-home { --home-ink: #0f172a; --home-body: #334155; --home-muted: #5b6b82; --home-primary: #1d4ed8; --home-line: #e2e8f0; --home-band: #eff6ff; --home-pill-bg: #dcfce7; --home-pill-text: #166534; color: var(--home-body)}
+        .hb-home a:focus-visible, .hb-home button:focus-visible { outline: 3px solid var(--home-primary); outline-offset: 2px; border-radius: 6px}
+        .hb-home-section { margin-top: 48px}
+        .hb-home-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 16px}
+        .hb-home .hb-home-h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; line-height: 1.3; font-weight: 700; color: var(--home-ink)}
+        .hb-home-section > .hb-home-h2 { margin-bottom: 16px}
+        .hb-home-head-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-head-link:hover { text-decoration: underline}
+        .hb-home-pill { display: inline-block; flex: none; padding: 2px 10px; border-radius: 999px; background: var(--home-pill-bg); color: var(--home-pill-text); font-size: 12px; line-height: 1.5; font-weight: 600; white-space: nowrap}
+        .hb-home-locked, .hb-home .hb-home-locked { color: var(--home-muted)}
+        .hb-home-hero { margin-top: 0}
+        .hb-home-kicker { margin: 0 0 8px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--home-pill-text)}
+        .hb-home .hb-home-title { margin: 0 0 16px; font-size: 2.375rem; line-height: 1.2; font-weight: 700; color: var(--home-ink)}
+        .hb-home-lead { max-width: 62ch; margin: 0 0 24px; font-size: 1.1rem; line-height: 1.6; color: var(--home-body)}
+        .hb-home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px}
+        .hb-home-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid var(--home-line); border-radius: 6px; font-weight: 600; text-decoration: none}
+        .hb-home-btn-primary { border-color: var(--home-primary); background: var(--home-primary); color: #fff}
+        .hb-home .hb-home-btn-primary:hover { background: #1e40af; border-color: #1e40af; color: #fff}
+        .hb-home-btn-secondary { border-color: #cbd5e1; background: #fff; color: var(--home-ink)}
+        .hb-home-btn-secondary:hover { background: var(--color-canvas)}
+        .hb-home-freeset { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 14px 18px; border-radius: 10px; background: var(--home-band)}
+        .hb-home-freeset-text { flex: 1 1 320px; margin: 0; line-height: 1.5; color: var(--home-body)}
+        .hb-home-freeset-text strong { color: var(--home-ink)}
+        .hb-home-freeset-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-freeset-link:hover { text-decoration: underline}
+        .hb-home-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0 0 16px; padding: 0; list-style: none}
+        .hb-home-step { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--home-line); border-radius: 10px; background: #fff}
+        .hb-home-step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--home-primary); color: #fff; font-size: 0.95rem; font-weight: 700}
+        .hb-home-step h3 { margin: 0; font-size: 1.05rem; line-height: 1.35; color: var(--home-ink)}
+        .hb-home-step p { margin: 0; line-height: 1.5}
+        .hb-home-step-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: auto; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-step-link:hover { text-decoration: underline}
+        .hb-home-fine { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--home-muted)}
+        .hb-home-fine a { color: var(--home-primary); font-weight: 600}
+        .hb-home-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 0.9rem; color: var(--home-muted)}
+        .hb-home-groups { border-bottom: 1px solid var(--home-line)}
+        .hb-home-group { display: flex; gap: 24px; padding: 16px 0; border-top: 1px solid var(--home-line)}
+        .hb-home-group-label { flex: 0 0 200px; width: 200px}
+        .hb-home-eyebrow { margin: 0 0 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--home-muted)}
+        .hb-home-group-label h3 { margin: 0; font-size: 1.1rem; line-height: 1.3; color: var(--home-ink)}
+        .hb-home-rows { flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; list-style: none}
+        .hb-home-row { margin: 0}
+        .hb-home-row + .hb-home-row { border-top: 1px solid var(--home-line)}
+        .hb-home-row-link { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 8px; border-radius: 6px; color: var(--home-primary); text-decoration: none}
+        .hb-home-row-link:hover { background: var(--home-band)}
+        .hb-home-row-link.hb-home-locked { color: var(--home-muted)}
+        .hb-home-row-num { flex: 0 0 28px; font-variant-numeric: tabular-nums; color: var(--home-muted)}
+        .hb-home-row-title { flex: 1 1 auto; min-width: 0; font-weight: 600}
+        .hb-home-read { flex: none; margin-left: auto; font-weight: 700; color: var(--home-pill-text)}
+        .hb-home-row-link .hb-home-pill, .hb-home-tool-top .hb-home-pill { margin-left: auto}
+        .hb-home-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px}
+        .hb-home-tool { display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 16px 18px; border: 1px solid var(--home-line); border-radius: 10px; background: #fff; color: var(--home-body); text-decoration: none}
+        .hb-home-tool:hover { border-color: var(--home-primary); background: var(--home-band)}
+        .hb-home-tool-top { display: flex; align-items: center; justify-content: space-between; gap: 8px}
+        .hb-home-tool-name { font-size: 1rem; color: var(--home-primary)}
+        .hb-home-tool.hb-home-locked .hb-home-tool-name, .hb-home-tool.hb-home-locked .hb-home-tool-task { color: var(--home-muted)}
+        .hb-home-tool-task { line-height: 1.45; color: var(--home-body)}
+        .hb-home-tool-where { font-size: 0.85rem; color: var(--home-muted)}
+        @media (max-width: 640px) {
+            .hb-home .hb-home-title { font-size: 1.9rem}
+            .hb-home-group { flex-direction: column; gap: 8px}
+            .hb-home-group-label { flex: none; width: auto}
+            .hb-home-btn { flex: 1 1 100%}
+        }
         .box.tool-locked { border-style: dashed}
         /* The account page: facts, and the two forms that post without JavaScript */
         .account-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; margin: 0 0 16px}

@@ -36,8 +36,24 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await page.goto('/handbook');
     await expect(page.locator('[data-free-set]')).toContainText('You are reading the free set');
     await expect(page.getByRole('navigation', { name: 'breadcrumb' })).toHaveCount(0);
-    await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
-    await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 7' })).toHaveAttribute('href', '/handbook/ch7');
+    const hero = page.locator('[data-home-hero]');
+    await expect(hero.getByRole('link', { name: 'Read Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
+    await expect(hero.getByRole('link', { name: 'Read Chapter 7' })).toHaveAttribute('href', '/handbook/ch7');
+    await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Pricing and availability' })).toHaveAttribute('href', '/pricing');
+
+    const main = page.locator('.hb-home');
+    await expect(main.locator('a[href="/handbook/start"]')).toHaveCount(0);
+    await expect(main.locator('svg.lucide-lock')).toHaveCount(0);
+    const chapters = main.locator('.hb-home-groups');
+    for (const id of ['cover', 'pref', 'ch1', 'ch7']) {
+      await expect(chapters.locator(`a[href="/handbook/${id}"]`).locator('.hb-home-pill')).toHaveText('Free');
+    }
+    const locked = chapters.locator('a[href="/handbook/ch2"]');
+    await expect(locked.locator('.hb-home-pill')).toHaveCount(0);
+    await expect(locked.locator('.visually-hidden')).toHaveText(/members only/);
+    const tools = main.locator('.hb-home-tools');
+    await expect(tools.locator('a[data-goto="ch1"]')).toHaveAttribute('data-widget', 'goal-calculator');
+    await expect(tools.locator('a[data-goto="ch2"]')).not.toHaveAttribute('data-widget', /.+/);
     const nav = page.locator('#sidebar');
     await expect(nav.locator('a[data-page="ch2"] .nav-lock')).toHaveText(/Members/);
     await expect(nav.locator('a[data-page="ch1"] .nav-lock')).toHaveCount(0);
