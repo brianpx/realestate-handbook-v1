@@ -58,13 +58,24 @@ describe('DisplayNameForm', () => {
     expect(container.querySelector('[role="status"]')?.textContent).toBe('Saved.');
     expect(button().disabled).toBe(true);
   });
+  it('clears the saved name when the box is emptied and saved', async () => {
+    fetchMock.mockResolvedValue(reply(200, { ok: true, displayName: null }));
+    await render('Pat');
+    await type('');
+    expect(button().disabled).toBe(false);
+    await submit();
+    expect(JSON.parse(String((fetchMock.mock.calls[0]![1] as RequestInit).body))).toEqual({ displayName: '' });
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('Saved.');
+    expect(input().value).toBe('');
+    expect(button().disabled).toBe(true);
+  });
   it('names a rejected value on the box and in an alert', async () => {
     fetchMock.mockResolvedValue(reply(400, { ok: false, error: 'invalid_display_name' }));
     await render('Pat');
     await type('   ');
     await submit();
     const alert = container.querySelector('[role="alert"]')!;
-    expect(alert.textContent).toBe('Enter a name of 1 to 32 characters.');
+    expect(alert.textContent).toBe('Use 32 characters at most, with no control characters.');
     expect(input().getAttribute('aria-invalid')).toBe('true');
     expect(input().getAttribute('aria-describedby')).toBe(alert.id);
   });

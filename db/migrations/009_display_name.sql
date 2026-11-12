@@ -7,7 +7,7 @@
 -- Rules the code relies on:
 --   * null means "not chosen": the name shown falls back to first_name and last_name, then to the part of the
 --     address before the @ (lib/users/display-name.ts)
---   * the value is stored trimmed, 1 to 32 characters; clearing the name writes null, never an empty string
+--   * the value is stored trimmed, 1 to 32 characters; saving an empty name writes null, never an empty string
 --   * only the signed-in reader writes it, for their own row, by the one statement below
 
 alter table users add column if not exists display_name text

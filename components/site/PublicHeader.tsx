@@ -84,7 +84,10 @@ export function PublicHeader() {
           {!signingIn && (signedIn && account.status !== 'out'
             ? account.status === 'ready'
               ? <><div className="pub-user"><UserMenu account={account.account} /></div><AccountPanel account={account.account} /></>
-              : <div className="pub-user"><UserMenuPlaceholder /></div>
+              : account.status === 'error'
+                ? <Link href="/account" className="pub-nav-cta">Account<ArrowRightIcon aria-hidden="true" /></Link>
+                // the phone panel has no placeholder, so it offers a plain link until the summary arrives
+                : <><div className="pub-user"><UserMenuPlaceholder /></div><div className="pub-account"><Link href="/account" className="pub-account-link">Account</Link></div></>
             : <Link href="/signin" className="pub-nav-cta">Sign in<ArrowRightIcon aria-hidden="true" /></Link>)}
         </nav>
       </div>

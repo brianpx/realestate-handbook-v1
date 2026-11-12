@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import type { AccountSummary } from '@/lib/account/me';
 
-// 'loading' until /api/account/me answers; 'out' when it did not give a summary (401 for a stale sign-in flag, or an error).
-export type AccountState = { status: 'idle' | 'loading' | 'out' } | { status: 'ready'; account: AccountSummary };
+// 'loading' until /api/account/me answers; 'out' for a 401 (a stale sign-in flag); 'error' when the request failed or
+// gave no summary, so the header can keep offering the account instead of asking a signed-in reader to sign in.
+export type AccountState = { status: 'idle' | 'loading' | 'out' | 'error' } | { status: 'ready'; account: AccountSummary };
 
 const isSummary = (value: unknown): value is AccountSummary =>
   typeof value === 'object' && value !== null
@@ -21,12 +22,12 @@ async function load(): Promise<AccountState> {
   try {
     const res = await fetch('/api/account/me', { credentials: 'same-origin' });
     if (res.status === 401) return (cached = { status: 'out' });
-    if (!res.ok) return { status: 'out' };
+    if (!res.ok) return { status: 'error' };
     const body: unknown = await res.json();
-    if (!isSummary(body)) return { status: 'out' };
+    if (!isSummary(body)) return { status: 'error' };
     return (cached = { status: 'ready', account: { displayName: body.displayName, email: body.email, avatarUrl: body.avatarUrl } });
   } catch {
-    return { status: 'out' };
+    return { status: 'error' };
   }
 }
 

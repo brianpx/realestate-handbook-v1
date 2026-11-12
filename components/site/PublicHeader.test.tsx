@@ -67,6 +67,22 @@ it('reserves the avatar space while the account loads, with no Sign in or Open h
   expect(container.querySelector('.pub-nav-cta')).toBeNull();
 });
 
+it('offers an Account link, not Sign in, when the account request failed', async () => {
+  session.signedIn = true;
+  session.account = { status: 'error' };
+  await act(() => root.render(<PublicHeader />));
+  const cta = container.querySelector('.pub-nav-cta');
+  expect(cta?.textContent).toBe('Account');
+  expect(cta?.getAttribute('href')).toBe('/account');
+});
+
+it('gives the phone panel an Account link while the account loads', async () => {
+  session.signedIn = true;
+  session.account = { status: 'loading' };
+  await act(() => root.render(<PublicHeader />));
+  expect(container.querySelector('.pub-account a')?.getAttribute('href')).toBe('/account');
+});
+
 it('replaces the call to action with the user menu and an inline account panel once signed in', async () => {
   session.signedIn = true;
   session.account = { status: 'ready', account: { displayName: 'Sam Rivera', email: 'sam@example.com', avatarUrl: null } };

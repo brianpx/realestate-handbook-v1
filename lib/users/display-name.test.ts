@@ -20,8 +20,12 @@ describe('displayNameInputSchema', () => {
     expect(displayNameInputSchema.parse({ displayName: '  Pat ' })).toEqual({ displayName: 'Pat' });
     expect(displayNameInputSchema.safeParse({ displayName: 'x'.repeat(32) }).success).toBe(true);
   });
-  it('refuses empty, over-long, non-string and extra keys', () => {
-    for (const body of [{ displayName: '   ' }, { displayName: 'x'.repeat(33) }, { displayName: null }, { displayName: 'a', id: 'b' }]) {
+  it('reads an empty or blank name as clearing it', () => {
+    expect(displayNameInputSchema.parse({ displayName: '' })).toEqual({ displayName: null });
+    expect(displayNameInputSchema.parse({ displayName: '   ' })).toEqual({ displayName: null });
+  });
+  it('refuses over-long, non-string, control-character and extra-key bodies', () => {
+    for (const body of [{ displayName: 'x'.repeat(33) }, { displayName: null }, { displayName: 'a', id: 'b' }, { displayName: 'a\u202Eb' }, { displayName: 'a\u0000b' }, { displayName: 'a\u200Bb' }]) {
       expect(displayNameInputSchema.safeParse(body).success).toBe(false);
     }
   });

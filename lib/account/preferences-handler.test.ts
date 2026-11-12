@@ -35,9 +35,15 @@ describe('saving the preferences', () => {
     expect((await users.findById(user.id))?.displayName).toBe('Pat Realtor');
     expect((await users.findById(other.id))?.displayName).toBeNull();
   });
-  it('rejects a name that is blank, too long, or comes with an account id, and writes nothing', async () => {
+  it('clears the name when an empty one is saved', async () => {
+    const { users, deps, user, req } = await setup();
+    await handleSavePreferences(req({ displayName: 'Pat' }), deps);
+    expect(await handleSavePreferences(req({ displayName: '   ' }), deps)).toEqual({ status: 200, body: { ok: true, displayName: null } });
+    expect((await users.findById(user.id))?.displayName).toBeNull();
+  });
+  it('rejects a name that is too long, has control characters, or comes with an account id, and writes nothing', async () => {
     const { users, deps, user, other, req } = await setup();
-    for (const body of [{ displayName: '   ' }, { displayName: 'x'.repeat(33) }, { displayName: 7 }, {}, { displayName: 'Pat', userId: other.id }, []]) {
+    for (const body of [{ displayName: 'a\u202Eb' }, { displayName: 'x'.repeat(33) }, { displayName: 7 }, {}, { displayName: 'Pat', userId: other.id }, []]) {
       expect(await handleSavePreferences(req(body), deps)).toEqual({ status: 400, body: { ok: false, error: 'invalid_display_name' } });
     }
     expect(await handleSavePreferences(req('not json'), deps)).toEqual({ status: 400, body: { ok: false, error: 'invalid_request' } });

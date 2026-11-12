@@ -3,9 +3,12 @@ import type { User } from './types';
 
 export const DISPLAY_NAME_MAX = 32;
 
-/** The PUT body of /api/account/preferences: trimmed, 1 to 32 characters (the database check in 009 says the same). */
+/**
+ * The PUT body of /api/account/preferences: trimmed, at most 32 characters, no control or format characters (they
+ * could reorder or hide text where the name is shown). An empty name clears the choice and arrives as null.
+ */
 export const displayNameInputSchema = z.object({
-  displayName: z.string().trim().min(1).max(DISPLAY_NAME_MAX),
+  displayName: z.string().trim().max(DISPLAY_NAME_MAX).refine(name => !/\p{C}/u.test(name)).transform(name => name || null),
 }).strict();
 
 /** The name shown for a reader: the one they chose, else first and last name, else the address before the @. */

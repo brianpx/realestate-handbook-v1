@@ -40,13 +40,13 @@ export function DisplayNameForm({ initial, placeholder }: Props) {
         body: JSON.stringify({ displayName: value }),
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string; displayName?: unknown };
-      if (res.ok && typeof body.displayName === 'string') {
-        setSaved(body.displayName);
-        setValue(body.displayName);
+      if (res.ok && (typeof body.displayName === 'string' || body.displayName === null)) {
+        setSaved(body.displayName ?? '');
+        setValue(body.displayName ?? '');
         setState({ kind: 'saved' });
         return;
       }
-      if (res.status === 400 && body.error === 'invalid_display_name') fail(`Enter a name of 1 to ${MAX_LENGTH} characters.`, true);
+      if (res.status === 400 && body.error === 'invalid_display_name') fail(`Use ${MAX_LENGTH} characters at most, with no control characters.`, true);
       else if (res.status === 401) fail('Your sign-in has ended. Sign in again, then come back to this page.');
       else if (res.status === 503) fail('Saving is not available right now. Please try again later.');
       else fail(GENERIC_ERROR);
