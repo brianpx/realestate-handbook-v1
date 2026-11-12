@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FooterLinks } from '@/components/shell/FooterLinks';
 import { copyright, HELP_LINKS, POLICY_LINKS } from '@/lib/footer';
 
 // Sits at the end of the scrolling #main-content, after every handbook and account page. It is not sticky: reading
@@ -10,11 +10,7 @@ export function HandbookFooter() {
     <footer className="handbook-footer">
       {notice ? <p>{notice}</p> : null}
       <nav aria-label="Policies and help">
-        <ul role="list">
-          {[...HELP_LINKS, ...POLICY_LINKS].map((link) => (
-            <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
-          ))}
-        </ul>
+        <FooterLinks links={[...HELP_LINKS, ...POLICY_LINKS]} />
       </nav>
     </footer>
   );

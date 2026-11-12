@@ -95,6 +95,14 @@ test.describe('chapter end parity', () => {
     await expect(footer).toBeVisible();
   });
 
+  test('a footer link opens a page with a way back to the chapter', async ({ page }) => {
+    await open(page, 'ch3');
+    await page.locator('footer.handbook-footer').getByRole('link', { name: 'Privacy' }).click();
+    await expect(page).toHaveURL(/\/privacy\?from=%2Fhandbook%2Fch3$/);
+    await page.getByRole('link', { name: /^Back to 3\. / }).click();
+    await expect(page).toHaveURL(/\/handbook\/ch3$/);
+  });
+
   test('the last page links back to the handbook home', async ({ page }) => {
     await open(page, 'app-f');
     await expect(page.locator('.chapter-next a')).toHaveText('Back to the handbook home');

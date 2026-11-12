@@ -24,6 +24,9 @@
 .pub-main { flex: 1; outline: none}
 .pub-crumbs { padding: 18px 0 0}
 .pub-crumbs a { text-decoration: none}
+.pub-return { margin: 0; padding: 18px 0 0}
+.pub-return a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; text-decoration: none}
+.pub-return + .pub-crumbs { padding-top: 0}
 .pub-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px}
 .pub-narrow { max-width: 760px}
 
