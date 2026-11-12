@@ -25,7 +25,7 @@ const cellValue = (feature: Feature, tier: TierId): FeatureValue => {
   return value !== false && feature.publishedWhen && !termPublished(feature.publishedWhen) ? 'Not published yet' : value;
 };
 
-function FeatureCell({ value }: { value: FeatureValue }) {
+function FeatureCell({ value, href }: { value: FeatureValue; href?: string }) {
   if (value === true) {
     return (
       <>
@@ -42,6 +42,7 @@ function FeatureCell({ value }: { value: FeatureValue }) {
       </>
     );
   }
+  if (href) return <a href={href} className="text-foreground underline underline-offset-4">{value}</a>;
   return <span className="text-muted-foreground">{value}</span>;
 }
 
@@ -115,7 +116,7 @@ export function PricingTable() {
             {FEATURES.map(feature => (
               <div key={feature.label} className="flex items-center justify-center border-b px-4 py-5">
                 <span className="sr-only">{feature.label}: </span>
-                <FeatureCell value={cellValue(feature, tier.id)} />
+                <FeatureCell value={cellValue(feature, tier.id)} href={feature.links?.[tier.id]} />
               </div>
             ))}
 
@@ -148,7 +149,7 @@ export function PricingTable() {
                   {FEATURES.map(feature => (
                     <li key={feature.label} className="flex items-center justify-between gap-4 py-3">
                       <span className="font-medium text-foreground">{feature.label}</span>
-                      <span className="flex items-center text-right"><FeatureCell value={cellValue(feature, tier.id)} /></span>
+                      <span className="flex items-center text-right"><FeatureCell value={cellValue(feature, tier.id)} href={feature.links?.[tier.id]} /></span>
                     </li>
                   ))}
                 </ul>
