@@ -800,11 +800,11 @@
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
             .chapter-next { break-after: avoid}
-        .handbook-footer { max-width: 900px; margin: 24px auto 0; padding: 16px 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
-        .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 8px; padding: 0; list-style: none}
-        .handbook-footer a { display: inline-block; padding: 6px 0; color: var(--color-link)}
+        .handbook-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin: 48px 0 0; padding: 20px 0 16px; border-top: 1px solid var(--color-line); font-size: 0.875rem; line-height: 1.5; color: var(--color-ink-muted)}
+        .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 0; padding: 0; list-style: none}
+        .handbook-footer a { display: inline-block; padding: 10px; margin: 0 -2px; color: var(--color-ink-muted); text-decoration: none; border-radius: 6px}
+        .handbook-footer a:hover { color: var(--color-link); text-decoration: underline; text-underline-offset: 3px}
         .handbook-footer p { margin: 0}
-        html.wide .handbook-footer { max-width: 1400px}
             .chapter-foot, .load-error { break-inside: avoid; color: #000; border-color: #000}
         }
 

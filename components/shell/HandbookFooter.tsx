@@ -8,6 +8,7 @@ export function HandbookFooter() {
   const notice = copyright();
   return (
     <footer className="handbook-footer">
+      {notice ? <p>{notice}</p> : null}
       <nav aria-label="Policies and help">
         <ul role="list">
           {[...HELP_LINKS, ...POLICY_LINKS].map((link) => (
@@ -15,7 +16,6 @@ export function HandbookFooter() {
           ))}
         </ul>
       </nav>
-      {notice ? <p>{notice}</p> : null}
     </footer>
   );
 }
