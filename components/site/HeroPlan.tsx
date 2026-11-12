@@ -87,7 +87,7 @@ export function HeroPlan() {
                     <tr><th scope="row">Appointments needed</th><td>{fmtNum(plan.closings)} × {CALC_DEFAULTS.apc}</td><td>{fmtNum(plan.appts)}</td></tr>
                     <tr><th scope="row">Conversations annually</th><td>{fmtNum(plan.appts)} × {CALC_DEFAULTS.cpa}</td><td>{fmtNum(plan.convs)}</td></tr>
                     <tr><th scope="row">Conversations per week</th><td>{fmtNum(plan.convs)} ÷ {CALC_DEFAULTS.weeks}</td><td>{decimal(plan.perWeek)}</td></tr>
-                    <tr><th scope="row">Conversations per working day</th><td>{decimal(plan.perWeek)} ÷ {WORKDAYS_PER_WEEK}</td><td>{decimal(plan.perDay)}</td></tr>
+                    <tr><th scope="row">Conversations per day</th><td>{decimal(plan.perWeek)} ÷ {WORKDAYS_PER_WEEK}</td><td>{decimal(plan.perDay)}</td></tr>
                   </tbody>
                 </table>
                 <p>Weekly and daily averages are rounded to at most two decimal places. Daily targets of one or more use a range when they fall between whole numbers.</p>
