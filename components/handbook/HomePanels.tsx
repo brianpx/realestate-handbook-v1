@@ -1,5 +1,6 @@
 'use client';
 
+import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { checkpointConfident, rollupText } from '@/lib/checkpoints';
 import { NAV } from '@/lib/pages';
@@ -51,7 +52,7 @@ export function ChapterList({ locked = [] }: { locked?: readonly string[] }) {
             {g.pages.filter(p => p.id !== 'cover').map(p => (
               <li key={p.id}>
                 <Link href={pageHref(p.id)}>{p.label}</Link>
-                {locked.includes(p.id) && <span className="hb-lock"><span aria-hidden="true">Members</span><span className="visually-hidden"> (members only)</span></span>}
+                {locked.includes(p.id) && <span className="hb-lock" title="Members only"><Lock aria-hidden="true" size={12} strokeWidth={2.25} /><span className="visually-hidden"> (members only)</span></span>}
                 {tracking && read[p.id] && !locked.includes(p.id) && <span className="hb-read"> <span aria-hidden="true">✓</span><span className="visually-hidden">read</span></span>}
               </li>
             ))}

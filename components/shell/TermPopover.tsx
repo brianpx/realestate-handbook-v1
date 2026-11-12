@@ -5,7 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { announce } from '@/lib/announce';
 
 // How the popover came to be open: a click pins it, a hover only shows it while the pointer is there.
-type Open = { owner: HTMLElement; name: string; definition: string; by: 'click' | 'hover' };
+type Open = { owner: HTMLElement; name: string; definition: string; by: 'click' | 'hover'; top: number; left: number };
 
 // One popover for every glossary term in the page. The terms are plain buttons made at build time (lib/glossary.ts),
 // so this listens on the document rather than on each button. Ported from openTermPop in legacy/js/widgets-plan.js.
@@ -24,14 +24,15 @@ export function TermPopover() {
   // WCAG 1.4.13: a hover popover stays open while the pointer moves onto it
   const scheduleClose = useCallback((owner: HTMLElement) => {
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => { if (openRef.current?.owner === owner) close(); }, 250);
+    timer.current = setTimeout(() => { if (openRef.current?.owner === owner && openRef.current.by === 'hover') close(); }, 250);
   }, [close]);
 
   useEffect(() => {
     const termOf = (e: Event) => (e.target as Element | null)?.closest<HTMLElement>('.term') ?? null;
     const show = (button: HTMLElement, by: Open['by']) => {
       clearTimeout(timer.current);
-      setOpen({ owner: button, name: button.dataset.term ?? '', definition: button.dataset.definition ?? '', by });
+      const rect = button.getBoundingClientRect();
+      setOpen({ owner: button, name: button.dataset.term ?? '', definition: button.dataset.definition ?? '', by, top: rect.top, left: rect.left });
     };
     const hoverCapable = () => window.matchMedia('(hover: hover)').matches;
 
@@ -51,23 +52,39 @@ export function TermPopover() {
     const onOver = (e: MouseEvent) => { const b = termOf(e); if (b && hoverCapable() && openRef.current?.owner !== b) show(b, 'hover'); };
     const onOut = (e: MouseEvent) => { const b = termOf(e); if (b && hoverCapable() && openRef.current?.owner === b) scheduleClose(b); };
     const onKey = (e: KeyboardEvent) => {
+      const pop = popRef.current;
+      if (pop && openRef.current?.by === 'click' && document.activeElement === openRef.current.owner) {
+        const movement = e.key === 'ArrowDown' ? 40 : e.key === 'ArrowUp' ? -40 : e.key === 'PageDown' ? pop.clientHeight : e.key === 'PageUp' ? -pop.clientHeight : undefined;
+        if (movement !== undefined || e.key === 'Home' || e.key === 'End') {
+          e.preventDefault();
+          pop.scrollTop = e.key === 'Home' ? 0 : e.key === 'End' ? pop.scrollHeight : pop.scrollTop + (movement ?? 0);
+        }
+      }
       if (e.key === 'Escape' && openRef.current) { const owner = openRef.current.owner; close(); owner.focus(); }
+    };
+    // A queued focus-scroll event can arrive after opening. Only dismiss if the anchor actually moved;
+    // scrolling a bounded definition must keep it open.
+    const onScroll = () => {
+      const current = openRef.current;
+      if (!current) return;
+      const rect = current.owner.getBoundingClientRect();
+      if (rect.top !== current.top || rect.left !== current.left) close();
     };
     const main = document.getElementById('main-content');
     document.addEventListener('click', onClick);
     document.addEventListener('mouseover', onOver);
     document.addEventListener('mouseout', onOut);
     document.addEventListener('keydown', onKey);
-    main?.addEventListener('scroll', close, { passive: true });
-    window.addEventListener('scroll', close, { passive: true });
+    main?.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', close);
     return () => {
       document.removeEventListener('click', onClick);
       document.removeEventListener('mouseover', onOver);
       document.removeEventListener('mouseout', onOut);
       document.removeEventListener('keydown', onKey);
-      main?.removeEventListener('scroll', close);
-      window.removeEventListener('scroll', close);
+      main?.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', close);
     };
   }, [close, scheduleClose]);
@@ -89,13 +106,29 @@ export function TermPopover() {
   useLayoutEffect(() => {
     const pop = popRef.current;
     if (!open || !pop) return;
-    const rect = open.owner.getBoundingClientRect();
-    const width = Math.min(320, window.innerWidth - 24);
-    pop.style.width = `${width}px`;
-    pop.style.left = `${Math.min(Math.max(12, rect.left), window.innerWidth - width - 12)}px`;
-    const below = rect.bottom + 8;
-    pop.style.top = `${below}px`;
-    if (below + pop.offsetHeight > window.innerHeight - 8) pop.style.top = `${Math.max(8, rect.top - pop.offsetHeight - 8)}px`;
+    const position = () => {
+      const viewport = window.visualViewport;
+      const viewportLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportWidth = viewport?.width ?? window.innerWidth;
+      const viewportHeight = viewport?.height ?? window.innerHeight;
+      const rect = open.owner.getBoundingClientRect();
+      const width = Math.max(0, Math.min(320, viewportWidth - 24));
+      pop.style.width = `${width}px`;
+      pop.style.maxHeight = `${Math.max(0, viewportHeight - 16)}px`;
+      pop.style.left = `${Math.min(Math.max(viewportLeft + 12, rect.left), viewportLeft + viewportWidth - width - 12)}px`;
+      const bottom = viewportTop + viewportHeight - 8;
+      const below = rect.bottom + 8;
+      const preferred = below + pop.offsetHeight <= bottom ? below : rect.top - pop.offsetHeight - 8;
+      pop.style.top = `${Math.max(viewportTop + 8, Math.min(preferred, bottom - pop.offsetHeight))}px`;
+    };
+    position();
+    window.visualViewport?.addEventListener('resize', position);
+    window.visualViewport?.addEventListener('scroll', position);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', position);
+      window.visualViewport?.removeEventListener('scroll', position);
+    };
   }, [open]);
 
   return (

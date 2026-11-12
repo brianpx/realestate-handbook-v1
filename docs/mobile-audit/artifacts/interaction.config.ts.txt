@@ -1,0 +1,3 @@
+import {defineConfig} from '@playwright/test';
+import {signedInState} from './e2e/auth';
+export default defineConfig({testDir:'.',testMatch:['interaction.spec.ts','e2e/a11y.spec.ts','e2e/semantic-html.spec.ts','e2e/css.spec.ts'],timeout:60000,workers:1,reporter:[['json',{outputFile:'/Users/mmbp/Projects/code/realestate-handbook-v1/docs/mobile-audit/artifacts/production-interaction-tests.json'}]],outputDir:'interaction-output',use:{baseURL:'http://localhost:3199',storageState:signedInState([])}});

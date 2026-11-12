@@ -16,12 +16,32 @@ export const SESSION_CAP_SECONDS = 365 * 24 * 3600; // absolute, from creation
 export const SESSION_RENEW_AFTER_SECONDS = 24 * 3600; // a session is extended at most this often
 
 // Attempts count whether or not they succeed. Request-link is limited per connection and per address; verify per
-// connection only, so the failure card cannot be used to probe token hashes by volume.
+// connection only, so the failure card cannot be used to probe token hashes by volume. Local `next dev` shares one
+// IP (`local`) and one mailbox, so production numbers block the owner; development uses a high ceiling instead.
 export const REQUEST_LINK_LIMITS = {
   ip: { attempts: 5, windowSeconds: 600 },
   email: { attempts: 3, windowSeconds: 3600 },
 } as const;
 export const VERIFY_LIMIT = { attempts: 10, windowSeconds: 600 } as const;
+export const DEV_ATTEMPT_CEILING = 10_000;
+
+export type AttemptWindow = { attempts: number; windowSeconds: number };
+export type AuthRateLimits = {
+  requestLink: { ip: AttemptWindow; email: AttemptWindow };
+  verify: AttemptWindow;
+};
+
+/** Production keeps the tight windows; every other NODE_ENV (including `next dev`) uses the high ceiling. */
+export function authRateLimits(env: { NODE_ENV?: string }): AuthRateLimits {
+  if (env.NODE_ENV === 'production') return { requestLink: REQUEST_LINK_LIMITS, verify: VERIFY_LIMIT };
+  return {
+    requestLink: {
+      ip: { attempts: DEV_ATTEMPT_CEILING, windowSeconds: REQUEST_LINK_LIMITS.ip.windowSeconds },
+      email: { attempts: DEV_ATTEMPT_CEILING, windowSeconds: REQUEST_LINK_LIMITS.email.windowSeconds },
+    },
+    verify: { attempts: DEV_ATTEMPT_CEILING, windowSeconds: VERIFY_LIMIT.windowSeconds },
+  };
+}
 export const MAX_BODY_BYTES = 4096;
 
 export const DEFAULT_NEXT_PATH = '/handbook';
