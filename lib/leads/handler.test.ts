@@ -282,16 +282,20 @@ describe('mail', () => {
     const cfg = mailFromEnv({ MAILPIT_URL: 'http://localhost:8025', LEAD_FROM_EMAIL: 'me@x.co', LEAD_MAILING_ADDRESS: '1 Main St' });
     expect(await sendConfirmation(cfg, 'to@y.co', 'https://x.co/subscribe/confirm?token=t', UNSUB, fetchImpl)).toBe('sent');
     expect(fetchImpl.mock.calls[0]![0]).toBe('http://localhost:8025/api/v1/send');
-    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('x', 'y', UNSUB).subject });
+    expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ From: { Email: 'me@x.co' }, To: [{ Email: 'to@y.co' }], Subject: confirmationMessage('https://x.co/subscribe/confirm?token=t', 'y', UNSUB).subject });
     expect(JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string).Headers).toEqual({ 'List-Unsubscribe': `<${UNSUB.oneClick}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' });
   });
   it('carries the link, says nothing is sent without it, how to stop later, and the postal address', () => {
-    const { text } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield', UNSUB);
+    const { text, html } = confirmationMessage('https://x.co/subscribe/confirm?token=t', '1 Main St, Springfield', UNSUB);
     expect(text).toContain('https://x.co/subscribe/confirm?token=t');
     expect(text).toContain('Nothing is sent until you do');
     expect(text).toContain('reply "unsubscribe"');
     expect(text).toContain(UNSUB.page);
+    expect(text.indexOf('https://x.co/subscribe/confirm?token=t')).toBeLessThan(text.indexOf(UNSUB.page));
     expect(text.endsWith('1 Main St, Springfield')).toBe(true);
+    expect(html).toContain('Confirm my email');
+    expect(html).toContain(`href="${UNSUB.page}"`);
+    expect(html).toContain('1 Main St, Springfield');
   });
 });
 

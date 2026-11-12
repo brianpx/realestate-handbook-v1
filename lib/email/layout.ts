@@ -70,6 +70,16 @@ function linkBox(href: string): string {
 </div>`;
 }
 
+/** Turns a bare address in a closing line into a link. A trailing period stays outside the href. */
+function linkify(line: string): string {
+  return line.split(/(https?:\/\/[^\s]+)/g).map(part => {
+    if (!/^https?:\/\//.test(part)) return escapeHtml(part);
+    const href = part.replace(/[.,);]+$/, '');
+    const tail = part.slice(href.length);
+    return `<a href="${escapeHtml(href)}" style="color:${EMAIL_NAVY};text-decoration:underline;word-break:break-all;">${escapeHtml(href)}</a>${escapeHtml(tail)}`;
+  }).join('');
+}
+
 /** Plain-text twin of the card. The postal line, when set, is last so a commercial footer can be checked by its ending. */
 export function emailText({ headline, intro, action, expires, fallback, closing = [], postalAddress }: EmailCard): string {
   const lines = [headline, '', intro];
@@ -91,7 +101,7 @@ export function emailHtml(card: EmailCard): string {
     fallback
       ? `<p style="margin:16px 0 8px;font-family:${FONT};font-size:14px;line-height:20px;color:${EMAIL_MUTED};">${escapeHtml(fallback.label)}</p>${linkBox(fallback.href)}`
       : '',
-    ...closing.map(line => `<p style="margin:16px 0 0;font-family:${FONT};font-size:14px;line-height:22px;color:${EMAIL_MUTED};">${escapeHtml(line)}</p>`),
+    ...closing.map(line => `<p style="margin:16px 0 0;font-family:${FONT};font-size:14px;line-height:22px;color:${EMAIL_MUTED};">${linkify(line)}</p>`),
   ].filter(Boolean).join('\n');
   const divided = after
     ? `<div style="border-top:1px solid ${EMAIL_LINE};font-size:0;line-height:0;">&nbsp;</div>\n${after}`
@@ -114,7 +124,8 @@ a{color:${EMAIL_NAVY}}
   .email-pad{padding:20px 16px !important}
   .card-pad{padding:28px 24px !important}
   .email-h1{font-size:26px !important;line-height:32px !important}
-  .btn a{display:block !important;text-align:center !important}
+  .btn, .btn tbody, .btn tr, .btn td{width:100% !important}
+  .btn a{display:block !important;width:100% !important;box-sizing:border-box !important;text-align:center !important}
 }
 </style>
 </head>
