@@ -56,11 +56,11 @@ test('short landscape menu and its close control stay within the viewport', asyn
   await page.setViewportSize({ width: 768, height: 320 });
   await page.goto('/handbook/ch1');
   await page.locator('#menuToggle').click();
-  await expect(page.locator('#navList')).toBeVisible();
-  await expect.poll(() => page.locator('#navList').evaluate(el => el.getBoundingClientRect().bottom)).toBeLessThanOrEqual(320);
+  await expect(page.locator('#sidebarBody')).toBeVisible();
+  await expect.poll(() => page.locator('#sidebarBody').evaluate(el => el.getBoundingClientRect().bottom)).toBeLessThanOrEqual(320);
   const close = page.locator('.menu-close button');
   await expect(close).toBeVisible();
   expect((await close.boundingBox())!.y + (await close.boundingBox())!.height).toBeLessThanOrEqual(320);
   await close.click();
-  await expect(page.locator('#navList')).toBeHidden();
+  await expect(page.locator('#sidebarBody')).toBeHidden();
 });
