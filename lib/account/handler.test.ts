@@ -20,7 +20,7 @@ async function setup() {
   const access = new MemoryAccessStore({ users, auth });
   const leads = new MemoryLeadStore();
   const profiles = new MemoryProfileStore();
-  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
+  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW, mail: { provider: 'none' } };
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
   await profiles.save(user.id, { ...EMPTY_PROFILE, brokerageName: 'Example Realty' }, 'user', NOW);
   const sessions = [newSecret(), newSecret()];
@@ -134,6 +134,27 @@ describe('delete account', () => {
       expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
       expect(users.users[0]!.status).toBe('active');
       expect(profiles.profiles).toHaveLength(1);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it('emails the deleted address once the account is gone, and still says goodbye if that send fails', async () => {
+    const { deps, req } = await setup();
+    const fetchImpl = vi.fn<typeof fetch>(() => Promise.resolve({ ok: false, status: 500 } as Response));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), {
+        ...deps,
+        mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'me@example.test', fromName: 'Handbook', mailingAddress: '' },
+        fetchImpl,
+      });
+      expect(res.status).toBe(303);
+      expect(res.headers?.Location).toBe('/goodbye');
+      const sent = JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string) as { To: { Email: string }[]; Subject: string; Text: string };
+      expect(sent.To).toEqual([{ Email: EMAIL }]);
+      expect(sent.Subject).toBe('Your account has been deleted');
+      expect(sent.Text).toContain('taken off the notes list');
+      expect(spy).toHaveBeenCalledWith('account: deletion email failed');
     } finally {
       spy.mockRestore();
     }
