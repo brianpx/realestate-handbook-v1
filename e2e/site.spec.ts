@@ -2,7 +2,7 @@ import { expect, test } from './fixtures';
 import { LEGACY_PAGE_SLUGS } from '../lib/routes';
 
 const PUBLIC = ['/', '/preview', '/about', '/support', '/pricing', '/privacy', '/terms', '/refunds', '/updates', '/signup', '/signin', '/subscribe/confirm'];
-const PRODUCT = ['/handbook', '/handbook/start', '/account'];
+const PRODUCT = ['/handbook', '/handbook/start', '/account', '/account/authentication'];
 
 test.describe('public pages', () => {
   for (const path of PUBLIC) {

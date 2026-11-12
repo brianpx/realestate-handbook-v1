@@ -96,6 +96,23 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await expect(page).toHaveURL(`${BASE_URL}/handbook`);
   });
 
+  test('the authentication page lists the sign-in methods, with only the email one working', async ({ page }) => {
+    await page.goto('/account/authentication');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Authentication');
+    await expect(page.getByRole('region', { name: 'Sign-in Methods' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Two-Factor Authentication' })).toBeVisible();
+    await expect(page.locator('[data-auth-email]')).toHaveText('preview@e2e.test');
+    await expect(page.getByRole('link', { name: 'Manage' })).toHaveAttribute('href', '/account#email');
+    for (const method of ['passkeys', 'google', 'github']) {
+      const row = page.locator(`[data-auth-method="${method}"]`);
+      await expect(row).toContainText('Coming soon');
+      await expect(row.locator('a, button')).toHaveCount(0);
+    }
+    await expect(page.getByRole('button', { name: 'Set Up Authenticator App' })).toBeDisabled();
+    await expect(page.locator('#sidebar [data-page="account/authentication"]')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('#sidebar [data-page="account"]')).toHaveText('Settings');
+  });
+
   test('the account page offers the profile section; the file store has no profile table, and says so', async ({ page }) => {
     await page.goto('/account');
     await expect(page.getByRole('heading', { level: 2, name: 'Realtor profile' })).toBeVisible();

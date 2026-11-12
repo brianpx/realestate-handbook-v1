@@ -9,6 +9,7 @@ import { HANDBOOK, pageHref, pageIdFromPath } from '@/lib/routes';
 import { trackingProgress, useHandbookState, useSettings } from '@/lib/state';
 import { ProgressItem } from './ProgressItem';
 import { Settings } from './Settings';
+import { SettingsNav } from './SettingsNav';
 import { SidebarSearch, type SearchApi } from './SidebarSearch';
 
 // Ported from the static site's app-with-cover.js (header collapse, menu toggle, phone scroll lock).
@@ -369,7 +370,7 @@ function ProductLinks({ current, locked }: { current: string; locked: Locked }) 
 function HelpLinks({ current }: { current: string }) {
   return (
     <NavGroup title="PROGRESS AND HELP">
-      <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}>Account and saved progress</Link></li>
+      <SettingsNav current={current} />
       <li><Link href="/support" className="nav-item" data-page="support">Support</Link></li>
       <li><Link href="/" className="nav-item" data-page="site">Back to the website</Link></li>
     </NavGroup>
