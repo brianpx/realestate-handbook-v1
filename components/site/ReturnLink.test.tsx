@@ -5,7 +5,8 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { ReturnLink } from './ReturnLink';
 
 let query = '';
-vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(query) }));
+let path = '/pricing';
+vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(query), usePathname: () => path }));
 
 const render = async (search: string) => {
   query = search;
@@ -17,7 +18,7 @@ const render = async (search: string) => {
   return { host, done: async () => { await act(async () => root.unmount()); host.remove(); } };
 };
 
-afterEach(() => { document.body.innerHTML = ''; });
+afterEach(() => { document.body.innerHTML = ''; path = '/pricing'; });
 
 it('links back to the page named in ?from=', async () => {
   const { host, done } = await render('from=%2Fhandbook%2Fch3');
@@ -31,6 +32,17 @@ it('shows nothing without a usable ?from=', async () => {
   for (const search of ['', 'from=https%3A%2F%2Fevil.test', 'from=%2F%2Fevil.test']) {
     const { host, done } = await render(search);
     expect(host.querySelector('a')).toBeNull();
+    await done();
+  }
+});
+
+it('falls back to home on policy pages without ?from=', async () => {
+  for (const p of ['/privacy', '/terms', '/refunds', '/updates']) {
+    path = p;
+    const { host, done } = await render('');
+    const a = host.querySelector('a');
+    expect(a?.getAttribute('href')).toBe('/');
+    expect(a?.textContent).toBe('Back to home');
     await done();
   }
 });

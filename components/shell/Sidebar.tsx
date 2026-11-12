@@ -1,6 +1,5 @@
 'use client';
 
-import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
@@ -336,7 +335,7 @@ type Locked = Readonly<Record<string, string>>;
 /** The badge on a row the reader's plan does not open; the row still links, to the upsell card. */
 function LockBadge({ label }: { label: string | undefined }) {
   if (!label) return null;
-  return <span className="nav-lock" title={`${label} only`}><Lock aria-hidden="true" size={12} strokeWidth={2.25} /><span className="visually-hidden"> ({label} only)</span></span>;
+  return <span className="nav-lock"><span aria-hidden="true">{label}</span><span className="visually-hidden"> ({label} only)</span></span>;
 }
 
 /** A titled group of rows: a heading and a nested list, so assistive technology hears the sections and their sizes. */

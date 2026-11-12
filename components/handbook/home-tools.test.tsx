@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 const tool = (page: string) => {
-  const link = container.querySelector(`a.hb-card[data-goto="${page}"]`);
+  const link = container.querySelector(`a.hb-home-tool[data-goto="${page}"]`);
   if (!(link instanceof HTMLAnchorElement)) throw new Error(`missing tool link for ${page}`);
   return link;
 };
