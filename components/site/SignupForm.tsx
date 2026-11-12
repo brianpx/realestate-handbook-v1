@@ -29,14 +29,11 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
   const [ready, setReady] = useState(false); // set after mount: the e2e suite waits for it before it types
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
-  const sentRef = useRef<HTMLParagraphElement>(null);
   const busy = useRef(false);
   const id = `signup-${source}`;
 
   useEffect(() => setReady(true), []);
 
-  // the form unmounts on success, so focus moves to the confirmation it is replaced by
-  useEffect(() => { if (state.kind === 'sent') sentRef.current?.focus(); }, [state.kind]);
 
   // counts the seconds down to "Send again"
   useEffect(() => {
@@ -110,7 +107,7 @@ export function SignupForm({ source, next, variant = 'card', buttonLabel = 'Emai
             <span className="signup-notice-icon"><MailIcon aria-hidden="true" /></span>
             <div>
               <h2 className="pub-h3" id={`${id}-sent-title`}>Check your inbox.</h2>
-              <p ref={sentRef} tabIndex={-1} className="signup-notice-email">{sent.email}</p>
+              <p className="signup-notice-email">{sent.email}</p>
             </div>
           </div>
           <p>If this address can receive mail, a sign-in link is on its way. It works once and expires in {TOKEN_TTL_SECONDS / 60} minutes.</p>
