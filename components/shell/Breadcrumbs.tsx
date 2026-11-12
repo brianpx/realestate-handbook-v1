@@ -6,24 +6,28 @@ import { usePathname } from 'next/navigation';
 import { Fragment } from 'react';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { crumbsFor } from '@/lib/breadcrumbs';
+import { HANDBOOK } from '@/lib/routes';
 
-// The trail at the top of every page but the front page: Home / Handbook / Nurture / 5. Nurturing Leads.
-// Layout after shadcnuikit's breadcrumb4: a home icon, slash separators, the current page in plain text.
+// Handbook pages link back to the handbook; public pages retain their home link.
 export function Breadcrumbs({ className }: { className?: string }) {
-  const crumbs = crumbsFor(usePathname());
+  const pathname = usePathname();
+  const crumbs = crumbsFor(pathname);
   if (crumbs.length === 0) return null;
+  const showHome = !pathname.startsWith(`${HANDBOOK}/`);
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink render={<Link href="/" />}>
-            <HomeIcon aria-hidden="true" size={16} />
-            <span className="sr-only">Home</span>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
+        {showHome && (
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/" />}>
+              <HomeIcon aria-hidden="true" size={16} />
+              <span className="sr-only">Home</span>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        )}
         {crumbs.map((crumb, i) => (
           <Fragment key={`${i}-${crumb.label}`}>
-            <BreadcrumbSeparator> / </BreadcrumbSeparator>
+            {(showHome || i > 0) && <BreadcrumbSeparator> / </BreadcrumbSeparator>}
             <BreadcrumbItem>
               {i === crumbs.length - 1 ? (
                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>

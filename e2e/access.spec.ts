@@ -35,6 +35,7 @@ test.describe('a preview reader (signed in, no grant)', () => {
   test('the home page says so, and the sidebar marks what is locked', async ({ page }) => {
     await page.goto('/handbook');
     await expect(page.locator('[data-free-set]')).toContainText('You are reading the free set');
+    await expect(page.getByRole('navigation', { name: 'breadcrumb' })).toHaveCount(0);
     await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 1' })).toHaveAttribute('href', '/handbook/ch1');
     await expect(page.locator('[data-free-set]').getByRole('link', { name: 'Read Chapter 7' })).toHaveAttribute('href', '/handbook/ch7');
     const nav = page.locator('#sidebar');
@@ -43,6 +44,10 @@ test.describe('a preview reader (signed in, no grant)', () => {
     await expect(nav.locator('a[data-page="pref"] .nav-lock')).toHaveCount(0);
     await expect(nav.locator('a[data-page="start"] .nav-lock')).toHaveText(/Members/);
     await expect(nav.locator('a[data-page="plan"] .nav-lock')).toHaveText(/Pro/);
+    await page.goto('/handbook/ch3');
+    await expect(page.locator('[data-slot="breadcrumb-list"]')).toHaveCSS('list-style-type', 'none');
+    await expect(page.getByRole('navigation', { name: 'breadcrumb' })).toHaveText(/Handbook\s*\/\s*3\. Marketing & Brand Presence/);
+    await expect(page.getByRole('navigation', { name: 'breadcrumb' }).getByRole('link', { name: 'Handbook' })).toHaveAttribute('href', '/handbook');
   });
 
   test('the search index holds only the free pages', async ({ request }) => {

@@ -539,7 +539,7 @@
         /* Breadcrumb trail at the top of the card. Sits in the card's padding; print pages have no navigation. */
         .content-container > [data-slot="breadcrumb"] { margin: -16px 0 20px}
         .content-container > [data-slot="breadcrumb"] a { text-decoration: none}
-        [data-slot="breadcrumb-list"] { padding: 0; margin: 0}
+        [data-slot="breadcrumb-list"] { padding: 0; margin: 0; list-style: none}
         [data-slot="breadcrumb-list"] > li { margin: 0}
         @media print { [data-slot="breadcrumb"] { display: none} }
 
