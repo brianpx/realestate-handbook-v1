@@ -1204,85 +1204,21 @@
         .hb-actions .btn-mini { display: inline-flex; align-items: center; text-decoration: none}
         /* Text that is read out and copied but takes no room, and stays inline: for punctuation inside a label */
         .undrawn { font-size: 0}
-        /* Handbook home and panels on the page background. The element rules above are
-           written for running text, so each piece here states its own margins. */
-        .hb-home { display: flex; flex-direction: column; gap: 48px; padding-bottom: 32px}
-        .hb-block { display: flex; flex-direction: column; gap: 20px}
         .hb-home h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--color-ink)}
-        .hb-block-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px}
-        .hb-more { font-size: 0.9375rem; font-weight: 600}
-        .hb-kicker { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted)}
-
-        .hb-hero { display: flex; flex-wrap: wrap; align-items: stretch; gap: 32px}
-        .hb-hero-text { flex: 1 1 420px; display: flex; flex-direction: column; gap: 16px}
-        .hb-home .hb-title { margin: 0; font-size: 2.375rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-ink)}
-        .hb-lead { max-width: 62ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--color-body)}
-        .hb-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px}
         .hb-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid transparent; border-radius: var(--hb-radius); font: inherit; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer}
-        .hb-btn svg { flex: none; width: 16px; height: 16px}
-        .hb-btn-primary { background: var(--color-brand); color: var(--color-on-brand)}
-        .hb-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand)}
         .hb-btn-ghost { background: var(--color-surface); border-color: var(--color-line); color: var(--color-ink)}
         .hb-btn-ghost:hover { border-color: var(--color-ink); color: var(--color-ink)}
-        .hb-btn:disabled { opacity: 0.45; cursor: default}
-
-        .hb-progress { flex: 0 1 260px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
-        .hb-meter { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem}
-        .hb-meter-head { display: flex; justify-content: space-between; gap: 12px; color: var(--color-ink-muted)}
-        .hb-meter-head b { color: var(--color-ink); font-variant-numeric: tabular-nums}
-        .hb-bar { height: 6px; border-radius: 999px; background: var(--color-subtle); overflow: hidden}
-        .hb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--color-brand-soft); transition: width 0.3s}
-        .hb-fine { margin: 0; font-size: 0.8125rem; color: var(--color-ink-muted)}
-
-        .hb-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 14px 18px; background: var(--color-tint); border-radius: var(--hb-radius); font-size: 0.9375rem; color: var(--color-body)}
-        .hb-notice p { flex: 1 1 360px; margin: 0; font-size: inherit}
-        .hb-notice > a { font-weight: 600; white-space: nowrap}
-        .hb-free { flex: none; display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--color-success-tint); color: var(--color-success); font-size: 0.75rem; font-weight: 600; line-height: 1.5}
-        .hb-continue { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-continue { display: flex; margin-top: 24px; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
         .hb-continue-text { flex: 1 1 360px}
         .hb-continue h2 { margin: 0 0 4px; font-size: 1.0625rem; letter-spacing: 0}
         .hb-continue p { margin: 0; font-size: 0.9375rem}
-
-        .hb-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none}
-        .hb-step, .hb-card { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
-        .hb-step-num { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: var(--color-brand); color: var(--color-on-brand); font-size: 0.9375rem; font-weight: 600}
-        .hb-step h3, .hb-card strong { margin: 0; font-size: 1.0625rem; font-weight: 600; line-height: 1.4; color: var(--color-ink)}
-        .hb-step h3 { margin-top: 4px}
-        .hb-step p, .hb-card span { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--color-body)}
-        .hb-card { text-decoration: none}
-        .hb-card:hover { border-color: var(--color-link)}
-
-        /* The chapter list: one band per part, its name on the left and its pages on the right */
-        .hb-chapters .hb-block-head { padding-bottom: 16px}
-        .hb-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 0; font-size: 0.875rem; color: var(--color-ink-muted)}
-        .hb-legend > span { display: inline-flex; align-items: center; gap: 8px}
-        .hb-legend svg { width: 16px; height: 16px}
-        .hb-part { display: flex; flex-wrap: wrap; gap: 8px 32px; padding: 22px 0; border-top: 1px solid var(--color-subtle)}
-        .hb-part-label { flex: 0 0 190px}
-        .hb-part h3 { margin: 4px 0 0; font-size: 1.125rem; font-weight: 600; color: var(--color-ink)}
-        .hb-part ul { flex: 1 1 380px; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none}
-        .hb-part li { margin: 0; border-top: 1px solid var(--color-subtle)}
-        .hb-part li:first-child { border-top: 0}
-        .hb-ch { display: flex; align-items: center; gap: 16px; min-height: 46px; font-size: 1.0625rem; font-weight: 500; text-decoration: none}
-        .hb-ch .page-mark { flex: 0 0 28px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums}
-        .hb-ch .page-title { flex: 1; min-width: 0}
-        .hb-ch:hover .page-title { text-decoration: underline}
         /* Rows and chapters outside the reader's plan (lib/access/entitlement.ts); the pages show the upsell card */
-        .nav-lock, .hb-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
+        .nav-lock { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle}
         .nav-item .nav-lock { float: right; margin-top: 3px}
         .nav-item.locked { color: var(--color-ink-muted)}
-        /* On the handbook home a padlock or a tick is an icon, not the menu's text pill */
-        .hb-lock, .hb-read { display: inline-flex; flex: none; margin: 0; padding: 0; border: 0; background: none; color: var(--color-ink-muted)}
-        .hb-read { color: var(--color-brand-soft)}
-        :is(.hb-lock, .hb-read) svg { width: 16px; height: 16px}
         @media (width <= 900px) {
             /* on a phone the home page is panels on the page background too, not one sheet */
             .content-container:has(> .hb-home) { padding: 16px 8px 40px; background: none; border: 0; box-shadow: none}
-            .hb-home { gap: 36px}
-            .hb-home .hb-title { font-size: 1.875rem}
-            .hb-home h2 { font-size: 1.3125rem}
-            .hb-continue h2 { font-size: 1.0625rem}
-            .hb-progress { flex: 1 1 100%}
         }
         .hb-upsell { max-width: 760px}
         .hb-upsell-lede { font-size: 1.1rem; line-height: 1.55; color: var(--color-ink-muted)}
@@ -1300,6 +1236,71 @@
         .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
         .hb-upsell .lead-sent p { margin-bottom: 8px}
         .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}
+        /* Handbook home main body (components/handbook/home/*); scoped to .hb-home so the sidebar and other pages are untouched */
+        .hb-home { --home-ink: #0f172a; --home-body: #334155; --home-muted: #5b6b82; --home-primary: #1d4ed8; --home-line: #e2e8f0; --home-band: #eff6ff; --home-pill-bg: #dcfce7; --home-pill-text: #166534; color: var(--home-body)}
+        .hb-home a:focus-visible, .hb-home button:focus-visible { outline: 3px solid var(--home-primary); outline-offset: 2px; border-radius: 6px}
+        .hb-home-section { margin-top: 48px}
+        .hb-home-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 16px}
+        .hb-home .hb-home-h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; line-height: 1.3; font-weight: 700; color: var(--home-ink)}
+        .hb-home-section > .hb-home-h2 { margin-bottom: 16px}
+        .hb-home-head-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-head-link:hover { text-decoration: underline}
+        .hb-home-pill { display: inline-block; flex: none; padding: 2px 10px; border-radius: 999px; background: var(--home-pill-bg); color: var(--home-pill-text); font-size: 12px; line-height: 1.5; font-weight: 600; white-space: nowrap}
+        .hb-home-locked, .hb-home .hb-home-locked { color: var(--home-muted)}
+        .hb-home-hero { margin-top: 0}
+        .hb-home-kicker { margin: 0 0 8px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--home-pill-text)}
+        .hb-home .hb-home-title { margin: 0 0 16px; font-size: 2.375rem; line-height: 1.2; font-weight: 700; color: var(--home-ink)}
+        .hb-home-lead { max-width: 62ch; margin: 0 0 24px; font-size: 1.1rem; line-height: 1.6; color: var(--home-body)}
+        .hb-home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px}
+        .hb-home-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid var(--home-line); border-radius: 6px; font-weight: 600; text-decoration: none}
+        .hb-home-btn-primary { border-color: var(--home-primary); background: var(--home-primary); color: #fff}
+        .content-container .hb-home .hb-home-btn.hb-home-btn-primary:hover { background: #1e40af; border-color: #1e40af; color: #fff}
+        .hb-home-btn-secondary { border-color: #cbd5e1; background: #fff; color: var(--home-ink)}
+        .hb-home-btn-secondary:hover { background: var(--color-canvas)}
+        .hb-home-freeset { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 14px 18px; border-radius: 10px; background: var(--home-band)}
+        .hb-home-freeset-text { flex: 1 1 320px; margin: 0; line-height: 1.5; color: var(--home-body)}
+        .hb-home-freeset-text strong { color: var(--home-ink)}
+        .hb-home-freeset-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-freeset-link:hover { text-decoration: underline}
+        .hb-home-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0 0 16px; padding: 0; list-style: none}
+        .hb-home-step { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--home-line); border-radius: 10px; background: #fff}
+        .hb-home-step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--home-primary); color: #fff; font-size: 0.95rem; font-weight: 700}
+        .hb-home-step h3 { margin: 0; font-size: 1.05rem; line-height: 1.35; color: var(--home-ink)}
+        .hb-home-step p { margin: 0; line-height: 1.5}
+        .hb-home-step-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: auto; font-weight: 700; color: var(--home-primary); text-decoration: none}
+        .hb-home-step-link:hover { text-decoration: underline}
+        .hb-home-fine { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--home-muted)}
+        .hb-home-fine a { color: var(--home-primary); font-weight: 600}
+        .hb-home-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 0.9rem; color: var(--home-muted)}
+        .hb-home-groups { border-bottom: 1px solid var(--home-line)}
+        .hb-home-group { display: flex; gap: 24px; padding: 16px 0; border-top: 1px solid var(--home-line)}
+        .hb-home-group-label { flex: 0 0 200px; width: 200px}
+        .hb-home-eyebrow { margin: 0 0 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--home-muted)}
+        .hb-home-group-label h3 { margin: 0; font-size: 1.1rem; line-height: 1.3; color: var(--home-ink)}
+        .hb-home-rows { flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; list-style: none}
+        .hb-home-row { margin: 0}
+        .hb-home-row + .hb-home-row { border-top: 1px solid var(--home-line)}
+        .hb-home-row-link { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 8px; border-radius: 6px; color: var(--home-primary); text-decoration: none}
+        .hb-home-row-link:hover { background: var(--home-band)}
+        .hb-home-row-link.hb-home-locked { color: var(--home-muted)}
+        .hb-home-row-num { flex: 0 0 28px; font-variant-numeric: tabular-nums; color: var(--home-muted)}
+        .hb-home-row-title { flex: 1 1 auto; min-width: 0; font-weight: 600}
+        .hb-home-read { flex: none; margin-left: auto; font-weight: 700; color: var(--home-pill-text)}
+        .hb-home-row-link .hb-home-pill, .hb-home-tool-top .hb-home-pill { margin-left: auto}
+        .hb-home-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px}
+        .hb-home-tool { display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 16px 18px; border: 1px solid var(--home-line); border-radius: 10px; background: #fff; color: var(--home-body); text-decoration: none}
+        .hb-home-tool:hover { border-color: var(--home-primary); background: var(--home-band)}
+        .hb-home-tool-top { display: flex; align-items: center; justify-content: space-between; gap: 8px}
+        .hb-home-tool-name { font-size: 1rem; color: var(--home-primary)}
+        .hb-home-tool.hb-home-locked .hb-home-tool-name, .hb-home-tool.hb-home-locked .hb-home-tool-task { color: var(--home-muted)}
+        .hb-home-tool-task { line-height: 1.45; color: var(--home-body)}
+        .hb-home-tool-where { font-size: 0.85rem; color: var(--home-muted)}
+        @media (max-width: 640px) {
+            .hb-home .hb-home-title { font-size: 1.9rem}
+            .hb-home-group { flex-direction: column; gap: 8px}
+            .hb-home-group-label { flex: none; width: auto}
+            .hb-home-btn { flex: 1 1 100%}
+        }
         .box.tool-locked { border-style: dashed}
         /* The account page: facts, and the two forms that post without JavaScript */
         .account-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; margin: 0 0 16px}
