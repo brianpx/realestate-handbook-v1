@@ -72,9 +72,8 @@ export default function PrivacyPage() {
           network address the change was made from, never the address itself.
         </p>
         <p>
-          To delete your account, type your address on the <Link href="/account">Account page</Link>. That replaces your address in the account record with a placeholder,
-          deletes every session and sign-in link, deletes your profile, and then removes your address from the notes list (that last step is a separate one; if it fails, the confirmation says so).
-          Once that is done, we email the address a short confirmation. What stays: the anonymised account record, the record of any access you were
+          To delete your account, type your address on the <Link href="/account">Account page</Link>. That deletes your profile and removes your address from the notes list, then replaces your address in the account record with a placeholder and deletes every session and sign-in link.
+          Once that is done, we email the address a short confirmation. If the profile or the notes list cannot be removed, the account stays and no confirmation is sent. What stays: the anonymised account record, the record of any access you were
           granted, and any purchase record, kept with no address on it for seven years for accounting. What you saved while reading is only in your browser, so clear this
           site’s data there as well if you want it gone.
         </p>
