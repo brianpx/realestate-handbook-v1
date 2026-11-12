@@ -22,6 +22,13 @@ let changedDuringLoad: { avatarUrl: string | null } | null = null;
 // Every mounted menu, told when a change on the account page replaces what the cache holds.
 const listeners = new Set<(state: AccountState) => void>();
 
+function takeChangeDuringLoad(): string | null | undefined {
+  // read through a widening cast: load() cleared the variable before its await, which narrows it to null for the compiler
+  const change = changedDuringLoad as { avatarUrl: string | null } | null;
+  changedDuringLoad = null;
+  return change ? change.avatarUrl : undefined;
+}
+
 async function load(): Promise<AccountState> {
   changedDuringLoad = null;
   try {
@@ -30,8 +37,8 @@ async function load(): Promise<AccountState> {
     if (!res.ok) return { status: 'error' };
     const body: unknown = await res.json();
     if (!isSummary(body)) return { status: 'error' };
-    const avatarUrl = changedDuringLoad ? changedDuringLoad.avatarUrl : body.avatarUrl;
-    changedDuringLoad = null;
+    const change = takeChangeDuringLoad();
+    const avatarUrl = change === undefined ? body.avatarUrl : change;
     return (cached = { status: 'ready', account: { displayName: body.displayName, email: body.email, avatarUrl } });
   } catch {
     return { status: 'error' };

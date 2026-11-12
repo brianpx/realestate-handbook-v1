@@ -31,7 +31,7 @@ async function setup() {
   const avatarKey = newAvatarKey(user.id);
   await avatars.put(avatarKey, new Uint8Array([1]));
   await users.setAvatar(user.id, avatarKey, NOW);
-  await users.setDisplayName(user.id, 'Pat', NOW);
+  await users.setDisplayName(user.id, 'Pat');
   await billingInfo.save(user.id, { companyName: 'Example LLC', taxIdType: 'us_ein', taxIdValue: '12-3456789' }, NOW);
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
@@ -131,7 +131,7 @@ describe('delete account', () => {
   });
   it('sends a reader whose account was deleted a moment ago to sign in rather than to the goodbye page', async () => {
     const { access, deps, req } = await setup();
-    vi.spyOn(access, 'anonymise').mockResolvedValue(false);
+    vi.spyOn(access, 'anonymise').mockResolvedValue(null);
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), deps);
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/signup?next=%2Faccount');

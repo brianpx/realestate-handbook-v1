@@ -82,6 +82,14 @@ describe('useAccountSummary', () => {
     await render();
     expect(probes()).toEqual(['Sam Rivera|/api/account/avatar?v=9']);
   });
+  it('keeps a removal made while the first request is out', async () => {
+    let answer!: (res: Response) => void;
+    fetchMock.mockImplementation(() => new Promise<Response>(resolve => { answer = resolve; }));
+    await render();
+    act(() => setAccountSummaryAvatar(null));
+    await act(async () => answer(reply(200, { ...SUMMARY, avatarUrl: '/api/account/avatar?v=1' })));
+    expect(probes()).toEqual(['Sam Rivera|none']);
+  });
   it('ignores a change made before the summary has loaded', async () => {
     fetchMock.mockImplementation(async () => reply(200, { ...SUMMARY, avatarUrl: '/api/account/avatar?v=7' }));
     act(() => setAccountSummaryAvatar('/api/account/avatar?v=1'));
