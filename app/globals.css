@@ -1191,7 +1191,7 @@
         .hb-home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px}
         .hb-home-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid var(--home-line); border-radius: 6px; font-weight: 600; text-decoration: none}
         .hb-home-btn-primary { border-color: var(--home-primary); background: var(--home-primary); color: #fff}
-        .hb-home .hb-home-btn-primary:hover { background: #1e40af; border-color: #1e40af; color: #fff}
+        .content-container .hb-home .hb-home-btn.hb-home-btn-primary:hover { background: #1e40af; border-color: #1e40af; color: #fff}
         .hb-home-btn-secondary { border-color: #cbd5e1; background: #fff; color: var(--home-ink)}
         .hb-home-btn-secondary:hover { background: var(--color-canvas)}
         .hb-home-freeset { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 14px 18px; border-radius: 10px; background: var(--home-band)}
