@@ -24,13 +24,10 @@ export function LeadForm({ source, offer, buttonClassName = 'pub-btn pub-btn-pri
   const [ready, setReady] = useState(false); // set after mount: the e2e suite waits for it before it types
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useRef<HTMLInputElement>(null);
-  const sentRef = useRef<HTMLParagraphElement>(null);
   const busy = useRef(false);
   const copy = OPT_IN_OFFER[offer];
   const id = `lead-${source}`;
   useEffect(() => setReady(true), []);
-  // the form unmounts on success, so focus moves to the confirmation it is replaced by
-  useEffect(() => { if (state.kind === 'sent') sentRef.current?.focus(); }, [state.kind]);
 
   const fail = (message: string) => {
     setState({ kind: 'error', message });
@@ -74,7 +71,7 @@ export function LeadForm({ source, offer, buttonClassName = 'pub-btn pub-btn-pri
       <p className="visually-hidden" role="status" aria-live="polite">{sent ? `Check your inbox at ${sent.email}.` : ''}</p>
       {sent ? (
         <div className="lead-sent" data-source={source}>
-          <p ref={sentRef} tabIndex={-1}><strong>Check your inbox.</strong> If {sent.email} can receive mail, a confirmation link is on its way. Nothing is sent until you open it, and nothing is sent if you were already on the list.</p>
+          <p><strong>Check your inbox.</strong> If {sent.email} can receive mail, a confirmation link is on its way. Nothing is sent until you open it, and nothing is sent if you were already on the list.</p>
         </div>
       ) : (
         // method and action are for the moment before hydration: Enter then posts to the route instead of putting

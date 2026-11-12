@@ -385,7 +385,6 @@ html:has(.pub) { scroll-padding-top: calc(var(--pub-header-actual-h, 88px) + 16p
 .pub .signup-error { color: var(--color-danger); font-size: 0.9rem; margin: 0 0 12px}
 .pub .signup-terms { margin: 14px 0 0; color: var(--pub-muted)}
 .pub .signup-sent p { margin: 0 0 14px}
-.pub .signup-sent p:focus-visible, .pub .lead-sent p:focus-visible { outline-offset: 6px}
 .pub .signup-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center}
 .pub .pub-link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer}
 /* Inline confirmation stays visible while the reader checks their inbox. */
