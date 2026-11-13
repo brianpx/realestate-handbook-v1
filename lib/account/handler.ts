@@ -3,6 +3,7 @@ import { audit, auditBy } from '@/lib/audit';
 import { MAX_BODY_BYTES, SIGN_IN_PATH } from '@/lib/auth/config';
 import { clearedCookieHeaders, isSecureRequest } from '@/lib/auth/cookie';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
+import { sendAccountDeleted } from '@/lib/auth/mail';
 import { signedInUser } from '@/lib/auth/request-user';
 import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
@@ -10,7 +11,7 @@ import type { AvatarStorage } from '@/lib/users/avatar-storage';
 import type { BillingInfoStore } from '@/lib/users/billing-info-store';
 import type { ProfileStore } from '@/lib/users/profile-store';
 
-export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null; avatars: AvatarStorage | null };
+export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now' | 'mail' | 'fetchImpl'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null; avatars: AvatarStorage | null };
 
 export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
@@ -54,7 +55,8 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
   // A failed attempt leaves the reader signed in: no cookie is cleared, and nothing is deleted.
-  if (originRefused(req, deps)) return redirect(UNAVAILABLE);
+  const origin = req.origin;
+  if (originRefused(req, deps) || origin === null) return redirect(UNAVAILABLE);
   if (!deps.stores) return redirect(UNAVAILABLE);
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(UNAVAILABLE);
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
@@ -83,6 +85,13 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
       } catch (err) {
         console.error('account: avatar cleanup failed', err instanceof Error ? err.name : 'error'); // the account is gone either way
       }
+    }
+    // The profile and notes rows were removed above, so a failure there would have stopped before this point.
+    // A failed send still finishes the goodbye: the account is already anonymised, and a retry cannot send a second note.
+    try {
+      if ((await sendAccountDeleted(deps.mail, email, origin, true, deps.fetchImpl)) === 'failed') console.error('account: deletion email failed');
+    } catch (err) {
+      console.error('account: deletion email failed', err instanceof Error ? err.name : 'error');
     }
     return redirect(GOODBYE_PATH, cleared);
   } catch (err) {
