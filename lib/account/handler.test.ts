@@ -2,9 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { grantAccess } from '@/lib/access/grants';
 import { MemoryAccessStore } from '@/lib/access/memory-store';
 import { MemoryAuthStore } from '@/lib/auth/memory-store';
+import { TRANSACTIONAL_SEND_TIMEOUT_MS } from '@/lib/auth/mail';
+import { signedInUser } from '@/lib/auth/request-user';
 import { sessionExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryLeadStore } from '@/lib/leads/store';
+import { newAvatarKey } from '@/lib/users/avatar';
+import { MemoryAvatarStorage } from '@/lib/users/avatar-storage';
+import { MemoryBillingInfoStore } from '@/lib/users/billing-info-store';
 import { EMPTY_PROFILE } from '@/lib/users/profile';
 import { MemoryProfileStore } from '@/lib/users/profile-store';
 import { MemoryUserStore } from '@/lib/users/store';
@@ -20,9 +25,16 @@ async function setup() {
   const access = new MemoryAccessStore({ users, auth });
   const leads = new MemoryLeadStore();
   const profiles = new MemoryProfileStore();
-  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW };
+  const billingInfo = new MemoryBillingInfoStore();
+  const avatars = new MemoryAvatarStorage();
+  const deps: AccountDeps = { stores: { users, auth, access }, leads, profiles, billingInfo, avatars, allowedOrigins: [ORIGIN], ipSalt: 's', now: () => NOW, mail: { provider: 'none' } };
   const { user } = await users.upsertVerified({ email: EMAIL, termsVersion: 'v1', at: NOW });
   await profiles.save(user.id, { ...EMPTY_PROFILE, brokerageName: 'Example Realty' }, 'user', NOW);
+  const avatarKey = newAvatarKey(user.id);
+  await avatars.put(avatarKey, new Uint8Array([1]));
+  await users.setAvatar(user.id, avatarKey, NOW);
+  await users.setDisplayName(user.id, 'Pat');
+  await billingInfo.save(user.id, { companyName: 'Example LLC', taxIdType: 'us_ein', taxIdValue: '12-3456789' }, NOW);
   const sessions = [newSecret(), newSecret()];
   for (const raw of sessions) await auth.createSession({ idHash: hashSecret(raw), userId: user.id, createdAt: NOW, expiresAt: sessionExpiry(NOW) });
   await leads.insert({ email: EMAIL, source: 'signup', consentVersion: 'v1', consentText: 't', confirmTokenHash: 'c'.repeat(64), confirmExpiresAt: NOW, at: NOW });
@@ -34,7 +46,7 @@ async function setup() {
     body,
     sessionId: 'sessionId' in extra ? extra.sessionId : sessions[0],
   });
-  return { users, auth, access, leads, profiles, deps, user, sessions, req };
+  return { users, auth, access, leads, profiles, billingInfo, avatars, avatarKey, deps, user, sessions, req };
 }
 
 describe('sign out everywhere', () => {
@@ -67,14 +79,16 @@ describe('sign out everywhere', () => {
 });
 
 describe('delete account', () => {
-  it('needs the typed address to match, then anonymises, keeps the grants, drops the profile and the lead row and clears the cookie', async () => {
-    const { users, auth, access, leads, profiles, deps, user, req } = await setup();
+  it('needs the typed address to match, then anonymises, keeps the grants, drops the profile, the billing details and the lead row and clears the cookie', async () => {
+    const { users, auth, access, leads, profiles, billingInfo, avatars, deps, user, req } = await setup();
     await grantAccess(access, { userId: user.id, kind: 'complimentary', tier: 'basic', grantedBy: user.id }, { kind: 'system', userId: null }, NOW);
     const wrong = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: 'other@example.com' }).toString()), deps);
     expect(wrong.status).toBe(303);
     expect(wrong.headers?.Location).toBe('/account?error=confirm');
     expect(users.users[0]!.status).toBe('active');
+    expect(billingInfo.rows).toHaveLength(1);
     expect(profiles.profiles).toHaveLength(1);
+    expect(avatars.objects.size).toBe(1);
 
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: ' Reader@Example.com ' }).toString()), deps);
     expect(res.status).toBe(303);
@@ -85,11 +99,30 @@ describe('delete account', () => {
     expect(auth.tokens).toHaveLength(0);
     expect(await leads.list()).toHaveLength(0);
     expect(profiles.profiles).toHaveLength(0);
+    expect(billingInfo.rows).toHaveLength(0);
+    expect(avatars.objects.size).toBe(0);
+    expect(users.users[0]).toMatchObject({ displayName: null, avatarKey: null, avatarUpdatedAt: null });
     expect(access.grants).toHaveLength(1);
     expect(access.memberships).toHaveLength(0);
     const anonymised = access.audit.find(a => a.action === 'user.anonymize');
     expect(anonymised).toMatchObject({ actorKind: 'user', actorUserId: user.id, subjectTable: 'users', subjectId: user.id, before: { status: 'active', role: 'reader' }, after: { status: 'deleted', role: 'reader' } });
     expect(JSON.stringify(access.audit)).not.toContain(EMAIL);
+  });
+  it('deletes a picture uploaded between the read and the anonymise, and leaves the account active when the picture cannot be removed for want of storage', async () => {
+    const { users, access, avatars, deps, user, req } = await setup();
+    const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
+    expect(await handleDeleteAccount(req(body), { ...deps, avatars: null })).toEqual({ status: 303, headers: { Location: '/account?error=unavailable' } });
+    expect(users.users[0]!.status).toBe('active');
+
+    const real = access.anonymise.bind(access);
+    const late = newAvatarKey(user.id);
+    vi.spyOn(access, 'anonymise').mockImplementationOnce(async (...args) => {
+      await avatars.put(late, new Uint8Array([2]));
+      await users.setAvatar(user.id, late, NOW);
+      return real(...args);
+    });
+    expect((await handleDeleteAccount(req(body), deps)).headers?.Location).toBe('/goodbye');
+    expect(avatars.objects.size).toBe(0);
   });
   it('a deleted administrator no longer counts as one, so the bootstrap rule can run again', async () => {
     const { users, deps, user, req } = await setup();
@@ -100,7 +133,7 @@ describe('delete account', () => {
   });
   it('sends a reader whose account was deleted a moment ago to sign in rather than to the goodbye page', async () => {
     const { access, deps, req } = await setup();
-    vi.spyOn(access, 'anonymise').mockResolvedValue(false);
+    vi.spyOn(access, 'anonymise').mockResolvedValue(null);
     const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), deps);
     expect(res.status).toBe(303);
     expect(res.headers?.Location).toBe('/signup?next=%2Faccount');
@@ -117,8 +150,8 @@ describe('delete account', () => {
     expect(out.headers?.Location).toBe('/signup?next=%2Faccount');
     expect(users.users[0]!.status).toBe('active');
   });
-  it('sends the reader back to the account page when the store fails, and a failing lead or profile delete leaves the account active', async () => {
-    const { auth, leads, profiles, deps, req, users } = await setup();
+  it('sends the reader back to the account page when the store fails, and a failing lead, profile or billing delete leaves the account active', async () => {
+    const { auth, leads, profiles, billingInfo, avatars, avatarKey, deps, req, users } = await setup();
     const body = new URLSearchParams({ confirmEmail: EMAIL }).toString();
     const unavailable = { status: 303, headers: { Location: '/account?error=unavailable' } };
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -134,6 +167,74 @@ describe('delete account', () => {
       expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
       expect(users.users[0]!.status).toBe('active');
       expect(profiles.profiles).toHaveLength(1);
+      profiles.failWith = null;
+      billingInfo.failWith = new Error('billing down');
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(users.users[0]!.status).toBe('active');
+      expect(billingInfo.rows).toHaveLength(1);
+      billingInfo.failWith = null;
+      avatars.failWith = new Error('blob down');
+      expect(await handleDeleteAccount(req(body), deps)).toEqual(unavailable);
+      expect(users.users[0]!.status).toBe('active');
+      expect(users.users[0]!.avatarKey).toBe(avatarKey);
+      expect(avatars.objects.size).toBe(1);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it('ends the deletion at the deadline when the goodbye email stalls: the account is gone, its sessions are invalid and a wrong address is still refused', async () => {
+    const { auth, users, deps, sessions, req } = await setup();
+    const stalled = vi.fn<typeof fetch>((_url, init) => new Promise<Response>((_resolve, reject) => {
+      init!.signal!.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')));
+    }));
+    const withMail: AccountDeps = { ...deps, mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'me@example.test', fromName: 'Handbook', mailingAddress: '' }, fetchImpl: stalled };
+    const wrong = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: 'someone@else.test' }).toString()), withMail);
+    expect(wrong.headers?.Location).toBe('/account?error=confirm');
+    expect(stalled).not.toHaveBeenCalled();
+    expect(users.users[0]!.status).toBe('active');
+    expect(await signedInUser(sessions[0], deps.stores!, NOW)).not.toBeNull();
+
+    vi.useFakeTimers();
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      let res: Awaited<ReturnType<typeof handleDeleteAccount>> | undefined;
+      const pending = handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), withMail).then(r => { res = r; });
+      await vi.advanceTimersByTimeAsync(TRANSACTIONAL_SEND_TIMEOUT_MS - 1);
+      expect(res).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(res!.status).toBe(303);
+      expect(res!.headers?.Location).toBe('/goodbye');
+      expect(String(res!.headers?.['Set-Cookie'])).toContain('__Host-hb_session=;');
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('did not answer within'));
+      expect(JSON.stringify(spy.mock.calls)).not.toContain(EMAIL);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(stalled).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+      vi.useRealTimers();
+    }
+    expect(users.users[0]!.status).toBe('deleted');
+    expect(auth.sessions).toHaveLength(0);
+    expect(await signedInUser(sessions[0], deps.stores!, NOW)).toBeNull();
+  });
+  it('emails the deleted address once the account is gone, and still says goodbye if that send fails', async () => {
+    const { deps, req } = await setup();
+    const fetchImpl = vi.fn<typeof fetch>(() => Promise.resolve({ ok: false, status: 500 } as Response));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), {
+        ...deps,
+        mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'me@example.test', fromName: 'Handbook', mailingAddress: '' },
+        fetchImpl,
+      });
+      expect(res.status).toBe(303);
+      expect(res.headers?.Location).toBe('/goodbye');
+      const sent = JSON.parse(fetchImpl.mock.calls[0]![1]!.body as string) as { To: { Email: string }[]; Subject: string; Text: string };
+      expect(sent.To).toEqual([{ Email: EMAIL }]);
+      expect(sent.Subject).toBe('Your account has been deleted');
+      expect(sent.Text).toContain('taken off the notes list');
+      expect(spy).toHaveBeenCalledWith('account: deletion email failed');
     } finally {
       spy.mockRestore();
     }

@@ -9,6 +9,7 @@ import { HANDBOOK, pageHref, pageIdFromPath } from '@/lib/routes';
 import { trackingProgress, useHandbookState, useSettings } from '@/lib/state';
 import { ProgressItem } from './ProgressItem';
 import { Settings } from './Settings';
+import { SettingsNav } from './SettingsNav';
 import { SidebarSearch, type SearchApi } from './SidebarSearch';
 
 // Ported from the static site's app-with-cover.js (header collapse, menu toggle, phone scroll lock).
@@ -81,7 +82,7 @@ export function Sidebar({ locked = {} }: { locked?: Readonly<Record<string, stri
     const root = document.documentElement;
     const locked = root.classList.contains('scroll-locked');
     const lock = open && window.matchMedia(PHONE_QUERY).matches;
-    const behind = document.querySelectorAll<HTMLElement>('.skip-link, #main-content');
+    const behind = document.querySelectorAll<HTMLElement>('.skip-link, .shell-topbar, #main-content');
     if (lock && !locked) {
       if (!sidebar) return;
       lockedScrollY.current = window.scrollY;
@@ -369,7 +370,7 @@ function ProductLinks({ current, locked }: { current: string; locked: Locked }) 
 function HelpLinks({ current }: { current: string }) {
   return (
     <NavGroup title="PROGRESS AND HELP">
-      <li><Link href="/account" className={`nav-item${current === 'account' ? ' active' : ''}`} data-page="account" aria-current={current === 'account' ? 'page' : undefined}>Account and saved progress</Link></li>
+      <SettingsNav current={current} />
       <li><Link href="/support" className="nav-item" data-page="support">Support</Link></li>
       <li><Link href="/" className="nav-item" data-page="site">Back to the website</Link></li>
     </NavGroup>

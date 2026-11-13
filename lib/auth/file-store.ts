@@ -32,8 +32,9 @@ const LOCK_STALE_MS = 5000;
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 const date = (s: string | null): Date | null => (s ? new Date(s) : null);
-const userOut = (u: Iso<User>): User => ({ ...u, emailVerifiedAt: date(u.emailVerifiedAt), acceptedTermsAt: date(u.acceptedTermsAt), lastSignInAt: date(u.lastSignInAt), createdAt: new Date(u.createdAt) });
-const userIn = (u: User): Iso<User> => ({ ...u, emailVerifiedAt: iso(u.emailVerifiedAt), acceptedTermsAt: iso(u.acceptedTermsAt), lastSignInAt: iso(u.lastSignInAt), createdAt: u.createdAt.toISOString() });
+// a file written before the name columns existed has no such keys; they read back as null
+const userOut = (u: Iso<User>): User => ({ ...u, firstName: u.firstName ?? null, lastName: u.lastName ?? null, displayName: u.displayName ?? null, avatarKey: u.avatarKey ?? null, avatarUpdatedAt: date(u.avatarUpdatedAt ?? null), emailVerifiedAt: date(u.emailVerifiedAt), acceptedTermsAt: date(u.acceptedTermsAt), lastSignInAt: date(u.lastSignInAt), createdAt: new Date(u.createdAt) });
+const userIn = (u: User): Iso<User> => ({ ...u, avatarUpdatedAt: iso(u.avatarUpdatedAt), emailVerifiedAt: iso(u.emailVerifiedAt), acceptedTermsAt: iso(u.acceptedTermsAt), lastSignInAt: iso(u.lastSignInAt), createdAt: u.createdAt.toISOString() });
 const tokenOut = (t: Iso<AuthToken>): AuthToken => ({ ...t, expiresAt: new Date(t.expiresAt), consumedAt: date(t.consumedAt), createdAt: new Date(t.createdAt) });
 const sessionOut = (s: Iso<Session>): Session => ({ ...s, createdAt: new Date(s.createdAt), expiresAt: new Date(s.expiresAt), lastSeenAt: new Date(s.lastSeenAt), revokedAt: date(s.revokedAt) });
 const grantOut = (g: Iso<Grant>): Grant => ({ ...g, startsAt: new Date(g.startsAt), endsAt: date(g.endsAt), revokedAt: date(g.revokedAt), createdAt: new Date(g.createdAt) });
@@ -135,6 +136,17 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   countAdmins() { return this.view(d => d.users.filter(u => u.role === 'admin').length); }
   setRole(id: string, role: Role) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.role = role; }); }
   touchSignIn(id: string, at: Date) { return this.change(d => { const u = d.users.find(x => x.id === id); if (u) u.lastSignInAt = at.toISOString(); }); }
+  setAvatar(id: string, key: string | null, at: Date) {
+    return this.change(d => {
+      const u = d.users.find(x => x.id === id && x.status === 'active');
+      if (!u) return null;
+      const previousKey = u.avatarKey ?? null;
+      u.avatarKey = key;
+      u.avatarUpdatedAt = key ? at.toISOString() : null;
+      return { previousKey };
+    });
+  }
+  setDisplayName(id: string, displayName: string | null) { return this.change(d => { const u = d.users.find(x => x.id === id && x.status === 'active'); if (u) u.displayName = displayName; return Boolean(u); }); }
   list({ offset, limit }: Page) {
     return this.view(d => {
       const sorted = [...d.users].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
@@ -250,16 +262,20 @@ export class FileAuthStore implements UserStore, AuthStore, AccessStore {
   anonymise({ userId, email }: Anonymisation, audit: AuditStub) {
     return this.change(d => {
       const user = d.users.find(u => u.id === userId);
-      if (!user || user.status === 'deleted') return false;
+      if (!user || user.status === 'deleted') return null;
+      const avatarKey = user.avatarKey ?? null;
       const before = { status: user.status, role: user.role };
       user.status = 'deleted';
       user.role = 'reader';
       user.email = `deleted+${userId}@invalid.local`;
+      user.displayName = null;
+      user.avatarKey = null;
+      user.avatarUpdatedAt = null;
       d.memberships = d.memberships.filter(m => m.userId !== userId);
       d.sessions = d.sessions.filter(s => s.userId !== userId);
       d.tokens = d.tokens.filter(t => t.email !== email);
       FileAuthStore.log(d, audit, { table: 'users', id: userId }, before, { status: 'deleted', role: 'reader' });
-      return true;
+      return { avatarKey };
     });
   }
   appendAudit(entry: AuditEntry) { return this.change(d => { d.audit.push(auditIn({ ...entry, id: randomUUID() })); }); }

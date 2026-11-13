@@ -76,8 +76,8 @@ run('the access store against a real database', () => {
     await auth.createToken({ tokenHash: hashSecret(newSecret()), email: victim, nextPath: null, termsVersion: 'v1', source: null, expiresAt: NOW, createdIpHash: null, createdAt: NOW });
 
     const stub = { at: NOW, actorUserId: user.id, actorKind: 'user' as const, action: 'user.anonymize' as const, reason: null, ipHash: null };
-    expect(await access.anonymise({ userId: user.id, email: victim, emailHash: 'h', at: NOW }, stub)).toBe(true);
-    expect(await access.anonymise({ userId: user.id, email: victim, emailHash: 'h', at: NOW }, stub)).toBe(false);
+    expect(await access.anonymise({ userId: user.id, email: victim, emailHash: 'h', at: NOW }, stub)).toEqual({ avatarKey: null });
+    expect(await access.anonymise({ userId: user.id, email: victim, emailHash: 'h', at: NOW }, stub)).toBeNull();
 
     const after = await users.findById(user.id);
     expect(after).toMatchObject({ status: 'deleted', role: 'reader', email: `deleted+${user.id}@invalid.local` });

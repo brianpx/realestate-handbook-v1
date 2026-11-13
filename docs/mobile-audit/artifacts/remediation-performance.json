@@ -1,0 +1,77 @@
+{
+  "method": "three cold browser-context navigations per route; production localhost; Chromium Pixel 7; CPU 4x; 150ms latency; 200000 bytes/s down; 93750 bytes/s up; LCP last candidate at capture; CLS raw sum excluding recent input (not session-window algorithm); no measured INP",
+  "rows": [
+    {
+      "route": "/",
+      "lcp": 748,
+      "cls": 0,
+      "jsEncodedBytes": 290566,
+      "jsDecodedBytes": 1017916,
+      "requests": 22
+    },
+    {
+      "route": "/preview",
+      "lcp": 780,
+      "cls": 0,
+      "jsEncodedBytes": 278327,
+      "jsDecodedBytes": 983988,
+      "requests": 17
+    },
+    {
+      "route": "/handbook/ch11",
+      "lcp": 868,
+      "cls": 0,
+      "jsEncodedBytes": 409697,
+      "jsDecodedBytes": 1389360,
+      "requests": 31
+    },
+    {
+      "route": "/",
+      "lcp": 744,
+      "cls": 0,
+      "jsEncodedBytes": 290566,
+      "jsDecodedBytes": 1017916,
+      "requests": 22
+    },
+    {
+      "route": "/preview",
+      "lcp": 784,
+      "cls": 0,
+      "jsEncodedBytes": 278327,
+      "jsDecodedBytes": 983988,
+      "requests": 17
+    },
+    {
+      "route": "/handbook/ch11",
+      "lcp": 868,
+      "cls": 0,
+      "jsEncodedBytes": 409697,
+      "jsDecodedBytes": 1389360,
+      "requests": 31
+    },
+    {
+      "route": "/",
+      "lcp": 744,
+      "cls": 0,
+      "jsEncodedBytes": 290566,
+      "jsDecodedBytes": 1017916,
+      "requests": 22
+    },
+    {
+      "route": "/preview",
+      "lcp": 768,
+      "cls": 0,
+      "jsEncodedBytes": 278327,
+      "jsDecodedBytes": 983988,
+      "requests": 17
+    },
+    {
+      "route": "/handbook/ch11",
+      "lcp": 856,
+      "cls": 0,
+      "jsEncodedBytes": 409697,
+      "jsDecodedBytes": 1389360,
+      "requests": 31
+    }
+  ]
+}

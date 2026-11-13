@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "integrate/20261112": false
+    }
+  },
   "schedules": {
     "billing-reconcile": {
       "schedule": "0 8 * * *",

@@ -1,0 +1,48 @@
+[
+  {
+    "scenario": "choice-drill-next",
+    "focus": "BODY"
+  },
+  {
+    "scenario": "root-text-200%",
+    "route": "/",
+    "width": 320,
+    "scrollWidth": 386
+  },
+  {
+    "scenario": "root-text-200%",
+    "route": "/preview",
+    "width": 320,
+    "scrollWidth": 359
+  },
+  {
+    "scenario": "root-text-200%",
+    "route": "/handbook/ch1",
+    "width": 320,
+    "scrollWidth": 343
+  },
+  {
+    "scenario": "root-text-200%",
+    "route": "/handbook/start",
+    "width": 320,
+    "scrollWidth": 320
+  },
+  {
+    "scenario": "root-text-200%",
+    "route": "/account",
+    "width": 320,
+    "scrollWidth": 443
+  },
+  {
+    "scenario": "landscape-menu",
+    "bottom": 353.53125,
+    "viewport": 320,
+    "clientHeight": 223,
+    "scrollHeight": 1960
+  },
+  {
+    "scenario": "dark-reduced-motion",
+    "dark": true,
+    "reduced": true
+  }
+]

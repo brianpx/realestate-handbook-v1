@@ -45,6 +45,20 @@
 .pub-nav-cta svg { width: 18px; height: 18px; flex: none}
 .pub-menu-btn { display: none; margin-left: auto; flex: none; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; background: var(--color-surface); color: var(--pub-ink); border: 1px solid var(--color-subtle); border-radius: 8px; cursor: pointer}
 .pub-menu-btn svg { width: 22px; height: 22px}
+.pub-user { display: flex; align-items: center}
+.pub-account { display: none}
+.pub-account-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; padding: 0 4px; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--pub-body); text-align: left; text-decoration: none; cursor: pointer}
+.pub-account-link svg, .pub-account-gear svg { width: 18px; height: 18px; flex: none; stroke-width: 1.5; color: var(--color-ink-muted)}
+.pub-account-head { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--color-subtle)}
+.pub-account-who { display: flex; flex-direction: column; min-width: 0; flex: 1}
+.pub-account-who strong { color: var(--pub-ink); font-size: 15px; overflow-wrap: anywhere}
+.pub-account-who span { color: var(--color-ink-muted); font-size: 14px; overflow-wrap: anywhere}
+.pub-account-gear { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px}
+.pub-account-theme { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 4px; font-size: 15px; font-weight: 500; color: var(--pub-body)}
+.pub-theme-pill { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--color-subtle); border-radius: 999px}
+.pub-theme-pill button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--color-ink-muted); cursor: pointer}
+.pub-theme-pill button[aria-pressed="true"] { background: var(--color-accent-tint); color: var(--color-ink)}
+.pub-theme-pill svg { width: 16px; height: 16px; stroke-width: 1.5}
 /* 1100px, not the shared 900px: below it the four links and the button no longer fit beside the two-line title */
 @media (width <= 1100px) {
   .pub-header { --pub-header-h: 72px}
@@ -54,6 +68,8 @@
   .pub-nav.open { display: flex}
   .pub-nav a { min-height: 48px; padding: 0 4px}
   .pub-nav a.pub-nav-cta { margin-top: 8px; padding: 0 20px}
+  .pub-user { display: none}
+  .pub-account { display: block; margin-top: 8px; border-top: 1px solid var(--color-subtle)}
 }
 @media (width <= 420px) {
   .pub-brand { gap: 10px; font-size: 0.875rem; line-height: 1.125rem}
@@ -95,6 +111,10 @@
 .pub-hero { padding: 64px 0 72px; background: linear-gradient(180deg, var(--pub-tint) 0%, var(--color-surface) 100%)}
 .pub-hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 56px; align-items: center}
 @media (width <= 1000px) { .pub-hero { padding: 40px 0 52px} .pub-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px} }
+.pub .pub-hero-jump { display: none; margin: -8px 0 16px; font-weight: 600}
+.pub .pub-hero-jump a::after { content: " ↓"}
+@media (width <= 1000px) { .pub .pub-hero-jump { display: block} }
+@media (width <= 700px) { .pub .pub-hero .pub-lede { font-size: 1.02rem; line-height: 1.55; margin-bottom: 20px} }
 
 /* the live preview card in the hero and the first-session result */
 .pub-card { background: var(--color-surface); border: 1px solid var(--pub-line); border-radius: var(--pub-radius); box-shadow: 0 18px 40px -22px rgba(15,23,42,0.35), 0 2px 6px rgba(15,23,42,0.05)}
@@ -173,14 +193,12 @@
 .pub-reassure { margin-top: 28px; font-size: 1.05rem; max-width: 44rem}
 
 /* ---- first session result ---- */
-.pub-result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start}
-@media (width <= 900px) { .pub-result { grid-template-columns: minmax(0, 1fr); gap: 32px} }
-.pub-checks { list-style: none}
-.pub-checks li { position: relative; padding: 0 0 0 38px; margin-bottom: 20px; font-size: 1.02rem}
-.pub-checks li::before { content: "✓"; position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.9rem}
-.pub-checks strong { display: block; color: var(--pub-ink); font-size: 1.05rem; margin-bottom: 2px}
 .pub-plan { padding: 24px}
-.pub-plan dl { margin: 0}
+.pub-plan dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; margin: 14px 0 0}
+@media (width <= 900px) { .pub-plan dl { grid-template-columns: minmax(0, 1fr); gap: 22px} }
+.pub-plan dt::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: var(--pub-green); color: var(--color-on-brand-soft); font-size: 0.7rem; letter-spacing: 0; vertical-align: 1px}
+.pub-plan dd.pub-plan-what { margin: 6px 0 0; color: var(--pub-body); font-size: 0.98rem}
+.pub-plan dd.pub-plan-eg { margin: 10px 0 0; padding: 10px 14px; border-left: 3px solid var(--pub-green); background: var(--color-canvas); border-radius: 0 8px 8px 0}
 .pub-plan dt { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pub-muted); font-weight: 700; margin-top: 16px}
 .pub-plan dt:first-child { margin-top: 0}
 .pub-plan dd { margin: 4px 0 0; color: var(--pub-ink); font-size: 1.02rem; line-height: 1.45}
@@ -199,6 +217,7 @@
 .pub-tool-pill.is-ok { color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 35%, transparent); background: var(--pub-tint)}
 .pub .pub-tool-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pub-muted); margin: 0 0 8px}
 .pub-tool-free { color: var(--pub-green); padding-left: 8px; border-left: 1px solid var(--color-line)}
+.pub-tool-free.is-plain { color: inherit}
 .pub-tool .pub-h3 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance}
 .pub-tool .pub-h3 + p { margin-top: 0}
 .pub-tool .pub-link { font-weight: 700; align-self: end; justify-self: start; padding-top: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px}
@@ -225,7 +244,8 @@
 .pub-blocks li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--color-line); margin: 0}
 .pub-blocks li:last-child { border-bottom: 0}
 .pub-blocks time { flex: none; width: 4.2rem; color: var(--pub-muted); font-variant-numeric: tabular-nums}
-.pub-blocks span { color: var(--pub-ink); font-weight: 600; min-width: 0}
+/* a basis of 0 lets the name share the line with the time whenever 6rem of it fits; at a larger text size it drops below instead of overflowing */
+.pub-blocks span { color: var(--pub-ink); font-weight: 600; flex: 1 1 0; min-width: 6rem}
 
 /* roadmap: three milestones on a rail */
 .pub-milestones { list-style: none; margin: 0; padding: 0 0 0 20px; position: relative}
@@ -249,11 +269,25 @@
 .pub-phase li { font-size: 0.98rem; margin-bottom: 6px; color: var(--pub-body)}
 @media (width <= 900px) { .pub-phases { grid-template-columns: minmax(0, 1fr)} .pub-phase { border-right: 0; border-bottom: 1px solid var(--pub-line)} .pub-phase:last-child { border-bottom: 0} }
 
-/* ---- included ---- */
-.pub-included h3 { margin-bottom: 6px}
-.pub-included ul { list-style: none}
-.pub-included li { font-size: 0.98rem; padding: 6px 0 6px 20px; position: relative}
-.pub-included li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 7px; height: 7px; border-radius: 50%; background: var(--pub-green)}
+/* phone: tighter vertical rhythm. These come after the rules they override so the cascade, not specificity, decides. */
+@media (width <= 700px) {
+  .pub-section { padding: 40px 0}
+  .pub-section-head { margin-bottom: 24px}
+  .pub-grid { gap: 14px}
+  .pub-tile { padding: 18px}
+  .pub-tool { padding: 14px 14px 18px}
+  .pub-phase { padding: 20px 18px}
+  .pub-inside { margin-top: 40px}
+}
+
+/* ---- tools call to action and what is inside ---- */
+.pub-cta-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; margin-top: 32px; padding: 24px 28px; background: var(--pub-tint)}
+.pub-cta-band .pub-h3 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 700}
+.pub-cta-band p { margin: 0}
+.pub-cta-band .pub-actions { margin: 0}
+.pub-inside { margin-top: 56px}
+.pub-inside > .pub-h3 { font-size: 1.4rem; font-weight: 700}
+.pub-inside > p { max-width: 46rem}
 .pub-details { margin-top: 24px; border: 1px solid var(--pub-line); border-radius: 12px; background: var(--color-surface)}
 .pub-details summary { cursor: pointer; padding: 16px 20px; font-weight: 700; color: var(--pub-ink); min-height: 44px}
 .pub-details .pub-details-body { padding: 0 20px 18px}

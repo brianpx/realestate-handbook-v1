@@ -3,12 +3,15 @@ import { audit, auditBy } from '@/lib/audit';
 import { MAX_BODY_BYTES, SIGN_IN_PATH } from '@/lib/auth/config';
 import { clearedCookieHeaders, isSecureRequest } from '@/lib/auth/cookie';
 import type { AuthDeps, AuthReply, AuthRequest } from '@/lib/auth/handler';
+import { sendAccountDeleted } from '@/lib/auth/mail';
 import { signedInUser } from '@/lib/auth/request-user';
 import { hashKey } from '@/lib/auth/token';
 import type { LeadStore } from '@/lib/leads/store';
+import type { AvatarStorage } from '@/lib/users/avatar-storage';
+import type { BillingInfoStore } from '@/lib/users/billing-info-store';
 import type { ProfileStore } from '@/lib/users/profile-store';
 
-export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now'> & { leads: LeadStore | null; profiles: ProfileStore | null };
+export type AccountDeps = Pick<AuthDeps, 'stores' | 'allowedOrigins' | 'ipSalt' | 'now' | 'mail' | 'fetchImpl'> & { leads: LeadStore | null; profiles: ProfileStore | null; billingInfo: BillingInfoStore | null; avatars: AvatarStorage | null };
 
 export const ACCOUNT_PATH = '/account';
 export const GOODBYE_PATH = '/goodbye';
@@ -45,14 +48,15 @@ export async function handleSignOutAll(req: AuthRequest, deps: AccountDeps): Pro
 }
 
 /**
- * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile and the marketing
- * row go first: if either delete throws, anonymise has not run and the account stays active. The database
- * statement removes those rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
+ * Deletes the account (OD-21: the reader types their address to confirm). The realtor profile, the billing details, the picture's blob and the
+ * marketing row go first: if any delete throws, anonymise has not run and the account stays active. The database
+ * statement clears the picture's key and removes the profile and marketing rows again with the user, sessions, and tokens, so a crash inside it cannot leave a
  * license number or a marketing address after the account address is gone. Grants and billing rows stay.
  */
 export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): Promise<AuthReply> {
   // A failed attempt leaves the reader signed in: no cookie is cleared, and nothing is deleted.
-  if (originRefused(req, deps)) return redirect(UNAVAILABLE);
+  const origin = req.origin;
+  if (originRefused(req, deps) || origin === null) return redirect(UNAVAILABLE);
   if (!deps.stores) return redirect(UNAVAILABLE);
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(UNAVAILABLE);
   const cleared = { 'Set-Cookie': clearedCookieHeaders(isSecureRequest(req.url)) };
@@ -60,16 +64,35 @@ export async function handleDeleteAccount(req: AuthRequest, deps: AccountDeps): 
     const now = deps.now();
     const user = await signedInUser(req.sessionId, deps.stores, now);
     if (!user) return redirect(SIGN_IN, cleared);
-    const { id: userId, email } = user; // copied: the store may rewrite the user object it handed out
+    const { id: userId, email, avatarKey } = user; // copied: the store may rewrite the user object it handed out
     const parsed = deleteAccountSchema.safeParse({ confirmEmail: new URLSearchParams(req.body).get('confirmEmail') ?? '' });
     if (!parsed.success || parsed.data.confirmEmail !== email) return redirect(`${ACCOUNT_PATH}?error=confirm`);
 
+    // Without storage the picture's blob cannot be removed, so the account stays active rather than keep it.
+    if (avatarKey && !deps.avatars) return redirect(UNAVAILABLE);
     // Before anonymise, so a throw here leaves the account active. The Neon statement deletes the same rows.
     if (deps.profiles) await deps.profiles.deleteByUser(userId);
+    if (deps.billingInfo) await deps.billingInfo.deleteByUser(userId);
+    // the blob is not in the database, so it is deleted here; a picture uploaded since the read is deleted after anonymise
+    if (deps.avatars && avatarKey) await deps.avatars.delete(avatarKey);
     if (deps.leads) await deps.leads.deleteByEmail(email);
     const actor = { kind: 'user' as const, userId, ipHash: hashKey(req.ip, deps.ipSalt) };
     const done = await deps.stores.access.anonymise({ userId, email, emailHash: hashKey(email, deps.ipSalt), at: now }, auditBy(actor, 'user.anonymize', now));
     if (!done) return redirect(SIGN_IN, cleared); // deleted by a concurrent request a moment ago: nothing to say goodbye to
+    if (deps.avatars && done.avatarKey && done.avatarKey !== avatarKey) {
+      try {
+        await deps.avatars.delete(done.avatarKey);
+      } catch (err) {
+        console.error('account: avatar cleanup failed', err instanceof Error ? err.name : 'error'); // the account is gone either way
+      }
+    }
+    // The profile and notes rows were removed above, so a failure there would have stopped before this point.
+    // A failed send still finishes the goodbye: the account is already anonymised, and a retry cannot send a second note.
+    try {
+      if ((await sendAccountDeleted(deps.mail, email, origin, true, deps.fetchImpl)) === 'failed') console.error('account: deletion email failed');
+    } catch (err) {
+      console.error('account: deletion email failed', err instanceof Error ? err.name : 'error');
+    }
     return redirect(GOODBYE_PATH, cleared);
   } catch (err) {
     console.error('account: delete failed', err instanceof Error ? err.name : 'error');

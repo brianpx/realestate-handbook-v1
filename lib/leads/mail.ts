@@ -1,5 +1,8 @@
 import { productionDatabaseRefused } from '@/lib/db/production-refusal';
+import { emailHtml, emailText, originOf, type EmailCard } from '@/lib/email/layout';
+import { BOOK_TITLE } from '@/lib/pages';
 import { OWNER } from '../offer';
+import { CONFIRM_TTL_SECONDS } from './config';
 import type { EmailStatus } from './store';
 
 // Confirmation email for the marketing list. SendGrid in production, Mailpit (a local mail catcher) in development,
@@ -31,22 +34,27 @@ export function mailFromEnv(env: Record<string, string | undefined>): MailConfig
 
 /** The one message the list sends on its own: the link that turns a form submission into a subscription. */
 export function confirmationMessage(link: string, address: string, unsubscribe: UnsubscribeLinks): Message {
+  const days = Math.round(CONFIRM_TTL_SECONDS / 86400);
+  const card: EmailCard = {
+    origin: originOf(link),
+    preheader: `Nothing is sent until you confirm. The link expires in ${days} days.`,
+    headline: 'Confirm your email',
+    intro: `You asked for notes about ${BOOK_TITLE}. Select the button below to confirm your address. Nothing is sent until you do.`,
+    action: { href: link, label: 'Confirm my email' },
+    expires: `The link expires in ${days} days.`,
+    fallback: { label: 'Button not working? Paste this link into your browser:', href: link },
+    closing: [
+      'If you did not ask for this, ignore this message and your address is not used.',
+      `To stop the notes at any time afterwards, open this link, or reply "unsubscribe": ${unsubscribe.page}`,
+    ],
+    postalAddress: address,
+  };
   return {
     subject: 'Confirm your email for handbook notes',
     // Mail clients show their own unsubscribe control from these two headers and post to the second address without opening a page.
     headers: { 'List-Unsubscribe': `<${unsubscribe.oneClick}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-    text: [
-      'You asked for notes about Finding, Nurturing, and Keeping Clients. Open this link to confirm your address:',
-      '',
-      link,
-      '',
-      'Nothing is sent until you do. If you did not ask for this, ignore this message and your address is not used.',
-      'To stop the notes at any time afterwards, open this link, or reply "unsubscribe":',
-      '',
-      unsubscribe.page,
-      '',
-      address,
-    ].join('\n'),
+    text: emailText(card),
+    html: emailHtml(card),
   };
 }
 
@@ -54,12 +62,19 @@ export function confirmationMessage(link: string, address: string, unsubscribe: 
  * Sends one message with a plain-text fallback through whichever provider is configured. Logs carry the provider, the status and
  * the error name only, never the address. `label` names the caller in those logs.
  */
-export async function deliver(cfg: MailConfig, to: string, { subject, text, html, headers }: Message, fetchImpl: typeof fetch = fetch, label = 'email'): Promise<EmailStatus> {
+export async function deliver(cfg: MailConfig, to: string, { subject, text, html, headers }: Message, fetchImpl: typeof fetch = fetch, label = 'email', timeoutMs?: number): Promise<EmailStatus> {
   if (cfg.provider === 'none') return 'skipped';
+  // With a deadline the request is cancelled when it passes. The provider may already have taken the message, so a
+  // message that timed out is neither sent nor failed as far as this code can tell.
+  let timedOut = false;
+  const controller = timeoutMs === undefined ? undefined : new AbortController();
+  const timer = controller && setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+  const signal = controller?.signal;
   try {
     const res = cfg.provider === 'sendgrid'
       ? await fetchImpl('https://api.sendgrid.com/v3/mail/send', {
           method: 'POST',
+          ...(signal ? { signal } : {}),
           headers: { Authorization: `Bearer ${cfg.apiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: to }] }],
@@ -72,14 +87,18 @@ export async function deliver(cfg: MailConfig, to: string, { subject, text, html
         })
       : await fetchImpl(`${cfg.url}/api/v1/send`, {
           method: 'POST',
+          ...(signal ? { signal } : {}),
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ From: { Email: cfg.from, Name: cfg.fromName }, To: [{ Email: to }], Subject: subject, Text: text, ...(html ? { HTML: html } : {}), ...(headers ? { Headers: headers } : {}) }),
         });
     if (!res.ok) { console.error(`${label}: ${cfg.provider} answered ${res.status}`); return 'failed'; }
     return 'sent';
   } catch (err) {
-    console.error(`${label}: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
+    if (timedOut) console.error(`${label}: ${cfg.provider} did not answer within ${timeoutMs} ms; delivery unknown`);
+    else console.error(`${label}: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
     return 'failed';
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }
 

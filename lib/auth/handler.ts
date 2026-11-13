@@ -4,7 +4,7 @@ import type { MailConfig } from '@/lib/leads/mail';
 import { SEND_CEILING_WINDOW_SECONDS, sendWindowStart } from '@/lib/send-ceiling';
 import { DEFAULT_NEXT_PATH, MAX_BODY_BYTES, VERIFY_PATH, type AuthRateLimits } from './config';
 import { clearedCookieHeaders, isSecureRequest, sessionCookieHeaders } from './cookie';
-import { sendSignInLink } from './mail';
+import { sendSignInLink, sendWelcome } from './mail';
 import { sessionExpiry, tokenExpiry } from './session';
 import type { AuthStores } from './store';
 import { hashKey, hashSecret, isSecretShape, newSecret } from './token';
@@ -99,7 +99,8 @@ export async function handleRequestLink(req: AuthRequest, deps: AuthDeps): Promi
  */
 export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<AuthReply> {
   // A browser navigates here. JSON would render as a page, so failures redirect and do not clear a cookie.
-  if (originRefused(req, deps)) return redirect(FAILED);
+  const origin = req.origin;
+  if (originRefused(req, deps) || origin === null) return redirect(FAILED);
   if (!deps.stores) return redirect(VERIFY_UNAVAILABLE);
   if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return redirect(VERIFY_UNAVAILABLE);
   const { auth, users, access } = deps.stores;
@@ -116,7 +117,7 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
 
     const existing = await users.findByEmail(consumed.email);
     if (existing && existing.status !== 'active') return redirect(FAILED);
-    const { user } = await users.upsertVerified({ email: consumed.email, termsVersion: consumed.termsVersion, at: now });
+    const { user, created } = await users.upsertVerified({ email: consumed.email, termsVersion: consumed.termsVersion, at: now });
 
     // The first administrator: only while none exists, so the list is inert once an admin is in place. The role
     // change is audited and the owner gets a content grant, because the admin role opens nothing by itself (OD-13).
@@ -130,6 +131,15 @@ export async function handleVerify(req: AuthRequest, deps: AuthDeps): Promise<Au
     const sessionId = newSecret();
     await auth.createSession({ idHash: hashSecret(sessionId), userId: user.id, createdAt: now, expiresAt: sessionExpiry(now) });
     await users.touchSignIn(user.id, now);
+    // The welcome is the one extra account email, and only for a brand-new row. A failed send must not
+    // turn a finished sign-in into an error: the session is already stored, and the reader is waiting to land.
+    if (created) {
+      try {
+        if ((await sendWelcome(deps.mail, user.email, origin, deps.fetchImpl)) === 'failed') console.error('auth: welcome email failed');
+      } catch (err) {
+        console.error('auth: welcome email failed', err instanceof Error ? err.name : 'error');
+      }
+    }
     return redirect(consumed.nextPath ?? DEFAULT_NEXT_PATH, { 'Set-Cookie': sessionCookieHeaders(isSecureRequest(req.url), sessionId) });
   } catch (err) {
     console.error('auth: verify failed', err instanceof Error ? err.name : 'error');

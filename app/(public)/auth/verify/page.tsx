@@ -3,9 +3,8 @@ import Link from 'next/link';
 import { AutoSubmit } from '@/components/auth/AutoSubmit';
 import { PageHead } from '@/components/site/Draft';
 import { SignupForm } from '@/components/site/SignupForm';
-import { tokenUsable } from '@/lib/auth/session';
 import { authStoresFromEnv } from '@/lib/auth/store';
-import { hashSecret, isSecretShape } from '@/lib/auth/token';
+import { checkLink } from '@/lib/auth/verify-link';
 
 export const metadata: Metadata = { title: 'Signing you in', robots: { index: false, follow: false } };
 
@@ -22,13 +21,10 @@ export default async function VerifyPage({ searchParams }: Props) {
   const error = first(params.error);
   const stores = authStoresFromEnv(process.env);
 
-  let usable = false;
-  if (stores && isSecretShape(raw)) {
-    const token = await stores.auth.peekToken(hashSecret(raw));
-    usable = token !== null && tokenUsable(token, new Date());
-  }
+  // A store that throws is "unavailable", not "expired": the link has not been used up, so say to try again.
+  const check = stores ? await checkLink(stores.auth, raw, new Date()) : 'unusable';
 
-  if (usable && raw) {
+  if (check === 'usable' && raw) {
     return (
       <>
         <PageHead eyebrow="Sign in" title="One moment…" />
@@ -43,7 +39,7 @@ export default async function VerifyPage({ searchParams }: Props) {
   }
 
   const rateLimited = error === 'rate';
-  const unavailable = error === 'unavailable' || !stores;
+  const unavailable = error === 'unavailable' || !stores || check === 'unavailable';
   return (
     <>
       <PageHead eyebrow="Sign in" title="That link has expired or was already used.">

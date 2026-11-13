@@ -158,12 +158,12 @@ export class NeonAccessStore implements AccessStore {
       this.sql`select id from users where id = ${userId} for update`,
       this.sql`
       with before as (
-        select id, status, role from users where id = ${userId} and status <> 'deleted'
+        select id, status, role, avatar_key from users where id = ${userId} and status <> 'deleted'
       ), changed as (
         update users set status = 'deleted', role = 'reader', deleted_at = ${atIso}, email = 'deleted+' || users.id || '@invalid.local',
-          first_name = null, last_name = null, auth_provider_id = null, updated_at = ${atIso}
+          first_name = null, last_name = null, display_name = null, avatar_key = null, avatar_updated_at = null, auth_provider_id = null, updated_at = ${atIso}
         from before where users.id = before.id
-        returning users.id
+        returning users.id, before.avatar_key as cleared_avatar_key
       ), membership_gone as (
         delete from memberships where user_id = ${userId} and exists (select 1 from before)
       ), sessions_gone as (
@@ -172,6 +172,8 @@ export class NeonAccessStore implements AccessStore {
         delete from auth_tokens where email = ${email} and exists (select 1 from before)
       ), profiles_gone as (
         delete from realtor_profiles where user_id = ${userId} and exists (select 1 from before)
+      ), billing_info_gone as (
+        delete from billing_profiles where user_id = ${userId} and exists (select 1 from before)
       ), leads_gone as (
         delete from leads where email = ${email} and exists (select 1 from before)
       ), billing_hashed as (
@@ -183,9 +185,9 @@ export class NeonAccessStore implements AccessStore {
           jsonb_build_object('status', before.status, 'role', before.role), jsonb_build_object('status', 'deleted', 'role', 'reader'), ${a.reason}, ${a.ipHash}
         from before
       )
-      select id from changed`,
+      select id, cleared_avatar_key from changed`,
     ]);
-    return (rows?.length ?? 0) > 0;
+    return rows && rows[0] ? { avatarKey: rows[0].cleared_avatar_key ? String(rows[0].cleared_avatar_key) : null } : null;
   }
 
   async appendAudit(e: AuditEntry) {

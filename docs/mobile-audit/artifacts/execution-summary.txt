@@ -1,0 +1,10 @@
+Audit source snapshot: 2e02de7 plus existing working-tree changes.
+Isolated directory: /private/tmp/reh-mobile-audit-20261110
+Production build: env -u DATABASE_URL -u E2E_DATABASE_URL NEXT_PUBLIC_COACH_ENABLED=true pnpm build
+Result: exit 0; compilation and TypeScript passed; 45 pages generated; migration skipped (DATABASE_URL unset).
+Initial build failed on audit-only defaultBrowserType option; corrected before successful rerun.
+Viewport collector: 1 passed, 1104 observations; separate matrix assertions passed.
+Development interaction subset: 18 passed, 1 failed due NEXTJS-PORTAL focus.
+Production interaction subset: 19 passed, exit 0.
+node performance.cjs: exit 0; three single-run lab observations; no INP measurement.
+Source drift check at report completion: []

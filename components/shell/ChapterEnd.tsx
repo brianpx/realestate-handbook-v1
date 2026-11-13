@@ -3,12 +3,22 @@ import { neighbors, type PageId } from '@/lib/pages';
 import { HANDBOOK, pageHref } from '@/lib/routes';
 
 export function ChapterEnd({ id }: { id: PageId }) {
-  const { next } = neighbors(id);
+  const { prev, next } = neighbors(id);
   return (
     <>
-      <p className="chapter-next">
-        {next ? <Link href={pageHref(next.id)}>Next: {next.label}</Link> : <Link href={HANDBOOK}>Back to the handbook home</Link>}
-      </p>
+      {/* The colon is not drawn; it keeps each link's text a sentence ("Next: 2. Finding Clients") for a screen reader. */}
+      <nav className="chapter-pager" aria-label="Previous and next page">
+        {prev && (
+          <p className="chapter-prev">
+            <Link href={pageHref(prev.id)}><small>Previous<span className="undrawn">: </span></small><span>{prev.label}</span></Link>
+          </p>
+        )}
+        <p className="chapter-next">
+          {next
+            ? <Link href={pageHref(next.id)}><small>Next<span className="undrawn">: </span></small><span>{next.label}</span></Link>
+            : <Link href={HANDBOOK}>Back to the handbook home</Link>}
+        </p>
+      </nav>
       <footer className="chapter-foot">
         <p>Not legal advice. Confirm forms, compensation, and prospecting rules with your broker.</p>
         <p>

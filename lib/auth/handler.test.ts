@@ -4,6 +4,7 @@ import { DEFAULT_SEND_CEILING, SEND_CEILING_WINDOW_SECONDS } from '@/lib/send-ce
 import { MemoryUserStore } from '@/lib/users/store';
 import { REQUEST_LINK_LIMITS, TERMS_VERSION, VERIFY_LIMIT } from './config';
 import { handleRequestLink, handleSignOut, handleVerify, type AuthDeps } from './handler';
+import { TRANSACTIONAL_SEND_TIMEOUT_MS } from './mail';
 import { MemoryAuthStore } from './memory-store';
 import { hashSecret, newSecret } from './token';
 
@@ -34,8 +35,13 @@ function setup(over: Partial<AuthDeps> = {}) {
     handleRequestLink({ url: extra.url ?? `${ORIGIN}/api/auth/request-link`, origin: extra.origin === undefined ? ORIGIN : extra.origin, ip: extra.ip ?? '203.0.113.9', body: b }, deps);
   const verify = (token: string, extra: { origin?: string | null; ip?: string; url?: string } = {}) =>
     handleVerify({ url: extra.url ?? `${ORIGIN}/api/auth/verify`, origin: extra.origin === undefined ? ORIGIN : extra.origin, ip: extra.ip ?? '203.0.113.9', body: new URLSearchParams({ token }).toString() }, deps);
-  const sentLink = (call = 0): string => {
-    const sent = JSON.parse(fetchImpl.mock.calls[call]![1]!.body as string) as { content: { value: string }[] };
+  const sentLink = (nth = 0): string => {
+    // Welcome notes share this mock, so the nth sign-in link is the nth message with that subject, not the nth call.
+    const signIns = fetchImpl.mock.calls.filter(call => {
+      const sent = JSON.parse(call[1]!.body as string) as { subject?: string };
+      return sent.subject === 'Your sign-in link';
+    });
+    const sent = JSON.parse(signIns[nth]![1]!.body as string) as { content: { value: string }[] };
     return /https?:\/\/\S+/.exec(sent.content[0]!.value)![0];
   };
   const rawToken = (call = 0) => new URL(sentLink(call)).searchParams.get('token')!;
@@ -152,6 +158,9 @@ describe('verify', () => {
     expect(t.auth.sessions).toHaveLength(1);
     expect(t.auth.sessions[0]).toMatchObject({ idHash: hashSecret(rawId), userId: t.users.users[0]!.id, createdAt: NOW, expiresAt: new Date('2027-02-06T12:00:00Z') });
     expect(t.auth.tokens[0]!.consumedAt).toEqual(NOW);
+    const welcome = JSON.parse(t.fetchImpl.mock.calls[1]![1]!.body as string) as { subject: string; content: { value: string }[] };
+    expect(welcome.subject).toBe('Welcome to Finding, Nurturing, and Keeping Clients');
+    expect(welcome.content[0]!.value).toContain(`${ORIGIN}/handbook`);
   });
   it('uses the plain cookie name without Secure over http', async () => {
     const t = setup({ allowedOrigins: ['http://localhost:3187'] });
@@ -185,6 +194,62 @@ describe('verify', () => {
     await t.verify(t.rawToken());
     expect(t.users.users).toHaveLength(1);
     expect(t.users.users[0]).toMatchObject({ acceptedTermsVersion: 'v0', lastSignInAt: NOW });
+    expect(t.fetchImpl).toHaveBeenCalledTimes(1); // the sign-in link only; a returning reader gets no welcome
+  });
+  it('still signs a new reader in when the welcome email fails', async () => {
+    const t = setup();
+    await t.request(body({ email: 'a@b.co' }));
+    t.fetchImpl.mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 } as Response));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const reply = await t.verify(t.rawToken());
+      expect(reply.status).toBe(303);
+      expect(reply.headers?.Location).toBe('/handbook');
+      expect(spy).toHaveBeenCalledWith('auth: welcome email failed');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it('lands a new reader at the deadline when the welcome stalls, and sends no second welcome at the next sign-in', async () => {
+    // Sign-in links are answered; the welcome never is, and rejects only when its deadline cancels it.
+    const stallWelcome = vi.fn<typeof fetch>((_url, init) => {
+      const { subject } = JSON.parse(init!.body as string) as { subject: string };
+      if (!subject.startsWith('Welcome')) return ok();
+      return new Promise<Response>((_resolve, reject) => {
+        init!.signal!.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')));
+      });
+    });
+    const t = setup({ fetchImpl: stallWelcome });
+    const sentWith = (prefix: string) => stallWelcome.mock.calls.filter(call => (JSON.parse(call[1]!.body as string) as { subject: string }).subject.startsWith(prefix));
+    const welcomes = () => sentWith('Welcome');
+    // setup()'s own token helpers read its default mock, so the link is taken from this one.
+    const tokenOf = (nth: number) => new URL(/https?:\/\/\S+/.exec((JSON.parse(sentWith('Your sign-in link')[nth]![1]!.body as string) as { content: { value: string }[] }).content[0]!.value)![0]).searchParams.get('token')!;
+    await t.request(body({ email: 'new@b.co' }));
+    vi.useFakeTimers();
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      let reply: Awaited<ReturnType<typeof t.verify>> | undefined;
+      const pending = t.verify(tokenOf(0)).then(r => { reply = r; });
+      await vi.advanceTimersByTimeAsync(TRANSACTIONAL_SEND_TIMEOUT_MS - 1);
+      expect(reply).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(reply!.status).toBe(303);
+      expect(reply!.headers?.Location).toBe('/handbook');
+      expect(String(reply!.headers?.['Set-Cookie'])).toContain('hb_session=');
+      expect(t.auth.sessions).toHaveLength(1);
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('did not answer within'));
+      expect(JSON.stringify(spy.mock.calls)).not.toContain('new@b.co');
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(welcomes()).toHaveLength(1);
+    } finally {
+      spy.mockRestore();
+      vi.useRealTimers();
+    }
+    await t.request(body({ email: 'new@b.co' }));
+    expect((await t.verify(tokenOf(1))).status).toBe(303);
+    expect(welcomes()).toHaveLength(1);
+    expect(stallWelcome).toHaveBeenCalledTimes(3); // link, the one welcome, link again
   });
   it('counts sign-ins apart from link requests, so a reader can sign in five times in ten minutes', async () => {
     const t = setup();

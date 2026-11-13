@@ -20,7 +20,7 @@ describe('the migration list', () => {
   });
   it('covers every file in db/migrations, and each one splits into statements without a semicolon inside a string', async () => {
     const files = migrationFiles(await readdir(MIGRATIONS_DIR));
-    expect(files).toEqual(['001_leads.sql', '002_users_auth.sql', '003_access_billing.sql', '004_leads_confirmation.sql', '005_send_ceiling.sql', '006_realtor_profiles.sql', '007_confirmation_delivery.sql', '008_leads_unsubscribe.sql']);
+    expect(files).toEqual(['001_leads.sql', '002_users_auth.sql', '003_access_billing.sql', '004_leads_confirmation.sql', '005_send_ceiling.sql', '006_realtor_profiles.sql', '007_confirmation_delivery.sql', '008_leads_unsubscribe.sql', '009_display_name.sql', '010_billing_info.sql', '011_avatar.sql']);
     for (const file of files) {
       const statements = splitStatements(await readFile(path.join(MIGRATIONS_DIR, file), 'utf8'));
       expect(statements.length, file).toBeGreaterThan(0);

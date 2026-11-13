@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { ArrowRightIcon, MenuIcon, XIcon } from 'lucide-react';
+import { useAccountSummary } from './useAccountSummary';
 import { useSignedIn } from './useSignedIn';
+import { AccountPanel, UserMenu, UserMenuPlaceholder } from './UserMenu';
 
 // Header links: preview, what is included, pricing, and the way into the handbook: "Sign in" for a visitor,
-// "Open handbook" once the browser reports the sign-in flag (useSignedIn, after mount).
+// the user menu once the browser reports the sign-in flag (useSignedIn, after mount) and /api/account/me answers.
 const LINKS = [
   { href: '/preview', label: 'Sample lesson' },
   { href: '/#how-it-works', label: 'How it works' },
@@ -23,6 +25,7 @@ const currentFor = (href: string, pathname: string): 'page' | undefined => {
 export function PublicHeader() {
   const pathname = usePathname();
   const signedIn = useSignedIn();
+  const account = useAccountSummary(signedIn);
   const signingIn = pathname === '/signin' || pathname === '/signup';
   const [open, setOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -78,8 +81,13 @@ export function PublicHeader() {
           {LINKS.map(l => (
             <Link key={l.href} href={l.href} aria-current={currentFor(l.href, pathname)}>{l.label}</Link>
           ))}
-          {!signingIn && (signedIn
-            ? <Link href="/handbook" className="pub-nav-cta">Open handbook<ArrowRightIcon aria-hidden="true" /></Link>
+          {!signingIn && (signedIn && account.status !== 'out'
+            ? account.status === 'ready'
+              ? <><div className="pub-user"><UserMenu account={account.account} /></div><AccountPanel account={account.account} /></>
+              : account.status === 'error'
+                ? <Link href="/account" className="pub-nav-cta">Account<ArrowRightIcon aria-hidden="true" /></Link>
+                // the phone panel has no placeholder, so it offers a plain link until the summary arrives
+                : <><div className="pub-user"><UserMenuPlaceholder /></div><div className="pub-account"><Link href="/account" className="pub-account-link">Account</Link></div></>
             : <Link href="/signin" className="pub-nav-cta">Sign in<ArrowRightIcon aria-hidden="true" /></Link>)}
         </nav>
       </div>

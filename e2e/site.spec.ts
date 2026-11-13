@@ -2,7 +2,7 @@ import { expect, test } from './fixtures';
 import { LEGACY_PAGE_SLUGS } from '../lib/routes';
 
 const PUBLIC = ['/', '/preview', '/about', '/support', '/pricing', '/privacy', '/terms', '/refunds', '/updates', '/signup', '/signin', '/subscribe/confirm'];
-const PRODUCT = ['/handbook', '/handbook/start', '/account'];
+const PRODUCT = ['/handbook', '/handbook/start', '/account', '/account/authentication', '/account/billing'];
 
 test.describe('public pages', () => {
   for (const path of PUBLIC) {
@@ -29,6 +29,78 @@ test.describe('public pages', () => {
     });
   }
 
+  test('"Every tool" on the pricing table opens and scrolls to the tool index', async ({ page }) => {
+    await page.goto('/pricing');
+    const table = page.locator('section[aria-labelledby="plansTitle"]');
+    const index = page.locator('.pub-tool-index');
+    await expect(index).not.toHaveAttribute('open', '');
+    await expect(table.getByRole('link', { name: 'Every tool' })).toHaveAttribute('href', '#tool-index');
+    await expect(table.getByRole('link', { name: 'The five essential tools' })).toHaveCount(0);
+    await table.getByRole('link', { name: 'Every tool' }).click();
+    await expect(page).toHaveURL(/\/pricing#tool-index$/);
+    await expect(index).toHaveAttribute('open', '');
+    await expect(index.locator('summary')).toBeInViewport();
+    await expect(index.getByRole('rowheader', { name: 'Objection trainer' })).toBeVisible();
+  });
+
+  test('/pricing#tool-index opens the tool index on arrival', async ({ page }) => {
+    await page.goto('/pricing#tool-index');
+    await expect(page.locator('.pub-tool-index')).toHaveAttribute('open', '');
+  });
+
+  test('"Every tool" opens the tool index from the phone plan tabs', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/pricing');
+    const table = page.locator('section[aria-labelledby="plansTitle"]');
+    await table.getByRole('tab', { name: 'Pro' }).click();
+    await table.getByRole('tabpanel', { name: 'Pro' }).getByRole('link', { name: 'Every tool' }).click();
+    await expect(page.locator('.pub-tool-index')).toHaveAttribute('open', '');
+    await expect(page.locator('.pub-tool-index summary')).toBeInViewport();
+  });
+
+  test('the signed-in reader gets no call-to-action band, and what is inside follows the handbook', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.pub-cta-band')).toHaveCount(0);
+    const inside = page.locator('#included');
+    await expect(inside.getByRole('heading', { name: 'Everything inside' })).toBeVisible();
+    await expect(inside).toContainText(/13 chapters in a fixed order/); // the count is read from the page list, so this fails if a chapter is added without a decision here
+    await expect(inside.locator('.pub-tool-index')).toHaveCount(1);
+    await expect(page.locator('#how-it-works')).toHaveCount(1);
+    await expect(page.getByRole('link', { name: 'See the three phases below' })).toHaveAttribute('href', '#how-it-works');
+  });
+
+  test('the first-session card shows each result once, with its example', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByRole('group', { name: /What the first session produces/ });
+    await expect(card.locator('dt')).toHaveText(['A daily conversation target', 'Two lead sources to start with', 'A scheduled first week', 'One clear next action']);
+    await expect(card.locator('.pub-plan-eg')).toHaveCount(4);
+    await expect(page.locator('.pub-checks')).toHaveCount(0); // the separate checklist repeated these four lines
+  });
+
+  test('on a phone the hero links to the calculator, on a desktop it does not', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    const jump = page.getByRole('link', { name: 'See your daily number' });
+    await expect(jump).toBeVisible();
+    await jump.click();
+    await expect(page).toHaveURL(/\/#heroPlan$/);
+    await expect(page.getByRole('heading', { name: 'Your daily conversation target' })).toBeInViewport();
+    const headerBottom = await page.locator('.pub-header').evaluate(el => el.getBoundingClientRect().bottom);
+    await expect.poll(() => page.locator('#heroPlan').evaluate(el => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(jump).toBeHidden();
+  });
+
+  test('every row of the planner example on the sales page keeps its time beside its name', async ({ page }) => {
+    await page.goto('/');
+    const rows = page.locator('.pub-blocks li');
+    await expect(rows).toHaveCount(3);
+    for (const row of await rows.all()) {
+      const [time, name] = await Promise.all([row.locator('time').boundingBox(), row.locator('span').boundingBox()]);
+      expect(Math.abs(time!.y - name!.y)).toBeLessThan(name!.height); // same line: the name is not pushed below the time
+    }
+  });
+
   test('the sales page has no purchase button until a price and checkout are configured', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'See plans and pricing' }).first()).toHaveAttribute('href', '/pricing');
@@ -37,7 +109,26 @@ test.describe('public pages', () => {
     // the suite runs signed in: the hero welcomes the reader back instead of asking for the address again
     await expect(page.locator('[data-welcome-back]').getByRole('link', { name: 'Open the handbook' })).toHaveAttribute('href', '/handbook');
     await expect(page.locator('form[data-source="hero"]')).toHaveCount(0);
-    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open handbook' })).toHaveAttribute('href', '/handbook');
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: /^Account menu for/ })).toBeVisible();
+    await expect(page.locator('.pub-nav-cta')).toHaveCount(0);
+  });
+
+  test('the header avatar opens the account menu, and Escape closes it and returns focus', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 800 });
+    await page.goto('/');
+    const avatar = page.getByRole('button', { name: /^Account menu for/ });
+    await avatar.click();
+    const menu = page.getByRole('menu');
+    await expect(menu).toContainText('reader@e2e.test');
+    for (const [name, href] of [['Feedback', '/support?topic=feedback'], ['Home Page', '/'], ['Help', '/support'], ['Docs', '/handbook'], ['Changelog', '/updates']] as const) {
+      await expect(menu.getByRole('menuitem', { name })).toHaveAttribute('href', href);
+    }
+    await menu.getByRole('menuitemradio', { name: 'Dark' }).click();
+    await expect(menu).toBeVisible();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(avatar).toBeFocused();
   });
 
   test.describe('signed out', () => {
@@ -53,6 +144,15 @@ test.describe('public pages', () => {
       await expect(page.locator('form[data-source="final"]')).toBeVisible();
       await expect(page.locator('[data-welcome-back]')).toHaveCount(0);
       await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/signin');
+    });
+
+    test('a visitor gets a call to action after the tools, and its link reaches the final form', async ({ page }) => {
+      await page.goto('/');
+      const band = page.locator('.pub-cta-band');
+      await expect(band.getByRole('link', { name: 'Try a sample lesson' })).toHaveAttribute('href', '/preview');
+      await band.getByRole('link', { name: 'Get the free chapters' }).click();
+      await expect(page).toHaveURL(/\/#start$/);
+      await expect(page.locator('#start')).toBeInViewport();
     });
 
     test('editing the calculator offers the form once, after the effort', async ({ page }) => {
@@ -260,7 +360,7 @@ test.describe('public pages', () => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto('/');
       const nav = page.getByRole('navigation', { name: 'Main' });
-      await expect(nav.getByRole('link', { name: 'Open handbook' })).toBeVisible();
+      await expect(nav.getByRole('button', { name: /^Account menu for/ })).toBeVisible();
       for (const link of await nav.getByRole('link').all()) {
         expect((await link.boundingBox())?.height).toBe(44); // a wrapped label would grow past the 44px target
         expect(await link.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
