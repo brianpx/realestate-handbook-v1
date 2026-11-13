@@ -9,16 +9,20 @@ import { authStoresFromEnv } from './store';
 // The wiring the three auth routes share: the request as the handlers see it, the dependencies from the
 // environment, and the reply as a Response. Kept out of the handlers so they stay testable without a server.
 
-export async function authRequestFrom(request: Request): Promise<AuthRequest> {
+/** The session cookie's value, for the routes whose body is not text (the avatar upload is multipart). */
+export function sessionIdFrom(request: Request): string | undefined {
   const cookie = request.headers.get('cookie') ?? '';
-  const sessionId = COOKIE_NAMES.map(name => new RegExp(`(?:^|;\\s*)${name.replace('-', '\\-')}=([^;]*)`).exec(cookie)?.[1]).find(Boolean);
+  return COOKIE_NAMES.map(name => new RegExp(`(?:^|;\\s*)${name.replace('-', '\\-')}=([^;]*)`).exec(cookie)?.[1]).find(Boolean);
+}
+
+export async function authRequestFrom(request: Request): Promise<AuthRequest> {
   return {
     url: request.url,
     origin: request.headers.get('origin'),
     // behind Vercel's proxy the first x-forwarded-for entry is the client; locally there is no header
     ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local',
     body: await request.text(),
-    sessionId,
+    sessionId: sessionIdFrom(request),
   };
 }
 

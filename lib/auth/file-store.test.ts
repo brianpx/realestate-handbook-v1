@@ -76,6 +76,25 @@ describe('FileAuthStore', () => {
     expect(await store.countAdmins()).toBe(1);
     expect((await store.findById(user.id))?.lastSignInAt).toEqual(hours(1));
   });
+  it('sets and clears a display name for an active user only', async () => {
+    const store = new FileAuthStore(file);
+    const { user } = await store.upsertVerified({ email: 'a@b.co', termsVersion: 'v1', at: NOW });
+    expect(await store.setDisplayName(user.id, 'Pat')).toBe(true);
+    expect((await store.findById(user.id))?.displayName).toBe('Pat');
+    expect(await store.setDisplayName(user.id, null)).toBe(true);
+    expect((await store.findById(user.id))?.displayName).toBeNull();
+    expect(await store.setDisplayName('missing', 'Pat')).toBe(false);
+  });
+  it('sets, replaces and clears an avatar, answering the key it replaced, for an active user only', async () => {
+    const store = new FileAuthStore(file);
+    const { user } = await store.upsertVerified({ email: 'a@b.co', termsVersion: 'v1', at: NOW });
+    expect(await store.setAvatar(user.id, 'avatars/x/one.webp', NOW)).toEqual({ previousKey: null });
+    expect(await store.findById(user.id)).toMatchObject({ avatarKey: 'avatars/x/one.webp', avatarUpdatedAt: NOW });
+    expect(await store.setAvatar(user.id, 'avatars/x/two.webp', hours(1))).toEqual({ previousKey: 'avatars/x/one.webp' });
+    expect(await store.setAvatar(user.id, null, hours(2))).toEqual({ previousKey: 'avatars/x/two.webp' });
+    expect(await store.findById(user.id)).toMatchObject({ avatarKey: null, avatarUpdatedAt: null });
+    expect(await store.setAvatar('missing', null, NOW)).toBeNull();
+  });
 });
 
 describe('authStoresFromEnv', () => {

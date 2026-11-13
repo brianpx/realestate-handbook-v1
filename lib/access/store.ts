@@ -33,9 +33,10 @@ export interface AccessStore {
   saveMembership(membership: MembershipProjection): Promise<Membership>;
   /**
    * Account deletion (user-database plan, section 12.4), one batch: the user row is anonymised and marked deleted,
-   * its sessions and tokens go, billing rows stay with the provider address hashed. False when already deleted.
+   * its sessions and tokens go, billing rows stay with the provider address hashed. Null when already deleted;
+   * otherwise the avatar key the statement itself cleared, so a picture uploaded after the caller's read is not orphaned.
    */
-  anonymise(input: Anonymisation, audit: AuditStub): Promise<boolean>;
+  anonymise(input: Anonymisation, audit: AuditStub): Promise<{ avatarKey: string | null } | null>;
   appendAudit(entry: AuditEntry): Promise<void>;
   listAudit(subjectTable: string, subjectId: string): Promise<AuditRow[]>;
   /** The whole log newest first, paged, for the admin audit list. */
