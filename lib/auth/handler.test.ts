@@ -34,8 +34,13 @@ function setup(over: Partial<AuthDeps> = {}) {
     handleRequestLink({ url: extra.url ?? `${ORIGIN}/api/auth/request-link`, origin: extra.origin === undefined ? ORIGIN : extra.origin, ip: extra.ip ?? '203.0.113.9', body: b }, deps);
   const verify = (token: string, extra: { origin?: string | null; ip?: string; url?: string } = {}) =>
     handleVerify({ url: extra.url ?? `${ORIGIN}/api/auth/verify`, origin: extra.origin === undefined ? ORIGIN : extra.origin, ip: extra.ip ?? '203.0.113.9', body: new URLSearchParams({ token }).toString() }, deps);
-  const sentLink = (call = 0): string => {
-    const sent = JSON.parse(fetchImpl.mock.calls[call]![1]!.body as string) as { content: { value: string }[] };
+  const sentLink = (nth = 0): string => {
+    // Welcome notes share this mock, so the nth sign-in link is the nth message with that subject, not the nth call.
+    const signIns = fetchImpl.mock.calls.filter(call => {
+      const sent = JSON.parse(call[1]!.body as string) as { subject?: string };
+      return sent.subject === 'Your sign-in link';
+    });
+    const sent = JSON.parse(signIns[nth]![1]!.body as string) as { content: { value: string }[] };
     return /https?:\/\/\S+/.exec(sent.content[0]!.value)![0];
   };
   const rawToken = (call = 0) => new URL(sentLink(call)).searchParams.get('token')!;
@@ -152,6 +157,9 @@ describe('verify', () => {
     expect(t.auth.sessions).toHaveLength(1);
     expect(t.auth.sessions[0]).toMatchObject({ idHash: hashSecret(rawId), userId: t.users.users[0]!.id, createdAt: NOW, expiresAt: new Date('2027-02-06T12:00:00Z') });
     expect(t.auth.tokens[0]!.consumedAt).toEqual(NOW);
+    const welcome = JSON.parse(t.fetchImpl.mock.calls[1]![1]!.body as string) as { subject: string; content: { value: string }[] };
+    expect(welcome.subject).toBe('Welcome to Finding, Nurturing, and Keeping Clients');
+    expect(welcome.content[0]!.value).toContain(`${ORIGIN}/handbook`);
   });
   it('uses the plain cookie name without Secure over http', async () => {
     const t = setup({ allowedOrigins: ['http://localhost:3187'] });
@@ -185,6 +193,21 @@ describe('verify', () => {
     await t.verify(t.rawToken());
     expect(t.users.users).toHaveLength(1);
     expect(t.users.users[0]).toMatchObject({ acceptedTermsVersion: 'v0', lastSignInAt: NOW });
+    expect(t.fetchImpl).toHaveBeenCalledTimes(1); // the sign-in link only; a returning reader gets no welcome
+  });
+  it('still signs a new reader in when the welcome email fails', async () => {
+    const t = setup();
+    await t.request(body({ email: 'a@b.co' }));
+    t.fetchImpl.mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 } as Response));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const reply = await t.verify(t.rawToken());
+      expect(reply.status).toBe(303);
+      expect(reply.headers?.Location).toBe('/handbook');
+      expect(spy).toHaveBeenCalledWith('auth: welcome email failed');
+    } finally {
+      spy.mockRestore();
+    }
   });
   it('counts sign-ins apart from link requests, so a reader can sign in five times in ten minutes', async () => {
     const t = setup();

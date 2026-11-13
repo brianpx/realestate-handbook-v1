@@ -1,5 +1,8 @@
 import { productionDatabaseRefused } from '@/lib/db/production-refusal';
+import { emailHtml, emailText, originOf, type EmailCard } from '@/lib/email/layout';
+import { BOOK_TITLE } from '@/lib/pages';
 import { OWNER } from '../offer';
+import { CONFIRM_TTL_SECONDS } from './config';
 import type { EmailStatus } from './store';
 
 // Confirmation email for the marketing list. SendGrid in production, Mailpit (a local mail catcher) in development,
@@ -31,22 +34,27 @@ export function mailFromEnv(env: Record<string, string | undefined>): MailConfig
 
 /** The one message the list sends on its own: the link that turns a form submission into a subscription. */
 export function confirmationMessage(link: string, address: string, unsubscribe: UnsubscribeLinks): Message {
+  const days = Math.round(CONFIRM_TTL_SECONDS / 86400);
+  const card: EmailCard = {
+    origin: originOf(link),
+    preheader: `Nothing is sent until you confirm. The link expires in ${days} days.`,
+    headline: 'Confirm your email',
+    intro: `You asked for notes about ${BOOK_TITLE}. Select the button below to confirm your address. Nothing is sent until you do.`,
+    action: { href: link, label: 'Confirm my email' },
+    expires: `The link expires in ${days} days.`,
+    fallback: { label: 'Button not working? Paste this link into your browser:', href: link },
+    closing: [
+      'If you did not ask for this, ignore this message and your address is not used.',
+      `To stop the notes at any time afterwards, open this link, or reply "unsubscribe": ${unsubscribe.page}`,
+    ],
+    postalAddress: address,
+  };
   return {
     subject: 'Confirm your email for handbook notes',
     // Mail clients show their own unsubscribe control from these two headers and post to the second address without opening a page.
     headers: { 'List-Unsubscribe': `<${unsubscribe.oneClick}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-    text: [
-      'You asked for notes about Finding, Nurturing, and Keeping Clients. Open this link to confirm your address:',
-      '',
-      link,
-      '',
-      'Nothing is sent until you do. If you did not ask for this, ignore this message and your address is not used.',
-      'To stop the notes at any time afterwards, open this link, or reply "unsubscribe":',
-      '',
-      unsubscribe.page,
-      '',
-      address,
-    ].join('\n'),
+    text: emailText(card),
+    html: emailHtml(card),
   };
 }
 
