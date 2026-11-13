@@ -62,12 +62,19 @@ export function confirmationMessage(link: string, address: string, unsubscribe: 
  * Sends one message with a plain-text fallback through whichever provider is configured. Logs carry the provider, the status and
  * the error name only, never the address. `label` names the caller in those logs.
  */
-export async function deliver(cfg: MailConfig, to: string, { subject, text, html, headers }: Message, fetchImpl: typeof fetch = fetch, label = 'email'): Promise<EmailStatus> {
+export async function deliver(cfg: MailConfig, to: string, { subject, text, html, headers }: Message, fetchImpl: typeof fetch = fetch, label = 'email', timeoutMs?: number): Promise<EmailStatus> {
   if (cfg.provider === 'none') return 'skipped';
+  // With a deadline the request is cancelled when it passes. The provider may already have taken the message, so a
+  // message that timed out is neither sent nor failed as far as this code can tell.
+  let timedOut = false;
+  const controller = timeoutMs === undefined ? undefined : new AbortController();
+  const timer = controller && setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+  const signal = controller?.signal;
   try {
     const res = cfg.provider === 'sendgrid'
       ? await fetchImpl('https://api.sendgrid.com/v3/mail/send', {
           method: 'POST',
+          ...(signal ? { signal } : {}),
           headers: { Authorization: `Bearer ${cfg.apiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: to }] }],
@@ -80,14 +87,18 @@ export async function deliver(cfg: MailConfig, to: string, { subject, text, html
         })
       : await fetchImpl(`${cfg.url}/api/v1/send`, {
           method: 'POST',
+          ...(signal ? { signal } : {}),
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ From: { Email: cfg.from, Name: cfg.fromName }, To: [{ Email: to }], Subject: subject, Text: text, ...(html ? { HTML: html } : {}), ...(headers ? { Headers: headers } : {}) }),
         });
     if (!res.ok) { console.error(`${label}: ${cfg.provider} answered ${res.status}`); return 'failed'; }
     return 'sent';
   } catch (err) {
-    console.error(`${label}: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
+    if (timedOut) console.error(`${label}: ${cfg.provider} did not answer within ${timeoutMs} ms; delivery unknown`);
+    else console.error(`${label}: ${cfg.provider} request failed`, err instanceof Error ? err.name : 'error'); // never the address
     return 'failed';
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }
 

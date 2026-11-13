@@ -97,8 +97,12 @@ export function accountDeletedMessage(origin: string, notesRemoved: boolean): Me
   });
 }
 
+// How long a first sign-in or an account deletion waits on the provider for one of these two notes. Both have already
+// committed their work by then, so the reader should not wait on mail that stalls.
+export const TRANSACTIONAL_SEND_TIMEOUT_MS = 5000;
+
 export const sendWelcome = (cfg: MailConfig, to: string, origin: string, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> =>
-  deliver(cfg, to, welcomeMessage(origin), fetchImpl, 'welcome email');
+  deliver(cfg, to, welcomeMessage(origin), fetchImpl, 'welcome email', TRANSACTIONAL_SEND_TIMEOUT_MS);
 
 export const sendAccountDeleted = (cfg: MailConfig, to: string, origin: string, notesRemoved: boolean, fetchImpl: typeof fetch = fetch): Promise<EmailStatus> =>
-  deliver(cfg, to, accountDeletedMessage(origin, notesRemoved), fetchImpl, 'deletion email');
+  deliver(cfg, to, accountDeletedMessage(origin, notesRemoved), fetchImpl, 'deletion email', TRANSACTIONAL_SEND_TIMEOUT_MS);

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { grantAccess } from '@/lib/access/grants';
 import { MemoryAccessStore } from '@/lib/access/memory-store';
 import { MemoryAuthStore } from '@/lib/auth/memory-store';
+import { TRANSACTIONAL_SEND_TIMEOUT_MS } from '@/lib/auth/mail';
+import { signedInUser } from '@/lib/auth/request-user';
 import { sessionExpiry } from '@/lib/auth/session';
 import { hashSecret, newSecret } from '@/lib/auth/token';
 import { MemoryLeadStore } from '@/lib/leads/store';
@@ -179,6 +181,42 @@ describe('delete account', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+  it('ends the deletion at the deadline when the goodbye email stalls: the account is gone, its sessions are invalid and a wrong address is still refused', async () => {
+    const { auth, users, deps, sessions, req } = await setup();
+    const stalled = vi.fn<typeof fetch>((_url, init) => new Promise<Response>((_resolve, reject) => {
+      init!.signal!.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')));
+    }));
+    const withMail: AccountDeps = { ...deps, mail: { provider: 'mailpit', url: 'http://localhost:8025', from: 'me@example.test', fromName: 'Handbook', mailingAddress: '' }, fetchImpl: stalled };
+    const wrong = await handleDeleteAccount(req(new URLSearchParams({ confirmEmail: 'someone@else.test' }).toString()), withMail);
+    expect(wrong.headers?.Location).toBe('/account?error=confirm');
+    expect(stalled).not.toHaveBeenCalled();
+    expect(users.users[0]!.status).toBe('active');
+    expect(await signedInUser(sessions[0], deps.stores!, NOW)).not.toBeNull();
+
+    vi.useFakeTimers();
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      let res: Awaited<ReturnType<typeof handleDeleteAccount>> | undefined;
+      const pending = handleDeleteAccount(req(new URLSearchParams({ confirmEmail: EMAIL }).toString()), withMail).then(r => { res = r; });
+      await vi.advanceTimersByTimeAsync(TRANSACTIONAL_SEND_TIMEOUT_MS - 1);
+      expect(res).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(res!.status).toBe(303);
+      expect(res!.headers?.Location).toBe('/goodbye');
+      expect(String(res!.headers?.['Set-Cookie'])).toContain('__Host-hb_session=;');
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('did not answer within'));
+      expect(JSON.stringify(spy.mock.calls)).not.toContain(EMAIL);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(stalled).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+      vi.useRealTimers();
+    }
+    expect(users.users[0]!.status).toBe('deleted');
+    expect(auth.sessions).toHaveLength(0);
+    expect(await signedInUser(sessions[0], deps.stores!, NOW)).toBeNull();
   });
   it('emails the deleted address once the account is gone, and still says goodbye if that send fails', async () => {
     const { deps, req } = await setup();
