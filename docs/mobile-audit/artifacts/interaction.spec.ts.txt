@@ -1,0 +1,26 @@
+import {test,expect,devices,chromium} from '@playwright/test';
+import {writeFileSync} from 'node:fs';
+const out='/Users/mmbp/Projects/code/realestate-handbook-v1/docs/mobile-audit';
+test('targeted responsive and focus observations',async({page})=>{
+ const evidence=[];
+ await page.setViewportSize({width:390,height:844});await page.goto('/handbook/ch11');await page.waitForTimeout(500);
+ const option=page.locator('.drill-option').first();await option.click();const next=page.getByRole('button',{name:/Next phrase/});await next.focus();await page.keyboard.press('Enter');
+ evidence.push({scenario:'choice-drill-next',focus:await page.evaluate(()=>document.activeElement?.tagName)});
+ for(const route of ['/','/preview','/handbook/ch1','/handbook/start','/account']){
+ await page.goto(route);await page.waitForTimeout(300);await page.setViewportSize({width:320,height:640});
+ await page.addStyleTag({content:'html {font-size:200% !important}'});
+ evidence.push({scenario:'root-text-200%',route,...await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}))});
+ await page.screenshot({path:`${out}/screenshots/text200-${route.replaceAll('/','_')}.png`});
+ }
+ await page.goto('/handbook/ch1');await page.setViewportSize({width:768,height:320});await page.locator('#menuToggle').click();
+ evidence.push({scenario:'landscape-menu',...await page.locator('#navList').evaluate(e=>({bottom:e.getBoundingClientRect().bottom,viewport:innerHeight,clientHeight:e.clientHeight,scrollHeight:e.scrollHeight}))});
+ await page.screenshot({path:out+'/screenshots/landscape-menu.png'});
+ await page.keyboard.press('Escape');await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});await page.reload();await page.screenshot({path:out+'/screenshots/dark-reduced-motion.png'});
+ evidence.push({scenario:'dark-reduced-motion',...await page.evaluate(()=>({dark:document.documentElement.classList.contains('dark'),reduced:matchMedia('(prefers-reduced-motion:reduce)').matches}))});
+ writeFileSync(out+'/artifacts/targeted.json',JSON.stringify(evidence,null,2));
+});
+test('public touch navigation and validation',async({browser})=>{
+ const context=await browser.newContext({...devices['Pixel 7'],storageState:{cookies:[],origins:[]}});const page=await context.newPage();
+ await page.goto('http://localhost:3199/');await page.getByRole('button',{name:'Menu',exact:true}).tap();await expect(page.locator('#pubNav')).toHaveClass(/open/);await page.getByRole('link',{name:'Sample lesson',exact:true}).first().tap();await expect(page).toHaveURL(/preview/);
+ await page.goto('http://localhost:3199/signin');const input=page.locator('input[type=email]').first();await input.fill('not-an-email');expect(await input.evaluate(e=>(e as HTMLInputElement).checkValidity())).toBe(false);await context.close();
+});

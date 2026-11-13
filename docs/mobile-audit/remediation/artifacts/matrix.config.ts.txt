@@ -1,0 +1,1 @@
+import {defineConfig} from '@playwright/test'; export default defineConfig({testDir:'.',testMatch:'matrix.spec.ts',timeout:600000,workers:1,reporter:'list',outputDir:'matrix-output',use:{baseURL:'http://localhost:3209'}});
