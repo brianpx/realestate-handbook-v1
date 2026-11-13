@@ -865,8 +865,12 @@
         .score-axis { font-size: 12px; fill: var(--color-ink-muted)}
         .score-change { display: block; margin: 16px 0; font-weight: 600; color: var(--color-ink)}
         .score-change textarea { display: block; width: 100%; max-width: 40rem; margin-top: 6px; padding: 10px; font: inherit; font-weight: 400; font-size: max(16px, 1rem); line-height: 1.45; border: 1px solid var(--color-line-strong); border-radius: 6px}
-        .chapter-next { margin: 28px 0 8px; font-weight: 700}
-        .chapter-next a { color: var(--color-link)}
+        .chapter-pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-subtle)}
+        .chapter-pager p { max-width: 48%; margin: 0; font-size: 1rem}
+        .chapter-next { margin-left: auto; text-align: right}
+        .chapter-pager a { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 48px; padding: 10px 16px; border: 1px solid var(--color-subtle); border-radius: var(--hb-radius); background: var(--color-surface); color: var(--color-link); font-weight: 600; text-decoration: none}
+        .chapter-pager a:hover { border-color: var(--color-link)}
+        .chapter-pager small { font-size: 0.75rem; font-weight: 400; color: var(--color-ink-muted)}
         .chapter-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--color-line); font-size: 0.85rem; line-height: 1.5; color: var(--color-ink-muted)}
         .chapter-foot p { margin: 0 0 8px}
         .load-error { margin: 0 0 16px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #7f1d1d}
@@ -878,7 +882,7 @@
             .shell-column { display: block}
             #main-content { overflow: visible; padding: 0}
             .print-page-break { break-before: page; page-break-before: always}
-            .chapter-next { break-after: avoid}
+            .chapter-pager { break-after: avoid}
         .handbook-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin: 48px 0 0; padding: 20px 0 16px; border-top: 1px solid var(--color-line); font-size: 0.875rem; line-height: 1.5; color: var(--color-ink-muted)}
         .handbook-footer ul { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 0; padding: 0; list-style: none}
         .handbook-footer a { display: inline-block; padding: 10px; margin: 0 -2px; color: var(--color-ink-muted); text-decoration: none; border-radius: 6px}
@@ -1239,6 +1243,9 @@
         .undrawn { font-size: 0}
         .hb-home h2 { margin: 0; padding: 0; border: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--color-ink)}
         .hb-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 1px solid transparent; border-radius: var(--hb-radius); font: inherit; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer}
+        .hb-kicker { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted)}
+        .hb-btn-primary { background: var(--color-brand); color: var(--color-on-brand)}
+        .hb-btn-primary:hover { background: var(--color-brand-hover); color: var(--color-on-brand)}
         .hb-btn-ghost { background: var(--color-surface); border-color: var(--color-line); color: var(--color-ink)}
         .hb-btn-ghost:hover { border-color: var(--color-ink); color: var(--color-ink)}
         .hb-continue { display: flex; margin-top: 24px; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
@@ -1251,16 +1258,20 @@
         .nav-item.locked { color: var(--color-ink-muted)}
         @media (width <= 900px) {
             /* on a phone the home page is panels on the page background too, not one sheet */
-            .content-container:has(> .hb-home) { padding: 16px 8px 40px; background: none; border: 0; box-shadow: none}
+            .content-container:has(> .hb-home, > .hb-upsell) { padding: 16px 8px 40px; background: none; border: 0; box-shadow: none}
         }
         .hb-upsell { max-width: 760px}
-        .hb-upsell-lede { font-size: 1.1rem; line-height: 1.55; color: var(--color-ink-muted)}
-        .hb-upsell-status { margin: 24px 0 8px; padding: 20px 24px; border: 1px solid var(--color-line-strong); border-left: 5px solid var(--accent-color); border-radius: 10px; background: var(--color-accent-tint)}
-        .hb-upsell-status p { margin-bottom: 10px}
-        .hb-upsell-free ul { padding-left: 20px}
-        .hb-upsell-free li { margin-bottom: 6px}
+        .hb-upsell-lede { max-width: 62ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--color-body)}
+        .hb-upsell-status { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 24px; padding: 28px; background: var(--color-surface); border: 1px solid var(--color-subtle); border-radius: var(--hb-radius-card)}
+        .hb-upsell-status p { max-width: 60ch; margin: 0; font-size: 1rem}
+        .hb-lock-badge { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; background: var(--color-tint); color: var(--color-ink)}
+        .hb-lock-badge svg { width: 20px; height: 20px}
+        .hb-upsell-free { width: 100%}
+        .hb-upsell-free h2 { margin: 8px 0; padding: 0; border: 0; font-size: 1.1875rem; font-weight: 600; line-height: 1.3}
+        .hb-upsell-free ul { margin: 0; padding-left: 20px; list-style: disc; line-height: 1.9}
+        .hb-upsell-free li { margin: 0}
         /* The notes form on the card (components/site/LeadForm.tsx), in the account page's input style */
-        .hb-upsell .lead-form { display: grid; gap: 10px; justify-items: start; max-width: 440px; margin: 4px 0 8px}
+        .hb-upsell .lead-form { display: grid; gap: 10px; justify-items: start; width: 100%; max-width: 520px}
         .hb-upsell .lead-form p { margin: 0}
         .hb-upsell .lead-field { width: 100%}
         .hb-upsell .lead-field label { display: block; font-weight: 600; margin-bottom: 6px}
@@ -1268,7 +1279,7 @@
         .hb-upsell .lead-error { color: var(--color-danger)}
         .hb-upsell .lead-consent { font-size: 0.85rem; color: var(--color-ink-muted)}
         .hb-upsell .lead-sent p { margin-bottom: 8px}
-        .hb-upsell .hb-primary { border: 0; font: inherit; font-weight: 700; cursor: pointer}
+        .hb-upsell .account-input { min-height: 48px; border-radius: var(--hb-radius)}
         /* Handbook home main body (components/handbook/home/*); scoped to .hb-home so the sidebar and other pages are untouched */
         .hb-home { --home-ink: #0f172a; --home-body: #334155; --home-muted: #5b6b82; --home-primary: #1d4ed8; --home-line: #e2e8f0; --home-band: #eff6ff; --home-pill-bg: #dcfce7; --home-pill-text: #166534; color: var(--home-body)}
         .hb-home a:focus-visible, .hb-home button:focus-visible { outline: 3px solid var(--home-primary); outline-offset: 2px; border-radius: 6px}
@@ -1423,6 +1434,7 @@
         @media (width <= 600px) {
             .hb-title { font-size: 1.7rem}
             .hb-btns .hb-btn { flex: 1 1 100%}
+            .chapter-pager p { flex: 1 1 100%; max-width: 100%}
             .setup-step span:not(.setup-step-num) { font-size: 0.85rem}
         }
 

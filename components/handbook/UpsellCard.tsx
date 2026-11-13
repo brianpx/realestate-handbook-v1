@@ -1,3 +1,4 @@
+import { LockIcon } from 'lucide-react';
 import Link from 'next/link';
 import { CHAPTER_BLURBS } from '@/content/site/chapter-blurbs';
 import { Breadcrumbs } from '@/components/shell/Breadcrumbs';
@@ -49,11 +50,12 @@ export function UpsellCard(props: Props) {
     <div className="content-container" id="content-container">
       <Breadcrumbs />
       <article className="hb-upsell" data-upsell={'page' in props ? props.page : props.feature} aria-labelledby="upsellTitle">
-        <p className="part-label">{locked.eyebrow}</p>
+        <p className="hb-kicker">{locked.eyebrow}</p>
         <h1 className="hb-title" id="upsellTitle">{locked.title}</h1>
         {locked.blurb && <p className="hb-upsell-lede">{locked.blurb}</p>}
 
         <section className="hb-upsell-status" aria-label="Your access">
+          <span className="hb-lock-badge"><LockIcon aria-hidden="true" /></span>
           {suspended ? (
             <>
               <p><strong>Your access is paused.</strong> The free chapters and your account page are still open.</p>
@@ -76,33 +78,33 @@ export function UpsellCard(props: Props) {
               ) : open ? (
                 <>
                   <p>{paidTiers().map(t => `${t.name} ${t.priceDisplay}`).join(' · ')}, each a one-time purchase.</p>
-                  <div className="hb-actions">
-                    <Link className="btn-nav hb-primary" href="/pricing">See plans and buy</Link>
+                  <div className="hb-btns">
+                    <Link className="hb-btn hb-btn-primary" href="/pricing">See plans and buy</Link>
                   </div>
                 </>
               ) : (
                 <>
                   <p>The handbook is not on sale yet. Leave your address and one email tells you when it is; the <Link href="/pricing">pricing page</Link> says where things stand and what each plan includes.</p>
-                  <LeadForm source="upsell" offer="closed" buttonClassName="btn-nav hb-primary" inputClassName="account-input" />
-                  <div className="hb-actions">
-                    <Link className="btn-mini" href="/pricing">Pricing and availability</Link>
+                  <LeadForm source="upsell" offer="closed" buttonClassName="hb-btn hb-btn-primary" inputClassName="account-input" />
+                  <div className="hb-btns">
+                    <Link className="hb-btn hb-btn-ghost" href="/pricing">Pricing and availability</Link>
                   </div>
                 </>
               )}
             </>
           )}
-        </section>
 
-        <section className="hb-upsell-free" aria-labelledby="upsellFreeTitle">
-          <h2 className="hb-h2" id="upsellFreeTitle">What you can read now</h2>
-          <ul>
-            {basic
-              ? <li>Every chapter and appendix, from the <Link href={HANDBOOK}>handbook home</Link>, with the five essential tools.</li>
-              : <>
-                  {free.map(id => <li key={id}><Link href={pageHref(id)}>{pageById(id).label}</Link></li>)}
-                  <li><Link href={HANDBOOK}>Handbook home</Link></li>
-                </>}
-          </ul>
+          <div className="hb-upsell-free">
+            <h2 id="upsellFreeTitle">What you can read now</h2>
+            <ul aria-labelledby="upsellFreeTitle">
+              {basic
+                ? <li>Every chapter and appendix, from the <Link href={HANDBOOK}>handbook home</Link>, with the five essential tools.</li>
+                : <>
+                    {free.map(id => <li key={id}><Link href={pageHref(id)}>{pageById(id).label}</Link></li>)}
+                    <li><Link href={HANDBOOK}>Handbook home</Link></li>
+                  </>}
+            </ul>
+          </div>
         </section>
       </article>
     </div>
