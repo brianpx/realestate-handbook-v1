@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { migrationFiles, MIGRATIONS_DIR, pending, refusalReason, splitStatements } from './migrate';
+import { migrationChecksum, migrationDecision, migrationFiles, MIGRATIONS_DIR, pending, refusalReason, splitStatements } from './migrate';
 
 describe('splitStatements', () => {
   it('drops comment lines and trailing comments, and keeps one statement per semicolon', () => {
@@ -38,13 +38,26 @@ describe('refusalReason', () => {
   const branch = 'postgres://u:p@ep-prod-12345.c-1.us-east-1.aws.neon.tech/db';
   it('refuses a preview deployment that points at the production host, pooled or not', () => {
     const env = { VERCEL_ENV: 'preview', PRODUCTION_DB_HOST: 'ep-prod-1234' };
-    expect(refusalReason(env, prod)).toMatch(/preview deployment points at the production database/);
+    expect(refusalReason(env, prod)).toMatch(/production database/);
     expect(refusalReason(env, pooled)).not.toBeNull();
   });
-  it('lets a preview migrate its own branch, and never blocks production or a local run', () => {
+  it('lets a preview migrate its own branch', () => {
     expect(refusalReason({ VERCEL_ENV: 'preview', PRODUCTION_DB_HOST: 'ep-prod-1234' }, branch)).toBeNull();
-    expect(refusalReason({ VERCEL_ENV: 'production', PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toBeNull();
-    expect(refusalReason({ PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toBeNull();
-    expect(refusalReason({ VERCEL_ENV: 'preview' }, prod)).toBeNull();
+  });
+  it('refuses a production host unless production migration is explicitly authorized', () => {
+    expect(refusalReason({ VERCEL_ENV: 'production', PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toMatch(/MIGRATE_ALLOW_PRODUCTION/);
+    expect(refusalReason({ PRODUCTION_DB_HOST: 'ep-prod-1234' }, prod)).toMatch(/MIGRATE_ALLOW_PRODUCTION/);
+    expect(refusalReason({ VERCEL_ENV: 'production', PRODUCTION_DB_HOST: 'ep-prod-1234', MIGRATE_ALLOW_PRODUCTION: '1' }, prod)).toBeNull();
+  });
+  it('refuses an undeclared target and a missing or invalid URL', () => {
+    expect(refusalReason({ VERCEL_ENV: 'preview' }, prod)).toMatch(/ambiguous/);
+    expect(refusalReason({ MIGRATE_ALLOW_UNDECLARED_TARGET: '1' }, branch)).toBeNull();
+    expect(refusalReason({ PRODUCTION_DB_HOST: 'ep-prod-1234' }, 'not a url')).toMatch(/not a valid URL/);
+    expect(migrationDecision({}, undefined)).toEqual({ ok: false, reason: 'DATABASE_URL is not set' });
+    expect(migrationDecision({ PRODUCTION_DB_HOST: 'ep-prod-1234' }, branch)).toEqual({ ok: true });
+  });
+  it('checksums the file text', () => {
+    expect(migrationChecksum('select 1;')).toBe(migrationChecksum('select 1;'));
+    expect(migrationChecksum('select 1;')).not.toBe(migrationChecksum('select 2;'));
   });
 });

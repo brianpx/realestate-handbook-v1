@@ -10,7 +10,7 @@ export default defineConfig({
   testIgnore: IS_REMOTE ? [...LOCAL_ONLY_SPECS, ...(SEED_DATABASE_URL ? [] : SEEDING_SPECS)] : undefined,
   webServer: IS_REMOTE ? undefined : [
     {
-      command: 'pnpm build && pnpm start -p 3187',
+      command: 'pnpm exec next build && pnpm exec next start -p 3187',
       url: ORIGIN,
       reuseExistingServer: false,
       timeout: 180_000,

@@ -24,11 +24,11 @@ Package manager: `pnpm` (lockfile is `pnpm-lock.yaml`; never create a second loc
 
 - Install: `pnpm install`
 - Dev: `pnpm dev`
-- Build: `pnpm build`
+- Build: `pnpm build` (Next.js only; it does not migrate)
 - Typecheck: `pnpm typecheck` (runs `next typegen` first so the generated route types exist on a clean clone). If `tsc` fails on a stale `.next/dev/types` validator that names a deleted route, restart `next dev` or remove that folder, then re-run.
 - Test: `pnpm test` (single file: `pnpm test <path>`)
-- E2E: `pnpm e2e`
-- Migrations: `pnpm db:migrate` applies `db/migrations/*.sql` to `DATABASE_URL` once each (recorded in `schema_migrations`); `pnpm build` runs it first, so every Vercel deployment migrates the branch it reads. Without `DATABASE_URL` it does nothing. Against a specific branch: `node --env-file=<ignored .env.*.local file> db/migrate.ts`
+- E2E: `pnpm e2e` (the local Playwright server runs `next build` directly, not `pnpm db:migrate`)
+- Migrations: `pnpm db:migrate` is the only command that applies `db/migrations/*.sql`. It exits 1 when `DATABASE_URL` is missing, when `PRODUCTION_DB_HOST` is unset (unless `MIGRATE_ALLOW_UNDECLARED_TARGET=1`), or when the host matches `PRODUCTION_DB_HOST` without `MIGRATE_ALLOW_PRODUCTION=1`. A recorded checksum that no longer matches the file also exits 1. Against a specific branch: `node --env-file=<ignored .env.*.local file> db/migrate.ts`
 
 There is no `lint` or `format` script. After any code change, run typecheck + the tests for what you touched. Fix failures caused by your changes before reporting done.
 
@@ -81,7 +81,7 @@ There is no `lint` or `format` script. After any code change, run typecheck + th
 - Review the final diff for accidental edits, secrets, debug output, and unrelated formatting.
 - When verification is blocked, report the exact command, the failure, and what remains unverified. Never claim success without evidence.
 
-**Done means:** the change is implemented, typecheck/lint/tests pass (or the exact failure is reported), the diff is clean, and the final report lists files changed, verification commands + results, assumptions, and blockers.
+**Done means:** the change is implemented, typecheck and this repo's tests pass (or the exact failure is reported), the diff is clean, and the final report lists files changed, verification commands + results, assumptions, and blockers. There is no lint script; report lint as NOT CONFIGURED.
 
 ## Communication
 
